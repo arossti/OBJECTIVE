@@ -335,114 +335,170 @@ TEUI.ReferenceToggle = (function () {
    */
 
   /**
+   * HELPER: Get field IDs for a section using FieldManager
+   */
+  function getFieldIdsForSection(sectionId) {
+    try {
+      // Use FieldManager to get field definitions for this section
+      if (window.TEUI?.FieldManager?.getFieldsBySection) {
+        const fields = window.TEUI.FieldManager.getFieldsBySection(getUINameForSection(sectionId));
+        return Object.keys(fields);
+      }
+      
+      // Fallback: Try direct section module access
+      if (window.TEUI?.SectionModules?.[sectionId]?.getFields) {
+        const fields = window.TEUI.SectionModules[sectionId].getFields();
+        return Object.keys(fields);
+      }
+      
+      console.warn(`[ReferenceToggle] Could not get field IDs for section ${sectionId}`);
+      return [];
+    } catch (error) {
+      console.error(`[ReferenceToggle] Error getting field IDs for ${sectionId}:`, error);
+      return [];
+    }
+  }
+
+  /**
+   * HELPER: Convert section ID to UI name for FieldManager
+   */
+  function getUINameForSection(sectionId) {
+    const mapping = {
+      'sect01': 'keyValues',
+      'sect02': 'buildingInfo', 
+      'sect03': 'climateCalculations',
+      'sect04': 'actualTargetEnergy',
+      'sect05': 'emissions',
+      'sect06': 'onSiteEnergy',
+      'sect07': 'waterUse',
+      'sect08': 'indoorAirQuality',
+      'sect09': 'occupantInternalGains',
+      'sect10': 'envelopeRadiantGains',
+      'sect11': 'envelopeTransmissionLosses',
+      'sect12': 'volumeSurfaceMetrics',
+      'sect13': 'mechanicalLoads',
+      'sect14': 'tediSummary',
+      'sect15': 'teuiSummary'
+    };
+    return mapping[sectionId] || sectionId;
+  }
+
+  /**
    * 1. Mirror Target: Copy all Target values to Reference state
-   * DEBUGGING VERSION: Comprehensive structure inspection
+   * CORRECTED: Uses proper ModeManager facade pattern
    */
   function mirrorTarget() {
     try {
-      console.log('[DEBUG] Starting mirrorTarget debugging...');
       const sections = getAllDualStateSections();
       console.log(`[ReferenceToggle] Mirror Target: Processing ${sections.length} sections`);
       
+      let totalFieldsCopied = 0;
+      
       sections.forEach((section, index) => {
-        console.log(`[DEBUG] ==================`);
-        console.log(`[DEBUG] Section ${index}: ${section.id}`);
-        console.log('[DEBUG] section.modeManager:', section.modeManager);
-        console.log('[DEBUG] section.modeManager.TargetState:', section.modeManager.TargetState);
+        console.log(`[ReferenceToggle] Processing ${section.id}...`);
         
-        // Test different access patterns
-        if (section.modeManager.TargetState) {
-          console.log('[DEBUG] TargetState exists, checking properties:');
-          console.log('[DEBUG] - .data:', section.modeManager.TargetState.data);
-          console.log('[DEBUG] - .state:', section.modeManager.TargetState.state);
-          console.log('[DEBUG] - .values:', section.modeManager.TargetState.values);
-          console.log('[DEBUG] - keys:', Object.keys(section.modeManager.TargetState));
-          console.log('[DEBUG] - typeof:', typeof section.modeManager.TargetState);
+        // Get field IDs for this section
+        const fieldIds = getFieldIdsForSection(section.id);
+        console.log(`[ReferenceToggle] Found ${fieldIds.length} fields for ${section.id}`);
+        
+        if (fieldIds.length === 0) {
+          console.warn(`[ReferenceToggle] No fields found for ${section.id} - skipping`);
+          return;
         }
         
-        // Check if it's a function that needs calling
-        if (typeof section.modeManager.TargetState === 'function') {
-          console.log('[DEBUG] TargetState is a function, trying to call...');
-          try {
-            const result = section.modeManager.TargetState();
-            console.log('[DEBUG] TargetState() result:', result);
-          } catch (e) {
-            console.log('[DEBUG] TargetState() call failed:', e);
+        // Save current mode
+        const originalMode = section.modeManager.currentMode;
+        
+        // Switch to target mode to read values
+        section.modeManager.switchMode("target");
+        
+        // Read all Target values using ModeManager facade
+        const targetValues = {};
+        fieldIds.forEach(fieldId => {
+          const value = section.modeManager.getValue(fieldId);
+          if (value !== null && value !== undefined && value !== "") {
+            targetValues[fieldId] = value;
           }
-        }
-        
-        // Test if TargetState IS the data object directly
-        if (typeof section.modeManager.TargetState === 'object' && section.modeManager.TargetState !== null) {
-          console.log('[DEBUG] Testing direct object access...');
-          const keys = Object.keys(section.modeManager.TargetState);
-          console.log('[DEBUG] Direct object keys (first 5):', keys.slice(0, 5));
-          
-          // Test accessing a field directly
-          if (keys.length > 0) {
-            const testKey = keys[0];
-            console.log(`[DEBUG] Testing direct access to ${testKey}:`, section.modeManager.TargetState[testKey]);
-          }
-        }
-        
-        // Check ReferenceState structure for comparison
-        console.log('[DEBUG] section.modeManager.ReferenceState:', section.modeManager.ReferenceState);
-        if (section.modeManager.ReferenceState) {
-          console.log('[DEBUG] ReferenceState keys:', Object.keys(section.modeManager.ReferenceState));
-          console.log('[DEBUG] ReferenceState.setValue function:', typeof section.modeManager.ReferenceState.setValue);
-        }
-        
-        console.log(`[DEBUG] ================== END ${section.id}`);
-      });
-      
-      // TEMPORARILY DISABLE the actual copying to avoid errors during debugging
-      console.log('[DEBUG] Debugging complete - actual copying disabled until structure is understood');
-      
-      // TODO: Uncomment once we know the correct access pattern
-      /*
-      sections.forEach(section => {
-        const targetData = section.modeManager.TargetState.data; // <-- This line fails
-        Object.keys(targetData).forEach(fieldId => {
-          section.modeManager.ReferenceState.setValue(fieldId, targetData[fieldId], "mirrored");
         });
+        
+        console.log(`[ReferenceToggle] Read ${Object.keys(targetValues).length} Target values from ${section.id}`);
+        
+        // Switch to reference mode to write values
+        section.modeManager.switchMode("reference");
+        
+        // Copy Target values to Reference state
+        Object.entries(targetValues).forEach(([fieldId, value]) => {
+          section.modeManager.setValue(fieldId, value, "mirrored");
+          totalFieldsCopied++;
+        });
+        
+        // Restore original mode and refresh UI
+        section.modeManager.switchMode(originalMode);
         section.modeManager.refreshUI();
+        
+        console.log(`[ReferenceToggle] Copied ${Object.keys(targetValues).length} values to Reference state for ${section.id}`);
       });
-      */
       
-      console.log("🔍 Mirror Target: Debugging complete - check console for TargetState structure");
+      console.log(`🔗 Mirror Target: Successfully copied ${totalFieldsCopied} total fields across ${sections.length} sections`);
+      console.log("🎯 Test: Switch to Reference mode to verify e_10 (Reference TEUI) equals h_10 (Target TEUI)");
+      
     } catch (error) {
       console.error("[ReferenceToggle] Mirror Target failed:", error);
-      console.error("[DEBUG] Full error stack:", error.stack);
     }
   }
 
   /**
    * 2. Mirror Target + Reference: Copy Target + overlay ReferenceValues subset
+   * CORRECTED: Uses proper ModeManager facade and ReferenceValues.js integration
    */
   function mirrorTargetWithReference() {
     try {
       const standard = window.TEUI?.StateManager?.getValue('d_13') || 'OBC SB12 3.1.1.2.C1';
       const refValues = window.TEUI?.ReferenceValues?.[standard] || {};
-      const sections = getAllDualStateSections();
       
       console.log(`[ReferenceToggle] Mirror Target + Reference: Using standard "${standard}"`);
+      console.log(`[ReferenceToggle] Found ${Object.keys(refValues).length} reference values for this standard`);
+      
+      // First execute Mirror Target to copy all Target values
+      mirrorTarget();
+      
+      // Then overlay ReferenceValues subset for building code compliance
+      const sections = getAllDualStateSections();
+      let totalOverlayFields = 0;
       
       sections.forEach(section => {
-        const targetData = section.modeManager.TargetState.data;
+        console.log(`[ReferenceToggle] Applying ReferenceValues overlay to ${section.id}...`);
         
-        // Copy all Target values
-        Object.keys(targetData).forEach(fieldId => {
-          section.modeManager.ReferenceState.setValue(fieldId, targetData[fieldId], "mirrored");
+        // Save current mode
+        const originalMode = section.modeManager.currentMode;
+        
+        // Switch to reference mode to apply overlay
+        section.modeManager.switchMode("reference");
+        
+        // Apply ReferenceValues overlay (building code minimums)
+        const appliedFields = [];
+        Object.entries(refValues).forEach(([fieldId, value]) => {
+          // Only apply if this section manages this field
+          const fieldIds = getFieldIdsForSection(section.id);
+          if (fieldIds.includes(fieldId)) {
+            section.modeManager.setValue(fieldId, value, "reference-standard");
+            appliedFields.push(fieldId);
+            totalOverlayFields++;
+          }
         });
         
-        // Overlay ReferenceValues subset
-        Object.keys(refValues).forEach(fieldId => {
-          section.modeManager.ReferenceState.setValue(fieldId, refValues[fieldId], "reference-standard");
-        });
-        
+        // Restore original mode and refresh UI
+        section.modeManager.switchMode(originalMode);
         section.modeManager.refreshUI();
+        
+        if (appliedFields.length > 0) {
+          console.log(`[ReferenceToggle] Applied ${appliedFields.length} reference standard values to ${section.id}: [${appliedFields.join(', ')}]`);
+        }
       });
       
-      console.log(`🔗 Mirror Target + Reference: Applied ${Object.keys(refValues).length} reference values`);
+      console.log(`🔗 Mirror Target + Reference: Applied ${totalOverlayFields} reference standard values across all sections`);
+      console.log(`📋 Standard: "${standard}" - building code minimums now overlay Target inputs`);
+      
     } catch (error) {
       console.error("[ReferenceToggle] Mirror Target + Reference failed:", error);
     }
