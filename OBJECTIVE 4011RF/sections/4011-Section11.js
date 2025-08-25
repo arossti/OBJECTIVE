@@ -356,7 +356,24 @@ window.TEUI.SectionModules.sect11 = (function () {
     // Update displayed calculated values based on current mode (Target vs Reference)
     updateCalculatedDisplayValues: function () {
       if (!window.TEUI?.StateManager) return;
-      const calculatedFields = ["i_97", "k_97", "d_98", "i_98", "k_98"];
+      // ✅ EXPANDED: Include ALL calculated fields for complete mode-aware display
+      const calculatedFields = [
+        // Component rows 85-96 (all calculated values)
+        "i_85", "k_85", "g_85", "f_85",
+        "i_86", "k_86", "g_86", "f_86", 
+        "i_87", "k_87", "g_87", "f_87",
+        "i_88", "k_88", "g_88", "f_88",
+        "i_89", "k_89", "g_89", "f_89",
+        "i_90", "k_90", "g_90", "f_90",
+        "i_91", "k_91", "g_91", "f_91",
+        "i_92", "k_92", "g_92", "f_92",
+        "i_93", "k_93", "g_93", "f_93",
+        "i_94", "k_94", "g_94", "f_94",
+        "i_95", "k_95", "g_95", "f_95",
+        "i_96", "k_96", "g_96", "f_96",
+        // Totals and penalties
+        "i_97", "k_97", "d_98", "i_98", "k_98"
+      ];
 
       calculatedFields.forEach((fieldId) => {
         const valueToDisplay =
@@ -1036,14 +1053,12 @@ window.TEUI.SectionModules.sect11 = (function () {
           // console.log(`🔍 S11 REFERENCE: HDD=${hdd} (ref_d_20=${ref_hdd}, global_d_20=${global_hdd})`);
           // console.log(`🔍 S11 REFERENCE: CDD=${heatgainMultiplier/24} (ref_d_21=${ref_cdd}, global_d_21=${global_cdd})`);
         } else {
-          // Target calculations: read target_ prefixed climate data
-          const target_hdd = getGlobalNumericValue("target_d_20");
-          const global_hdd = getGlobalNumericValue("d_20");
-          hdd = target_hdd || global_hdd || 0;
+          // ✅ FIXED: Target calculations read unprefixed climate data (Pattern A)
+          const hdd_value = getGlobalNumericValue("d_20") || 0;
+          hdd = hdd_value;
 
-          const target_cdd = getGlobalNumericValue("target_d_21");
-          const global_cdd = getGlobalNumericValue("d_21");
-          heatgainMultiplier = (target_cdd || global_cdd || 0) * 24;
+          const cdd_value = getGlobalNumericValue("d_21") || 0;
+          heatgainMultiplier = cdd_value * 24;
 
           // 🚨 S11 TARGET CONTAMINATION TRACKER
           // console.log(`🚨 S11 TARGET: HDD=${hdd} (target_d_20=${target_hdd}, global_d_20=${global_hdd})`);
@@ -1064,11 +1079,8 @@ window.TEUI.SectionModules.sect11 = (function () {
             getGlobalNumericValue("d_22") ||
             0;
         } else {
-          // Target calculations: read target_ prefixed climate data
-          hdd =
-            getGlobalNumericValue("target_d_22") ||
-            getGlobalNumericValue("d_22") ||
-            0;
+          // ✅ FIXED: Target calculations read unprefixed climate data (Pattern A)
+          hdd = getGlobalNumericValue("d_22") || 0;
         }
 
         // Get value from i_21 (assume it's stored as percentage, e.g., 50 for 50%)
@@ -1899,6 +1911,9 @@ window.TEUI.SectionModules.sect11 = (function () {
     onSectionRendered,
     calculateAll,
     referenceHandler, // Expose the generated handler
+    
+    // ✅ CRITICAL FIX: Export ModeManager for dual-state field routing
+    ModeManager: ModeManager,
   };
 })();
 
