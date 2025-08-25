@@ -237,6 +237,28 @@ window.TEUI.StateManager.setValue(
     - Initialization (`onSectionRendered`)
     - External dependency listeners
     - State resets
+
+### **🚨 CRITICAL DOM UPDATE PATTERN (Newly Discovered)**
+
+**Component-Level DOM Updates**: Reference calculations MUST call `setCalculatedValue()` just like Target calculations
+
+```javascript
+// ❌ WRONG PATTERN (S11 bug): Reference calculations skip DOM updates
+if (!isReferenceCalculation) {
+  setCalculatedValue(fieldId, value, format); // Only Target updates DOM!
+}
+
+// ✅ CORRECT PATTERN: Both Target and Reference update DOM
+setCalculatedValue(fieldId, value, format); // Mode-aware via ModeManager
+```
+
+**Why This Works**:
+- `setCalculatedValue()` is already mode-aware via `ModeManager.setValue()`
+- Automatically writes to correct state (Target/Reference) based on `currentMode`
+- Automatically updates DOM with formatted values
+- **No special Reference handling needed** - emulate Target mode exactly
+
+**Common Failure**: Reference calculations store values but never update DOM, causing stale displays
 6.  **Verify working functions preserved**: Compare with BACKUP file - NO calculation functions should be deleted
     - Calculate functions (like `calculateTypologyBasedCap`)
     - Formula implementations (Excel compliance)
@@ -333,6 +355,35 @@ window.TEUI.StateManager.setValue(
 
 14. **External Dependencies**: ALL calculations must read explicit Target or Reference upstream values
 15. **Dual-Mode Listeners**: Listen to BOTH `"fieldId"` AND `"ref_fieldId"` for all external dependencies
+
+### **🚨 CRITICAL: Dual External Dependency Listeners**
+
+**Common Missing Pattern**: Sections listen for Target external dependencies but **NOT** Reference external dependencies
+
+```javascript
+// ❌ INCOMPLETE: Only Target external listeners
+const dependencies = ["j_19", "i_71", "i_97"];
+dependencies.forEach((fieldId) => {
+  StateManager.addListener(fieldId, calculateAll); // Only Target triggers
+});
+
+// ✅ COMPLETE: Both Target AND Reference external listeners  
+const dependencies = ["j_19", "i_71", "i_97"];
+dependencies.forEach((fieldId) => {
+  // Target external dependency
+  StateManager.addListener(fieldId, calculateAll);
+  
+  // Reference external dependency
+  StateManager.addListener(`ref_${fieldId}`, calculateAll);
+});
+```
+
+**Excel Formula Compliance Example (S09→S10)**:
+- **Target**: `e_80 = i_71 + i_79` (listens for `i_71`)
+- **Reference**: `ref_e_80 = ref_i_71 + ref_i_79` (must listen for `ref_i_71`)
+
+**Test Failure**: Reference mode changes in upstream sections don't trigger downstream recalculations
+
 16. **State Isolation**: Reference calculations NEVER read unprefixed values; Target calculations NEVER read ref\_ values
 
 ---
