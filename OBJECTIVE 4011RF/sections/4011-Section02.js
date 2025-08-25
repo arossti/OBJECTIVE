@@ -1613,6 +1613,7 @@ window.TEUI.SectionModules.sect02 = (function () {
         d_15: "Self Reported", // Carbon standard
         // Reporting year 2022 for Target (affects S04 emissions factors)
         h_12: "2022", // Reporting Period - Target uses 2022 (actual field is h_12)
+        h_13: "50", // Service life (from field definition) - ✅ CRITICAL FIX: Added missing Target default
         // h_15 default comes from field definition (value: "1,427.20")
         // Energy costs - same for both Target and Reference
         l_12: "0.1300", // Electricity cost
@@ -1825,6 +1826,23 @@ window.TEUI.SectionModules.sect02 = (function () {
         }
         console.log(
           `[S02] Updated h_12 (reporting year) slider = "${yearValue}" (${this.currentMode} mode)`,
+        );
+      }
+
+      // ✅ CRITICAL FIX: Update service life slider (h_13)
+      const serviceLifeSlider = sectionElement.querySelector(
+        'input[data-field-id="h_13"]',
+      );
+      const serviceLifeValue = currentState.getValue("h_13"); // Service life field
+      if (serviceLifeSlider && serviceLifeValue) {
+        serviceLifeSlider.value = serviceLifeValue;
+        // Update service life display
+        const serviceLifeDisplay = serviceLifeSlider.nextElementSibling;
+        if (serviceLifeDisplay) {
+          serviceLifeDisplay.textContent = serviceLifeValue;
+        }
+        console.log(
+          `[S02] Updated h_13 (service life) slider = "${serviceLifeValue}" (${this.currentMode} mode)`,
         );
       }
 

@@ -44,7 +44,7 @@
 - **Purpose**: Switch display between Target and Reference **calculated values only**
 - **No Calculation Changes**: System must not modify, trigger, or interfere with calculations
 - **Pre-Calculated Values**: Both Target and Reference values are already calculated by dual-state engines
-- **UI Toggle Only**: Master toggle is purely a display/styling system
+- **UI Toggle Only**: Master toggle is purely a display/styling system (but with ability foir user to write to target or reference models based on mode)
 
 #### **2. Dual-State Architecture Compliance**
 - **Section Structure**: Must work with `window.TEUI.sect03.ModeManager` pattern

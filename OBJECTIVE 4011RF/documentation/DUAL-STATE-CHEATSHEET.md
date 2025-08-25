@@ -274,7 +274,30 @@ window.TEUI.StateManager.setValue(
     TargetState.setDefaults() { this.data = { /* h_15 comes from field definition */ }; }
     ```
 
-11. **MANDATORY FIXES**: Remove ALL hardcoded defaults from state objects that duplicate field definitions
+11. **🚨 MISSING TARGET DEFAULTS AUDIT**: Check for user input fields missing from TargetState.setDefaults()
+    - **Search Pattern**: `grep -n "data-field-id.*h_" sections/4011-SectionXX.js` then verify each field has Target defaults
+    - **Critical Bug Pattern**: User input fields (sliders, editable) missing from TargetState but present in ReferenceState
+    - **Symptom**: "First mode switch shows wrong value" - Reference values carry over to Target mode
+    - **S02 Case Study**: `h_13` missing from TargetState caused service life slider to show Reference value (70) when switching to Target mode
+    
+    ```javascript
+    // ❌ MISSING TARGET DEFAULT: Only Reference has the field
+    ReferenceState.setDefaults() { this.data = { h_13: "50" }; }  // ✅ Present
+    TargetState.setDefaults() { this.data = { /* h_13 missing! */ }; }  // ❌ Missing
+    
+    // ✅ CORRECT: Both states must have ALL user input fields
+    ReferenceState.setDefaults() { this.data = { h_13: "50" }; }  // ✅ Present  
+    TargetState.setDefaults() { this.data = { h_13: "50" }; }  // ✅ Added
+    ```
+    
+    **Detection Pattern**:
+    ```bash
+    # Find all user input fields in section
+    grep -o 'data-field-id="[^"]*"' sections/4011-SectionXX.js | sort -u
+    # Verify each field exists in BOTH TargetState.setDefaults() AND ReferenceState.setDefaults()
+    ```
+
+12. **MANDATORY FIXES**: Remove ALL hardcoded defaults from state objects that duplicate field definitions
     - **WHY CRITICAL**: Creates version drift, maintenance nightmare, and data corruption
     - **Field definitions are the SINGLE SOURCE OF TRUTH** for all default values
     - **State objects should ONLY contain mode-specific overrides** (like different reporting years)
