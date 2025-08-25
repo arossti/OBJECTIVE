@@ -1952,12 +1952,14 @@ window.TEUI.SectionModules.sect10 = (function () {
       const winterShadingDecimal = getNumericValue(`g_${rowId}`) / 100;
       const summerShadingDecimal = getNumericValue(`h_${rowId}`) / 100;
 
-      // EXTERNAL DEPENDENCY: Get Climate Zone from S03 via global state
-      const climateZone = getGlobalNumericValue("j_19") || 6.0; // Default to zone 6 if not available
+      // ✅ FIXED: Mode-aware climate zone reading for proper state isolation  
+      const climateZone = ModeManager.currentMode === "reference" 
+        ? getGlobalNumericValue("ref_j_19") || 6.0  // Reference climate zone
+        : getGlobalNumericValue("j_19") || 6.0;     // Target climate zone
 
       const gainFactor = calculateGainFactor(orientation, climateZone);
 
-      // Always update the gain factor in the DOM
+      // Always update the gain factor in the DOM (mode-aware via setCalculatedValue)
       setCalculatedValue(`m_${rowId}`, gainFactor);
 
       // SHGC Normalization Factor
@@ -1979,9 +1981,11 @@ window.TEUI.SectionModules.sect10 = (function () {
         (1 - summerShadingDecimal) *
         coolingModifierFactor;
 
-      // EXTERNAL DEPENDENCY: Get cost from S01 via global state
-      const cost =
-        getGlobalNumericValue("l_12") * (coolingGains - heatingGains);
+      // ✅ FIXED: Mode-aware cost calculation for proper state isolation
+      const costPerUnit = ModeManager.currentMode === "reference"
+        ? getGlobalNumericValue("ref_l_12") || 0  // Reference cost from S01
+        : getGlobalNumericValue("l_12") || 0;     // Target cost from S01
+      const cost = costPerUnit * (coolingGains - heatingGains);
 
       // Set state using ModeManager before updating DOM via setCalculatedValue
       ModeManager.setValue(`i_${rowId}`, heatingGains.toString(), "calculated");
@@ -2634,6 +2638,9 @@ window.TEUI.SectionModules.sect10 = (function () {
         return 50.0; // Default value in case of error
       }
     },
+
+    // ✅ CRITICAL FIX: Export ModeManager for dual-state field routing
+    ModeManager: ModeManager,
   };
 })();
 
