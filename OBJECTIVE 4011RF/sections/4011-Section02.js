@@ -796,7 +796,7 @@ window.TEUI.SectionModules.sect02 = (function () {
       l_15: ReferenceState.getValue("l_15"), // Propane price
       l_16: ReferenceState.getValue("l_16"), // Wood price
     };
-    
+
     // [S02DB] Targeted logging for critical Reference parameters
     try {
       console.log(
@@ -1115,10 +1115,10 @@ window.TEUI.SectionModules.sect02 = (function () {
         const newYear = e.target.value;
         // ✅ PATTERN A: Save to current state (Target or Reference) via ModeManager
         ModeManager.setValue("h_12", newYear, "user-modified");
-        
+
         // Recalculate after year change
         calculateAll();
-        
+
         // Update DOM with new calculated values
         ModeManager.updateCalculatedDisplayValues();
       });
@@ -1142,10 +1142,10 @@ window.TEUI.SectionModules.sect02 = (function () {
         const newServiceLife = e.target.value;
         // ✅ PATTERN A: Save to current state (Target or Reference) via ModeManager
         ModeManager.setValue("h_13", newServiceLife, "user-modified");
-        
+
         // Recalculate after service life change
         calculateAll();
-        
+
         // Update DOM with new calculated values
         ModeManager.updateCalculatedDisplayValues();
       });
@@ -1716,10 +1716,20 @@ window.TEUI.SectionModules.sect02 = (function () {
           const refH12 = ReferenceState.getValue("h_12");
           const refH13 = ReferenceState.getValue("h_13");
           const refH15 = ReferenceState.getValue("h_15");
-          if (refH12) window.TEUI.StateManager.setValue("ref_h_12", refH12, "default");
-          if (refH13) window.TEUI.StateManager.setValue("ref_h_13", refH13, "default");
-          if (refH15) window.TEUI.StateManager.setValue("ref_h_15", refH15, "default");
-          console.log("[S02DB] init publish: ref_h_12=", refH12, "ref_h_13=", refH13, "ref_h_15=", refH15);
+          if (refH12)
+            window.TEUI.StateManager.setValue("ref_h_12", refH12, "default");
+          if (refH13)
+            window.TEUI.StateManager.setValue("ref_h_13", refH13, "default");
+          if (refH15)
+            window.TEUI.StateManager.setValue("ref_h_15", refH15, "default");
+          console.log(
+            "[S02DB] init publish: ref_h_12=",
+            refH12,
+            "ref_h_13=",
+            refH13,
+            "ref_h_15=",
+            refH15,
+          );
         }
       } catch (e) {
         console.warn("[S02] initialize: state initialization error", e);

@@ -187,7 +187,11 @@ window.TEUI.SectionModules.sect03 = (function () {
       if (this.currentMode === "target") {
         window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
       } else if (this.currentMode === "reference") {
-        window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "user-modified");
+        window.TEUI.StateManager.setValue(
+          `ref_${fieldId}`,
+          value,
+          "user-modified",
+        );
       }
     },
     refreshUI: function () {
@@ -280,16 +284,31 @@ window.TEUI.SectionModules.sect03 = (function () {
      */
     updateCalculatedDisplayValues: function () {
       const calculatedFields = [
-        "j_19", "d_20", "d_21", "d_22", "h_22", "d_23", "e_23", "h_23", "i_23", "m_23",
-        "d_24", "e_24", "h_24", "i_24", "m_24"
+        "j_19",
+        "d_20",
+        "d_21",
+        "d_22",
+        "h_22",
+        "d_23",
+        "e_23",
+        "h_23",
+        "i_23",
+        "m_23",
+        "d_24",
+        "e_24",
+        "h_24",
+        "i_24",
+        "m_24",
       ];
 
-      calculatedFields.forEach(fieldId => {
+      calculatedFields.forEach((fieldId) => {
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
           let valueToDisplay;
-          if (this.currentMode === 'reference') {
-            valueToDisplay = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
+          if (this.currentMode === "reference") {
+            valueToDisplay = window.TEUI.StateManager.getValue(
+              `ref_${fieldId}`,
+            );
           } else {
             valueToDisplay = window.TEUI.StateManager.getValue(fieldId);
           }
@@ -298,21 +317,36 @@ window.TEUI.SectionModules.sect03 = (function () {
             const numericValue = window.TEUI.parseNumeric(valueToDisplay, NaN);
             let formattedValue = valueToDisplay;
             if (!isNaN(numericValue)) {
-              let formatType = 'number-2dp';
-              if (["d_20", "d_21", "d_22", "h_22", "d_23", "h_23", "d_24", "h_24", "l_24"].includes(fieldId)) {
-                formatType = 'integer';
+              let formatType = "number-2dp";
+              if (
+                [
+                  "d_20",
+                  "d_21",
+                  "d_22",
+                  "h_22",
+                  "d_23",
+                  "h_23",
+                  "d_24",
+                  "h_24",
+                  "l_24",
+                ].includes(fieldId)
+              ) {
+                formatType = "integer";
               } else if (["e_23", "i_23", "e_24", "i_24"].includes(fieldId)) {
-                formatType = 'integer-nocomma';
-              } else if (fieldId === 'j_19') {
-                formatType = 'number-1dp';
+                formatType = "integer-nocomma";
+              } else if (fieldId === "j_19") {
+                formatType = "number-1dp";
               }
-              formattedValue = window.TEUI.formatNumber(numericValue, formatType);
+              formattedValue = window.TEUI.formatNumber(
+                numericValue,
+                formatType,
+              );
             }
             element.textContent = formattedValue;
           }
         }
       });
-    }
+    },
   };
 
   // Expose globally for cross-section communication
@@ -1003,10 +1037,10 @@ window.TEUI.SectionModules.sect03 = (function () {
 
     // ✅ PATTERN A: Sync to global StateManager in a mode-aware way
     if (window.TEUI?.StateManager) {
-      const key = ModeManager.currentMode === 'reference' ? 'ref_d_19' : 'd_19';
+      const key = ModeManager.currentMode === "reference" ? "ref_d_19" : "d_19";
       window.TEUI.StateManager.setValue(key, provinceValue, "user-modified");
       console.log(
-        `S03: Synced province change "${provinceValue}" to StateManager key "${key}"`
+        `S03: Synced province change "${provinceValue}" to StateManager key "${key}"`,
       );
     }
 
@@ -1411,7 +1445,10 @@ window.TEUI.SectionModules.sect03 = (function () {
         },
       );
     } catch (e) {
-      console.warn("[S03DB] storeReferenceResults: pre-write logging failed", e);
+      console.warn(
+        "[S03DB] storeReferenceResults: pre-write logging failed",
+        e,
+      );
     }
 
     // Store with ref_ prefix for downstream sections
@@ -1434,9 +1471,15 @@ window.TEUI.SectionModules.sect03 = (function () {
         ref_d_24: window.TEUI.StateManager.getValue("ref_d_24"),
         ref_j_19: window.TEUI.StateManager.getValue("ref_j_19"),
       };
-      console.log("[S03DB] storeReferenceResults: wrote ref_ values (read-back)", readBack);
+      console.log(
+        "[S03DB] storeReferenceResults: wrote ref_ values (read-back)",
+        readBack,
+      );
     } catch (e) {
-      console.warn("[S03DB] storeReferenceResults: post-write read-back failed", e);
+      console.warn(
+        "[S03DB] storeReferenceResults: post-write read-back failed",
+        e,
+      );
     }
   }
 
@@ -1713,16 +1756,17 @@ window.TEUI.SectionModules.sect03 = (function () {
         const selectedCity = this.value;
         console.log("Section03: City selected:", selectedCity);
         DualState.setValue("h_19", selectedCity, "user");
-        
+
         // ✅ PATTERN A: Sync to global StateManager in a mode-aware way
         if (window.TEUI?.StateManager) {
-          const key = ModeManager.currentMode === 'reference' ? 'ref_h_19' : 'h_19';
+          const key =
+            ModeManager.currentMode === "reference" ? "ref_h_19" : "h_19";
           window.TEUI.StateManager.setValue(key, selectedCity, "user-modified");
           console.log(
-            `S03: Synced city change "${selectedCity}" to StateManager key "${key}"`
+            `S03: Synced city change "${selectedCity}" to StateManager key "${key}"`,
           );
         }
-        
+
         updateWeatherData();
       });
     }
@@ -1933,7 +1977,8 @@ window.TEUI.SectionModules.sect03 = (function () {
       this.textContent = window.TEUI.formatNumber(numericValue, formatType);
       // ✅ MODE-AWARE: Update StateManager based on current mode
       if (window.TEUI.StateManager) {
-        const key = ModeManager.currentMode === 'reference' ? `ref_${fieldId}` : fieldId;
+        const key =
+          ModeManager.currentMode === "reference" ? `ref_${fieldId}` : fieldId;
         window.TEUI.StateManager.setValue(
           key,
           numericValue.toString(),
@@ -1986,12 +2031,9 @@ window.TEUI.SectionModules.sect03 = (function () {
 
       // ✅ CRITICAL FIX: Sync to global StateManager for cross-section communication (MODE-AWARE)
       if (window.TEUI?.StateManager) {
-        const key = ModeManager.currentMode === 'reference' ? 'ref_d_19' : 'd_19';
-        window.TEUI.StateManager.setValue(
-          key,
-          provinceSelect.value,
-          "default",
-        );
+        const key =
+          ModeManager.currentMode === "reference" ? "ref_d_19" : "d_19";
+        window.TEUI.StateManager.setValue(key, provinceSelect.value, "default");
         window.TEUI.StateManager.setValue(
           "dd_d_19",
           provinceSelect.value,

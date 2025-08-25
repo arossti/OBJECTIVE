@@ -2382,19 +2382,27 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     // ✅ CRITICAL: Listen for Reference climate data changes to trigger recalculation
     sm.addListener("ref_d_20", (newValue) => {
-      console.log(`[S13DEBUG] Reference HDD changed: ref_d_20=${newValue} → triggering Reference calculations`);
+      console.log(
+        `[S13DEBUG] Reference HDD changed: ref_d_20=${newValue} → triggering Reference calculations`,
+      );
       calculateAll();
     });
     sm.addListener("ref_d_21", (newValue) => {
-      console.log(`[S13DEBUG] Reference CDD changed: ref_d_21=${newValue} → triggering Reference calculations`);
+      console.log(
+        `[S13DEBUG] Reference CDD changed: ref_d_21=${newValue} → triggering Reference calculations`,
+      );
       calculateAll();
     });
     sm.addListener("ref_d_22", (newValue) => {
-      console.log(`[S13DEBUG] Reference GF HDD changed: ref_d_22=${newValue} → triggering Reference calculations`);
+      console.log(
+        `[S13DEBUG] Reference GF HDD changed: ref_d_22=${newValue} → triggering Reference calculations`,
+      );
       calculateAll();
     });
     sm.addListener("ref_h_22", (newValue) => {
-      console.log(`[S13DEBUG] Reference GF CDD changed: ref_h_22=${newValue} → triggering Reference calculations`);
+      console.log(
+        `[S13DEBUG] Reference GF CDD changed: ref_h_22=${newValue} → triggering Reference calculations`,
+      );
       calculateAll();
     });
   }

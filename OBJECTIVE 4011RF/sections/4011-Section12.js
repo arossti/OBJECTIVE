@@ -232,10 +232,13 @@ window.TEUI.SectionModules.sect12 = (function () {
       });
 
       // [S12DB] Debug g_104 display value for mode switching
-      const g104Display = this.currentMode === "reference" 
-        ? window.TEUI?.StateManager?.getValue("ref_g_104")
-        : window.TEUI?.StateManager?.getValue("g_104");
-      console.log(`[S12DB] g_104 DISPLAY (${this.currentMode}): ${g104Display}`);
+      const g104Display =
+        this.currentMode === "reference"
+          ? window.TEUI?.StateManager?.getValue("ref_g_104")
+          : window.TEUI?.StateManager?.getValue("g_104");
+      console.log(
+        `[S12DB] g_104 DISPLAY (${this.currentMode}): ${g104Display}`,
+      );
 
       console.log(
         `[Section12] Calculated display values updated for ${this.currentMode} mode`,
@@ -1291,21 +1294,57 @@ window.TEUI.SectionModules.sect12 = (function () {
   function calculateVolumeMetrics(isReferenceCalculation = false) {
     // ✅ MODE-AWARE: Read area values based on calculation type
     let d85, d86, d87, d88, d89, d90, d91, d92, d93, d94, d95, d96;
-    
+
     if (isReferenceCalculation) {
       // Reference calculation: Read Reference areas from S11
-      d85 = parseFloat(getGlobalNumericValue("ref_d_85")) || parseFloat(getGlobalNumericValue("d_85")) || 0;
-      d86 = parseFloat(getGlobalNumericValue("ref_d_86")) || parseFloat(getGlobalNumericValue("d_86")) || 0;
-      d87 = parseFloat(getGlobalNumericValue("ref_d_87")) || parseFloat(getGlobalNumericValue("d_87")) || 0;
-      d88 = parseFloat(getGlobalNumericValue("ref_d_88")) || parseFloat(getGlobalNumericValue("d_88")) || 0;
-      d89 = parseFloat(getGlobalNumericValue("ref_d_89")) || parseFloat(getGlobalNumericValue("d_89")) || 0;
-      d90 = parseFloat(getGlobalNumericValue("ref_d_90")) || parseFloat(getGlobalNumericValue("d_90")) || 0;
-      d91 = parseFloat(getGlobalNumericValue("ref_d_91")) || parseFloat(getGlobalNumericValue("d_91")) || 0;
-      d92 = parseFloat(getGlobalNumericValue("ref_d_92")) || parseFloat(getGlobalNumericValue("d_92")) || 0;
-      d93 = parseFloat(getGlobalNumericValue("ref_d_93")) || parseFloat(getGlobalNumericValue("d_93")) || 0;
-      d94 = parseFloat(getGlobalNumericValue("ref_d_94")) || parseFloat(getGlobalNumericValue("d_94")) || 0;
-      d95 = parseFloat(getGlobalNumericValue("ref_d_95")) || parseFloat(getGlobalNumericValue("d_95")) || 0;
-      d96 = parseFloat(getGlobalNumericValue("ref_d_96")) || parseFloat(getGlobalNumericValue("d_96")) || 0;
+      d85 =
+        parseFloat(getGlobalNumericValue("ref_d_85")) ||
+        parseFloat(getGlobalNumericValue("d_85")) ||
+        0;
+      d86 =
+        parseFloat(getGlobalNumericValue("ref_d_86")) ||
+        parseFloat(getGlobalNumericValue("d_86")) ||
+        0;
+      d87 =
+        parseFloat(getGlobalNumericValue("ref_d_87")) ||
+        parseFloat(getGlobalNumericValue("d_87")) ||
+        0;
+      d88 =
+        parseFloat(getGlobalNumericValue("ref_d_88")) ||
+        parseFloat(getGlobalNumericValue("d_88")) ||
+        0;
+      d89 =
+        parseFloat(getGlobalNumericValue("ref_d_89")) ||
+        parseFloat(getGlobalNumericValue("d_89")) ||
+        0;
+      d90 =
+        parseFloat(getGlobalNumericValue("ref_d_90")) ||
+        parseFloat(getGlobalNumericValue("d_90")) ||
+        0;
+      d91 =
+        parseFloat(getGlobalNumericValue("ref_d_91")) ||
+        parseFloat(getGlobalNumericValue("d_91")) ||
+        0;
+      d92 =
+        parseFloat(getGlobalNumericValue("ref_d_92")) ||
+        parseFloat(getGlobalNumericValue("d_92")) ||
+        0;
+      d93 =
+        parseFloat(getGlobalNumericValue("ref_d_93")) ||
+        parseFloat(getGlobalNumericValue("d_93")) ||
+        0;
+      d94 =
+        parseFloat(getGlobalNumericValue("ref_d_94")) ||
+        parseFloat(getGlobalNumericValue("d_94")) ||
+        0;
+      d95 =
+        parseFloat(getGlobalNumericValue("ref_d_95")) ||
+        parseFloat(getGlobalNumericValue("d_95")) ||
+        0;
+      d96 =
+        parseFloat(getGlobalNumericValue("ref_d_96")) ||
+        parseFloat(getGlobalNumericValue("d_96")) ||
+        0;
     } else {
       // Target calculation: Read unprefixed values
       d85 = parseFloat(getGlobalNumericValue("d_85"));
@@ -1757,22 +1796,30 @@ window.TEUI.SectionModules.sect12 = (function () {
     let d20_hdd, d21_cdd, d22_gfHDD, h22_gfCDD;
     if (isReferenceCalculation) {
       // ✅ CRITICAL FIX: Read Reference climate values from S03
-      d20_hdd = getGlobalNumericValue("ref_d_20") || getGlobalNumericValue("d_20") || 0;
-      d21_cdd = getGlobalNumericValue("ref_d_21") || getGlobalNumericValue("d_21") || 0;
-      d22_gfHDD = getGlobalNumericValue("ref_d_22") || getGlobalNumericValue("d_22") || 0;
-      h22_gfCDD = getGlobalNumericValue("ref_h_22") || getGlobalNumericValue("h_22") || 0;
-      
+      d20_hdd =
+        getGlobalNumericValue("ref_d_20") || getGlobalNumericValue("d_20") || 0;
+      d21_cdd =
+        getGlobalNumericValue("ref_d_21") || getGlobalNumericValue("d_21") || 0;
+      d22_gfHDD =
+        getGlobalNumericValue("ref_d_22") || getGlobalNumericValue("d_22") || 0;
+      h22_gfCDD =
+        getGlobalNumericValue("ref_h_22") || getGlobalNumericValue("h_22") || 0;
+
       // [S12DB] Debug Reference climate reading
-      console.log(`[S12DB] REF CLIMATE: d_20=${d20_hdd}, d_21=${d21_cdd}, d_22=${d22_gfHDD}, h_22=${h22_gfCDD}`);
+      console.log(
+        `[S12DB] REF CLIMATE: d_20=${d20_hdd}, d_21=${d21_cdd}, d_22=${d22_gfHDD}, h_22=${h22_gfCDD}`,
+      );
     } else {
       // ✅ PATTERN A: Clean external dependencies via getGlobalNumericValue
       d20_hdd = getGlobalNumericValue("d_20");
       d21_cdd = getGlobalNumericValue("d_21");
       d22_gfHDD = getGlobalNumericValue("d_22");
       h22_gfCDD = getGlobalNumericValue("h_22");
-      
+
       // [S12DB] Debug Target climate reading
-      console.log(`[S12DB] TGT CLIMATE: d_20=${d20_hdd}, d_21=${d21_cdd}, d_22=${d22_gfHDD}, h_22=${h22_gfCDD}`);
+      console.log(
+        `[S12DB] TGT CLIMATE: d_20=${d20_hdd}, d_21=${d21_cdd}, d_22=${d22_gfHDD}, h_22=${h22_gfCDD}`,
+      );
     }
 
     // Constants
@@ -1787,11 +1834,19 @@ window.TEUI.SectionModules.sect12 = (function () {
 
     // [S12DB] Debug h_101 calculation (Excel: =(D$20*G101*24)/1000)
     if (isReferenceCalculation) {
-      console.log(`[S12DB] REF h_101 calc: (${d20_hdd}*${g101_uAir}*${hoursPerDay})/${wattsToKw} = ${h101_lossRateAir}`);
-      console.log(`[S12DB] REF i_101 result: ${h101_lossRateAir} * ${d101_areaAir} = ${i101_heatlossAir}`);
+      console.log(
+        `[S12DB] REF h_101 calc: (${d20_hdd}*${g101_uAir}*${hoursPerDay})/${wattsToKw} = ${h101_lossRateAir}`,
+      );
+      console.log(
+        `[S12DB] REF i_101 result: ${h101_lossRateAir} * ${d101_areaAir} = ${i101_heatlossAir}`,
+      );
     } else {
-      console.log(`[S12DB] TGT h_101 calc: (${d20_hdd}*${g101_uAir}*${hoursPerDay})/${wattsToKw} = ${h101_lossRateAir}`);
-      console.log(`[S12DB] TGT i_101 result: ${h101_lossRateAir} * ${d101_areaAir} = ${i101_heatlossAir}`);
+      console.log(
+        `[S12DB] TGT h_101 calc: (${d20_hdd}*${g101_uAir}*${hoursPerDay})/${wattsToKw} = ${h101_lossRateAir}`,
+      );
+      console.log(
+        `[S12DB] TGT i_101 result: ${h101_lossRateAir} * ${d101_areaAir} = ${i101_heatlossAir}`,
+      );
     }
 
     // Ground-facing envelope calculations (maintain full precision)
@@ -1829,18 +1884,49 @@ window.TEUI.SectionModules.sect12 = (function () {
 
   function calculateEnvelopeTotals(isReferenceCalculation = false) {
     // ✅ MODE-AWARE: Read values based on calculation type
-    let i101, i102, i103, k101, k102, k103, h21_capacitanceSetting, k98_totalEnvelopeGainS11;
-    
+    let i101,
+      i102,
+      i103,
+      k101,
+      k102,
+      k103,
+      h21_capacitanceSetting,
+      k98_totalEnvelopeGainS11;
+
     if (isReferenceCalculation) {
       // Reference calculation: Read Reference transmission values
-      i101 = parseFloat(getGlobalNumericValue("ref_i_101")) || parseFloat(getNumericValue("i_101")) || 0;
-      i102 = parseFloat(getGlobalNumericValue("ref_i_102")) || parseFloat(getNumericValue("i_102")) || 0;
-      i103 = parseFloat(getGlobalNumericValue("ref_i_103")) || parseFloat(getNumericValue("i_103")) || 0;
-      k101 = parseFloat(getGlobalNumericValue("ref_k_101")) || parseFloat(getNumericValue("k_101")) || 0;
-      k102 = parseFloat(getGlobalNumericValue("ref_k_102")) || parseFloat(getNumericValue("k_102")) || 0;
-      k103 = parseFloat(getGlobalNumericValue("ref_k_103")) || parseFloat(getNumericValue("k_103")) || 0;
-      h21_capacitanceSetting = getGlobalStringValue("ref_h_21") || getFieldValue("h_21") || "Capacitance";
-      k98_totalEnvelopeGainS11 = parseFloat(getGlobalNumericValue("ref_k_98")) || parseFloat(getNumericValue("k_98")) || 0;
+      i101 =
+        parseFloat(getGlobalNumericValue("ref_i_101")) ||
+        parseFloat(getNumericValue("i_101")) ||
+        0;
+      i102 =
+        parseFloat(getGlobalNumericValue("ref_i_102")) ||
+        parseFloat(getNumericValue("i_102")) ||
+        0;
+      i103 =
+        parseFloat(getGlobalNumericValue("ref_i_103")) ||
+        parseFloat(getNumericValue("i_103")) ||
+        0;
+      k101 =
+        parseFloat(getGlobalNumericValue("ref_k_101")) ||
+        parseFloat(getNumericValue("k_101")) ||
+        0;
+      k102 =
+        parseFloat(getGlobalNumericValue("ref_k_102")) ||
+        parseFloat(getNumericValue("k_102")) ||
+        0;
+      k103 =
+        parseFloat(getGlobalNumericValue("ref_k_103")) ||
+        parseFloat(getNumericValue("k_103")) ||
+        0;
+      h21_capacitanceSetting =
+        getGlobalStringValue("ref_h_21") ||
+        getFieldValue("h_21") ||
+        "Capacitance";
+      k98_totalEnvelopeGainS11 =
+        parseFloat(getGlobalNumericValue("ref_k_98")) ||
+        parseFloat(getNumericValue("k_98")) ||
+        0;
     } else {
       // Target calculation: Read unprefixed values
       i101 = parseFloat(getNumericValue("i_101"));
@@ -1855,7 +1941,7 @@ window.TEUI.SectionModules.sect12 = (function () {
 
     // ✅ MISSING CALCULATION: g_104 weighted average U-value (Excel: =(G101*D101/(SUM(D101:D102)+0.000001) + G102*D102/(SUM(D101:D102)+0.000001)))
     let d101_areaAir, d102_areaGround, g101_uAir, g102_uGround;
-    
+
     if (isReferenceCalculation) {
       // Reference calculation: Read Reference areas and U-values
       d101_areaAir = parseFloat(getGlobalNumericValue("ref_d_101")) || 0;
@@ -1869,15 +1955,20 @@ window.TEUI.SectionModules.sect12 = (function () {
       g101_uAir = parseFloat(getGlobalNumericValue("g_101")) || 0;
       g102_uGround = parseFloat(getGlobalNumericValue("g_102")) || 0;
     }
-    
+
     const totalArea = d101_areaAir + d102_areaGround + 0.000001; // Avoid division by zero
-    const g104_weightedUValue = (g101_uAir * d101_areaAir + g102_uGround * d102_areaGround) / totalArea;
+    const g104_weightedUValue =
+      (g101_uAir * d101_areaAir + g102_uGround * d102_areaGround) / totalArea;
 
     // [S12DB] Debug g_104 weighted average calculation
     if (isReferenceCalculation) {
-      console.log(`[S12DB] REF g_104 calc: (${g101_uAir}*${d101_areaAir} + ${g102_uGround}*${d102_areaGround})/${totalArea} = ${g104_weightedUValue}`);
+      console.log(
+        `[S12DB] REF g_104 calc: (${g101_uAir}*${d101_areaAir} + ${g102_uGround}*${d102_areaGround})/${totalArea} = ${g104_weightedUValue}`,
+      );
     } else {
-      console.log(`[S12DB] TGT g_104 calc: (${g101_uAir}*${d101_areaAir} + ${g102_uGround}*${d102_areaGround})/${totalArea} = ${g104_weightedUValue}`);
+      console.log(
+        `[S12DB] TGT g_104 calc: (${g101_uAir}*${d101_areaAir} + ${g102_uGround}*${d102_areaGround})/${totalArea} = ${g104_weightedUValue}`,
+      );
     }
 
     // Calculate total loss with full precision (Excel: =SUM(I101:I103))
@@ -1895,11 +1986,19 @@ window.TEUI.SectionModules.sect12 = (function () {
 
     // [S12DB] Debug Row 104 subtotal calculations
     if (isReferenceCalculation) {
-      console.log(`[S12DB] REF ROW104: i_101=${i101}, i_102=${i102}, i_103=${i103} → i_104=${i104_totalLoss}`);
-      console.log(`[S12DB] REF ROW104: h_21="${h21_capacitanceSetting}", k_98=${k98_totalEnvelopeGainS11} → k_104=${k104_totalGain}`);
+      console.log(
+        `[S12DB] REF ROW104: i_101=${i101}, i_102=${i102}, i_103=${i103} → i_104=${i104_totalLoss}`,
+      );
+      console.log(
+        `[S12DB] REF ROW104: h_21="${h21_capacitanceSetting}", k_98=${k98_totalEnvelopeGainS11} → k_104=${k104_totalGain}`,
+      );
     } else {
-      console.log(`[S12DB] TGT ROW104: i_101=${i101}, i_102=${i102}, i_103=${i103} → i_104=${i104_totalLoss}`);
-      console.log(`[S12DB] TGT ROW104: h_21="${h21_capacitanceSetting}", k_98=${k98_totalEnvelopeGainS11} → k_104=${k104_totalGain}`);
+      console.log(
+        `[S12DB] TGT ROW104: i_101=${i101}, i_102=${i102}, i_103=${i103} → i_104=${i104_totalLoss}`,
+      );
+      console.log(
+        `[S12DB] TGT ROW104: h_21="${h21_capacitanceSetting}", k_98=${k98_totalEnvelopeGainS11} → k_104=${k104_totalGain}`,
+      );
     }
 
     // Only update DOM for Target calculations (like S11 pattern)
@@ -2013,7 +2112,18 @@ window.TEUI.SectionModules.sect12 = (function () {
           "calculated",
         );
         // [S12DB] Debug critical S15 dependencies
-        if (["g_101", "d_101", "i_104", "g_102", "d_102", "i_101", "i_102", "g_104"].includes(fieldId)) {
+        if (
+          [
+            "g_101",
+            "d_101",
+            "i_104",
+            "g_102",
+            "d_102",
+            "i_101",
+            "i_102",
+            "g_104",
+          ].includes(fieldId)
+        ) {
           console.log(`[S12DB] STORED for S15: ref_${fieldId}=${value}`);
         }
       }
@@ -2375,19 +2485,27 @@ window.TEUI.SectionModules.sect12 = (function () {
 
     // ✅ CRITICAL: Listen for Reference climate data changes to trigger recalculation
     window.TEUI.StateManager.addListener("ref_d_20", (newValue) => {
-      console.log(`[S12DEBUG] Reference HDD changed: ref_d_20=${newValue} → triggering Reference calculations`);
+      console.log(
+        `[S12DEBUG] Reference HDD changed: ref_d_20=${newValue} → triggering Reference calculations`,
+      );
       calculateAll();
     });
     window.TEUI.StateManager.addListener("ref_d_21", (newValue) => {
-      console.log(`[S12DEBUG] Reference CDD changed: ref_d_21=${newValue} → triggering Reference calculations`);
+      console.log(
+        `[S12DEBUG] Reference CDD changed: ref_d_21=${newValue} → triggering Reference calculations`,
+      );
       calculateAll();
     });
     window.TEUI.StateManager.addListener("ref_d_22", (newValue) => {
-      console.log(`[S12DEBUG] Reference GF HDD changed: ref_d_22=${newValue} → triggering Reference calculations`);
+      console.log(
+        `[S12DEBUG] Reference GF HDD changed: ref_d_22=${newValue} → triggering Reference calculations`,
+      );
       calculateAll();
     });
     window.TEUI.StateManager.addListener("ref_h_22", (newValue) => {
-      console.log(`[S12DEBUG] Reference GF CDD changed: ref_h_22=${newValue} → triggering Reference calculations`);
+      console.log(
+        `[S12DEBUG] Reference GF CDD changed: ref_h_22=${newValue} → triggering Reference calculations`,
+      );
       calculateAll();
     });
 

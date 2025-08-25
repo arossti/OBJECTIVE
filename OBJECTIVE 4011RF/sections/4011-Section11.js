@@ -359,20 +359,60 @@ window.TEUI.SectionModules.sect11 = (function () {
       // ✅ EXPANDED: Include ALL calculated fields for complete mode-aware display
       const calculatedFields = [
         // Component rows 85-96 (all calculated values)
-        "i_85", "k_85", "g_85", "f_85",
-        "i_86", "k_86", "g_86", "f_86", 
-        "i_87", "k_87", "g_87", "f_87",
-        "i_88", "k_88", "g_88", "f_88",
-        "i_89", "k_89", "g_89", "f_89",
-        "i_90", "k_90", "g_90", "f_90",
-        "i_91", "k_91", "g_91", "f_91",
-        "i_92", "k_92", "g_92", "f_92",
-        "i_93", "k_93", "g_93", "f_93",
-        "i_94", "k_94", "g_94", "f_94",
-        "i_95", "k_95", "g_95", "f_95",
-        "i_96", "k_96", "g_96", "f_96",
+        "i_85",
+        "k_85",
+        "g_85",
+        "f_85",
+        "i_86",
+        "k_86",
+        "g_86",
+        "f_86",
+        "i_87",
+        "k_87",
+        "g_87",
+        "f_87",
+        "i_88",
+        "k_88",
+        "g_88",
+        "f_88",
+        "i_89",
+        "k_89",
+        "g_89",
+        "f_89",
+        "i_90",
+        "k_90",
+        "g_90",
+        "f_90",
+        "i_91",
+        "k_91",
+        "g_91",
+        "f_91",
+        "i_92",
+        "k_92",
+        "g_92",
+        "f_92",
+        "i_93",
+        "k_93",
+        "g_93",
+        "f_93",
+        "i_94",
+        "k_94",
+        "g_94",
+        "f_94",
+        "i_95",
+        "k_95",
+        "g_95",
+        "f_95",
+        "i_96",
+        "k_96",
+        "g_96",
+        "f_96",
         // Totals and penalties
-        "i_97", "k_97", "d_98", "i_98", "k_98"
+        "i_97",
+        "k_97",
+        "d_98",
+        "i_98",
+        "k_98",
       ];
 
       calculatedFields.forEach((fieldId) => {
@@ -388,11 +428,6 @@ window.TEUI.SectionModules.sect11 = (function () {
           if (element) {
             const num = window.TEUI.parseNumeric(valueToDisplay, 0);
             element.textContent = formatNumber(num, "number");
-            if (fieldId === "i_97" || fieldId === "k_97") {
-              console.log(
-                `[S11] Display (${this.currentMode}) ${fieldId} = ${num}`,
-              );
-            }
           }
         }
       });
@@ -1049,11 +1084,6 @@ window.TEUI.SectionModules.sect11 = (function () {
           const global_cdd = getGlobalNumericValue("d_21");
           heatgainMultiplier = (ref_cdd || global_cdd || 0) * 24;
 
-          // 🔍 CRITICAL DIAGNOSTIC: What values is Reference calculation actually using?
-          if (rowNumber === 85) {
-            console.log(`[S11DEBUG] 🔥 REF CALC USING: ref_d_20=${ref_hdd}, d_20=${global_hdd}, final_hdd=${hdd}, ref_d_21=${ref_cdd}, final_multiplier=${heatgainMultiplier}`);
-          }
-
           // 🔍 S11 REFERENCE CONTAMINATION TRACKER
           // console.log(`🔍 S11 REFERENCE: HDD=${hdd} (ref_d_20=${ref_hdd}, global_d_20=${global_hdd})`);
           // console.log(`🔍 S11 REFERENCE: CDD=${heatgainMultiplier/24} (ref_d_21=${ref_cdd}, global_d_21=${global_cdd})`);
@@ -1127,11 +1157,6 @@ window.TEUI.SectionModules.sect11 = (function () {
 
       // For Reference calculations, return the calculated values
       if (isReferenceCalculation) {
-        // 🔍 CRITICAL DIAGNOSTIC: Final Reference calculation inputs and result
-        if (rowNumber === 85) {
-          console.log(`[S11DEBUG] 🔥 REF CALC RESULT i_85: area=${area}, hdd=${hdd}, rsi=${rsiValue}, denominator=${denominator}, calcHeatloss=${calcHeatloss}`);
-          console.log(`[S11DEBUG] 🔥 REF FORMULA: (${area} * ${hdd} * 24) / ${denominator} = ${calcHeatloss}`);
-        }
         return { heatloss: calcHeatloss, heatgain: calcHeatgain };
       }
 
@@ -1324,12 +1349,6 @@ window.TEUI.SectionModules.sect11 = (function () {
 
       // Store for later use
       componentResults[config.row] = { heatloss, heatgain };
-      
-      // 🔍 CRITICAL DIAGNOSTIC: What gets stored in componentResults?
-      if (config.row === 85) {
-        console.log(`[S11DEBUG] 🔥 STORING TO componentResults[85]: heatloss=${heatloss}, heatgain=${heatgain}`);
-        console.log(`[S11DEBUG] 🔥 CALCULATION RESULT was: ${result ? result.heatloss : 'NULL'}`);
-      }
 
       totals.loss += heatloss;
       totals.gain += heatgain;
@@ -1386,12 +1405,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       // Store individual component reference values (calculated results)
       Object.entries(componentResults).forEach(([row, results]) => {
         const rowStr = row.toString();
-        
-        // 🔍 CRITICAL DIAGNOSTIC: What gets written to StateManager?
-        if (row === '85') {
-          console.log(`[S11DEBUG] 🔥 WRITING TO StateManager ref_i_85: ${results.heatloss.toString()}`);
-        }
-        
+
         window.TEUI.StateManager.setValue(
           `ref_i_${rowStr}`,
           results.heatloss.toString(),
@@ -1406,38 +1420,86 @@ window.TEUI.SectionModules.sect11 = (function () {
 
       // ✅ CRITICAL FIX: Store Reference input values for S12 consumption
       // Store all Reference areas (d_85, d_86, etc.)
-      const areaFields = ["d_85", "d_86", "d_87", "d_88", "d_89", "d_90", "d_91", "d_92", "d_93", "d_94", "d_95", "d_96"];
-      areaFields.forEach(fieldId => {
+      const areaFields = [
+        "d_85",
+        "d_86",
+        "d_87",
+        "d_88",
+        "d_89",
+        "d_90",
+        "d_91",
+        "d_92",
+        "d_93",
+        "d_94",
+        "d_95",
+        "d_96",
+      ];
+      areaFields.forEach((fieldId) => {
         const value = ReferenceState.getValue(fieldId);
         if (value !== null && value !== undefined) {
-          window.TEUI.StateManager.setValue(`ref_${fieldId}`, value.toString(), "calculated");
+          window.TEUI.StateManager.setValue(
+            `ref_${fieldId}`,
+            value.toString(),
+            "calculated",
+          );
         }
       });
 
       // Store all Reference RSI values (f_85, f_86, etc.)
       const rsiFields = ["f_85", "f_86", "f_87", "f_94", "f_95"];
-      rsiFields.forEach(fieldId => {
+      rsiFields.forEach((fieldId) => {
         const value = ReferenceState.getValue(fieldId);
         if (value !== null && value !== undefined) {
-          window.TEUI.StateManager.setValue(`ref_${fieldId}`, value.toString(), "calculated");
+          window.TEUI.StateManager.setValue(
+            `ref_${fieldId}`,
+            value.toString(),
+            "calculated",
+          );
         }
       });
 
       // Store all Reference U-values (g_85, g_86, etc.)
-      const uValueFields = ["g_85", "g_86", "g_87", "g_88", "g_89", "g_90", "g_91", "g_92", "g_93", "g_94", "g_95"];
-      uValueFields.forEach(fieldId => {
+      const uValueFields = [
+        "g_85",
+        "g_86",
+        "g_87",
+        "g_88",
+        "g_89",
+        "g_90",
+        "g_91",
+        "g_92",
+        "g_93",
+        "g_94",
+        "g_95",
+      ];
+      uValueFields.forEach((fieldId) => {
         const value = ReferenceState.getValue(fieldId);
         if (value !== null && value !== undefined) {
-          window.TEUI.StateManager.setValue(`ref_${fieldId}`, value.toString(), "calculated");
+          window.TEUI.StateManager.setValue(
+            `ref_${fieldId}`,
+            value.toString(),
+            "calculated",
+          );
         }
       });
 
       // Store Reference thermal bridging penalty
       const d97Value = ReferenceState.getValue("d_97");
       if (d97Value !== null && d97Value !== undefined) {
-        window.TEUI.StateManager.setValue(`ref_d_97`, d97Value.toString(), "calculated");
+        window.TEUI.StateManager.setValue(
+          `ref_d_97`,
+          d97Value.toString(),
+          "calculated",
+        );
       }
     }
+
+    // Store results at module level for later re-writing in calculateAll
+    lastReferenceResults = {
+      ...componentResults,
+      // Also store penalty values to prevent overwrites
+      penalty: { heatloss: penaltyHeatlossI, heatgain: penaltyHeatgainK },
+    };
 
     // console.log('[Section11] Reference Model values stored'); // Comment out
   }
@@ -1573,6 +1635,9 @@ window.TEUI.SectionModules.sect11 = (function () {
    * DUAL-ENGINE ORCHESTRATION
    * Replaces the original calculateAll function
    */
+  // Store reference results at module level for access in calculateAll
+  let lastReferenceResults = {};
+
   function calculateAll() {
     console.log(
       `%c[S11] calculateAll TRIGGERED. isReferenceMode: ${window.TEUI?.ReferenceToggle?.isReferenceMode?.()}`,
@@ -1582,15 +1647,42 @@ window.TEUI.SectionModules.sect11 = (function () {
     calculateReferenceModel();
     calculateTargetModel();
 
+    // ✅ FIX: Re-write Reference values after all calculations to prevent overwrites
+    // Re-store the component Reference values after potential downstream overwrites
+    if (window.TEUI?.StateManager && lastReferenceResults) {
+      Object.entries(lastReferenceResults).forEach(([key, results]) => {
+        if (key === "penalty") {
+          // Re-write thermal bridge penalty values
+          window.TEUI.StateManager.setValue(
+            "ref_i_97",
+            results.heatloss.toString(),
+            "calculated",
+          );
+          window.TEUI.StateManager.setValue(
+            "ref_k_97",
+            results.heatgain.toString(),
+            "calculated",
+          );
+        } else {
+          // Re-write component values
+          const rowStr = key.toString();
+          window.TEUI.StateManager.setValue(
+            `ref_i_${rowStr}`,
+            results.heatloss.toString(),
+            "calculated",
+          );
+          window.TEUI.StateManager.setValue(
+            `ref_k_${rowStr}`,
+            results.heatgain.toString(),
+            "calculated",
+          );
+        }
+      });
+    }
+
     // Refresh displayed values according to current mode
     if (typeof ModeManager.updateCalculatedDisplayValues === "function") {
       ModeManager.updateCalculatedDisplayValues();
-      
-      // 🔍 DIAGNOSTIC: Check stored vs displayed values
-      const storedTarget = window.TEUI.StateManager.getValue("i_85") || "NOT_FOUND";
-      const storedRef = window.TEUI.StateManager.getValue("ref_i_85") || "NOT_FOUND";
-      const domValue = document.querySelector('[data-field-id="i_85"]')?.textContent || "NOT_FOUND";
-      console.log(`[S11DEBUG] 📊 STORED: Target i_85=${storedTarget}, Reference ref_i_85=${storedRef}, DOM shows=${domValue}, currentMode=${ModeManager.currentMode}`);
     }
     // console.warn("S11: Dual-engine calculations complete"); // This was already commented
   }
@@ -1611,7 +1703,7 @@ window.TEUI.SectionModules.sect11 = (function () {
    * - Optimizing the calculateAll sequence itself.
    * For now, the flash is accepted as known behavior.
    */
-  function handleFieldBlur(event) {
+  function handleFieldBlur(_event) {
     const fieldElement = this;
     const currentFieldId = fieldElement.getAttribute("data-field-id");
     if (!currentFieldId) return;
@@ -1748,24 +1840,10 @@ window.TEUI.SectionModules.sect11 = (function () {
       window.TEUI.StateManager.addListener("d_22", calculateAll); // GF HDD (affects ground loss)
 
       // ✅ ADDED: Listeners for REFERENCE climate data to trigger Reference Model recalculation
-      window.TEUI.StateManager.addListener("ref_d_20", (newValue) => {
-        console.log(`[S11DEBUG] Reference HDD changed: ref_d_20=${newValue} → triggering Reference calculations`);
-        console.log(`[S11DEBUG] 🎯 CRITICAL: S11 currentMode=${ModeManager.currentMode} when ref_d_20 changed`);
-        calculateAll();
-        console.log(`[S11DEBUG] 🔍 AFTER calculateAll: i_85 DOM = ${document.querySelector('[data-field-id="i_85"]')?.textContent || 'NOT_FOUND'}`);
-      });
-      window.TEUI.StateManager.addListener("ref_d_21", (newValue) => {
-        console.log(`[S11DEBUG] Reference CDD changed: ref_d_21=${newValue} → triggering Reference calculations`);
-        calculateAll();
-      });
-      window.TEUI.StateManager.addListener("ref_h_22", (newValue) => {
-        console.log(`[S11DEBUG] Reference GF CDD changed: ref_h_22=${newValue} → triggering Reference calculations`);
-        calculateAll();
-      });
-      window.TEUI.StateManager.addListener("ref_d_22", (newValue) => {
-        console.log(`[S11DEBUG] Reference GF HDD changed: ref_d_22=${newValue} → triggering Reference calculations`);
-        calculateAll();
-      });
+      window.TEUI.StateManager.addListener("ref_d_20", () => calculateAll());
+      window.TEUI.StateManager.addListener("ref_d_21", () => calculateAll());
+      window.TEUI.StateManager.addListener("ref_h_22", () => calculateAll());
+      window.TEUI.StateManager.addListener("ref_d_22", () => calculateAll());
 
       window.TEUI.StateManager.addListener("i_21", calculateAll); // Capacitance Factor (affects ground gain)
       window.TEUI.StateManager.addListener("d_97", (val, _old, _id, src) => {
@@ -1941,7 +2019,7 @@ window.TEUI.SectionModules.sect11 = (function () {
     onSectionRendered,
     calculateAll,
     referenceHandler, // Expose the generated handler
-    
+
     // ✅ CRITICAL FIX: Export ModeManager for dual-state field routing
     ModeManager: ModeManager,
   };

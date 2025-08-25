@@ -1200,7 +1200,8 @@ window.TEUI.ClimateData = {
     },
   },
   NU: {
-    Iqaluit: { // Need to verify from Canada.csv!!!
+    Iqaluit: {
+      // Need to verify from Canada.csv!!!
       Location: "Iqaluit",
       "Elev ASL (m)": 45,
       January_2_5: -40,
@@ -1212,8 +1213,8 @@ window.TEUI.ClimateData = {
       HDD18: 9980,
       HDD15: 8900,
       HDD18_2021_2050: 9480,
-      CDD24: 0,
-      CDD24_2021_2050: 0,
+      CDD24: 0.3,
+      CDD24_2021_2050: 2.5,
       Over_30Tdb_2021_2050: 0,
       Extreme_Hot_Tdb_1991_2020: 0,
       Rain_15_min_mm: 4,

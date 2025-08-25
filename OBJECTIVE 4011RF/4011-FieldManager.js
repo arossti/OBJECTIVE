@@ -163,7 +163,8 @@ TEUI.FieldManager = (function () {
     for (const [uiSectionId, internalSectionId] of Object.entries(sections)) {
       try {
         if (TEUI.SectionModules[internalSectionId]?.getFields) {
-          const sectionFields = TEUI.SectionModules[internalSectionId].getFields();
+          const sectionFields =
+            TEUI.SectionModules[internalSectionId].getFields();
           if (sectionFields && sectionFields[fieldId]) {
             return internalSectionId;
           }
@@ -183,10 +184,12 @@ TEUI.FieldManager = (function () {
    */
   function routeToSectionModeManager(fieldId, value, source = "user-modified") {
     const sectionId = findSectionForField(fieldId);
-    
+
     if (!sectionId) {
       // Fallback to legacy direct StateManager write if section not found
-      console.warn(`[FieldManager] Field ${fieldId} not found in any section - using legacy direct write`);
+      console.warn(
+        `[FieldManager] Field ${fieldId} not found in any section - using legacy direct write`,
+      );
       if (TEUI.StateManager && TEUI.StateManager.setValue) {
         TEUI.StateManager.setValue(fieldId, value, source);
       }
@@ -196,18 +199,29 @@ TEUI.FieldManager = (function () {
     try {
       // Try to route through section's ModeManager (Pattern A dual-state aware)
       const sectionModule = TEUI.SectionModules[sectionId];
-      if (sectionModule && sectionModule.ModeManager && sectionModule.ModeManager.setValue) {
+      if (
+        sectionModule &&
+        sectionModule.ModeManager &&
+        sectionModule.ModeManager.setValue
+      ) {
         sectionModule.ModeManager.setValue(fieldId, value, source);
-        console.log(`[FieldManager] Routed ${fieldId}=${value} through ${sectionId} ModeManager`);
+        console.log(
+          `[FieldManager] Routed ${fieldId}=${value} through ${sectionId} ModeManager`,
+        );
       } else {
         // Fallback: section exists but no ModeManager - direct StateManager write
-        console.warn(`[FieldManager] Section ${sectionId} has no ModeManager - using direct write for ${fieldId}`);
+        console.warn(
+          `[FieldManager] Section ${sectionId} has no ModeManager - using direct write for ${fieldId}`,
+        );
         if (TEUI.StateManager && TEUI.StateManager.setValue) {
           TEUI.StateManager.setValue(fieldId, value, source);
         }
       }
     } catch (e) {
-      console.error(`[FieldManager] Error routing ${fieldId} to ${sectionId}:`, e);
+      console.error(
+        `[FieldManager] Error routing ${fieldId} to ${sectionId}:`,
+        e,
+      );
       // Final fallback to legacy direct write
       if (TEUI.StateManager && TEUI.StateManager.setValue) {
         TEUI.StateManager.setValue(fieldId, value, source);
@@ -659,7 +673,11 @@ TEUI.FieldManager = (function () {
                 // Simple change handler to update state manager
                 inputElement.addEventListener("change", function () {
                   // ✅ DUAL-STATE AWARE: Route through section ModeManager
-                  routeToSectionModeManager(fieldId, this.value, "user-modified");
+                  routeToSectionModeManager(
+                    fieldId,
+                    this.value,
+                    "user-modified",
+                  );
                 });
 
                 cellElement.appendChild(inputElement);
