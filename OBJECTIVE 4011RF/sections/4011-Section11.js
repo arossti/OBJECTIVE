@@ -1324,6 +1324,12 @@ window.TEUI.SectionModules.sect11 = (function () {
 
       // Store for later use
       componentResults[config.row] = { heatloss, heatgain };
+      
+      // 🔍 CRITICAL DIAGNOSTIC: What gets stored in componentResults?
+      if (config.row === 85) {
+        console.log(`[S11DEBUG] 🔥 STORING TO componentResults[85]: heatloss=${heatloss}, heatgain=${heatgain}`);
+        console.log(`[S11DEBUG] 🔥 CALCULATION RESULT was: ${result ? result.heatloss : 'NULL'}`);
+      }
 
       totals.loss += heatloss;
       totals.gain += heatgain;
@@ -1380,6 +1386,12 @@ window.TEUI.SectionModules.sect11 = (function () {
       // Store individual component reference values (calculated results)
       Object.entries(componentResults).forEach(([row, results]) => {
         const rowStr = row.toString();
+        
+        // 🔍 CRITICAL DIAGNOSTIC: What gets written to StateManager?
+        if (row === '85') {
+          console.log(`[S11DEBUG] 🔥 WRITING TO StateManager ref_i_85: ${results.heatloss.toString()}`);
+        }
+        
         window.TEUI.StateManager.setValue(
           `ref_i_${rowStr}`,
           results.heatloss.toString(),
