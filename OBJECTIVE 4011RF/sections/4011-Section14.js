@@ -1516,6 +1516,9 @@ window.TEUI.SectionModules.sect14 = (function () {
     // Event handling and initialization - REQUIRED
     initializeEventHandlers: initializeEventHandlers,
     onSectionRendered: onSectionRendered,
+
+    // ✅ CRITICAL: Export ModeManager for FieldManager routing
+    ModeManager: ModeManager,
   };
 })();
 

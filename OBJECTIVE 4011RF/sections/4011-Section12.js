@@ -8,7 +8,8 @@ window.TEUI.SectionModules = window.TEUI.SectionModules || {};
 
 window.TEUI.SectionModules.sect12 = (function () {
   let isInitialized = false;
-  let s12ListenersAdded = false; // Track if StateManager listeners have been added
+  let s12ListenersAdded = false;
+  let lastReferenceResults = {}; // ✅ S11 PATTERN: Store Reference results for persistence
 
   //==========================================================================
   // DUAL-STATE ARCHITECTURE (Self-Contained State Module)
@@ -1066,7 +1067,7 @@ window.TEUI.SectionModules.sect12 = (function () {
    * @param {*} rawValue - The raw, unformatted value to store in StateManager.
    * @param {string} formatType - The format type for display (e.g., 'number', 'percent-auto', 'integer', 'raw', 'number-3dp').
    */
-  function setCalculatedValue(fieldId, rawValue, formatType = "number") {
+  function setCalculatedValue(fieldId, rawValue, formatType = "number", isReferenceCalculation = false) {
     // Ensure rawValue is numeric for calculations where appropriate
     const numericValue =
       typeof rawValue === "string"
@@ -1126,15 +1127,17 @@ window.TEUI.SectionModules.sect12 = (function () {
       determinedFormatType = formatType;
     }
 
-    // Set raw value in state manager only if materially changed (epsilon check), store full precision
+    // ✅ MODE-AWARE: Set value in appropriate state based on calculation context
+    const stateFieldId = isReferenceCalculation ? `ref_${fieldId}` : fieldId;
+    
     if (window.TEUI?.StateManager?.setValue) {
-      const currentStr = window.TEUI.StateManager.getValue(fieldId);
+      const currentStr = window.TEUI.StateManager.getValue(stateFieldId);
       const currentNum = window.TEUI.parseNumeric(currentStr);
       const newNum = Number.isFinite(numericValue) ? numericValue : 0;
       const epsilon = 1e-9;
       if (!(Math.abs((currentNum || 0) - newNum) < epsilon)) {
         window.TEUI.StateManager.setValue(
-          fieldId,
+          stateFieldId,
           String(newNum),
           "calculated",
         );
@@ -1143,7 +1146,7 @@ window.TEUI.SectionModules.sect12 = (function () {
         return;
       }
     } else {
-      console.error("StateManager not available to set value for", fieldId);
+      console.error("StateManager not available to set value for", stateFieldId);
       return;
     }
 
@@ -1159,20 +1162,24 @@ window.TEUI.SectionModules.sect12 = (function () {
       );
     }
 
-    // Update the corresponding DOM element
-    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-    if (element) {
-      if (element.tagName === "SELECT" || element.tagName === "INPUT") {
-        element.value = formattedValue; // Update input/select value
+    // ✅ MODE-AWARE DOM UPDATE: Reference calculations don't directly update DOM
+    if (!isReferenceCalculation) {
+      // Target calculations update DOM immediately
+      const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+      if (element) {
+        if (element.tagName === "SELECT" || element.tagName === "INPUT") {
+          element.value = formattedValue; // Update input/select value
+        } else {
+          element.textContent = formattedValue; // Update other element text content
+        }
+        element.classList.add("calculated-value");
+        element.classList.remove("user-input", "editable", "PendingValue");
+        element.removeAttribute("contenteditable");
       } else {
-        element.textContent = formattedValue; // Update other element text content
+        console.warn("DOM element not found for calculated field:", fieldId);
       }
-      element.classList.add("calculated-value");
-      element.classList.remove("user-input", "editable", "PendingValue");
-      element.removeAttribute("contenteditable");
-    } else {
-      console.warn("DOM element not found for calculated field:", fieldId);
     }
+    // Reference calculations store values only; DOM updates handled by ModeManager.updateCalculatedDisplayValues()
   }
 
   function setElementClass(fieldId, className, removeClasses = []) {
@@ -1376,14 +1383,12 @@ window.TEUI.SectionModules.sect12 = (function () {
     const g105_volAreaRatio = d101_areaAir > 0 ? d105_vol / d101_areaAir : 0;
     const i105_areaVolRatio = d105_vol > 0 ? d101_areaAir / d105_vol : 0;
 
-    // Only update DOM for Target calculations (like S11 pattern)
-    if (!isReferenceCalculation) {
-      setCalculatedValue("d_101", d101_areaAir, "number-2dp-comma");
-      setCalculatedValue("d_102", d102_areaGround, "number-2dp-comma");
-      setCalculatedValue("d_106", d106_floorArea, "number-2dp-comma");
-      setCalculatedValue("g_105", g105_volAreaRatio, "number-2dp");
-      setCalculatedValue("i_105", i105_areaVolRatio, "number-2dp");
-    }
+    // ✅ MODE-AWARE: setCalculatedValue() now handles Reference vs Target appropriately
+    setCalculatedValue("d_101", d101_areaAir, "number-2dp-comma", isReferenceCalculation);
+    setCalculatedValue("d_102", d102_areaGround, "number-2dp-comma", isReferenceCalculation);
+    setCalculatedValue("d_106", d106_floorArea, "number-2dp-comma", isReferenceCalculation);
+    setCalculatedValue("g_105", g105_volAreaRatio, "number-2dp", isReferenceCalculation);
+    setCalculatedValue("i_105", i105_areaVolRatio, "number-2dp", isReferenceCalculation);
 
     // Return calculated values for Reference engine storage
     return {
@@ -1535,9 +1540,9 @@ window.TEUI.SectionModules.sect12 = (function () {
         : 0;
 
     // Update DOM for both passes via StateManager writes and display refresh
-    setCalculatedValue("g_101", g101_uAir, "W/m2");
-    setCalculatedValue("g_102", g102_uGround, "W/m2");
-    setCalculatedValue("g_104", d104_uCombined, "W/m2"); // ✅ EXCEL PARITY: g_104 not d_104
+    setCalculatedValue("g_101", g101_uAir, "W/m2", isReferenceCalculation);
+    setCalculatedValue("g_102", g102_uGround, "W/m2", isReferenceCalculation);
+    setCalculatedValue("g_104", d104_uCombined, "W/m2", isReferenceCalculation); // ✅ EXCEL PARITY: g_104 not d_104
 
     // Return calculated values for Reference engine storage
     return {
@@ -1563,14 +1568,14 @@ window.TEUI.SectionModules.sect12 = (function () {
     const wwr = totalWallArea > 0 ? windowDoorArea / totalWallArea : 0;
 
     // Update WWR value with standard formatter
-    setCalculatedValue("d_107", wwr, "percent-2dp");
+    setCalculatedValue("d_107", wwr, "percent-2dp", isReferenceCalculation);
 
     // Calculate ratio to reference WWR with full precision
     const refWWR = 0.4; // Placeholder for reference value T107/T108
     const l107 = refWWR > 0 ? wwr / refWWR : 0;
 
     // Update ratio value with standard formatter
-    setCalculatedValue("l_107", l107, "percent-0dp");
+    setCalculatedValue("l_107", l107, "percent-0dp", isReferenceCalculation);
   }
 
   function calculateACH50Target(isReferenceCalculation = false) {
@@ -1625,7 +1630,7 @@ window.TEUI.SectionModules.sect12 = (function () {
     }
 
     // Update NRL50 target with standard formatter
-    setCalculatedValue("g_108", g108_nrl50Target, "number-2dp");
+    setCalculatedValue("g_108", g108_nrl50Target, "number-2dp", isReferenceCalculation);
 
     // Calculate ACH50 target with full precision
     const ach50Target =
@@ -1634,7 +1639,7 @@ window.TEUI.SectionModules.sect12 = (function () {
         : 0;
 
     // Update ACH50 target with standard formatter
-    setCalculatedValue("d_109", ach50Target, "number-2dp");
+    setCalculatedValue("d_109", ach50Target, "number-2dp", isReferenceCalculation);
 
     // Calculate ratio with full precision
     const targetACH = parseFloat(getNumericValue("d_109"));
@@ -1643,7 +1648,7 @@ window.TEUI.SectionModules.sect12 = (function () {
     const l109 = targetACH > 0 ? measuredACH / targetACH : 0;
 
     // Update ratio with standard formatter
-    setCalculatedValue("l_109", l109, "percent-0dp");
+    setCalculatedValue("l_109", l109, "percent-0dp", isReferenceCalculation);
   }
 
   function calculateAe10(isReferenceCalculation = false) {
@@ -1660,14 +1665,14 @@ window.TEUI.SectionModules.sect12 = (function () {
     const ae10 = volume > 0 ? (ach50Target * volume) / 3600 : 0;
 
     // Update with standard formatter
-    setCalculatedValue("d_110", ae10, "number-3dp");
+    setCalculatedValue("d_110", ae10, "number-3dp", isReferenceCalculation);
 
     // Calculate ratio with full precision
     const refAe10 = 1.68; // Placeholder reference T110
     const l110 = refAe10 > 0 ? ae10 / refAe10 : 0;
 
     // Update ratio with standard formatter
-    setCalculatedValue("l_110", l110, "percent-0dp");
+    setCalculatedValue("l_110", l110, "percent-0dp", isReferenceCalculation);
   }
 
   function calculateNFactor(isReferenceCalculation = false) {
@@ -1689,7 +1694,7 @@ window.TEUI.SectionModules.sect12 = (function () {
     else if (climateZone >= 7) zoneNum = 3;
 
     // Update zone number with integer formatter
-    setCalculatedValue("i_110", zoneNum.toString(), "integer");
+    setCalculatedValue("i_110", zoneNum.toString(), "integer", isReferenceCalculation);
 
     // Determine shielding key
     const shieldingKey =
@@ -1732,7 +1737,7 @@ window.TEUI.SectionModules.sect12 = (function () {
     }
 
     // Update n-factor with standard formatter
-    setCalculatedValue("g_110", nFactor, "number-1dp");
+    setCalculatedValue("g_110", nFactor, "number-1dp", isReferenceCalculation);
   }
 
   function calculateAirLeakageHeatLoss(isReferenceCalculation = false) {
@@ -1772,11 +1777,9 @@ window.TEUI.SectionModules.sect12 = (function () {
     const k103_heatgain =
       (baseLeakageCoefficient * d21_cdd * hoursPerDay) / wattsToKw;
 
-    // Only update DOM for Target calculations (like S11 pattern)
-    if (!isReferenceCalculation) {
-      setCalculatedValue("i_103", i103_heatloss, "number-2dp-comma");
-      setCalculatedValue("k_103", k103_heatgain, "number-2dp-comma");
-    }
+    // ✅ MODE-AWARE: setCalculatedValue() now handles Reference vs Target appropriately
+    setCalculatedValue("i_103", i103_heatloss, "number-2dp-comma", isReferenceCalculation);
+    setCalculatedValue("k_103", k103_heatgain, "number-2dp-comma", isReferenceCalculation);
 
     // Return calculated values for Reference engine storage
     return {
@@ -1857,17 +1860,15 @@ window.TEUI.SectionModules.sect12 = (function () {
       (g102_uGround * h22_gfCDD * hoursPerDay) / wattsToKw;
     const k102_heatgainGround = j102_gainRateGround * d102_areaGround;
 
-    // Only update DOM for Target calculations (like S11 pattern)
-    if (!isReferenceCalculation) {
-      setCalculatedValue("h_101", h101_lossRateAir, "number-2dp");
-      setCalculatedValue("i_101", i101_heatlossAir, "number-2dp-comma");
-      setCalculatedValue("j_101", j101_gainRateAir, "number-2dp");
-      setCalculatedValue("k_101", k101_heatgainAir, "number-2dp-comma");
-      setCalculatedValue("h_102", h102_lossRateGround, "number-2dp");
-      setCalculatedValue("i_102", i102_heatlossGround, "number-2dp-comma");
-      setCalculatedValue("j_102", j102_gainRateGround, "number-2dp");
-      setCalculatedValue("k_102", k102_heatgainGround, "number-2dp-comma");
-    }
+    // ✅ MODE-AWARE: setCalculatedValue() now handles Reference vs Target appropriately
+    setCalculatedValue("h_101", h101_lossRateAir, "number-2dp", isReferenceCalculation);
+    setCalculatedValue("i_101", i101_heatlossAir, "number-2dp-comma", isReferenceCalculation);
+    setCalculatedValue("j_101", j101_gainRateAir, "number-2dp", isReferenceCalculation);
+    setCalculatedValue("k_101", k101_heatgainAir, "number-2dp-comma", isReferenceCalculation);
+    setCalculatedValue("h_102", h102_lossRateGround, "number-2dp", isReferenceCalculation);
+    setCalculatedValue("i_102", i102_heatlossGround, "number-2dp-comma", isReferenceCalculation);
+    setCalculatedValue("j_102", j102_gainRateGround, "number-2dp", isReferenceCalculation);
+    setCalculatedValue("k_102", k102_heatgainGround, "number-2dp-comma", isReferenceCalculation);
 
     // Return calculated values for Reference engine storage
     return {
@@ -1882,7 +1883,7 @@ window.TEUI.SectionModules.sect12 = (function () {
     };
   }
 
-  function calculateEnvelopeTotals(isReferenceCalculation = false) {
+  function calculateEnvelopeTotals(isReferenceCalculation = false, volumeResults = null, uValueResults = null) {
     // ✅ MODE-AWARE: Read values based on calculation type
     let i101,
       i102,
@@ -1943,11 +1944,12 @@ window.TEUI.SectionModules.sect12 = (function () {
     let d101_areaAir, d102_areaGround, g101_uAir, g102_uGround;
 
     if (isReferenceCalculation) {
-      // Reference calculation: Read Reference areas and U-values
-      d101_areaAir = parseFloat(getGlobalNumericValue("ref_d_101")) || 0;
-      d102_areaGround = parseFloat(getGlobalNumericValue("ref_d_102")) || 0;
-      g101_uAir = parseFloat(getGlobalNumericValue("ref_g_101")) || 0;
-      g102_uGround = parseFloat(getGlobalNumericValue("ref_g_102")) || 0;
+      // Reference calculation: Use values from current calculation pass, not StateManager
+      // (StateManager values haven't been stored yet during calculation)
+      d101_areaAir = volumeResults?.d_101 || 0;
+      d102_areaGround = volumeResults?.d_102 || 0;
+      g101_uAir = uValueResults?.g_101 || 0;
+      g102_uGround = uValueResults?.g_102 || 0;
     } else {
       // Target calculation: Read unprefixed values
       d101_areaAir = parseFloat(getGlobalNumericValue("d_101")) || 0;
@@ -2001,12 +2003,10 @@ window.TEUI.SectionModules.sect12 = (function () {
       );
     }
 
-    // Only update DOM for Target calculations (like S11 pattern)
-    if (!isReferenceCalculation) {
-      setCalculatedValue("g_104", g104_weightedUValue, "W/m2"); // ✅ EXCEL PARITY: g_104 matches Excel G104
-      setCalculatedValue("i_104", i104_totalLoss, "number-2dp-comma");
-      setCalculatedValue("k_104", k104_totalGain, "number-2dp-comma");
-    }
+    // ✅ MODE-AWARE: setCalculatedValue() now handles Reference vs Target appropriately
+    setCalculatedValue("g_104", g104_weightedUValue, "W/m2", isReferenceCalculation); // ✅ EXCEL PARITY: g_104 matches Excel G104
+    setCalculatedValue("i_104", i104_totalLoss, "number-2dp-comma", isReferenceCalculation);
+    setCalculatedValue("k_104", k104_totalGain, "number-2dp-comma", isReferenceCalculation);
 
     // Calculate percentages with full precision
     const l101 = i104_totalLoss > 0 ? i101 / i104_totalLoss : 0;
@@ -2014,13 +2014,11 @@ window.TEUI.SectionModules.sect12 = (function () {
     const l103 = i104_totalLoss > 0 ? i103 / i104_totalLoss : 0;
     const l104 = l101 + l102 + l103;
 
-    // Update percentage values using standard formatters
-    if (!isReferenceCalculation) {
-      setCalculatedValue("l_101", l101, "percent-2dp");
-      setCalculatedValue("l_102", l102, "percent-2dp");
-      setCalculatedValue("l_103", l103, "percent-2dp");
-      setCalculatedValue("l_104", l104, "percent-0dp");
-    }
+    // ✅ MODE-AWARE: setCalculatedValue() now handles Reference vs Target appropriately
+    setCalculatedValue("l_101", l101, "percent-2dp", isReferenceCalculation);
+    setCalculatedValue("l_102", l102, "percent-2dp", isReferenceCalculation);
+    setCalculatedValue("l_103", l103, "percent-2dp", isReferenceCalculation);
+    setCalculatedValue("l_104", l104, "percent-0dp", isReferenceCalculation);
 
     // ✅ FIX: Return calculated values for Reference engine storage
     return {
@@ -2035,13 +2033,21 @@ window.TEUI.SectionModules.sect12 = (function () {
   }
 
   function calculateAll() {
-    // console.log("[Section12] Running dual-engine calculations...");
+    // console.log(`[S12DEBUG] calculateAll() triggered in ${ModeManager.currentMode} mode`);
 
-    // ✅ ALWAYS run BOTH engines in parallel (corrected from wrong mode-aware approach)
+    // ✅ DUAL-ENGINE: Always run BOTH engines as per DUAL-STATE-CHEATSHEET mandate
+    // console.log(`[S12DEBUG] Running dual-engine calculations...`);
     calculateReferenceModel(); // Reads ReferenceState → stores ref_ prefixed
     calculateTargetModel(); // Reads TargetState → stores unprefixed
 
-    // console.log("[Section12] Dual-engine calculations complete");
+    // ✅ S11 PATTERN: Re-write Reference values after all calculations to prevent overwrites
+    if (window.TEUI?.StateManager && lastReferenceResults) {
+      Object.entries(lastReferenceResults).forEach(([fieldId, value]) => {
+        window.TEUI.StateManager.setValue(`ref_${fieldId}`, value.toString(), "calculated");
+      });
+    }
+
+    // console.log(`[S12DEBUG] Dual-engine calculations complete`);
     // Always refresh displayed calculated values after a calculation pass
     ModeManager.updateCalculatedDisplayValues?.();
   }
@@ -2063,7 +2069,7 @@ window.TEUI.SectionModules.sect12 = (function () {
       calculateAe10(true);
       const airLeakageResults = calculateAirLeakageHeatLoss(true);
       const envelopeResults = calculateEnvelopeHeatLossGain(true);
-      const envelopeTotalsResults = calculateEnvelopeTotals(true); // ✅ FIX: Capture return value
+      const envelopeTotalsResults = calculateEnvelopeTotals(true, volumeResults, uValueResults); // ✅ FIX: Pass calculated values
 
       // Store Reference Model results with ref_ prefix for downstream sections
       storeReferenceResults(
@@ -2103,6 +2109,9 @@ window.TEUI.SectionModules.sect12 = (function () {
       ...envelopeResults,
       ...envelopeTotalsResults, // ✅ FIX: Include envelope totals (i_104, k_104, etc.)
     };
+
+    // ✅ S11 PATTERN: Store results for later re-writing
+    lastReferenceResults = { ...allResults };
 
     Object.entries(allResults).forEach(([fieldId, value]) => {
       if (value !== null && value !== undefined) {
@@ -2151,7 +2160,7 @@ window.TEUI.SectionModules.sect12 = (function () {
       calculateAe10(false);
       calculateAirLeakageHeatLoss(false);
       calculateEnvelopeHeatLossGain(false);
-      calculateEnvelopeTotals(false);
+      calculateEnvelopeTotals(false); // Target calculation doesn't need the parameters
 
       // Update reference indicators after all calculations
       updateAllReferenceIndicators();
@@ -2509,6 +2518,14 @@ window.TEUI.SectionModules.sect12 = (function () {
       calculateAll();
     });
 
+    // ✅ MISSING: Internal field listeners to trigger calculations
+    // When user changes S12's own fields, calculations should be triggered
+    window.TEUI.StateManager.addListener("d_103", () => calculateAll()); // Stories
+    window.TEUI.StateManager.addListener("g_103", () => calculateAll()); // Exposure  
+    window.TEUI.StateManager.addListener("d_105", () => calculateAll()); // Volume
+    window.TEUI.StateManager.addListener("d_108", () => calculateAll()); // Blower door method
+    window.TEUI.StateManager.addListener("g_109", () => calculateAll()); // Measured ACH50
+
     s12ListenersAdded = true;
     // console.log("[S12 DEBUG] StateManager listeners HAVE BEEN ADDED."); // REMOVE DEBUG LOG
   }
@@ -2619,5 +2636,6 @@ window.TEUI.SectionModules.sect12 = (function () {
     onSectionRendered: onSectionRendered,
     calculateAll: calculateAll,
     calculateCombinedUValue: calculateCombinedUValue,
+    ModeManager: ModeManager, // ✅ CRITICAL FIX: Enable FieldManager integration
   };
 })();

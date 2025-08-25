@@ -1346,6 +1346,7 @@ window.TEUI.SectionModules.sect15 = (function () {
    * This follows the template pattern expected by the system
    */
   function calculateAll() {
+    // console.log(`[S15DEBUG] calculateAll() triggered`);
     // Run both engines independently
     calculateReferenceModel(); // Calculates Reference values with ref_ prefix
     calculateTargetModel(); // Calculates Target values (existing logic)
@@ -2085,14 +2086,28 @@ window.TEUI.SectionModules.sect15 = (function () {
       // Add dependencies from other sections that S15 might react to
       "i_98", // Total Envelope Loss from S11
       "k_98", // Total Envelope Gain from S11
+      // ✅ MISSING: S12 Reference dependencies (critical for downstream flow)
+      "ref_g_101", // S12 Reference U-value air
+      "ref_d_101", // S12 Reference area air  
+      "ref_i_104", // S12 Reference total loss
+      "ref_g_102", // S12 Reference U-value ground
+      "ref_d_102", // S12 Reference area ground
+      "ref_g_104", // S12 Reference weighted U-value
     ];
 
     const uniqueDependencies = [...new Set(dependencies)];
 
-    // Add listeners for both the base dependency and its 'ref_' prefixed version
+    // ✅ FIXED: Add listeners correctly for mixed prefixed/unprefixed dependencies  
+    // console.log(`[S15DEBUG] Setting up ${uniqueDependencies.length} dependencies:`, uniqueDependencies);
     uniqueDependencies.forEach((dep) => {
-      addCalculationListener(dep);
-      addCalculationListener(`ref_${dep}`);
+      addCalculationListener(dep); // Add listener for the dependency as-is
+      // console.log(`[S15DEBUG] Added listener for: ${dep}`);
+      
+      // Only add ref_ prefix if dependency doesn't already have it
+      if (!dep.startsWith('ref_')) {
+        addCalculationListener(`ref_${dep}`); // Add ref_ prefixed version for Target deps
+        // console.log(`[S15DEBUG] Added listener for: ref_${dep}`);
+      }
     });
 
     // Initial calculation on render
