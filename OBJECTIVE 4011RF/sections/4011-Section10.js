@@ -262,38 +262,77 @@ window.TEUI.SectionModules.sect10 = (function () {
         }
       });
     },
-    
+
     // Update displayed calculated values based on current mode (Target vs Reference)
     updateCalculatedDisplayValues: function () {
       if (!window.TEUI?.StateManager) return;
-      
+
       // All calculated fields that need mode-aware display updates
       const calculatedFields = [
         // Gain factors (rows 73-78)
-        "m_73", "m_74", "m_75", "m_76", "m_77", "m_78",
+        "m_73",
+        "m_74",
+        "m_75",
+        "m_76",
+        "m_77",
+        "m_78",
         // Heating gains (rows 73-78, subtotal 79)
-        "i_73", "i_74", "i_75", "i_76", "i_77", "i_78", "i_79",
-        // Cooling gains (rows 73-78, subtotal 79)  
-        "k_73", "k_74", "k_75", "k_76", "k_77", "k_78", "k_79",
+        "i_73",
+        "i_74",
+        "i_75",
+        "i_76",
+        "i_77",
+        "i_78",
+        "i_79",
+        // Cooling gains (rows 73-78, subtotal 79)
+        "k_73",
+        "k_74",
+        "k_75",
+        "k_76",
+        "k_77",
+        "k_78",
+        "k_79",
         // Percentages (rows 73-78, subtotal 79)
-        "j_73", "j_74", "j_75", "j_76", "j_77", "j_78", "j_79",
-        "l_73", "l_74", "l_75", "l_76", "l_77", "l_78", "l_79",
+        "j_73",
+        "j_74",
+        "j_75",
+        "j_76",
+        "j_77",
+        "j_78",
+        "j_79",
+        "l_73",
+        "l_74",
+        "l_75",
+        "l_76",
+        "l_77",
+        "l_78",
+        "l_79",
         // Costs (rows 73-78)
-        "p_73", "p_74", "p_75", "p_76", "p_77", "p_78",
+        "p_73",
+        "p_74",
+        "p_75",
+        "p_76",
+        "p_77",
+        "p_78",
         // Utilization factors (rows 80-82)
-        "e_80", "e_81", "e_82"
+        "e_80",
+        "e_81",
+        "e_82",
       ];
 
       calculatedFields.forEach((fieldId) => {
-        const valueToDisplay = this.currentMode === "reference"
-          ? window.TEUI.StateManager.getValue(`ref_${fieldId}`)
-          : window.TEUI.StateManager.getValue(fieldId);
+        const valueToDisplay =
+          this.currentMode === "reference"
+            ? window.TEUI.StateManager.getValue(`ref_${fieldId}`)
+            : window.TEUI.StateManager.getValue(fieldId);
 
         if (valueToDisplay !== null && valueToDisplay !== undefined) {
-          const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+          const element = document.querySelector(
+            `[data-field-id="${fieldId}"]`,
+          );
           if (element) {
             const num = window.TEUI.parseNumeric(valueToDisplay, 0);
-            
+
             // Format based on field type
             let formattedValue;
             if (fieldId.startsWith("m_")) {
@@ -305,9 +344,9 @@ window.TEUI.SectionModules.sect10 = (function () {
             } else {
               formattedValue = formatNumber(num, "number"); // Default
             }
-            
+
             element.textContent = formattedValue;
-            console.log(`[S10DISPLAY] Display (${this.currentMode}) ${fieldId} = ${formattedValue}`);
+            // console.log(`[S10DISPLAY] Display (${this.currentMode}) ${fieldId} = ${formattedValue}`);
           }
         }
       });
@@ -1627,7 +1666,7 @@ window.TEUI.SectionModules.sect10 = (function () {
    */
   function calculateAll() {
     // ✅ DUAL-ENGINE PATTERN: Always run BOTH Target and Reference calculations
-    calculateTargetModel();   // Calculate Target model values
+    calculateTargetModel(); // Calculate Target model values
     calculateReferenceModel(); // Calculate Reference model values
   }
 
@@ -1671,7 +1710,7 @@ window.TEUI.SectionModules.sect10 = (function () {
       // Calculate subtotals for Reference model
       calculateSubtotalsReference();
 
-      // Calculate utilization factors for Reference model  
+      // Calculate utilization factors for Reference model
       calculateUtilizationFactorsReference();
 
       // Store Reference results for other sections
@@ -1693,13 +1732,19 @@ window.TEUI.SectionModules.sect10 = (function () {
   function calculateOrientationGainsReference(rowId) {
     try {
       // Get relevant values using Reference state
-      const area = window.TEUI.parseNumeric(ReferenceState.getValue(`d_${rowId}`)) || 0;
+      const area =
+        window.TEUI.parseNumeric(ReferenceState.getValue(`d_${rowId}`)) || 0;
       const orientation = ReferenceState.getValue(`e_${rowId}`) || "Average";
-      const shgc = window.TEUI.parseNumeric(ReferenceState.getValue(`f_${rowId}`)) || 0.5;
+      const shgc =
+        window.TEUI.parseNumeric(ReferenceState.getValue(`f_${rowId}`)) || 0.5;
 
       // Winter/Summer shading are percentages (0-100), convert to decimal (0-1) for calculation
-      const winterShadingDecimal = (window.TEUI.parseNumeric(ReferenceState.getValue(`g_${rowId}`)) || 0) / 100;
-      const summerShadingDecimal = (window.TEUI.parseNumeric(ReferenceState.getValue(`h_${rowId}`)) || 0) / 100;
+      const winterShadingDecimal =
+        (window.TEUI.parseNumeric(ReferenceState.getValue(`g_${rowId}`)) || 0) /
+        100;
+      const summerShadingDecimal =
+        (window.TEUI.parseNumeric(ReferenceState.getValue(`h_${rowId}`)) || 0) /
+        100;
 
       // EXTERNAL DEPENDENCY: Get Reference Climate Zone from S03 via global state
       const climateZone = getGlobalNumericValue("ref_j_19") || 6.0; // Default to zone 6 if not available
@@ -1710,24 +1755,53 @@ window.TEUI.SectionModules.sect10 = (function () {
       const shgcNormalizationFactor = shgc / 0.5;
 
       // Calculate heating season solar gains
-      const heatingGains = area * gainFactor * shgcNormalizationFactor * (1 - winterShadingDecimal);
+      const heatingGains =
+        area *
+        gainFactor *
+        shgcNormalizationFactor *
+        (1 - winterShadingDecimal);
 
       // Calculate cooling season solar gains
       const coolingModifierFactor = orientation === "Skylight" ? 1.25 : 0.5;
-      const coolingGains = area * gainFactor * shgcNormalizationFactor * (1 - summerShadingDecimal) * coolingModifierFactor;
+      const coolingGains =
+        area *
+        gainFactor *
+        shgcNormalizationFactor *
+        (1 - summerShadingDecimal) *
+        coolingModifierFactor;
 
       // EXTERNAL DEPENDENCY: Get cost from S01 via global state
-      const cost = getGlobalNumericValue("ref_l_12") * (coolingGains - heatingGains);
+      const cost =
+        getGlobalNumericValue("ref_l_12") * (coolingGains - heatingGains);
 
       // Store Reference results in StateManager with ref_ prefix
-      window.TEUI.StateManager.setValue(`ref_m_${rowId}`, gainFactor.toString(), "calculated");
-      window.TEUI.StateManager.setValue(`ref_i_${rowId}`, heatingGains.toString(), "calculated");
-      window.TEUI.StateManager.setValue(`ref_k_${rowId}`, coolingGains.toString(), "calculated");
-      window.TEUI.StateManager.setValue(`ref_p_${rowId}`, cost.toString(), "calculated");
+      window.TEUI.StateManager.setValue(
+        `ref_m_${rowId}`,
+        gainFactor.toString(),
+        "calculated",
+      );
+      window.TEUI.StateManager.setValue(
+        `ref_i_${rowId}`,
+        heatingGains.toString(),
+        "calculated",
+      );
+      window.TEUI.StateManager.setValue(
+        `ref_k_${rowId}`,
+        coolingGains.toString(),
+        "calculated",
+      );
+      window.TEUI.StateManager.setValue(
+        `ref_p_${rowId}`,
+        cost.toString(),
+        "calculated",
+      );
 
-      console.log(`[S10REF] Row${rowId}: Area=${area}, Climate=${climateZone}, GainFactor=${gainFactor}, Heat=${heatingGains.toFixed(2)}, Cool=${coolingGains.toFixed(2)}`);
+      // console.log(`[S10REF] Row${rowId}: Area=${area}, Climate=${climateZone}, GainFactor=${gainFactor}, Heat=${heatingGains.toFixed(2)}, Cool=${coolingGains.toFixed(2)}`);
     } catch (_error) {
-      console.error(`S10: Error calculating Reference orientation gains for row ${rowId}:`, _error);
+      console.error(
+        `S10: Error calculating Reference orientation gains for row ${rowId}:`,
+        _error,
+      );
       // Set error values
       window.TEUI.StateManager.setValue(`ref_m_${rowId}`, "0", "calculated");
       window.TEUI.StateManager.setValue(`ref_i_${rowId}`, "0", "calculated");
@@ -1742,30 +1816,70 @@ window.TEUI.SectionModules.sect10 = (function () {
   function calculateSubtotalsReference() {
     try {
       const heatingGains = [
-        window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("ref_i_73")) || 0,
-        window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("ref_i_74")) || 0,
-        window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("ref_i_75")) || 0,
-        window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("ref_i_76")) || 0,
-        window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("ref_i_77")) || 0,
-        window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("ref_i_78")) || 0,
+        window.TEUI.parseNumeric(
+          window.TEUI.StateManager.getValue("ref_i_73"),
+        ) || 0,
+        window.TEUI.parseNumeric(
+          window.TEUI.StateManager.getValue("ref_i_74"),
+        ) || 0,
+        window.TEUI.parseNumeric(
+          window.TEUI.StateManager.getValue("ref_i_75"),
+        ) || 0,
+        window.TEUI.parseNumeric(
+          window.TEUI.StateManager.getValue("ref_i_76"),
+        ) || 0,
+        window.TEUI.parseNumeric(
+          window.TEUI.StateManager.getValue("ref_i_77"),
+        ) || 0,
+        window.TEUI.parseNumeric(
+          window.TEUI.StateManager.getValue("ref_i_78"),
+        ) || 0,
       ].reduce((sum, val) => sum + val, 0);
 
       const coolingGains = [
-        window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("ref_k_73")) || 0,
-        window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("ref_k_74")) || 0,
-        window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("ref_k_75")) || 0,
-        window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("ref_k_76")) || 0,
-        window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("ref_k_77")) || 0,
-        window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("ref_k_78")) || 0,
+        window.TEUI.parseNumeric(
+          window.TEUI.StateManager.getValue("ref_k_73"),
+        ) || 0,
+        window.TEUI.parseNumeric(
+          window.TEUI.StateManager.getValue("ref_k_74"),
+        ) || 0,
+        window.TEUI.parseNumeric(
+          window.TEUI.StateManager.getValue("ref_k_75"),
+        ) || 0,
+        window.TEUI.parseNumeric(
+          window.TEUI.StateManager.getValue("ref_k_76"),
+        ) || 0,
+        window.TEUI.parseNumeric(
+          window.TEUI.StateManager.getValue("ref_k_77"),
+        ) || 0,
+        window.TEUI.parseNumeric(
+          window.TEUI.StateManager.getValue("ref_k_78"),
+        ) || 0,
       ].reduce((sum, val) => sum + val, 0);
 
       // Store Reference subtotals in StateManager
-      window.TEUI.StateManager.setValue("ref_i_79", heatingGains.toString(), "calculated");
-      window.TEUI.StateManager.setValue("ref_k_79", coolingGains.toString(), "calculated");
-      window.TEUI.StateManager.setValue("ref_j_79", heatingGains > 0 ? "1" : "0", "calculated");
-      window.TEUI.StateManager.setValue("ref_l_79", coolingGains > 0 ? "1" : "0", "calculated");
+      window.TEUI.StateManager.setValue(
+        "ref_i_79",
+        heatingGains.toString(),
+        "calculated",
+      );
+      window.TEUI.StateManager.setValue(
+        "ref_k_79",
+        coolingGains.toString(),
+        "calculated",
+      );
+      window.TEUI.StateManager.setValue(
+        "ref_j_79",
+        heatingGains > 0 ? "1" : "0",
+        "calculated",
+      );
+      window.TEUI.StateManager.setValue(
+        "ref_l_79",
+        coolingGains > 0 ? "1" : "0",
+        "calculated",
+      );
 
-      console.log(`[S10REF] Subtotals: Heat=${heatingGains.toFixed(2)}, Cool=${coolingGains.toFixed(2)}`);
+      // console.log(`[S10REF] Subtotals: Heat=${heatingGains.toFixed(2)}, Cool=${coolingGains.toFixed(2)}`);
     } catch (_error) {
       console.error("S10: Error calculating Reference subtotals:", _error);
     }
@@ -1778,7 +1892,10 @@ window.TEUI.SectionModules.sect10 = (function () {
     try {
       // Get Reference internal gains from S09 (critical for E80/E81 Excel formula)
       const internalGains = getGlobalNumericValue("ref_i_71") || 0;
-      const subtotalHeating = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("ref_i_79")) || 0;
+      const subtotalHeating =
+        window.TEUI.parseNumeric(
+          window.TEUI.StateManager.getValue("ref_i_79"),
+        ) || 0;
 
       // Excel formula: E80 = I71 + I79 (Reference version)
       const utilizationE80 = internalGains + subtotalHeating;
@@ -1786,13 +1903,28 @@ window.TEUI.SectionModules.sect10 = (function () {
       const utilizationE82 = 50.0; // Default or specific Reference logic
 
       // Store Reference utilization factors in StateManager
-      window.TEUI.StateManager.setValue("ref_e_80", utilizationE80.toString(), "calculated");
-      window.TEUI.StateManager.setValue("ref_e_81", utilizationE81.toString(), "calculated");
-      window.TEUI.StateManager.setValue("ref_e_82", utilizationE82.toString(), "calculated");
+      window.TEUI.StateManager.setValue(
+        "ref_e_80",
+        utilizationE80.toString(),
+        "calculated",
+      );
+      window.TEUI.StateManager.setValue(
+        "ref_e_81",
+        utilizationE81.toString(),
+        "calculated",
+      );
+      window.TEUI.StateManager.setValue(
+        "ref_e_82",
+        utilizationE82.toString(),
+        "calculated",
+      );
 
-      console.log(`[S10REF] Utilization: E80=${utilizationE80.toFixed(2)} (ref_i_71=${internalGains} + ref_i_79=${subtotalHeating}), E81=${utilizationE81.toFixed(2)}, E82=${utilizationE82.toFixed(2)}`);
+      // console.log(`[S10REF] Utilization: E80=${utilizationE80.toFixed(2)} (ref_i_71=${internalGains} + ref_i_79=${subtotalHeating}), E81=${utilizationE81.toFixed(2)}, E82=${utilizationE82.toFixed(2)}`);
     } catch (_error) {
-      console.error("S10: Error calculating Reference utilization factors:", _error);
+      console.error(
+        "S10: Error calculating Reference utilization factors:",
+        _error,
+      );
     }
   }
 
@@ -1802,7 +1934,7 @@ window.TEUI.SectionModules.sect10 = (function () {
   function storeReferenceResults() {
     // All Reference values are already stored in StateManager with ref_ prefix
     // This function exists for consistency with the architectural pattern
-    console.log("[S10REF] Reference results stored for downstream sections");
+    // console.log("[S10REF] Reference results stored for downstream sections");
   }
 
   /**
@@ -2303,7 +2435,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           calculateAll();
           ModeManager.updateCalculatedDisplayValues(); // ✅ ADD: Update DOM after calculations
         });
-        
+
         // ✅ ADD: Listen for Reference external dependencies
         window.TEUI.StateManager.addListener(`ref_${fieldId}`, function () {
           console.log(
@@ -2324,8 +2456,8 @@ window.TEUI.SectionModules.sect10 = (function () {
           calculateUtilizationFactors();
           ModeManager.updateCalculatedDisplayValues(); // ✅ ADD: Update DOM after calculations
         });
-        
-        // ✅ ADD: Reference utilization factor dependencies  
+
+        // ✅ ADD: Reference utilization factor dependencies
         window.TEUI.StateManager.addListener(`ref_${lossField}`, function () {
           console.log(
             `S10: Reference utilization factor dependency ref_${lossField} changed.`,
