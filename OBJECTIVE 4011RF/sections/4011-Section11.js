@@ -1049,6 +1049,11 @@ window.TEUI.SectionModules.sect11 = (function () {
           const global_cdd = getGlobalNumericValue("d_21");
           heatgainMultiplier = (ref_cdd || global_cdd || 0) * 24;
 
+          // 🔍 CRITICAL DIAGNOSTIC: What values is Reference calculation actually using?
+          if (rowNumber === 85) {
+            console.log(`[S11DEBUG] 🔥 REF CALC USING: ref_d_20=${ref_hdd}, d_20=${global_hdd}, final_hdd=${hdd}, ref_d_21=${ref_cdd}, final_multiplier=${heatgainMultiplier}`);
+          }
+
           // 🔍 S11 REFERENCE CONTAMINATION TRACKER
           // console.log(`🔍 S11 REFERENCE: HDD=${hdd} (ref_d_20=${ref_hdd}, global_d_20=${global_hdd})`);
           // console.log(`🔍 S11 REFERENCE: CDD=${heatgainMultiplier/24} (ref_d_21=${ref_cdd}, global_d_21=${global_cdd})`);
@@ -1122,6 +1127,11 @@ window.TEUI.SectionModules.sect11 = (function () {
 
       // For Reference calculations, return the calculated values
       if (isReferenceCalculation) {
+        // 🔍 CRITICAL DIAGNOSTIC: Final Reference calculation inputs and result
+        if (rowNumber === 85) {
+          console.log(`[S11DEBUG] 🔥 REF CALC RESULT i_85: area=${area}, hdd=${hdd}, rsi=${rsiValue}, denominator=${denominator}, calcHeatloss=${calcHeatloss}`);
+          console.log(`[S11DEBUG] 🔥 REF FORMULA: (${area} * ${hdd} * 24) / ${denominator} = ${calcHeatloss}`);
+        }
         return { heatloss: calcHeatloss, heatgain: calcHeatgain };
       }
 
