@@ -503,4 +503,242 @@ const climateZone = ModeManager.currentMode === "reference"
 
 ---
 
+## **🎯 COMPREHENSIVE S11 WORKPLAN - BASED ON SYSTEMATIC AUDIT**
+
+**Date**: December 29, 2024  
+**Status**: **CRITICAL ARCHITECTURAL DEFICIENCIES IDENTIFIED**  
+**Approach**: Complete Pattern A implementation required (not simple S10-style fixes)
+
+### **📋 SYSTEMATIC AUDIT RESULTS**
+
+#### **✅ AUDIT PASSES:**
+- **Phase 1**: ✅ No general `target_` contamination patterns
+- **Phase 4**: ✅ Core calculation functions exist (`calculateComponentRow`, `calculateThermalBridgePenalty`)
+
+#### **❌ CRITICAL AUDIT FAILURES:**
+
+##### **🚨 Phase 2: Pattern B Contamination (CRITICAL)**
+- **Lines 1040-1045**: Uses `target_d_20`, `target_d_21` (Pattern B anti-pattern)
+- **Line 1069**: Uses `target_d_22`
+- **ROOT CAUSE**: Should use `d_20` for Target, `ref_d_20` for Reference
+
+##### **🚨 Phase 3: Missing DOM Updates (CRITICAL)**
+- **NO `setCalculatedValue()` calls found** - DOM updates completely missing
+- **Missing ModeManager export** - FieldManager routing failures
+
+##### **🚨 Phase 5: Incomplete Dual-State Architecture (CRITICAL)**
+- **NO `ReferenceState` object** - Fundamental Pattern A violation
+- **NO `ModeManager` object** - Missing facade for dual-state routing
+- **Only has `TargetState`** - Section is hybrid Pattern A/B implementation
+
+### **🎯 STRATEGIC DIAGNOSIS**
+
+**S11 is fundamentally incomplete** - requires **full Pattern A implementation**, not simple S10-style mode-awareness fixes.
+
+**S11 Current State**: Hybrid between Pattern A and Pattern B
+- ✅ **Has**: `TargetState`, dual-engine `calculateAll()`
+- ❌ **Missing**: `ReferenceState`, `ModeManager`, DOM updates, proper external reads
+
+**S10 vs S11 Comparison**:
+- **S10**: Had complete Pattern A architecture, just needed mode-awareness fixes
+- **S11**: Missing fundamental Pattern A components - needs architectural completion
+
+---
+
+## **🛠️ S11 IMPLEMENTATION WORKPLAN**
+
+### **🔧 PHASE 1: Foundation Architecture (30 minutes)**
+
+#### **1.1 Add ReferenceState Object**
+```javascript
+const ReferenceState = {
+  state: {},
+  listeners: {},
+  initialize: function() {
+    const savedState = localStorage.getItem("S11_REFERENCE_STATE");
+    if (savedState) {
+      this.state = JSON.parse(savedState);
+    } else {
+      this.setDefaults();
+    }
+  },
+  setDefaults: function() {
+    // Copy TargetState defaults, apply ReferenceValues overlays
+    this.state = { /* ... same fields as TargetState ... */ };
+  },
+  getValue: function(fieldId) { /* ... */ },
+  setValue: function(fieldId, value, source) { /* ... */ },
+  save: function() { /* ... */ }
+};
+```
+
+#### **1.2 Add ModeManager Facade**
+```javascript
+const ModeManager = {
+  currentMode: "target",
+  switchMode: function(mode) { /* ... */ },
+  getValue: function(fieldId) { /* ... mode-aware */ },
+  setValue: function(fieldId, value, source) { /* ... mode-aware */ },
+  refreshUI: function() { /* ... */ },
+  updateCalculatedDisplayValues: function() { /* ... */ }
+};
+```
+
+#### **1.3 Export ModeManager**
+```javascript
+return {
+  // ... existing exports ...
+  ModeManager: ModeManager,  // ✅ CRITICAL FIX
+};
+```
+
+### **🔧 PHASE 2: Fix Pattern B Contamination (15 minutes)**
+
+#### **2.1 Replace target_ Prefixed Reads**
+**Location**: Lines 1040-1045, 1069
+```javascript
+// ❌ CURRENT (Pattern B):
+const target_hdd = getGlobalNumericValue("target_d_20");
+
+// ✅ CORRECT (Pattern A):
+const hdd = isReferenceCalculation
+  ? getGlobalNumericValue("ref_d_20") || 0
+  : getGlobalNumericValue("d_20") || 0;
+```
+
+### **🔧 PHASE 3: Add DOM Update System (20 minutes)**
+
+#### **3.1 Add setCalculatedValue Helper**
+```javascript
+function setCalculatedValue(fieldId, value, format) {
+  // Store in appropriate state via ModeManager
+  ModeManager.setValue(fieldId, value, "calculated");
+  
+  // Update DOM with formatted value
+  const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+  if (element) {
+    element.textContent = formatValue(value, format);
+  }
+}
+```
+
+#### **3.2 Add DOM Updates to calculateComponentRow**
+```javascript
+// In calculateComponentRow() - ADD these calls:
+setCalculatedValue(uValueFieldId, uValue, "W/m2");
+setCalculatedValue(rsiFieldId, rsiValue, "number");
+setCalculatedValue(`i_${rowId}`, heatloss, "number");
+setCalculatedValue(`k_${rowId}`, heatgain, "number");
+```
+
+#### **3.3 Implement updateCalculatedDisplayValues**
+```javascript
+updateCalculatedDisplayValues: function() {
+  const calculatedFields = [
+    "i_85", "k_85", "g_85", "f_85",  // All calculated fields
+    "i_86", "k_86", "g_86", "f_86",
+    // ... all component rows 85-96
+    "i_97", "k_97", "i_98", "k_98"   // Totals and penalties
+  ];
+  
+  calculatedFields.forEach((fieldId) => {
+    const value = this.currentMode === "reference"
+      ? window.TEUI.StateManager.getValue(`ref_${fieldId}`)
+      : window.TEUI.StateManager.getValue(fieldId);
+    // Update DOM element
+  });
+}
+```
+
+### **🔧 PHASE 4: Add Reference External Listeners (10 minutes)**
+
+#### **4.1 Add Climate Listeners (Already Done)**
+```javascript
+// ✅ ALREADY COMPLETED in earlier sessions
+["ref_d_20", "ref_d_21", "ref_d_22", "ref_h_22"].forEach(fieldId => {
+  StateManager.addListener(fieldId, calculateAll);
+});
+```
+
+### **🔧 PHASE 5: Integration & Testing (15 minutes)**
+
+#### **5.1 Initialize Dual-State Objects**
+```javascript
+// In onSectionRendered():
+TargetState.initialize();
+ReferenceState.initialize();   // ✅ ADD
+ModeManager.initialize();      // ✅ ADD
+calculateAll();
+ModeManager.updateCalculatedDisplayValues();
+```
+
+#### **5.2 Connect Event Handlers**
+```javascript
+// TB% slider and all user inputs should call:
+ModeManager.setValue(fieldId, value, "user-modified");
+calculateAll();
+ModeManager.updateCalculatedDisplayValues();
+```
+
+---
+
+## **🧪 TESTING PROTOCOL**
+
+### **Test Sequence A: Foundation**
+1. ✅ **ModeManager Export**: No FieldManager warnings
+2. ✅ **State Initialization**: Both TargetState and ReferenceState load
+3. ✅ **Mode Switching**: Toggle between Target/Reference works
+
+### **Test Sequence B: Calculations**
+1. ✅ **External Dependencies**: S03 climate changes trigger S11 calculations
+2. ✅ **Internal Dependencies**: TB% slider changes trigger calculations
+3. ✅ **Dual-Engine**: Both Target and Reference calculations run in parallel
+
+### **Test Sequence C: Display**
+1. ✅ **DOM Updates**: All calculated fields update immediately
+2. ✅ **Mode Isolation**: Reference mode shows different values than Target
+3. ✅ **State Persistence**: Mode switching preserves individual state values
+
+### **Test Sequence D: Integration**
+1. ✅ **No 23,812.91**: Contaminated value never appears
+2. ✅ **S11→S12 Flow**: Reference changes propagate to downstream sections
+3. ✅ **No Regressions**: Target mode remains fully functional
+
+---
+
+## **⚠️ IMPLEMENTATION CONSTRAINTS**
+
+### **Critical Order Requirements**
+1. **Foundation First**: Complete Phase 1 before any other changes
+2. **Test Each Phase**: Verify working before proceeding to next phase
+3. **Preserve Calculations**: Don't modify Excel formula logic
+4. **Use S11-BACKUP.js**: Revert reference available if needed
+
+### **Success Criteria**
+- **Immediate**: TB% slider changes update S11 Reference UI
+- **Intermediate**: Complete state isolation between modes
+- **Final**: S11 matches S02/S10 Pattern A compliance
+
+### **Rollback Protocol**
+- **Any regression**: `git restore sections/4011-Section11.js`
+- **Reference backup**: Copy from `sections/S11-BACKUP.js`
+- **Incremental fixes**: Apply only verified working changes
+
+---
+
+## **📊 ESTIMATED EFFORT**
+
+**Total Implementation Time**: ~90 minutes
+- **Phase 1 (Foundation)**: 30 minutes
+- **Phase 2 (Pattern B fixes)**: 15 minutes  
+- **Phase 3 (DOM updates)**: 20 minutes
+- **Phase 4 (Listeners)**: 10 minutes
+- **Phase 5 (Integration)**: 15 minutes
+
+**Risk Level**: **Medium** - Well-defined architecture pattern, clear requirements
+
+**Dependencies**: None - S11 self-contained implementation
+
+---
+
 **End of S11 Comprehensive Troubleshooting Guide**
