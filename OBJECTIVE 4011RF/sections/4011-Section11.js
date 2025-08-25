@@ -1033,8 +1033,8 @@ window.TEUI.SectionModules.sect11 = (function () {
           heatgainMultiplier = (ref_cdd || global_cdd || 0) * 24;
 
           // 🔍 S11 REFERENCE CONTAMINATION TRACKER
-          // console.log(`🔍 S11 REFERENCE: HDD=${hdd} (ref_d_20=${ref_hdd}, global_d_20=${global_hdd})`);
-          // console.log(`🔍 S11 REFERENCE: CDD=${heatgainMultiplier/24} (ref_d_21=${ref_cdd}, global_d_21=${global_cdd})`);
+          console.log(`[S11DEBUG] REF CALC: HDD=${hdd} (ref_d_20=${ref_hdd}, global_d_20=${global_hdd})`);
+          console.log(`[S11DEBUG] REF CALC: CDD=${heatgainMultiplier/24} (ref_d_21=${ref_cdd}, global_d_21=${global_cdd})`);
         } else {
           // Target calculations: read target_ prefixed climate data
           const target_hdd = getGlobalNumericValue("target_d_20");
@@ -1708,10 +1708,26 @@ window.TEUI.SectionModules.sect11 = (function () {
       window.TEUI.StateManager.addListener("d_22", calculateAll); // GF HDD (affects ground loss)
 
       // ✅ ADDED: Listeners for REFERENCE climate data to trigger Reference Model recalculation
-      window.TEUI.StateManager.addListener("ref_d_20", calculateAll);
-      window.TEUI.StateManager.addListener("ref_d_21", calculateAll);
-      window.TEUI.StateManager.addListener("ref_h_22", calculateAll);
-      window.TEUI.StateManager.addListener("ref_d_22", calculateAll);
+      window.TEUI.StateManager.addListener("ref_d_20", (newValue) => {
+        console.log(`[S11DEBUG] Reference HDD changed: ref_d_20=${newValue} → triggering Reference calculations`);
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
+      });
+      window.TEUI.StateManager.addListener("ref_d_21", (newValue) => {
+        console.log(`[S11DEBUG] Reference CDD changed: ref_d_21=${newValue} → triggering Reference calculations`);
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
+      });
+      window.TEUI.StateManager.addListener("ref_h_22", (newValue) => {
+        console.log(`[S11DEBUG] Reference GF CDD changed: ref_h_22=${newValue} → triggering Reference calculations`);
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
+      });
+      window.TEUI.StateManager.addListener("ref_d_22", (newValue) => {
+        console.log(`[S11DEBUG] Reference GF HDD changed: ref_d_22=${newValue} → triggering Reference calculations`);
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
+      });
 
       window.TEUI.StateManager.addListener("i_21", calculateAll); // Capacitance Factor (affects ground gain)
       window.TEUI.StateManager.addListener("d_97", (val, _old, _id, src) => {

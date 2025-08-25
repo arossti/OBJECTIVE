@@ -2373,6 +2373,24 @@ window.TEUI.SectionModules.sect12 = (function () {
       updateAllReferenceIndicators();
     });
 
+    // ✅ CRITICAL: Listen for Reference climate data changes to trigger recalculation
+    window.TEUI.StateManager.addListener("ref_d_20", (newValue) => {
+      console.log(`[S12DEBUG] Reference HDD changed: ref_d_20=${newValue} → triggering Reference calculations`);
+      calculateAll();
+    });
+    window.TEUI.StateManager.addListener("ref_d_21", (newValue) => {
+      console.log(`[S12DEBUG] Reference CDD changed: ref_d_21=${newValue} → triggering Reference calculations`);
+      calculateAll();
+    });
+    window.TEUI.StateManager.addListener("ref_d_22", (newValue) => {
+      console.log(`[S12DEBUG] Reference GF HDD changed: ref_d_22=${newValue} → triggering Reference calculations`);
+      calculateAll();
+    });
+    window.TEUI.StateManager.addListener("ref_h_22", (newValue) => {
+      console.log(`[S12DEBUG] Reference GF CDD changed: ref_h_22=${newValue} → triggering Reference calculations`);
+      calculateAll();
+    });
+
     s12ListenersAdded = true;
     // console.log("[S12 DEBUG] StateManager listeners HAVE BEEN ADDED."); // REMOVE DEBUG LOG
   }
