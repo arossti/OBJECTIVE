@@ -1563,6 +1563,12 @@ window.TEUI.SectionModules.sect11 = (function () {
     // Refresh displayed values according to current mode
     if (typeof ModeManager.updateCalculatedDisplayValues === "function") {
       ModeManager.updateCalculatedDisplayValues();
+      
+      // 🔍 DIAGNOSTIC: Check stored vs displayed values
+      const storedTarget = window.TEUI.StateManager.getValue("i_85") || "NOT_FOUND";
+      const storedRef = window.TEUI.StateManager.getValue("ref_i_85") || "NOT_FOUND";
+      const domValue = document.querySelector('[data-field-id="i_85"]')?.textContent || "NOT_FOUND";
+      console.log(`[S11DEBUG] 📊 STORED: Target i_85=${storedTarget}, Reference ref_i_85=${storedRef}, DOM shows=${domValue}, currentMode=${ModeManager.currentMode}`);
     }
     // console.warn("S11: Dual-engine calculations complete"); // This was already commented
   }
@@ -1722,7 +1728,9 @@ window.TEUI.SectionModules.sect11 = (function () {
       // ✅ ADDED: Listeners for REFERENCE climate data to trigger Reference Model recalculation
       window.TEUI.StateManager.addListener("ref_d_20", (newValue) => {
         console.log(`[S11DEBUG] Reference HDD changed: ref_d_20=${newValue} → triggering Reference calculations`);
+        console.log(`[S11DEBUG] 🎯 CRITICAL: S11 currentMode=${ModeManager.currentMode} when ref_d_20 changed`);
         calculateAll();
+        console.log(`[S11DEBUG] 🔍 AFTER calculateAll: i_85 DOM = ${document.querySelector('[data-field-id="i_85"]')?.textContent || 'NOT_FOUND'}`);
       });
       window.TEUI.StateManager.addListener("ref_d_21", (newValue) => {
         console.log(`[S11DEBUG] Reference CDD changed: ref_d_21=${newValue} → triggering Reference calculations`);
