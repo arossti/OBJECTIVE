@@ -1804,6 +1804,9 @@ window.TEUI.SectionModules.sect15 = (function () {
         "calculated",
       );
 
+      // 🚨 DISABLED: S15 overriding S01's h_10 calculation causes race condition
+      // S01 should be the sole owner of h_10, calculating from fresh j_32 via S04
+      /*
       // Trigger Section 01's specialized display update if available
       if (window.TEUI?.SectionModules?.sect01?.updateDisplayValue) {
         const formattedValue =
@@ -1814,6 +1817,7 @@ window.TEUI.SectionModules.sect15 = (function () {
           formattedValue,
         );
       }
+      */
 
       // d_137: =(G101*D101+D102*G102)*(H23-D23)/1000
       let peakHeatingLoad_d137 =

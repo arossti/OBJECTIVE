@@ -435,9 +435,21 @@ window.TEUI.SectionModules.sect01 = (function () {
   }
 
   function updateDisplayValue(fieldId, value, tierOverride = null) {
-    // 🔧 DEBUG: Track h_10 display updates 
+    // 🔧 DEBUG: Enhanced logging for h_10 display tracking with stack trace
     if (fieldId === "h_10") {
       console.log(`[S01DB] 🖥️ updateDisplayValue(h_10): value=${value}, tierOverride=${tierOverride}`);
+      
+      // 🚨 CRITICAL: If we're getting the wrong value (70.8), show stack trace
+      if (value === "70.8" || value === 70.8) {
+        console.log(`[S01DB] 🚨 RACE CONDITION DETECTED! 70.8 overwrite from:`);
+        console.trace(`[S01DB] Stack trace for 70.8 overwrite:`);
+      }
+      
+      // 🎯 Also trace correct values to confirm our calculation path
+      if (value && (value.toString().startsWith("163") || value.toString().startsWith("160"))) {
+        console.log(`[S01DB] ✅ CORRECT VALUE from:`);
+        console.trace(`[S01DB] Stack trace for correct value:`);
+      }
     }
     
     const element = document.querySelector(
