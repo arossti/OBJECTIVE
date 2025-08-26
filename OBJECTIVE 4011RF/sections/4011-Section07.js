@@ -1116,17 +1116,18 @@ window.TEUI.SectionModules.sect07 = (function () {
     console.log(`[S07] Setting d_52 slider: min=${newMinValue}, max=${newMaxValue}, value=${newValue}`);
     
     if (window.TEUI?.StateManager) {
-      window.TEUI.StateManager.setValue(
-        "d_52",
-        newValue.toString(),
-        "system-update",
-      );
-      window.TEUI.StateManager.setValue(
-        `ref_d_52`,
-        newValue.toString(),
-        "system-update",
-      );
-      console.log(`[S07] Updated StateManager d_52 = ${newValue}`);
+      if (selectedSource === "Gas" || selectedSource === "Oil") {
+        // 🔧 Gas/Oil: Update k_52 (AFUE field) - d_52 slider not used for these
+        const afueValue = (newValue / 100).toFixed(2); // Convert 90% to 0.90
+        window.TEUI.StateManager.setValue("k_52", afueValue, "system-update");
+        window.TEUI.StateManager.setValue(`ref_k_52`, afueValue, "system-update");
+        console.log(`[S07] Updated ${selectedSource}: k_52=${afueValue} (AFUE)`);
+      } else {
+        // 🔧 Electric/Heatpump: Update d_52 (efficiency slider)  
+        window.TEUI.StateManager.setValue("d_52", newValue.toString(), "system-update");
+        window.TEUI.StateManager.setValue(`ref_d_52`, newValue.toString(), "system-update");
+        console.log(`[S07] Updated ${selectedSource}: d_52=${newValue}% (efficiency)`);
+      }
     }
     if (d52Slider) {
       d52Slider.min = newMinValue;
@@ -1141,8 +1142,13 @@ window.TEUI.SectionModules.sect07 = (function () {
         console.log(`[S07] Updated slider display: ${selectedSource} → d_52=${newValue}%`);
       }
       
-      // 🔧 CRITICAL: Update local state and trigger recalculation
-      ModeManager.setValue("d_52", newValue.toString(), "system-update");
+      // 🔧 CRITICAL: Update local state based on fuel type
+      if (selectedSource === "Gas" || selectedSource === "Oil") {
+        const afueValue = (newValue / 100).toFixed(2);
+        ModeManager.setValue("k_52", afueValue, "system-update");
+      } else {
+        ModeManager.setValue("d_52", newValue.toString(), "system-update");
+      }
       calculateAll();
       ModeManager.updateCalculatedDisplayValues();
     } else {
