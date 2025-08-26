@@ -435,10 +435,20 @@ window.TEUI.SectionModules.sect01 = (function () {
   }
 
   function updateDisplayValue(fieldId, value, tierOverride = null) {
+    // 🔧 DEBUG: Track h_10 display updates 
+    if (fieldId === "h_10") {
+      console.log(`[S01DB] 🖥️ updateDisplayValue(h_10): value=${value}, tierOverride=${tierOverride}`);
+    }
+    
     const element = document.querySelector(
       `[data-field-id="${fieldId}"] .key-value, [data-field-id="${fieldId}"] .percent-value`,
     );
-    if (!element) return;
+    if (!element) {
+      if (fieldId === "h_10") {
+        console.log(`[S01DB] ❌ h_10 element NOT FOUND in DOM!`);
+      }
+      return;
+    }
 
     const fieldsToAnimate = ["h_10", "k_10", "e_10"];
 
@@ -721,6 +731,8 @@ window.TEUI.SectionModules.sect01 = (function () {
       }
     }
 
+    // 🔧 DEBUG: Track h_10 update call
+    console.log(`[S01DB] 📞 About to call updateDisplayValue("h_10", "${h10Formatted}", "${calculatedTier}")`);
     updateDisplayValue("h_10", h10Formatted, calculatedTier);
     updateDisplayValue("h_8", h8Formatted);
     updateDisplayValue("h_6", h6Formatted);
