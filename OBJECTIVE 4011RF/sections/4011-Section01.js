@@ -735,15 +735,17 @@ window.TEUI.SectionModules.sect01 = (function () {
     console.log(`[S01DB] 📞 About to call updateDisplayValue("h_10", "${h10Formatted}", "${calculatedTier}")`);
     updateDisplayValue("h_10", h10Formatted, calculatedTier);
     
-    // 🔍 RACE CONDITION DEBUG: Check actual DOM value after update
+    // 🔍 RACE CONDITION DEBUG: Check actual DOM value after animation completes
     setTimeout(() => {
       const h10Element = document.querySelector('[data-field-id="h_10"] .key-value');
       const domValue = h10Element ? h10Element.textContent.trim() : 'NOT FOUND';
       console.log(`[S01DB] 🚨 DOM CHECK: h_10 element shows "${domValue}" after updateDisplayValue("${h10Formatted}")`);
       if (!domValue.includes(h10Formatted)) {
         console.log(`[S01DB] ❌ RACE CONDITION DETECTED: Expected "${h10Formatted}" but DOM shows "${domValue}"`);
+      } else {
+        console.log(`[S01DB] ✅ DOM UPDATE SUCCESS: h_10 correctly shows "${domValue}"`);
       }
-    }, 50);
+    }, 600); // Wait 600ms for 500ms animation + 100ms buffer
     updateDisplayValue("h_8", h8Formatted);
     updateDisplayValue("h_6", h6Formatted);
 
