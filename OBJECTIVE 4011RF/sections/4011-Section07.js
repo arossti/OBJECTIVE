@@ -561,6 +561,8 @@ window.TEUI.SectionModules.sect07 = (function () {
     }
   }
 
+
+
   function getFieldFormat(fieldId) {
     const formatMap = {
       h_49: "number-2dp",
