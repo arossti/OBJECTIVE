@@ -737,10 +737,10 @@ window.TEUI.SectionModules.sect01 = (function () {
     
     // 🔍 RACE CONDITION DEBUG: Check actual DOM value after update
     setTimeout(() => {
-      const h10Element = document.querySelector('[data-field-id="h_10"] .numeric-value');
-      const domValue = h10Element ? h10Element.textContent : 'NOT FOUND';
+      const h10Element = document.querySelector('[data-field-id="h_10"] .key-value');
+      const domValue = h10Element ? h10Element.textContent.trim() : 'NOT FOUND';
       console.log(`[S01DB] 🚨 DOM CHECK: h_10 element shows "${domValue}" after updateDisplayValue("${h10Formatted}")`);
-      if (domValue !== h10Formatted) {
+      if (!domValue.includes(h10Formatted)) {
         console.log(`[S01DB] ❌ RACE CONDITION DETECTED: Expected "${h10Formatted}" but DOM shows "${domValue}"`);
       }
     }, 50);

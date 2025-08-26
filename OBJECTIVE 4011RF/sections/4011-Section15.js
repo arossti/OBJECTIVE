@@ -1792,12 +1792,16 @@ window.TEUI.SectionModules.sect15 = (function () {
       // console.log(`🔍 S15 TARGET ENGINE: Setting h_10 = ${teui_h136} (should be stable ~93.6)`);
       // console.log(`🔍 S15 TARGET ENGINE: ** TARGET h_10 SHOULD NEVER CHANGE WHEN REFERENCE MODE LOCATION CHANGES **`);
 
+      // 🚨 DISABLED: S15 overriding S01's h_10 calculation causes race condition
+      // S01 should be the sole owner of h_10, calculating from fresh j_32 via S04
+      /*
       // Store in StateManager but let Section 01 handle the display
       window.TEUI.StateManager?.setValue(
         "h_10",
         teui_h136.toString(),
         "calculated",
       );
+      */
       window.TEUI.StateManager?.setValue(
         "target_h_10",
         teui_h136.toString(),
