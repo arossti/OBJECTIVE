@@ -743,15 +743,17 @@ window.TEUI.SectionModules.sect07 = (function () {
       const conversionFactor = 10.3321;
       gasVolume =
         afue > 0 ? netDemandAfterRecovery / (conversionFactor * afue) : 0;
-      console.log(`[S07] 🔥 Gas calc: demand=${netDemandAfterRecovery}, afue=${afue} → e_51=${gasVolume}`);
+      console.log(`[S07] 🔥 Gas calc: demand=${netDemandAfterRecovery}, afue=${afue} → e_51=${gasVolume}, k_54=0 (cleared)`);
     } else if (systemType === "Oil") {
       const conversionFactor = 10.18; // 36.72 * 0.2777778
       oilVolume =
         afue > 0 ? netDemandAfterRecovery / (conversionFactor * afue) : 0;
-      console.log(`[S07] 🛢️ Oil calc: demand=${netDemandAfterRecovery}, afue=${afue} → k_54=${oilVolume}`);
+      console.log(`[S07] 🛢️ Oil calc: demand=${netDemandAfterRecovery}, afue=${afue} → k_54=${oilVolume}, e_51=0 (cleared)`);
     } else {
-      console.log(`[S07] ⚡ Non-fossil fuel: ${systemType} → no gas/oil volumes`);
+      console.log(`[S07] ⚡ Non-fossil fuel: ${systemType} → e_51=0, k_54=0 (both cleared)`);
     }
+    
+    // 🔧 CRITICAL: Always set BOTH values - zero out the non-selected fuel to prevent contamination
     setSectionValue("e_51", gasVolume, isReferenceCalculation);
     setSectionValue("k_54", oilVolume, isReferenceCalculation);
 
