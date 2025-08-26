@@ -1576,9 +1576,14 @@ window.TEUI.SectionModules.sect12 = (function () {
 
     // Update ratio value with standard formatter
     setCalculatedValue("l_107", l107, "percent-0dp", isReferenceCalculation);
+
+    return {
+      d_107: wwr,
+      l_107: l107,
+    };
   }
 
-  function calculateACH50Target(isReferenceCalculation = false) {
+  function calculateACH50Target(isReferenceCalculation = false, volumeResults) {
     // ✅ DUAL-ENGINE: Use correct state based on calculation context
     const d108_method = getSectionValue("d_108", isReferenceCalculation);
 
@@ -1588,7 +1593,7 @@ window.TEUI.SectionModules.sect12 = (function () {
         getSectionValue("g_109", isReferenceCalculation),
       ) || 0,
     );
-    const d101_areaAir = parseFloat(getNumericValue("d_101"));
+    const d101_areaAir = volumeResults.d_101;
     const d105_vol = parseFloat(
       window.TEUI.parseNumeric(
         getSectionValue("d_105", isReferenceCalculation),
@@ -1642,18 +1647,24 @@ window.TEUI.SectionModules.sect12 = (function () {
     setCalculatedValue("d_109", ach50Target, "number-2dp", isReferenceCalculation);
 
     // Calculate ratio with full precision
-    const targetACH = parseFloat(getNumericValue("d_109"));
+    const targetACH = ach50Target;
     const measuredACH =
       d108_method === "MEASURED" ? g109_measured : ach50Target;
     const l109 = targetACH > 0 ? measuredACH / targetACH : 0;
 
     // Update ratio with standard formatter
     setCalculatedValue("l_109", l109, "percent-0dp", isReferenceCalculation);
+
+    return {
+      g_108: g108_nrl50Target,
+      d_109: ach50Target,
+      l_109: l109,
+    };
   }
 
-  function calculateAe10(isReferenceCalculation = false) {
+  function calculateAe10(isReferenceCalculation = false, volumeResults, ach50Results) {
     // Get values with full precision
-    const ach50Target = parseFloat(getNumericValue("d_109"));
+    const ach50Target = ach50Results.d_109;
     // ✅ DUAL-ENGINE: Use correct state based on calculation context
     const volume = parseFloat(
       window.TEUI.parseNumeric(
@@ -1673,6 +1684,11 @@ window.TEUI.SectionModules.sect12 = (function () {
 
     // Update ratio with standard formatter
     setCalculatedValue("l_110", l110, "percent-0dp", isReferenceCalculation);
+
+    return {
+      d_110: ae10,
+      l_110: l110,
+    };
   }
 
   function calculateNFactor(isReferenceCalculation = false) {
@@ -1738,12 +1754,17 @@ window.TEUI.SectionModules.sect12 = (function () {
 
     // Update n-factor with standard formatter
     setCalculatedValue("g_110", nFactor, "number-1dp", isReferenceCalculation);
+
+    return {
+      i_110: zoneNum,
+      g_110: nFactor,
+    };
   }
 
-  function calculateAirLeakageHeatLoss(isReferenceCalculation = false) {
+  function calculateAirLeakageHeatLoss(isReferenceCalculation = false, volumeResults, ach50Results, nFactorResults) {
     // Get necessary values with full precision using parseFloat
-    const g108_nrl50Target = parseFloat(getNumericValue("g_108")); // NRL50 Target (L/s*m2)
-    const g110_nFactor = parseFloat(getNumericValue("g_110"));
+    const g108_nrl50Target = ach50Results.g_108; // NRL50 Target (L/s*m2)
+    const g110_nFactor = nFactorResults.g_110;
 
     // ✅ FIX: Read climate data based on calculation type (S03 canonical pattern)
     let d20_hdd, d21_cdd;
@@ -1757,7 +1778,7 @@ window.TEUI.SectionModules.sect12 = (function () {
       d21_cdd = getGlobalNumericValue("d_21");
     }
 
-    const d101_areaAir = parseFloat(getNumericValue("d_101"));
+    const d101_areaAir = volumeResults.d_101;
     const h15_conditionedArea = parseFloat(getGlobalNumericValue("h_15")); // Get Conditioned Floor Area from S2
 
     // Constants from Excel formula structure
@@ -1788,12 +1809,12 @@ window.TEUI.SectionModules.sect12 = (function () {
     };
   }
 
-  function calculateEnvelopeHeatLossGain(isReferenceCalculation = false) {
+  function calculateEnvelopeHeatLossGain(isReferenceCalculation = false, volumeResults, uValueResults) {
     // Get values with full precision using parseFloat
-    const d101_areaAir = parseFloat(getNumericValue("d_101"));
-    const d102_areaGround = parseFloat(getNumericValue("d_102"));
-    const g101_uAir = parseFloat(getNumericValue("g_101"));
-    const g102_uGround = parseFloat(getNumericValue("g_102"));
+    const d101_areaAir = volumeResults.d_101;
+    const d102_areaGround = volumeResults.d_102;
+    const g101_uAir = uValueResults.g_101;
+    const g102_uGround = uValueResults.g_102;
 
     // ✅ FIX: Read climate data based on calculation type (S03 canonical pattern)
     let d20_hdd, d21_cdd, d22_gfHDD, h22_gfCDD;
@@ -1883,7 +1904,7 @@ window.TEUI.SectionModules.sect12 = (function () {
     };
   }
 
-  function calculateEnvelopeTotals(isReferenceCalculation = false, volumeResults = null, uValueResults = null) {
+  function calculateEnvelopeTotals(isReferenceCalculation = false, volumeResults = null, uValueResults = null, airLeakageResults = null, envelopeResults = null) {
     // ✅ MODE-AWARE: Read values based on calculation type
     let i101,
       i102,
@@ -1895,31 +1916,13 @@ window.TEUI.SectionModules.sect12 = (function () {
       k98_totalEnvelopeGainS11;
 
     if (isReferenceCalculation) {
-      // Reference calculation: Read Reference transmission values
-      i101 =
-        parseFloat(getGlobalNumericValue("ref_i_101")) ||
-        parseFloat(getNumericValue("i_101")) ||
-        0;
-      i102 =
-        parseFloat(getGlobalNumericValue("ref_i_102")) ||
-        parseFloat(getNumericValue("i_102")) ||
-        0;
-      i103 =
-        parseFloat(getGlobalNumericValue("ref_i_103")) ||
-        parseFloat(getNumericValue("i_103")) ||
-        0;
-      k101 =
-        parseFloat(getGlobalNumericValue("ref_k_101")) ||
-        parseFloat(getNumericValue("k_101")) ||
-        0;
-      k102 =
-        parseFloat(getGlobalNumericValue("ref_k_102")) ||
-        parseFloat(getNumericValue("k_102")) ||
-        0;
-      k103 =
-        parseFloat(getGlobalNumericValue("ref_k_103")) ||
-        parseFloat(getNumericValue("k_103")) ||
-        0;
+      // Reference calculation: Read from passed-in results, not global state
+      i101 = envelopeResults.i_101;
+      i102 = envelopeResults.i_102;
+      i103 = airLeakageResults.i_103;
+      k101 = envelopeResults.k_101;
+      k102 = envelopeResults.k_102;
+      k103 = airLeakageResults.k_103;
       h21_capacitanceSetting =
         getGlobalStringValue("ref_h_21") ||
         getFieldValue("h_21") ||
@@ -1929,13 +1932,13 @@ window.TEUI.SectionModules.sect12 = (function () {
         parseFloat(getNumericValue("k_98")) ||
         0;
     } else {
-      // Target calculation: Read unprefixed values
-      i101 = parseFloat(getNumericValue("i_101"));
-      i102 = parseFloat(getNumericValue("i_102"));
-      i103 = parseFloat(getNumericValue("i_103"));
-      k101 = parseFloat(getNumericValue("k_101"));
-      k102 = parseFloat(getNumericValue("k_102"));
-      k103 = parseFloat(getNumericValue("k_103"));
+      // Target calculation: Read from passed-in results
+      i101 = envelopeResults.i_101;
+      i102 = envelopeResults.i_102;
+      i103 = airLeakageResults.i_103;
+      k101 = envelopeResults.k_101;
+      k102 = envelopeResults.k_102;
+      k103 = airLeakageResults.k_103;
       h21_capacitanceSetting = getFieldValue("h_21");
       k98_totalEnvelopeGainS11 = parseFloat(getNumericValue("k_98"));
     }
@@ -1951,11 +1954,11 @@ window.TEUI.SectionModules.sect12 = (function () {
       g101_uAir = uValueResults?.g_101 || 0;
       g102_uGround = uValueResults?.g_102 || 0;
     } else {
-      // Target calculation: Read unprefixed values
-      d101_areaAir = parseFloat(getGlobalNumericValue("d_101")) || 0;
-      d102_areaGround = parseFloat(getGlobalNumericValue("d_102")) || 0;
-      g101_uAir = parseFloat(getGlobalNumericValue("g_101")) || 0;
-      g102_uGround = parseFloat(getGlobalNumericValue("g_102")) || 0;
+      // Target calculation: Read unprefixed values from passed results
+      d101_areaAir = volumeResults?.d_101 || 0;
+      d102_areaGround = volumeResults?.d_102 || 0;
+      g101_uAir = uValueResults?.g_101 || 0;
+      g102_uGround = uValueResults?.g_102 || 0;
     }
 
     const totalArea = d101_areaAir + d102_areaGround + 0.000001; // Avoid division by zero
@@ -2063,18 +2066,22 @@ window.TEUI.SectionModules.sect12 = (function () {
       // ✅ DUAL-ENGINE: Calculate all metrics using Reference state values
       const volumeResults = calculateVolumeMetrics(true); // true = isReferenceCalculation
       const uValueResults = calculateCombinedUValue(true);
-      calculateWWR(true);
-      calculateNFactor(true);
-      calculateACH50Target(true);
-      calculateAe10(true);
-      const airLeakageResults = calculateAirLeakageHeatLoss(true);
-      const envelopeResults = calculateEnvelopeHeatLossGain(true);
-      const envelopeTotalsResults = calculateEnvelopeTotals(true, volumeResults, uValueResults); // ✅ FIX: Pass calculated values
+      const wwrResults = calculateWWR(true);
+      const nFactorResults = calculateNFactor(true);
+      const ach50Results = calculateACH50Target(true, volumeResults);
+      const ae10Results = calculateAe10(true, volumeResults, ach50Results);
+      const airLeakageResults = calculateAirLeakageHeatLoss(true, volumeResults, ach50Results, nFactorResults);
+      const envelopeResults = calculateEnvelopeHeatLossGain(true, volumeResults, uValueResults);
+      const envelopeTotalsResults = calculateEnvelopeTotals(true, volumeResults, uValueResults, airLeakageResults, envelopeResults);
 
       // Store Reference Model results with ref_ prefix for downstream sections
       storeReferenceResults(
         volumeResults,
         uValueResults,
+        wwrResults,
+        nFactorResults,
+        ach50Results,
+        ae10Results,
         airLeakageResults,
         envelopeResults,
         envelopeTotalsResults,
@@ -2095,6 +2102,10 @@ window.TEUI.SectionModules.sect12 = (function () {
   function storeReferenceResults(
     volumeResults,
     uValueResults,
+    wwrResults,
+    nFactorResults,
+    ach50Results,
+    ae10Results,
     airLeakageResults,
     envelopeResults,
     envelopeTotalsResults,
@@ -2105,6 +2116,10 @@ window.TEUI.SectionModules.sect12 = (function () {
     const allResults = {
       ...volumeResults,
       ...uValueResults,
+      ...wwrResults,
+      ...nFactorResults,
+      ...ach50Results,
+      ...ae10Results,
       ...airLeakageResults,
       ...envelopeResults,
       ...envelopeTotalsResults, // ✅ FIX: Include envelope totals (i_104, k_104, etc.)
@@ -2152,15 +2167,15 @@ window.TEUI.SectionModules.sect12 = (function () {
 
     try {
       // ✅ DUAL-ENGINE: Calculate all metrics using Target state values
-      calculateVolumeMetrics(false); // false = Target calculation
-      calculateCombinedUValue(false);
+      const volumeResults = calculateVolumeMetrics(false); // false = Target calculation
+      const uValueResults = calculateCombinedUValue(false);
       calculateWWR(false);
-      calculateNFactor(false);
-      calculateACH50Target(false);
-      calculateAe10(false);
-      calculateAirLeakageHeatLoss(false);
-      calculateEnvelopeHeatLossGain(false);
-      calculateEnvelopeTotals(false); // Target calculation doesn't need the parameters
+      const nFactorResults = calculateNFactor(false);
+      const ach50Results = calculateACH50Target(false, volumeResults);
+      calculateAe10(false, volumeResults, ach50Results);
+      const airLeakageResults = calculateAirLeakageHeatLoss(false, volumeResults, ach50Results, nFactorResults);
+      const envelopeResults = calculateEnvelopeHeatLossGain(false, volumeResults, uValueResults);
+      calculateEnvelopeTotals(false, volumeResults, uValueResults, airLeakageResults, envelopeResults);
 
       // Update reference indicators after all calculations
       updateAllReferenceIndicators();
