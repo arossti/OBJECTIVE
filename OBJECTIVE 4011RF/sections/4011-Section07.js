@@ -1084,6 +1084,7 @@ window.TEUI.SectionModules.sect07 = (function () {
       'input[type="range"][data-field-id="d_52"]',
     );
     const d52Display = document.querySelector(`span[data-display-for="d_52"]`);
+    console.log(`[S07] Looking for display span: span[data-display-for="d_52"], found: ${!!d52Display}`);
 
     let newMinValue = 50,
       newMaxValue = 400,
@@ -1127,8 +1128,28 @@ window.TEUI.SectionModules.sect07 = (function () {
       d52Slider.max = newMaxValue;
       d52Slider.step = newStep;
       d52Slider.value = newValue;
-      if (d52Display) d52Display.textContent = `${newValue}%`;
-      console.log(`[S07] Updated DOM slider: d_52 = ${newValue}%, display = ${d52Display?.textContent}`);
+      
+      // Try multiple ways to find the display span
+      let displayElement = d52Display;
+      if (!displayElement) {
+        // Try looking for nextElementSibling like S02 does
+        displayElement = d52Slider.nextElementSibling;
+        console.log(`[S07] Trying nextElementSibling: ${!!displayElement}`);
+      }
+      if (!displayElement) {
+        // Try looking in the parent container
+        displayElement = d52Slider.parentElement?.querySelector('span');
+        console.log(`[S07] Trying parent span: ${!!displayElement}`);
+      }
+      
+      if (displayElement) {
+        displayElement.textContent = `${newValue}%`;
+        console.log(`[S07] Updated display element: ${newValue}%`);
+      } else {
+        console.log(`[S07] WARNING: Could not find display element for d_52 slider`);
+      }
+      
+      console.log(`[S07] Updated DOM slider: d_52 = ${newValue}%, display = ${displayElement?.textContent}`);
       
       // 🔧 CRITICAL: Update local state and trigger recalculation
       ModeManager.setValue("d_52", newValue.toString(), "system-update");
