@@ -2439,11 +2439,14 @@ window.TEUI.SectionModules.sect04 = (function () {
 
     // ✅ CRITICAL: Listen for external dependencies that affect S04 calculations
     if (window.TEUI?.StateManager?.addListener) {
+      // 🚨 REMOVED: S15 d_136 listener causes premature j_32 calculation
+      // Problem: S04 calculates j_32 before S07 fuel volumes are updated
+      // Solution: S04 will recalculate when actual fuel volumes (e_51, k_54) change
       // React to S15's target electricity calculation
-      window.TEUI.StateManager.addListener("d_136", () => {
-        console.log(`[S04] S15 target electricity changed: d_136`);
-        calculateAll();
-      });
+      // window.TEUI.StateManager.addListener("d_136", () => {
+      //   console.log(`[S04] S15 target electricity changed: d_136`);
+      //   calculateAll();
+      // });
 
       // React to S15's reference electricity calculation
       window.TEUI.StateManager.addListener("ref_d_136", () => {
@@ -2534,46 +2537,49 @@ window.TEUI.SectionModules.sect04 = (function () {
         ModeManager.updateCalculatedDisplayValues();
       });
 
-      window.TEUI.StateManager.addListener("e_51", () => {
-        console.log(`[S04] e_51 listener fired - S07 gas`);
-        calculateRow28(); // Recalculate complete gas row (includes H28, J28, K28)
-        calculateF32(); // Recalculate ACTUAL subtotal
-        calculateG32(); // Recalculate ACTUAL emissions subtotal
-        calculateJ32(); // Recalculate TARGET subtotal
-        calculateK32(); // Recalculate TARGET emissions subtotal
-        ModeManager.updateCalculatedDisplayValues();
-      });
-
-      window.TEUI.StateManager.addListener("h_115", () => {
-        console.log(`[S04] S13 space gas volume changed: h_115`);
-        calculateRow28(); // Recalculate complete gas row (includes H28, J28, K28)
-        calculateF32(); // Recalculate ACTUAL subtotal
-        calculateG32(); // Recalculate ACTUAL emissions subtotal
-        calculateJ32(); // Recalculate TARGET subtotal
-        calculateK32(); // Recalculate TARGET emissions subtotal
-        ModeManager.updateCalculatedDisplayValues();
-      });
-
-      // ✅ CRITICAL: React to S07/S13 oil-related changes (affects H30 target oil volume)
-      window.TEUI.StateManager.addListener("k_54", () => {
-        console.log(`[S04] k_54 listener fired - S07 oil`);
-        calculateRow30(); // Recalculate complete oil row (includes H30, J30, K30)
-        calculateF32(); // Recalculate ACTUAL subtotal
-        calculateG32(); // Recalculate ACTUAL emissions subtotal
-        calculateJ32(); // Recalculate TARGET subtotal
-        calculateK32(); // Recalculate TARGET emissions subtotal
-        ModeManager.updateCalculatedDisplayValues();
-      });
-
-      window.TEUI.StateManager.addListener("f_115", () => {
-        console.log(`[S04] f_115 listener fired - S13 oil`);
-        calculateRow30(); // Recalculate complete oil row (includes H30, J30, K30)
-        calculateF32(); // Recalculate ACTUAL subtotal
-        calculateG32(); // Recalculate ACTUAL emissions subtotal
-        calculateJ32(); // Recalculate TARGET subtotal
-        calculateK32(); // Recalculate TARGET emissions subtotal
-        ModeManager.updateCalculatedDisplayValues();
-      });
+      // 🚨 ARCHITECTURAL FIX: Consolidated fuel volume listener to prevent double j_32 calculations
+      // Problem: S07 sets e_51=0 and k_54=4667 as two separate setValue calls  
+      // This triggers e_51 listener → calculateJ32(), then k_54 listener → calculateJ32() again
+      // Solution: Single consolidated function that recalculates all fuel rows atomically
+      
+      // 🚨 ARCHITECTURAL DEBOUNCING: Use requestAnimationFrame for proper batching
+      let fuelRecalcPending = false;
+      let pendingSources = new Set();
+      
+      function recalculateFuelEnergyTotals(source) {
+        console.log(`[S04] 🔄 Fuel energy recalc requested by: ${source}`);
+        pendingSources.add(source);
+        
+        // Only schedule one recalculation per animation frame (16ms batching)
+        if (!fuelRecalcPending) {
+          fuelRecalcPending = true;
+          requestAnimationFrame(() => {
+            console.log(`[S04] 🔄 Executing batched fuel recalc for: [${Array.from(pendingSources).join(", ")}]`);
+            
+            // Recalculate all fuel-related rows in dependency order
+            calculateRow28(); // Gas DHW + Space heating (e_51 + h_115)
+            calculateRow30(); // Oil DHW + Space heating (k_54 + f_115)
+            
+            // Recalculate totals only once after all rows updated
+            calculateF32(); // ACTUAL subtotal
+            calculateG32(); // ACTUAL emissions subtotal  
+            calculateJ32(); // TARGET subtotal
+            calculateK32(); // TARGET emissions subtotal
+            
+            console.log(`[S04] ✅ Batched fuel recalc complete - single j_32 calculation`);
+            ModeManager.updateCalculatedDisplayValues();
+            
+            // Reset for next batch
+            fuelRecalcPending = false;
+            pendingSources.clear();
+          });
+        }
+      }
+      
+      window.TEUI.StateManager.addListener("e_51", () => recalculateFuelEnergyTotals("e_51"));
+      window.TEUI.StateManager.addListener("h_115", () => recalculateFuelEnergyTotals("h_115"));
+      window.TEUI.StateManager.addListener("k_54", () => recalculateFuelEnergyTotals("k_54"));
+      window.TEUI.StateManager.addListener("f_115", () => recalculateFuelEnergyTotals("f_115"));
 
 
       // ✅ CRITICAL: React to S06 renewable energy changes (affects F27, J27, and subtotals)
