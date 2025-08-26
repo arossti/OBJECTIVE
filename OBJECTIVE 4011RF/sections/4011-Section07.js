@@ -720,6 +720,8 @@ window.TEUI.SectionModules.sect07 = (function () {
         window.TEUI?.StateManager?.getValue("d_51") ||
         "Heatpump"
       : window.TEUI?.StateManager?.getValue("d_51") || "Heatpump";
+    
+    console.log(`[S07] calculateEmissionsAndLosses: systemType="${systemType}" (${isReferenceCalculation ? 'REF' : 'TGT'})`);
     const netDemandAfterRecovery = getSectionNumericValue(
       "j_52",
       0,
@@ -741,12 +743,14 @@ window.TEUI.SectionModules.sect07 = (function () {
       const conversionFactor = 10.3321;
       gasVolume =
         afue > 0 ? netDemandAfterRecovery / (conversionFactor * afue) : 0;
-      console.log(`[S07] Gas calc: demand=${netDemandAfterRecovery}, afue=${afue} → e_51=${gasVolume}`);
+      console.log(`[S07] 🔥 Gas calc: demand=${netDemandAfterRecovery}, afue=${afue} → e_51=${gasVolume}`);
     } else if (systemType === "Oil") {
       const conversionFactor = 10.18; // 36.72 * 0.2777778
       oilVolume =
         afue > 0 ? netDemandAfterRecovery / (conversionFactor * afue) : 0;
-      console.log(`[S07] Oil calc: demand=${netDemandAfterRecovery}, afue=${afue} → k_54=${oilVolume}`);
+      console.log(`[S07] 🛢️ Oil calc: demand=${netDemandAfterRecovery}, afue=${afue} → k_54=${oilVolume}`);
+    } else {
+      console.log(`[S07] ⚡ Non-fossil fuel: ${systemType} → no gas/oil volumes`);
     }
     setSectionValue("e_51", gasVolume, isReferenceCalculation);
     setSectionValue("k_54", oilVolume, isReferenceCalculation);
@@ -1084,7 +1088,6 @@ window.TEUI.SectionModules.sect07 = (function () {
       'input[type="range"][data-field-id="d_52"]',
     );
     const d52Display = document.querySelector(`span[data-display-for="d_52"]`);
-    console.log(`[S07] Looking for display span: span[data-display-for="d_52"], found: ${!!d52Display}`);
 
     let newMinValue = 50,
       newMaxValue = 400,
@@ -1129,27 +1132,12 @@ window.TEUI.SectionModules.sect07 = (function () {
       d52Slider.step = newStep;
       d52Slider.value = newValue;
       
-      // Try multiple ways to find the display span
-      let displayElement = d52Display;
-      if (!displayElement) {
-        // Try looking for nextElementSibling like S02 does
-        displayElement = d52Slider.nextElementSibling;
-        console.log(`[S07] Trying nextElementSibling: ${!!displayElement}`);
-      }
-      if (!displayElement) {
-        // Try looking in the parent container
-        displayElement = d52Slider.parentElement?.querySelector('span');
-        console.log(`[S07] Trying parent span: ${!!displayElement}`);
-      }
-      
+      // Find display element (use nextElementSibling - confirmed working)
+      let displayElement = d52Display || d52Slider.nextElementSibling;
       if (displayElement) {
         displayElement.textContent = `${newValue}%`;
-        console.log(`[S07] Updated display element: ${newValue}%`);
-      } else {
-        console.log(`[S07] WARNING: Could not find display element for d_52 slider`);
+        console.log(`[S07] Updated slider display: ${selectedSource} → d_52=${newValue}%`);
       }
-      
-      console.log(`[S07] Updated DOM slider: d_52 = ${newValue}%, display = ${displayElement?.textContent}`);
       
       // 🔧 CRITICAL: Update local state and trigger recalculation
       ModeManager.setValue("d_52", newValue.toString(), "system-update");
