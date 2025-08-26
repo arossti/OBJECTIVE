@@ -3261,9 +3261,9 @@ window.TEUI.SectionModules.sect13 = (function () {
    */
   function calculateTargetModelHeatingSystem() {
     // 🔧 CRITICAL FIX: Read fuel type from global StateManager (user changes update this immediately)
-    // Other values from TargetState, but d_113 must read from StateManager for immediate fuel switch response
-    const systemType = getFieldValue("d_113");
-    const tedTarget = window.TEUI.parseNumeric(getFieldValue("d_127")) || 0;
+    // Direct StateManager access for Target mode to ensure clean values
+    const systemType = window.TEUI.StateManager?.getValue("d_113") || "Heatpump";
+    const tedTarget = window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("d_127")) || 0;
     const hspf = window.TEUI.parseNumeric(TargetState.getValue("f_113")) || 3.5;
 
     console.log(`[S13] TGT HEATING: ${systemType}, HSPF=${hspf}`);
@@ -3328,7 +3328,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     tedTarget,
     heatingDemand_d114,
   ) {
-    const afue = window.TEUI.parseNumeric(getFieldValue("j_115")) || 1;
+    const afue = window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("j_115")) || 1;
 
     console.log(`[S13] TGT FUEL: ${systemType} system`);
 

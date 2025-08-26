@@ -620,6 +620,9 @@ window.TEUI.SectionModules.sect01 = (function () {
     // h_10 = j_32 / h_15 (Target TEUI)
     const h_10 =
       targetArea > 0 ? Math.round((targetEnergy / targetArea) * 10) / 10 : 0;
+    
+    // 🔧 DEBUG: Track the exact h_10 calculation chain for fuel system issue
+    console.log(`[S01DB] 🎯 h_10 calculation: targetEnergy(j_32)=${targetEnergy} ÷ targetArea(h_15)=${targetArea} = ${h_10}`);
 
     // h_8 = k_32 / h_15 (Target Annual Carbon)
     const h_8 =
@@ -1078,7 +1081,7 @@ window.TEUI.SectionModules.sect01 = (function () {
           // Only recalculate if the value actually changed
           if (newValue !== oldValue) {
             if (fieldId === "j_32") {
-              // console.log(`🟢 [S01] TARGET ENERGY LISTENER: j_32 changed from ${oldValue} to ${newValue} → will update TARGET COLUMN H`);
+              console.log(`🟢 [S01] TARGET ENERGY LISTENER: j_32 changed from ${oldValue} to ${newValue} → will update TARGET COLUMN H (h_10)`);
             } else if (fieldId === "ref_j_32") {
               // console.log(`🔵 [S01] REFERENCE ENERGY LISTENER: ref_j_32 changed from ${oldValue} to ${newValue} → will update REFERENCE COLUMN E`);
             } else {

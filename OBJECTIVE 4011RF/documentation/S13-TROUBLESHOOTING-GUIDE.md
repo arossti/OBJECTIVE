@@ -1,15 +1,15 @@
 # **S13 TROUBLESHOOTING GUIDE - DUAL-STATE REFERENCE MODE**
 
-**Date**: December 29, 2024  
-**Status**: **🔍 AUDIT PHASE - Ready for Implementation**  
+**Date**: Aug 26, 2025.
+**Status**: **🚨 ANALYSIS COMPLETE - REQUIRES FRESH APPROACH**
 **Section**: S13 (Space Heating & Cooling)  
-**Success Template**: S11 Reference Value Persistence Pattern ✅
+**Issue**: State contamination between Target and Reference modes **PERSISTS**
 
 ---
 
 ## **🎯 OBJECTIVE**
 
-Fix S13 Reference mode "stuck values" issue using the proven S11 success pattern. S13 should respond to S03 climate changes in Reference mode and maintain complete state isolation between Target and Reference modes.
+**ONGOING**: Fix S13 Reference mode "stuck values" and state mixing issues. Despite implementing S11 and S12 patterns, **state contamination persists** where Target mode changes incorrectly affect Reference values in downstream sections (S04→S15→S01).
 
 ---
 
@@ -35,427 +35,124 @@ Fix S13 Reference mode "stuck values" issue using the proven S11 success pattern
 
 ---
 
-## **🧪 CURRENT STATUS ASSESSMENT**
+## **🚨 ANALYSIS FINDINGS - AUG 26, 2025 (SESSION 2)**
 
-### **What We Know From Earlier Testing**:
-1. **✅ Target Mode**: S13 functions perfectly in Target mode
-2. **❌ Reference Mode**: Known to be unresponsive to S03 climate changes
-3. **✅ Some Reference Architecture**: Already has `ref_d_20`, `ref_d_21`, `ref_d_22`, `ref_h_22` listeners from earlier sessions
-4. **⚠️ Complex Calculations**: More sophisticated than S11/S12, may have unique challenges
+### **🔍 Root Cause Confirmed: The "Current State Anti-Pattern"**
 
-### **Expected Issues (Based on S11/S12 Pattern)**:
-1. **Missing ModeManager Export**: FieldManager integration failures
-2. **Pattern B Contamination**: Hardcoded `target_` prefixed reads in calculation functions
-3. **Incomplete DOM Updates**: Missing fields in `updateCalculatedDisplayValues`
-4. **Reference Value Overwrites**: Race conditions with downstream sections
-5. **Complex Calculation Chains**: Multiple interdependent calculation functions
+A detailed analysis of the fresh logs confirms the precise source of state contamination. The issue is a classic **"Current State Anti-Pattern"** as defined in the `DUAL-STATE-CHEATSHEET.md`.
 
----
+**The Contamination Mechanism:**
+1.  The `calculateReferenceModel()` function in S13 calls helper functions.
+2.  Inside these helpers, critical input values (like `j_115` for AFUE) are read using the ambiguous helper `getFieldValue('j_115')`.
+3.  `getFieldValue()` does not differentiate between modes; it reads whatever value is currently in the global `StateManager` or the DOM, which, during a Target mode operation, is the **Target value**.
+4.  The Reference calculation then proceeds using contaminated Target inputs, leading to incorrect Reference results (`ref_h_115`, `ref_f_115`).
+5.  These incorrect Reference results are written to the `StateManager`, triggering S04's listeners and causing the contaminated TEUI to appear downstream in S01.
 
-## **🔍 SYSTEMATIC AUDIT CHECKLIST**
+**Why Electric/Heatpump Worked**: This specific contamination path affects Gas/Oil calculations because they depend on the `j_115` (AFUE) value. Electric and Heatpump systems do not, so they were not affected by this particular bug.
 
-### **📋 Phase 1: Foundation Architecture** 
-**Expectation**: S13 likely has complete Pattern A architecture (like S11/S12)
-
-#### **✅ Check 1.1: ModeManager Export**
-```bash
-grep -n "ModeManager:" sections/4011-Section13.js
-```
-**Expected**: Missing from return statement (consistent pattern)
-
-#### **✅ Check 1.2: State Objects**
-```bash
-grep -n "ReferenceState\|TargetState\|ModeManager" sections/4011-Section13.js
-```
-**Expected**: Objects exist but ModeManager not exported
-
-#### **✅ Check 1.3: Dual-Engine calculateAll**
-```bash
-grep -A 10 -B 5 "calculateAll.*function" sections/4011-Section13.js
-```
-**Expected**: Has `calculateReferenceModel()` and `calculateTargetModel()` calls
+**Architectural Compliance**: This violates Core Principle #3: State Sovereignty. The Reference engine is not isolated and is incorrectly reading from the Target state hemisphere.
 
 ---
 
-### **📋 Phase 2: Pattern B Contamination Detection**
-**Critical**: S13 likely has extensive `target_` contamination due to complexity
+## **📋 RECOMMENDED FRESH APPROACH: The S12 Pattern**
 
-#### **🚨 Check 2.1: target_ Climate Reads**
-```bash
-grep -n "target_d_2[0-2]\|target_h_22" sections/4011-Section13.js
-```
-**Expected**: Multiple instances found (S13 is complex)
+The previous attempts failed because they did not address the root cause within the calculation logic. The next attempt must apply the proven, architecturally compliant solution from the successful S12 refactor.
 
-#### **🚨 Check 2.2: target_ HVAC Parameters**
-```bash
-grep -n "target_.*COP\|target_.*efficiency" sections/4011-Section13.js
-```
-**Expected**: HVAC-specific contamination patterns
+### **🔧 The Workplan**
 
-#### **🚨 Check 2.3: All getGlobalNumericValue Patterns**
-```bash
-grep -n "getGlobalNumericValue.*target_" sections/4011-Section13.js
-```
-**Expected**: Extensive anti-pattern usage
+1.  **Refactor Calculation Functions**: All calculation helpers (`calculateHeatingSystem`, `calculateCoolingSystem`, `calculateCOPValues`, etc.) must be refactored to be pure and mode-aware.
+    -   They must **not** use `getFieldValue()` or `getNumericValue()` for any section-specific inputs.
+    -   All inputs must be read explicitly from the correct state object (`TargetState` or `ReferenceState`) using the `getSectionValue(fieldId, isReferenceCalculation)` helper.
+    -   The functions must `return` their results as objects, not call `setCalculatedValue` directly (no side effects).
+2.  **Create Explicit Data Flow**: The orchestrator functions (`calculateTargetModel` and `calculateReferenceModel`) must be updated to chain the pure functions together, passing the returned result objects as parameters to the next function in the sequence.
+3.  **Handle DOM Updates Separately**: A dedicated function (`updateTargetModelDOMValues`) will be responsible for taking the final results from the `calculateTargetModel` chain and updating the UI. Reference values do not need a dedicated DOM update function as they are only written to the `StateManager`.
+
+### **⚠️ CRITICAL CONSTRAINTS**
+1. **NO AMBIGUOUS HELPERS**: `getFieldValue` and `getNumericValue` must be eliminated from the core calculation logic for section-specific values.
+2. **MAINTAIN S12 PATTERN**: Adhere strictly to the explicit data flow pattern.
+3. **START FRESH**: Begin with the clean, reverted `4011-Section13.js` file.
 
 ---
 
-### **📋 Phase 3: DOM Update Coverage**
-**Critical**: S13 has many calculated fields, likely incomplete coverage
+## **💾 RESET POINT** 
 
-#### **✅ Check 3.1: updateCalculatedDisplayValues Fields**
-```bash
-grep -A 30 "updateCalculatedDisplayValues" sections/4011-Section13.js
-```
-**Expected**: Limited field coverage compared to total calculated fields
-
-#### **✅ Check 3.2: S13 Calculated Fields Inventory**
-**Search for**: All `setCalculatedValue()` calls to identify complete field list
-**Expected**: Many more fields than currently covered in `updateCalculatedDisplayValues`
+**Backup created**: `S13-RF.js` contains all attempted fixes from the previous session and has been removed from the load sequence.
+**Clean state**: `S13.js` has been restored to its pre-debug state.
+**Issue persists**: The contamination pattern exists in the clean version, confirming the issue is fundamental.
 
 ---
 
-### **📋 Phase 4: Reference External Listeners**
-**Status**: Already added in earlier sessions, verify completeness
+## **🚨 FAILED ATTEMPT DOCUMENTED - AUG 26, 2025 (SESSION 3)**
 
-#### **✅ Check 4.1: Reference Climate Listeners**
-```bash
-grep -n "ref_d_2[0-2]\|ref_h_22.*addListener" sections/4011-Section13.js
-```
-**Expected**: Should be present from earlier work
+### **⏰ Full Day Investigation Summary**
 
-#### **✅ Check 4.2: Reference Building Data Listeners**
-```bash
-grep -n "ref_.*addListener" sections/4011-Section13.js
+**Date**: Aug 26, 2025  
+**Duration**: Full working session  
+**Approach**: S12 Explicit Data Flow Pattern implementation  
+**Result**: **FAILED - Made contamination worse**  
+
+### **🔍 What We Attempted**
+
+1. **Fixed Current State Anti-Pattern**: Changed `getFieldValue("d_113")` and `getFieldValue("j_115")` to `TargetState.getValue()` calls
+2. **Made Shared Functions Mode-Aware**: Updated all calculation helpers to use explicit state access instead of ambiguous helpers
+3. **Applied Explicit Data Flow**: Converted all `getFieldValue()` calls in calculation logic to proper state isolation
+4. **Added FieldManager Integration**: Exported ModeManager to prevent FieldManager bypass
+
+### **🚨 Why It Failed**
+
+**The contamination is DEEPER than calculation-level fixes can address:**
+
+1. **Reference State Persistence Issue**: ReferenceState.getValue("d_113") ALWAYS returns "Gas" regardless of Reference mode changes
+2. **State Object Corruption**: The dual-state objects themselves are not properly isolated 
+3. **Excel Calculation Mismatch**: h_10 TEUI values no longer match Excel after our changes
+4. **Complex Interdependencies**: S13 has too many moving parts to fix atomically
+
+### **📊 Evidence from Logs**
+
 ```
-**Expected**: May need additional S11/S12 Reference dependencies
+Line 5017: [Section13] 🔥 REF HEATING: systemType="Gas" (STUCK!)
+Line 5025: [S13] TGT HEATING: Oil, HSPF=12.5 (Target working)
+```
+
+**Key Finding**: Reference calculations are fundamentally stuck reading stale state values, suggesting the issue is in state object initialization/persistence, not calculation logic.
+
+### **🎯 REVISED APPROACH REQUIRED**
+
+**ABANDON the comprehensive fix approach. The contamination is too systemic.**
+
+**NEW STRATEGY: Ultra-focused incremental fixes**
+
+1. **Step 1**: Fix ONLY Target mode `d_113` → `f_115`/`h_115` propagation to S04
+   - Ignore Reference mode completely for now
+   - Focus solely on Excel compliance for Target calculations
+   - Ensure h_10 TEUI matches Excel baseline
+
+2. **Step 2**: Once Target mode is rock-solid, investigate Reference state persistence in isolation
+   - Don't touch Target calculation logic
+   - Focus only on why ReferenceState.getValue() returns stale data
+
+3. **Step 3**: Only after both modes work independently, address cross-contamination
+
+### **⚠️ CRITICAL LESSONS LEARNED**
+
+- **Section 13 is too complex** for the dual-state patterns that worked on S11/S12
+- **State mixing fixes require working backwards** from h_10 calculation accuracy
+- **Excel compliance must be maintained** throughout any architectural changes
+- **One problem at a time** - comprehensive fixes fail in complex sections
+
+### **📋 IMMEDIATE NEXT STEPS**
+
+1. ✅ **Revert S13 to stable state** (COMPLETED)
+2. **Focus on Target mode only**: Ensure `d_113` changes properly update `f_115`/`h_115` for Gas/Oil systems
+3. **Validate Excel compliance**: h_10 calculations must match gold standard
+4. **Document narrow success** before attempting Reference mode
 
 ---
 
-### **📋 Phase 5: Complex Calculation Chain Analysis**
-**S13-Specific**: Multiple calculation functions, sophisticated logic
+## **🔧 RECOMMENDED MICRO-FIX APPROACH**
 
-#### **🚨 Check 5.1: Heating Calculation Functions**
-```bash
-grep -n "function.*heating\|function.*Heating" sections/4011-Section13.js
-```
-**Expected**: Multiple heating-related functions needing mode-awareness
-
-#### **🚨 Check 5.2: Cooling Calculation Functions**
-```bash
-grep -n "function.*cooling\|function.*Cooling" sections/4011-Section13.js
-```
-**Expected**: Multiple cooling-related functions needing mode-awareness
-
-#### **🚨 Check 5.3: Heat Pump / COP Functions**
-```bash
-grep -n "function.*COP\|function.*heatPump" sections/4011-Section13.js
-```
-**Expected**: Complex efficiency calculations needing mode-awareness
-
----
-
-## **🛠️ IMPLEMENTATION WORKPLAN**
-
-### **🎯 SUCCESS CRITERIA**
-1. **S13 Reference mode responds to S03 climate changes** (no stuck values)
-2. **All S13 calculated fields update** in Reference mode
-3. **Complete state isolation** between Target and Reference modes
-4. **Complex HVAC calculations work** correctly in both modes
-5. **No race conditions** using Reference Value Persistence Pattern
-
----
-
-### **🔧 PHASE 1: Foundation Fix (15 minutes)**
-**Template**: Exactly like S11/S12 Phase 1
-
-#### **1.1 Add ModeManager Export**
-```javascript
-return {
-  // ... existing exports ...
-  ModeManager: ModeManager,  // ✅ CRITICAL FIX
-};
-```
-
-#### **1.2 Verify State Architecture** 
-- ✅ Confirm `ReferenceState` and `ModeManager` objects exist
-- ✅ Test basic mode switching functionality
-
----
-
-### **🔧 PHASE 2: Fix Pattern B Contamination (35 minutes)**
-**Note**: S13 likely has more extensive contamination than S11/S12
-
-#### **2.1 Replace target_ Climate Reads**
-```javascript
-// ❌ CURRENT (Pattern B anti-pattern):
-const target_hdd = getGlobalNumericValue("target_d_20");
-const target_cdd = getGlobalNumericValue("target_d_21");
-
-// ✅ CORRECT (Pattern A):
-// In Target calculations:
-const hdd = getGlobalNumericValue("d_20");
-const cdd = getGlobalNumericValue("d_21");
-
-// In Reference calculations:  
-const ref_hdd = getGlobalNumericValue("ref_d_20");
-const ref_cdd = getGlobalNumericValue("ref_d_21");
-```
-
-#### **2.2 Fix HVAC-Specific Contamination**
-```javascript
-// ❌ PATTERN B (if found):
-const target_cop_heating = getGlobalNumericValue("target_cop_h");
-const target_efficiency = getGlobalNumericValue("target_sys_eff");
-
-// ✅ PATTERN A:
-// Make all HVAC parameter reads mode-aware
-const cop_heating = isReferenceCalculation 
-  ? getGlobalNumericValue("ref_cop_h") 
-  : getGlobalNumericValue("cop_h");
-```
-
-#### **2.3 Update All Calculation Functions**
-**Systematic approach**: Each heating/cooling function needs mode-awareness review
-- `calculateHeatingEnergy()` functions
-- `calculateCoolingEnergy()` functions  
-- `calculateHeatPumpCOP()` functions
-- Any function reading external climate/building data
-
----
-
-### **🔧 PHASE 3: Complete DOM Update Coverage (25 minutes)**
-**Note**: S13 has many calculated fields, comprehensive coverage needed
-
-#### **3.1 Identify All S13 Calculated Fields**
-```bash
-# Find all setCalculatedValue calls to build complete field list
-grep -n "setCalculatedValue" sections/4011-Section13.js
-```
-
-#### **3.2 Expand updateCalculatedDisplayValues**
-```javascript
-updateCalculatedDisplayValues: function() {
-  if (!window.TEUI?.StateManager) return;
-  
-  const calculatedFields = [
-    // ✅ ADD: ALL S13 calculated fields including:
-    // Heating energy fields
-    // Cooling energy fields  
-    // Efficiency fields
-    // Summary/total fields
-    // Equipment sizing fields
-    // ... (comprehensive list from audit)
-  ];
-  
-  calculatedFields.forEach((fieldId) => {
-    const valueToDisplay = this.currentMode === "reference" 
-      ? window.TEUI.StateManager.getValue(`ref_${fieldId}`)
-      : window.TEUI.StateManager.getValue(fieldId);
-    
-    if (valueToDisplay !== null) {
-      const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-      if (element) {
-        const num = window.TEUI.parseNumeric(valueToDisplay, 0);
-        element.textContent = formatNumber(num, "number");
-      }
-    }
-  });
-},
-```
-
----
-
-### **🔧 PHASE 4: Enhanced Reference Listeners (10 minutes)**
-**Template**: Verify and expand S13 Reference dependencies
-
-#### **4.1 Verify Climate Listeners (Already Done)**
-```javascript
-// ✅ VERIFY: Should exist from earlier sessions
-window.TEUI.StateManager.addListener("ref_d_20", () => calculateAll());
-window.TEUI.StateManager.addListener("ref_d_21", () => calculateAll());  
-window.TEUI.StateManager.addListener("ref_d_22", () => calculateAll());
-window.TEUI.StateManager.addListener("ref_h_22", () => calculateAll());
-```
-
-#### **4.2 Add S11/S12 Reference Dependencies (If Needed)**
-```javascript
-// ✅ ADD IF S13 depends on S11/S12 Reference values:
-window.TEUI.StateManager.addListener("ref_i_98", () => calculateAll());  // S11 totals
-window.TEUI.StateManager.addListener("ref_g_101", () => calculateAll()); // S12 outputs
-// ... other upstream Reference dependencies
-```
-
----
-
-### **🔧 PHASE 5: Reference Value Persistence Pattern (30 minutes)**
-**Template**: S11's proven solution, adapted for S13 complexity
-
-#### **5.1 Module-Level Storage**
-```javascript
-// At module level (like S11):
-let lastReferenceResults = {};
-```
-
-#### **5.2 Store Reference Results**
-```javascript
-// In calculateReferenceModel():
-function calculateReferenceModel() {
-  // ... existing calculations ...
-  
-  // Store ALL Reference calculation results
-  const referenceOutputs = {
-    // Heating energy results
-    heating_field_1: calculated_heating_value_1,
-    heating_field_2: calculated_heating_value_2,
-    
-    // Cooling energy results  
-    cooling_field_1: calculated_cooling_value_1,
-    cooling_field_2: calculated_cooling_value_2,
-    
-    // Summary totals
-    total_field_1: calculated_total_1,
-    // ... all S13 Reference calculated fields
-  };
-  
-  // Store at module level for later re-writing
-  lastReferenceResults = referenceOutputs;
-  
-  return referenceOutputs;
-}
-```
-
-#### **5.3 Re-Write After All Calculations**
-```javascript
-// In calculateAll() (like S11):
-function calculateAll() {
-  calculateReferenceModel();  // Populates lastReferenceResults
-  calculateTargetModel();
-  
-  // ✅ FIX: Re-write Reference values after all calculations to prevent overwrites
-  if (window.TEUI?.StateManager && lastReferenceResults) {
-    Object.entries(lastReferenceResults).forEach(([fieldId, value]) => {
-      window.TEUI.StateManager.setValue(`ref_${fieldId}`, value.toString(), "calculated");
-    });
-  }
-  
-  // THEN update DOM with preserved values
-  if (typeof ModeManager.updateCalculatedDisplayValues === "function") {
-    ModeManager.updateCalculatedDisplayValues();
-  }
-}
-```
-
----
-
-## **🧪 TESTING PROTOCOL**
-
-### **Test Sequence A: Foundation**
-1. **✅ ModeManager Export**: No FieldManager warnings for S13
-2. **✅ Mode Switching**: Toggle between Target/Reference works
-3. **✅ Complex State**: S13 loads without errors despite complexity
-
-### **Test Sequence B: Reference Responsiveness**
-1. **✅ S03 Climate Changes**: Vancouver → Iqaluit in Reference mode
-   - **Expected**: All S13 heating/cooling values update immediately
-2. **✅ Internal Changes**: Modify S13 Reference mode fields
-   - **Expected**: Complex calculations update immediately
-3. **✅ HVAC Parameters**: Change efficiency settings in Reference mode
-   - **Expected**: System calculations respond correctly
-
-### **Test Sequence C: Calculation Complexity**
-1. **✅ Heating Calculations**: Verify heating energy updates with climate
-2. **✅ Cooling Calculations**: Verify cooling energy updates with climate  
-3. **✅ Heat Pump COP**: Verify efficiency calculations work in Reference mode
-4. **✅ System Integration**: Multiple calculation chains work together
-
-### **Test Sequence D: State Isolation**
-1. **✅ No Contamination**: Reference changes don't affect Target
-2. **✅ Mode Switching**: Complex state values preserved for each mode
-3. **✅ HVAC Independence**: Heating/cooling systems maintain separate states
-
----
-
-## **⚠️ KNOWN RISKS & MITIGATION**
-
-### **Risk 1: Calculation Complexity**
-**Description**: S13 has multiple interdependent calculation functions
-**Mitigation**: Apply Pattern B fixes systematically to each function, test incrementally
-
-### **Risk 2: HVAC Parameter Interactions**
-**Description**: Heat pump, heating, cooling calculations may interact in complex ways
-**Mitigation**: Use Reference Value Persistence Pattern to ensure all results are preserved
-
-### **Risk 3: Performance Impact**
-**Description**: S13 calculations are computationally intensive
-**Mitigation**: Reference Value Persistence adds minimal overhead, no setTimeout usage
-
-### **Risk 4: Downstream Dependencies**
-**Description**: S13 feeds many values to S14→S15, timing critical
-**Mitigation**: Re-write pattern ensures final values available before UI refresh
-
----
-
-## **📈 SUCCESS METRICS**
-
-### **Immediate Success**:
-- ✅ S13 Reference mode responds to S03 climate changes
-- ✅ No FieldManager warnings for S13
-- ✅ All heating/cooling calculations update in Reference mode
-
-### **Complexity Success**:
-- ✅ Heat pump COP calculations work in Reference mode
-- ✅ Multiple calculation chains maintain state isolation
-- ✅ System efficiency parameters respond correctly
-
-### **Architecture Success**:
-- ✅ Complete state isolation between Target/Reference modes  
-- ✅ S13 matches S11/S12 Pattern A compliance
-- ✅ No performance regressions despite complexity
-
----
-
-## **🚀 NEXT STEPS**
-
-### **Implementation Order**:
-1. **✅ Complete S13 audit** using checklist above
-2. **🔧 Apply fixes** following 5-phase workplan (allow extra time for complexity)
-3. **🧪 Test systematically** using testing protocol
-4. **📚 Document results** for remaining sections
-
-### **Post-S13 Strategy**:
-With S11, S12, S13 complete, the downstream flow S14→S15→S04→S01 should work correctly, resolving the S10 nGains propagation issue.
-
----
-
-## **🎯 S13-SPECIFIC CONSIDERATIONS**
-
-### **HVAC Calculation Functions**:
-S13 has multiple specialized calculation functions that may need individual mode-awareness review:
-- Heating system sizing and efficiency
-- Cooling system sizing and efficiency  
-- Heat pump COP calculations
-- Auxiliary heating calculations
-- Domestic hot water integration
-
-### **Climate Sensitivity**:
-S13 is heavily dependent on climate data, making Pattern B contamination particularly problematic:
-- HDD drives heating calculations
-- CDD drives cooling calculations
-- Ground temperatures affect heat pump efficiency
-- All must be mode-aware
-
-### **Integration Complexity**:
-S13 integrates data from multiple upstream sections:
-- S11 transmission losses/gains
-- S12 ventilation requirements
-- S02 building characteristics
-- S03 climate data
-- All integration points need Reference mode support
-
----
-
-**End of S13 Troubleshooting Guide**
-
-**🎯 Ready for Implementation Using Proven S11 Success Pattern** ✅  
-**⚠️ Allow Extra Time for HVAC Calculation Complexity** 🕒
+**Next agent should ONLY focus on:**
+- Target mode fuel type changes (d_113)  
+- Correct f_115/h_115 propagation to S04
+- Excel h_10 compliance
+- IGNORE Reference mode completely
