@@ -673,8 +673,12 @@ window.TEUI.SectionModules.sect07 = (function () {
       0,
       isReferenceCalculation,
     );
-    const systemType =
-      getSectionValue("d_51", isReferenceCalculation) || "Heatpump";
+    // 🔧 FIX: Read d_51 from StateManager for fresh dropdown values
+    const systemType = isReferenceCalculation
+      ? window.TEUI?.StateManager?.getValue("ref_d_51") ||
+        window.TEUI?.StateManager?.getValue("d_51") ||
+        "Heatpump"
+      : window.TEUI?.StateManager?.getValue("d_51") || "Heatpump";
     const efficiencyInput = getSectionNumericValue(
       "d_52",
       300,
@@ -710,8 +714,12 @@ window.TEUI.SectionModules.sect07 = (function () {
 
   function calculateEmissionsAndLosses(isReferenceCalculation = false) {
     // ✅ PATTERN A: Explicit state access while preserving Excel formulas
-    const systemType =
-      getSectionValue("d_51", isReferenceCalculation) || "Heatpump";
+    // 🔧 FIX: Read d_51 from StateManager for fresh dropdown values
+    const systemType = isReferenceCalculation
+      ? window.TEUI?.StateManager?.getValue("ref_d_51") ||
+        window.TEUI?.StateManager?.getValue("d_51") ||
+        "Heatpump"
+      : window.TEUI?.StateManager?.getValue("d_51") || "Heatpump";
     const netDemandAfterRecovery = getSectionNumericValue(
       "j_52",
       0,
@@ -733,10 +741,12 @@ window.TEUI.SectionModules.sect07 = (function () {
       const conversionFactor = 10.3321;
       gasVolume =
         afue > 0 ? netDemandAfterRecovery / (conversionFactor * afue) : 0;
+      console.log(`[S07] Gas calc: demand=${netDemandAfterRecovery}, afue=${afue} → e_51=${gasVolume}`);
     } else if (systemType === "Oil") {
       const conversionFactor = 10.18; // 36.72 * 0.2777778
       oilVolume =
         afue > 0 ? netDemandAfterRecovery / (conversionFactor * afue) : 0;
+      console.log(`[S07] Oil calc: demand=${netDemandAfterRecovery}, afue=${afue} → k_54=${oilVolume}`);
     }
     setSectionValue("e_51", gasVolume, isReferenceCalculation);
     setSectionValue("k_54", oilVolume, isReferenceCalculation);

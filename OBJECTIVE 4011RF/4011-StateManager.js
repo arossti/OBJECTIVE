@@ -330,12 +330,6 @@ TEUI.StateManager = (function () {
    * @returns {boolean} True if the value changed
    */
   function setValue(fieldId, value, state = VALUE_STATES.USER_MODIFIED) {
-    // 🔧 DEBUG: Track h_10 writes to StateManager
-    if (fieldId === "h_10") {
-      console.log(`[SM-DEBUG] 🎯 setValue(h_10): value=${value}, state=${state}`);
-      console.trace(`[SM-DEBUG] Stack trace for h_10 StateManager write:`);
-    }
-    
     // Check if we're in Reference Mode and this is an independently editable field
     if (
       window.TEUI &&

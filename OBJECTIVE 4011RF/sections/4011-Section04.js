@@ -49,9 +49,9 @@ window.TEUI.SectionModules.sect04 = (function () {
     // Store in TargetState and StateManager (no prefix)
     TargetState.setValue(fieldId, rawValue, "calculated");
     if (window.TEUI?.StateManager) {
-      // 🔧 DEBUG: Log critical j_32 updates for S01 h_10 tracking
+      // 🔧 DEBUG: Track j_32 updates for fuel system debugging
       if (fieldId === "j_32") {
-        console.log(`[S04DB] 🎯 setCalculatedValue: Setting j_32=${rawValue} in StateManager (should trigger S01 h_10 update)`);
+        console.log(`[S04] j_32 update: ${rawValue}`);
       }
       window.TEUI.StateManager.setValue(fieldId, rawValue, "calculated");
     }
@@ -1520,7 +1520,7 @@ window.TEUI.SectionModules.sect04 = (function () {
     const j_31 = ModeManager.getValue("j_31") || 0;
     const result = j_27 + j_28 + j_29 + j_30 + j_31;
     
-    console.log(`[S04DB] calculateJ32: j_27=${j_27}, j_28=${j_28}, j_29=${j_29}, j_30=${j_30}, j_31=${j_31} → j_32=${result}`);
+    console.log(`[S04] j_32 calc: ${j_27}+${j_28}+${j_29}+${j_30}+${j_31} = ${result}`);
     
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
     setCalculatedValue("j_32", result);
@@ -2351,7 +2351,6 @@ window.TEUI.SectionModules.sect04 = (function () {
   }
 
   function setupEventHandlers() {
-    console.log(`[S04DB] 🚀 setupEventHandlers() called - about to register listeners`);
     
     // ✅ FIX: Use BACKUP's proven approach for comprehensive field handling
     const sectionElement = document.getElementById("actualTargetEnergy");
@@ -2440,7 +2439,6 @@ window.TEUI.SectionModules.sect04 = (function () {
 
     // ✅ CRITICAL: Listen for external dependencies that affect S04 calculations
     if (window.TEUI?.StateManager?.addListener) {
-      console.log(`[S04DB] ✅ StateManager available - registering listeners for f_115, h_115, etc.`);
       // React to S15's target electricity calculation
       window.TEUI.StateManager.addListener("d_136", () => {
         console.log(`[S04] S15 target electricity changed: d_136`);
@@ -2517,7 +2515,7 @@ window.TEUI.SectionModules.sect04 = (function () {
 
       // ✅ CRITICAL: React to S07/S13 gas-related changes (affects H28 target gas volume)
       window.TEUI.StateManager.addListener("d_51", () => {
-        console.log(`[S04] S07 water heating fuel type changed: d_51`);
+        console.log(`[S04] d_51 listener fired - S07 fuel type`);
         calculateRow28(); // Recalculate complete gas row (includes H28, J28, K28)
         calculateF32(); // Recalculate ACTUAL subtotal
         calculateG32(); // Recalculate ACTUAL emissions subtotal
@@ -2537,7 +2535,7 @@ window.TEUI.SectionModules.sect04 = (function () {
       });
 
       window.TEUI.StateManager.addListener("e_51", () => {
-        console.log(`[S04] S07 water gas volume changed: e_51`);
+        console.log(`[S04] e_51 listener fired - S07 gas`);
         calculateRow28(); // Recalculate complete gas row (includes H28, J28, K28)
         calculateF32(); // Recalculate ACTUAL subtotal
         calculateG32(); // Recalculate ACTUAL emissions subtotal
@@ -2558,7 +2556,7 @@ window.TEUI.SectionModules.sect04 = (function () {
 
       // ✅ CRITICAL: React to S07/S13 oil-related changes (affects H30 target oil volume)
       window.TEUI.StateManager.addListener("k_54", () => {
-        console.log(`[S04] S07 water oil volume changed: k_54`);
+        console.log(`[S04] k_54 listener fired - S07 oil`);
         calculateRow30(); // Recalculate complete oil row (includes H30, J30, K30)
         calculateF32(); // Recalculate ACTUAL subtotal
         calculateG32(); // Recalculate ACTUAL emissions subtotal
@@ -2568,7 +2566,7 @@ window.TEUI.SectionModules.sect04 = (function () {
       });
 
       window.TEUI.StateManager.addListener("f_115", () => {
-        console.log(`[S04DB] 🔥 LISTENER FIRED: f_115 changed - will trigger Oil calculations and j_32 update`);
+        console.log(`[S04] f_115 listener fired - S13 oil`);
         calculateRow30(); // Recalculate complete oil row (includes H30, J30, K30)
         calculateF32(); // Recalculate ACTUAL subtotal
         calculateG32(); // Recalculate ACTUAL emissions subtotal
@@ -2576,7 +2574,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         calculateK32(); // Recalculate TARGET emissions subtotal
         ModeManager.updateCalculatedDisplayValues();
       });
-      console.log(`[S04DB] ✅ f_115 listener registered successfully`);
+
 
       // ✅ CRITICAL: React to S06 renewable energy changes (affects F27, J27, and subtotals)
       // Excel formulas: F27 = D27 - D43 - I43, J27 = H27 - D43 - I43
@@ -2704,7 +2702,6 @@ window.TEUI.SectionModules.sect04 = (function () {
 
     // Event setup - Pattern A initialization
     onSectionRendered: function () {
-      console.log("[S04DB] 🚀 onSectionRendered() called - initializing S04");
 
       // Initialize Pattern A dual-state architecture
       ModeManager.initialize();
@@ -2717,8 +2714,7 @@ window.TEUI.SectionModules.sect04 = (function () {
 
       // Run initial calculations
       calculateAll();
-      
-      console.log("[S04DB] ✅ S04 initialization complete - listeners should be active");
+
     },
 
     // Expose ModeManager for global toggle integration

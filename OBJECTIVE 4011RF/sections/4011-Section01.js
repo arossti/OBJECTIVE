@@ -435,21 +435,9 @@ window.TEUI.SectionModules.sect01 = (function () {
   }
 
   function updateDisplayValue(fieldId, value, tierOverride = null) {
-    // 🔧 DEBUG: Enhanced logging for h_10 display tracking with stack trace
+    // 🔧 DEBUG: Monitor h_10 updates for fuel system debugging (S13/S07)
     if (fieldId === "h_10") {
-      console.log(`[S01DB] 🖥️ updateDisplayValue(h_10): value=${value}, tierOverride=${tierOverride}`);
-      
-      // 🚨 CRITICAL: If we're getting the wrong value (70.8), show stack trace
-      if (value === "70.8" || value === 70.8) {
-        console.log(`[S01DB] 🚨 RACE CONDITION DETECTED! 70.8 overwrite from:`);
-        console.trace(`[S01DB] Stack trace for 70.8 overwrite:`);
-      }
-      
-      // 🎯 Also trace correct values to confirm our calculation path
-      if (value && (value.toString().startsWith("163") || value.toString().startsWith("160"))) {
-        console.log(`[S01DB] ✅ CORRECT VALUE from:`);
-        console.trace(`[S01DB] Stack trace for correct value:`);
-      }
+      console.log(`[S01] h_10 update: value=${value}, tier=${tierOverride}`);
     }
     
     const element = document.querySelector(
@@ -643,8 +631,8 @@ window.TEUI.SectionModules.sect01 = (function () {
     const h_10 =
       targetArea > 0 ? Math.round((targetEnergy / targetArea) * 10) / 10 : 0;
     
-    // 🔧 DEBUG: Track the exact h_10 calculation chain for fuel system issue
-    console.log(`[S01DB] 🎯 h_10 calculation: targetEnergy(j_32)=${targetEnergy} ÷ targetArea(h_15)=${targetArea} = ${h_10}`);
+    // 🔧 DEBUG: Track h_10 calculation for fuel system debugging
+    console.log(`[S01] h_10 calc: j_32=${targetEnergy} ÷ h_15=${targetArea} = ${h_10}`);
 
     // h_8 = k_32 / h_15 (Target Annual Carbon)
     const h_8 =
@@ -1105,7 +1093,7 @@ window.TEUI.SectionModules.sect01 = (function () {
           // Only recalculate if the value actually changed
           if (newValue !== oldValue) {
             if (fieldId === "j_32") {
-              console.log(`🟢 [S01] TARGET ENERGY LISTENER: j_32 changed from ${oldValue} to ${newValue} → will update TARGET COLUMN H (h_10)`);
+              console.log(`[S01] j_32 listener: ${oldValue} → ${newValue}`);
             } else if (fieldId === "ref_j_32") {
               // console.log(`🔵 [S01] REFERENCE ENERGY LISTENER: ref_j_32 changed from ${oldValue} to ${newValue} → will update REFERENCE COLUMN E`);
             } else {
