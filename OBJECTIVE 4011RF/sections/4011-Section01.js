@@ -734,6 +734,16 @@ window.TEUI.SectionModules.sect01 = (function () {
     // 🔧 DEBUG: Track h_10 update call
     console.log(`[S01DB] 📞 About to call updateDisplayValue("h_10", "${h10Formatted}", "${calculatedTier}")`);
     updateDisplayValue("h_10", h10Formatted, calculatedTier);
+    
+    // 🔍 RACE CONDITION DEBUG: Check actual DOM value after update
+    setTimeout(() => {
+      const h10Element = document.querySelector('[data-field-id="h_10"] .numeric-value');
+      const domValue = h10Element ? h10Element.textContent : 'NOT FOUND';
+      console.log(`[S01DB] 🚨 DOM CHECK: h_10 element shows "${domValue}" after updateDisplayValue("${h10Formatted}")`);
+      if (domValue !== h10Formatted) {
+        console.log(`[S01DB] ❌ RACE CONDITION DETECTED: Expected "${h10Formatted}" but DOM shows "${domValue}"`);
+      }
+    }, 50);
     updateDisplayValue("h_8", h8Formatted);
     updateDisplayValue("h_6", h6Formatted);
 
@@ -1094,6 +1104,7 @@ window.TEUI.SectionModules.sect01 = (function () {
           if (newValue !== oldValue) {
             if (fieldId === "j_32") {
               console.log(`[S01] j_32 listener: ${oldValue} → ${newValue}`);
+              console.log(`[S01] 🕐 j_32 listener timing: StateManager current j_32 = ${window.TEUI.StateManager?.getValue("j_32")}`);
             } else if (fieldId === "ref_j_32") {
               // console.log(`🔵 [S01] REFERENCE ENERGY LISTENER: ref_j_32 changed from ${oldValue} to ${newValue} → will update REFERENCE COLUMN E`);
             } else {

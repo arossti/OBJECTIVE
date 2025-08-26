@@ -330,6 +330,12 @@ TEUI.StateManager = (function () {
    * @returns {boolean} True if the value changed
    */
   function setValue(fieldId, value, state = VALUE_STATES.USER_MODIFIED) {
+    // 🔍 RACE CONDITION DEBUG: Track all h_10 setValue calls
+    if (fieldId === "h_10") {
+      console.log(`[StateManager] 🎯 h_10 setValue: "${value}" (state: ${state})`);
+      console.trace("[StateManager] h_10 setValue stack trace:");
+    }
+    
     // Check if we're in Reference Mode and this is an independently editable field
     if (
       window.TEUI &&
