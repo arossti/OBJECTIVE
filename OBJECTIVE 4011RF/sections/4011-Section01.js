@@ -434,34 +434,12 @@ window.TEUI.SectionModules.sect01 = (function () {
     return window.TEUI?.parseNumeric?.(cleanedText, NaN) ?? NaN;
   }
 
-  // 🔧 RACE CONDITION FIX: Debounce h_10 updates to prevent rapid-fire overrides
-  let h10UpdateTimeout = null;
-  
   function updateDisplayValue(fieldId, value, tierOverride = null) {
     // 🔧 DEBUG: Monitor h_10 updates for fuel system debugging (S13/S07)
     if (fieldId === "h_10") {
       console.log(`[S01] h_10 update: value=${value}, tier=${tierOverride}`);
-      
-      // Clear any pending h_10 update to ensure latest value wins
-      if (h10UpdateTimeout) {
-        clearTimeout(h10UpdateTimeout);
-        console.log(`[S01DB] 🚫 Cancelled pending h_10 update - using latest value=${value}`);
-      }
-      
-      // Debounce h_10 updates by 100ms to handle rapid j_32 changes
-      h10UpdateTimeout = setTimeout(() => {
-        console.log(`[S01DB] ⏰ Executing debounced h_10 update: ${value}, tier=${tierOverride}`);
-        performDisplayUpdate(fieldId, value, tierOverride);
-        h10UpdateTimeout = null;
-      }, 100);
-      return; // Exit early for h_10, let timeout handle it
     }
     
-    // For all other fields, update immediately
-    performDisplayUpdate(fieldId, value, tierOverride);
-  }
-  
-  function performDisplayUpdate(fieldId, value, tierOverride = null) {
     const element = document.querySelector(
       `[data-field-id="${fieldId}"] .key-value, [data-field-id="${fieldId}"] .percent-value`,
     );
