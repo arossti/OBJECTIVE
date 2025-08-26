@@ -1079,6 +1079,7 @@ window.TEUI.SectionModules.sect07 = (function () {
 
   function handleDHWSourceChange(event) {
     const selectedSource = event.target.value;
+    console.log(`[S07] handleDHWSourceChange called: selectedSource="${selectedSource}"`);
     const d52Slider = document.querySelector(
       'input[type="range"][data-field-id="d_52"]',
     );
@@ -1106,6 +1107,8 @@ window.TEUI.SectionModules.sect07 = (function () {
       newValue = 300;
     }
 
+    console.log(`[S07] Setting d_52 slider: min=${newMinValue}, max=${newMaxValue}, value=${newValue}`);
+    
     if (window.TEUI?.StateManager) {
       window.TEUI.StateManager.setValue(
         "d_52",
@@ -1117,6 +1120,7 @@ window.TEUI.SectionModules.sect07 = (function () {
         newValue.toString(),
         "system-update",
       );
+      console.log(`[S07] Updated StateManager d_52 = ${newValue}`);
     }
     if (d52Slider) {
       d52Slider.min = newMinValue;
@@ -1124,6 +1128,14 @@ window.TEUI.SectionModules.sect07 = (function () {
       d52Slider.step = newStep;
       d52Slider.value = newValue;
       if (d52Display) d52Display.textContent = `${newValue}%`;
+      console.log(`[S07] Updated DOM slider: d_52 = ${newValue}%, display = ${d52Display?.textContent}`);
+      
+      // 🔧 CRITICAL: Update local state and trigger recalculation
+      ModeManager.setValue("d_52", newValue.toString(), "system-update");
+      calculateAll();
+      ModeManager.updateCalculatedDisplayValues();
+    } else {
+      console.log(`[S07] ERROR: d_52 slider not found in DOM!`);
     }
   }
 
