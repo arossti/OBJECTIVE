@@ -1571,6 +1571,47 @@ All rights retained by the Canadian Nponprofit OpenBuilding, Inc., with support 
   - Provide even more granular control over calculation timing and dependencies
   - Enable more sophisticated cross-section optimization patterns
   - Note: This architectural refactor was attempted on the 'ORDERING' branch but encountered complexities with Sankey (S16) and Dependency (S17) graph rendering. Future implementation should address these visualization timing requirements as part of the overall sequencing solution.
+
+### Future Enhancement: Dual-State Dependency Visualization
+
+**Current Limitation**: The dependency graph (`4011-Dependency.js`) currently shows **Target state calculations only** (~60% coverage). While this provides valuable architectural understanding, it doesn't capture the complete dual-state calculation flow essential to energy modeling compliance.
+
+**Proposed Enhancement**: **Reference State Toggle for Dependency Graph**
+
+```
+Target State View (Current)          Reference State View (Planned)
+┌─────────────────────────┐    ⟷    ┌─────────────────────────┐
+│ d_20 → h_127 → i_104    │ [Toggle] │ ref_d_20 → ref_h_127    │
+│ Section03 → Section15   │          │ → ref_i_104             │
+│ (User design values)    │          │ Section03(REF) → S15(REF)│
+│                         │          │ (Code minimum values)   │
+└─────────────────────────┘          └─────────────────────────┘
+```
+
+**Implementation Strategy** (for future development):
+
+1. **Enhanced StateManager.exportDependencyGraph()**:
+   - Add `mode` parameter: `exportDependencyGraph(mode = "target")`
+   - **Target mode**: Return current field dependencies (d_20 → h_127)  
+   - **Reference mode**: Return ref_ prefixed dependencies (ref_d_20 → ref_h_127)
+
+2. **UI Toggle Button**:
+   - Add "Show Reference Dependencies" button to dependency graph controls
+   - Toggle between Target and Reference dependency visualization
+   - Maintain same graph layout for easy comparison
+
+3. **Reference State Mapping**:
+   - Map `ref_` prefixed fields to Reference calculation sections
+   - Show Reference-specific execution flow: ReferenceValues → RefCalculations → RefResults
+   - Visualize Reference state isolation and regulatory compliance paths
+
+**Benefits for AI Agents**:
+- **Complete dual-state understanding**: See both Target (user design) and Reference (code compliance) calculation flows
+- **Regulatory compliance mapping**: Understand how building code requirements flow through calculations
+- **State isolation verification**: Visualize perfect separation between design and compliance calculations
+- **Debug contamination issues**: Quickly identify where Target/Reference states might interact incorrectly
+
+**Current Workaround**: For now, agents should use the dependency graph for architectural overview and consult `DUAL-STATE-CHEATSHEET.md` for Reference state calculation patterns.
 - **Event-Driven Calculation Chain (Traffic Cop Model)**: To further enhance calculation stability and address issues like initial display errors from data import race conditions (where values might be read before they are fully calculated and propagated through the dual-engine system), v4.012 should explore a more explicitly event-driven calculation chain. This would involve:
   - Sections emitting events like `referenceModelCalculationComplete` or `targetModelValueAvailable(fieldId)`.
   - Dependent sections (or a central calculation orchestrator) listening for these events from their specific data sources before triggering their own calculations.
