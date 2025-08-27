@@ -991,10 +991,11 @@ TEUI.StateManager = (function () {
   /**
    * Exports the dependency data in a format suitable for visualization.
    * Includes both field-level dependencies and architectural module dependencies.
+   * @param {string} mode - "target" (default), "reference", or "both" for dual-state analysis
    * @returns {object} Object containing nodes and links, e.g., { nodes: [], links: [] }
    */
-  function exportDependencyGraph() {
-    // console.log("[StateManager] Exporting dependency graph data...");
+  function exportDependencyGraph(mode = "target") {
+    // console.log(`[StateManager] Exporting dependency graph data for mode: ${mode}...`);
     const nodes = new Map(); // Use a Map to easily track unique nodes
     const links = [];
 
@@ -1048,22 +1049,57 @@ TEUI.StateManager = (function () {
     architecturalNodes.forEach(node => nodes.set(node.id, node));
     links.push(...architecturalLinks);
 
+    // === MODE-BASED DEPENDENCY PROCESSING ===
+    // Process Target, Reference, or both sets of dependencies based on mode
+    
     // Iterate through the dependencies map (source -> Set<target>)
-    dependencies.forEach((targets, sourceId) => {
-      // Add source node if not already added
-      if (!nodes.has(sourceId)) {
-        nodes.set(sourceId, { id: sourceId });
-      }
-
-      targets.forEach((targetId) => {
-        // Add target node if not already added
-        if (!nodes.has(targetId)) {
-          nodes.set(targetId, { id: targetId });
+    // Process dependencies based on mode for AI agent analysis
+    const processFieldDependencies = (sourcePrefix = "", targetPrefix = "", nodePrefix = "") => {
+      dependencies.forEach((targets, sourceId) => {
+        const processedSourceId = sourcePrefix + sourceId;
+        
+        // Add source node if not already added
+        if (!nodes.has(processedSourceId)) {
+          nodes.set(processedSourceId, { 
+            id: processedSourceId, 
+            originalId: sourceId,
+            dependencyMode: nodePrefix || "target"
+          });
         }
-        // Add the link
-        links.push({ source: sourceId, target: targetId });
+
+        targets.forEach((targetId) => {
+          const processedTargetId = targetPrefix + targetId;
+          
+          // Add target node if not already added
+          if (!nodes.has(processedTargetId)) {
+            nodes.set(processedTargetId, { 
+              id: processedTargetId,
+              originalId: targetId, 
+              dependencyMode: nodePrefix || "target"
+            });
+          }
+
+          // Add dependency link
+          links.push({ 
+            source: processedSourceId, 
+            target: processedTargetId,
+            dependencyMode: nodePrefix || "target"
+          });
+        });
       });
-    });
+    };
+
+    // Process dependencies based on requested mode
+    if (mode === "target" || mode === "both") {
+      // Standard Target state dependencies (current behavior)
+      processFieldDependencies("", "", "target");
+    }
+    
+    if (mode === "reference" || mode === "both") {
+      // Reference state dependencies (ref_ prefixed fields)
+      // For Reference mode, we map the same logical dependencies but with ref_ prefixes
+      processFieldDependencies("ref_", "ref_", "reference");
+    }
 
     // Enhance node data using FieldManager
     if (window.TEUI?.FieldManager) {
@@ -1130,6 +1166,43 @@ TEUI.StateManager = (function () {
       return "teuiSummary"; // Section 15
 
     return "Other"; // Default fallback
+  }
+
+  /**
+   * AI AGENT HELPER: Get dual-state dependency analysis
+   * Returns structured data about both Target and Reference calculation flows
+   * @returns {object} Object with targetDependencies, referenceDependencies, and combined analysis
+   */
+  function getDualStateDependencyAnalysis() {
+    const targetGraph = exportDependencyGraph("target");
+    const referenceGraph = exportDependencyGraph("reference");
+    const combinedGraph = exportDependencyGraph("both");
+    
+    return {
+      target: {
+        description: "Target state dependencies (user design values)",
+        nodeCount: targetGraph.nodes.length,
+        linkCount: targetGraph.links.length,
+        graph: targetGraph
+      },
+      reference: {
+        description: "Reference state dependencies (code compliance values)",
+        nodeCount: referenceGraph.nodes.length,
+        linkCount: referenceGraph.links.length,
+        graph: referenceGraph
+      },
+      combined: {
+        description: "Complete dual-state dependency map",
+        nodeCount: combinedGraph.nodes.length,
+        linkCount: combinedGraph.links.length,
+        graph: combinedGraph
+      },
+      analysis: {
+        coverageRatio: referenceGraph.nodes.length / targetGraph.nodes.length,
+        totalDependencies: targetGraph.links.length + referenceGraph.links.length,
+        dualStateCompliant: referenceGraph.nodes.length > 0
+      }
+    };
   }
 
   /**
@@ -1675,6 +1748,7 @@ TEUI.StateManager = (function () {
     getAllKeys: getAllKeys,
     getDebugInfo: getDebugInfo,
     exportDependencyGraph: exportDependencyGraph,
+    getDualStateDependencyAnalysis: getDualStateDependencyAnalysis,
     loadReferenceData: loadReferenceData,
     setValueInReferenceMode: setValueInReferenceMode,
     setMuteApplicationStateUpdates: setMuteApplicationStateUpdates,

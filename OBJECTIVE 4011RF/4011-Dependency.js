@@ -16,6 +16,22 @@
 //
 // NOTE: Core functionality (field dependencies + architectural framework) is working.
 // These improvements are aesthetic/UX enhancements, not mission-critical features.
+//
+// === AI AGENT USAGE EXAMPLES ===
+// For programmatic access to dual-state dependencies (without UI visualization):
+//
+// // Get Target state dependencies (current visualization)
+// const targetGraph = window.TEUI.StateManager.exportDependencyGraph("target");
+//
+// // Get Reference state dependencies (compliance calculations)  
+// const refGraph = window.TEUI.StateManager.exportDependencyGraph("reference");
+//
+// // Get complete dual-state analysis
+// const analysis = window.TEUI.StateManager.getDualStateDependencyAnalysis();
+// console.log(`Coverage: ${analysis.analysis.coverageRatio}, Total deps: ${analysis.analysis.totalDependencies}`);
+//
+// // Query specific dependency paths
+// const climateToEnergy = refGraph.links.filter(l => l.source.includes("d_20"));
 
 // Ensure TEUI namespace exists
 window.TEUI = window.TEUI || {};
