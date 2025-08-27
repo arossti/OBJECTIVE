@@ -982,6 +982,8 @@ The application follows a precise initialization sequence critical for proper op
 
 ### **🔧 AI Agent Guidelines**
 
+**📊 For architectural understanding**: Use the **Dependency Graph** in `4011-Dependency.js` - provides visual framework showing both field dependencies and module relationships to understand execution flow.
+
 **✅ When modifying sections**:
 1. Sections are **self-contained modules** in `window.TEUI.SectionModules.sectXX`
 2. All state changes go through **StateManager** (never direct DOM manipulation)
