@@ -905,6 +905,94 @@ The TEUI 4.011 Calculator has been successfully transformed into a modular, main
 - **DOM-Based Field Identification**: Consistent ID system mapping directly to Excel cell references for both legacy support as well as import and export
 - **Component Bridge**: Integration system for connecting sections and calculations
 
+## 🏗️ **EXECUTION ARCHITECTURE FOR AI AGENTS**
+
+### **Critical Understanding: This is NOT a Traditional SPA**
+
+TEUI 4.011 is a **stateful energy modeling application** that:
+- Uses **no bundling/compilation** (runs directly in browser)
+- Manages **complex dual-state calculations** (Target vs Reference building models)  
+- Coordinates **18 section modules** through centralized state management
+- Uses **Excel-compatible field naming** for regulatory compliance
+
+### **🔄 Application Execution Flow** 
+
+The application follows a precise initialization sequence critical for proper operation:
+
+```
+1. index.html loads external dependencies (Bootstrap, D3, Chart.js, XLSX, Dagre)
+2. Core modules load in dependency order:
+   ├── 4011-StateManager.js        ← FOUNDATION (state persistence, field registry)
+   ├── 4011-FieldManager.js        ← DEPENDS ON StateManager
+   ├── 4011-SectionIntegrator.js   ← DEPENDS ON managers  
+   ├── 4011-Calculator.js          ← ORCHESTRATOR
+   └── 4011-Dependency.js          ← VISUALIZATION
+3. Section modules load (4011-Section01.js through 4011-Section18.js)
+4. Runtime initialization:
+   ├── StateManager.initialize()     ← Loads localStorage, sets up listeners
+   ├── FieldManager.renderAllSections() ← Creates DOM, registers section modules
+   ├── teui-rendering-complete event ← Fired when all sections rendered
+   ├── Calculator.initialize()       ← Sets up calculation coordination
+   └── Calculator.calculateAll()     ← Initial calculation pass (300ms delay)
+```
+
+### **🚦 Traffic Cop Pattern** (Core Architecture)
+
+**Purpose**: Prevents calculation storms and race conditions in dual-state system
+
+**Key Components**:
+- **StateManager**: Single source of truth for all field values and cross-section communication
+- **Calculator**: Orchestrates calculation sequence using `runAllCalculations()` 
+- **Global Recursion Protection**: `window.sectionCalculationInProgress` flag prevents infinite loops
+- **Section Modules**: Each owns its `TargetState` and `ReferenceState` objects for complete state isolation
+
+**Anti-Patterns Eliminated**:
+- ❌ Multiple sections triggering calculations simultaneously  
+- ❌ StateManager wildcard listeners causing infinite loops
+- ❌ Cross-state contamination (Reference showing Target values)
+- ❌ setTimeout hacks to prevent crashes
+
+### **📂 Module Hierarchy**
+
+```
+🏗️ FOUNDATION LAYER
+├── StateManager (state persistence, field registry, listeners, dependency tracking)
+├── FieldManager (DOM generation, section coordination, field definitions)
+└── ReferenceValues (building code minimums, standards database)
+
+🧮 COORDINATION LAYER  
+├── Calculator (calculation orchestration, Traffic Cop implementation)
+├── SectionIntegrator (cross-section data flow, TEUI integration patterns)
+└── ReferenceToggle (UI mode switching, dual-state display management)
+
+🎯 APPLICATION LAYER
+├── Section01-18 (calculation logic, dual-state objects, UI rendering)
+├── FileHandler (import/export, Excel compatibility)
+└── Dependency (field relationship visualization)
+```
+
+### **🔧 AI Agent Guidelines**
+
+**✅ When modifying sections**:
+1. Sections are **self-contained modules** in `window.TEUI.SectionModules.sectXX`
+2. All state changes go through **StateManager** (never direct DOM manipulation)
+3. Follow **Pattern A dual-state** architecture (see `DUAL-STATE-CHEATSHEET.md`)
+4. Use `calculateAll()` to run both Target and Reference engines in parallel
+5. Store results with `setCalculatedValue()` helper functions
+
+**❌ Critical Anti-Patterns**:
+1. Never bypass Traffic Cop (no direct section-to-section calls)
+2. Never modify calculation sequences without understanding dependency flow
+3. Never hardcode defaults in state objects (use field definitions as single source)
+4. Never add `calculateAll()` to `switchMode()` (UI toggle is display-only)
+5. Never throw out working calculation functions from BACKUP files
+
+**🎯 Key Architectural Concepts**:
+- **Dual-Engine Architecture**: Every calculation produces both Target and Reference results
+- **StateManager Centrality**: All data flows through StateManager, never direct between sections
+- **Event-Driven Updates**: Cross-section communication via StateManager listeners
+- **State Sovereignty**: Each section manages its own Target/Reference state objects
+
 ## 1. Core Architectural Components
 
 ### Modular Structure
