@@ -255,9 +255,9 @@ function calculateApplicationModel() {
 
 ---
 
-### **🔧 IT-DEPENDS MIGRATION ARCHITECTURE**
+### **🔧 FUTURE: IT-DEPENDS DEPENDENCY-ORDERED ARCHITECTURE**
 
-We're migrating from Traffic Cop pattern to **HYBRID IT-DEPENDS** (dependency-ordered calculations for cross-section integration) while preserving section-internal calculation efficiency. **Critical**: This migration must preserve proven architecture.
+**Current Status**: Traffic Cop V2 architecture is successfully implemented and working. The IT-DEPENDS approach represents **future architectural improvements** planned for v4.012 to optimize dependency-ordered calculations for cross-section integration while preserving section-internal calculation efficiency.
 
 #### **✅ HYBRID IT-DEPENDS ARCHITECTURE (The Working Solution)**
 
@@ -296,47 +296,50 @@ function handleFieldBlur(event) {
 }
 ```
 
-#### **🎯 MIGRATION STATUS (Current as of 2025-01-20)**
+#### **🎯 CURRENT IMPLEMENTATION STATUS (Traffic Cop V2 + Pattern A)**
 
-**✅ FULLY MIGRATED SECTIONS (Production Ready):**
+**✅ PATTERN A DUAL-STATE SECTIONS (Production Ready):**
 
-- **S03**: Complete IT-DEPENDS for climate calculations
-- **S10**: Complete IT-DEPENDS for solar gains and orientation calculations
+- **S01**: Pattern A dual-state with Reference System integration
+- **S05**: Pattern A dual-state architecture implemented 
+- **S08**: Pattern A dual-state architecture implemented
+- **S09**: Pattern A dual-state architecture implemented
+- **S10**: Pattern A dual-state architecture implemented
+- **S11**: Pattern A dual-state architecture implemented
 
-**🔄 HYBRID SECTIONS (Production Ready):**
+**🔄 SECTIONS READY FOR PATTERN A MIGRATION:**
 
-- **S11**: IT-DEPENDS calculations registered + area sync working with dependency triggers
-- **S13**: Phase 2 IT-DEPENDS (d_115, h_113) + traditional backup listeners
+- **S02-S04, S06-S07, S12-S15**: Traditional calculateAll() systems, candidates for Pattern A conversion
 
-**🔴 TRADITIONAL SECTIONS (Stable, Future Migration):**
+**📋 FUTURE IT-DEPENDS OPTIMIZATION:**
 
-- **S01, S02, S04-S09, S12, S14-S15**: Traditional calculateAll() systems
+All sections are candidates for future IT-DEPENDS dependency-ordered calculations as part of v4.012 framework improvements.
 
-#### **🚀 PROVEN END-TO-END DEPENDENCY FLOW**
+#### **🚀 CURRENT DEPENDENCY FLOW (Traffic Cop V2)**
 
-**Critical Achievement**: S10→S11→S01 dependency chain now working with IT-DEPENDS architecture!
+**Current Achievement**: S10→S11→S01 dependency chain working with Traffic Cop V2 coordination and Pattern A dual-state isolation.
 
-**🚨 HEMISPHERE SEPARATION IMPERATIVE**: IT-DEPENDS migration is essential for **dual-engine hemisphere integrity**. Traditional `calculateAll()` listeners in dual-engine sections create contamination risks where Reference and Application calculations may accidentally read from wrong state hemispheres. IT-DEPENDS provides explicit hemisphere separation through dedicated calculation functions.
+**✅ DUAL-ENGINE HEMISPHERE SEPARATION**: Pattern A architecture achieves **dual-engine hemisphere integrity** through self-contained TargetState and ReferenceState objects. Traffic Cop V2 coordination prevents cross-contamination while future IT-DEPENDS optimization will provide even more explicit dependency management.
 
 ```
-S10 Building Geometry Changes (IT-DEPENDS)
-    ↓ Area sync with dependency triggers
-S11 Envelope Heat Loss/Gain (HYBRID - needs completion for hemisphere separation)
+S10 Building Geometry Changes (Pattern A dual-state)
+    ↓ Traffic Cop V2 coordination via StateManager
+S11 Envelope Heat Loss/Gain (Pattern A dual-state)
     ↓ StateManager propagation
-S12 Combined U-values (Traditional)
+S12 Combined U-values (Traditional - candidate for Pattern A)
     ↓ Cross-section integration
-S15 Energy Calculations (Traditional - dual-engine, needs IT-DEPENDS)
+S15 Energy Calculations (Traditional - candidate for Pattern A)
     ↓ Dual-engine calculations
-S01 Reference & Target TEUI Models (Traditional - dual-engine, needs IT-DEPENDS)
+S01 Reference & Target TEUI Models (Pattern A dual-state + Reference System)
 ```
 
 **What This Proves**:
 
-- IT-DEPENDS architecture works across section boundaries
-- Hybrid sections can coexist with traditional sections
-- Dependency-driven calculations eliminate calculation storms
-- **Hemisphere separation is achievable** through explicit IT-DEPENDS calculations
-- **Foundation exists for reference model completion**
+- Traffic Cop V2 coordination works across section boundaries
+- Pattern A sections provide complete state isolation
+- Reference System enables master dual-state coordination
+- **Hemisphere separation is achieved** through Pattern A self-contained state objects
+- **Foundation exists for IT-DEPENDS optimization** in v4.012
 
 #### **🎯 HYBRID IT-DEPENDS Benefits**
 
@@ -935,8 +938,8 @@ The application follows a precise initialization sequence critical for proper op
    ├── StateManager.initialize()     ← Loads localStorage, sets up listeners
    ├── FieldManager.renderAllSections() ← Creates DOM, registers section modules
    ├── teui-rendering-complete event ← Fired when all sections rendered
-   ├── Calculator.initialize()       ← Sets up calculation coordination
-   └── Calculator.calculateAll()     ← Initial calculation pass (300ms delay)
+   ├── Calculator.initialize()       ← Sets up Traffic Cop coordination
+   └── Calculator.calculateAll()     ← Initial calculation pass (orchestrated sequence)
 ```
 
 ### **🚦 Traffic Cop Pattern** (Core Architecture)
@@ -953,7 +956,7 @@ The application follows a precise initialization sequence critical for proper op
 - ❌ Multiple sections triggering calculations simultaneously  
 - ❌ StateManager wildcard listeners causing infinite loops
 - ❌ Cross-state contamination (Reference showing Target values)
-- ❌ setTimeout hacks to prevent crashes
+- ❌ Race conditions requiring timing-based workarounds
 
 ### **📂 Module Hierarchy**
 
@@ -1555,14 +1558,16 @@ All rights retained by the Canadian Nponprofit OpenBuilding, Inc., with support 
   - **Strategic Decision**: Document as known issue and focus on section-by-section validation and "traffic cop" calculation sequencing improvements. The underlying timing/sequencing improvements across all sections will likely resolve this naturally.
   - **Future Resolution**: Implement proper calculation sequencing system (eliminate setTimeout delays, establish deterministic dependency ordering) as outlined in v4.012 architectural improvements.
 
-### Architectural Improvements for v4.012
+### Future Architectural Improvements for v4.012
 
-- **Race Condition Resolution Through Calculation Sequencing**: The current implementation uses tactical `setTimeout` delays (e.g., 50ms delays in Section 01 for `d_51` changes) to resolve race conditions between section calculations. While functional, this approach is not architecturally sound for production. **For v4.012, implement a proper calculation sequencing system** that:
-  - Eliminates all `setTimeout` delays used for cross-section coordination
-  - Establishes deterministic calculation ordering based on dependency graph
-  - Implements proper queuing and sequencing for cross-section updates
-  - Ensures calculations complete in dependency order without timing-based workarounds
-  - Provides reliable state consistency without reliance on arbitrary delays
+**Current Status**: Traffic Cop V2 has successfully eliminated race conditions and calculation storms. The following improvements represent the next evolution toward dependency-ordered optimization:
+
+- **Advanced Dependency-Ordered Sequencing**: While Traffic Cop V2 provides reliable coordination, **v4.012 will implement explicit dependency-ordered calculations** that:
+  - Establish deterministic calculation ordering based on dependency graph analysis
+  - Implement smart queuing and sequencing for cross-section updates
+  - Ensure calculations execute in optimal dependency order for maximum performance
+  - Provide even more granular control over calculation timing and dependencies
+  - Enable more sophisticated cross-section optimization patterns
   - Note: This architectural refactor was attempted on the 'ORDERING' branch but encountered complexities with Sankey (S16) and Dependency (S17) graph rendering. Future implementation should address these visualization timing requirements as part of the overall sequencing solution.
 - **Event-Driven Calculation Chain (Traffic Cop Model)**: To further enhance calculation stability and address issues like initial display errors from data import race conditions (where values might be read before they are fully calculated and propagated through the dual-engine system), v4.012 should explore a more explicitly event-driven calculation chain. This would involve:
   - Sections emitting events like `referenceModelCalculationComplete` or `targetModelValueAvailable(fieldId)`.
