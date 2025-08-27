@@ -990,12 +990,63 @@ TEUI.StateManager = (function () {
 
   /**
    * Exports the dependency data in a format suitable for visualization.
+   * Includes both field-level dependencies and architectural module dependencies.
    * @returns {object} Object containing nodes and links, e.g., { nodes: [], links: [] }
    */
   function exportDependencyGraph() {
     // console.log("[StateManager] Exporting dependency graph data...");
     const nodes = new Map(); // Use a Map to easily track unique nodes
     const links = [];
+
+    // === ARCHITECTURAL MODULE DEPENDENCIES FOR AI AGENTS ===
+    // Add module-level architectural nodes to help AI agents understand execution flow
+    const architecturalNodes = [
+      { id: "FOUNDATION-StateManager", group: "🏗️ Foundation", type: "module", architecturalLayer: "Foundation",
+        label: "StateManager", description: "Central state management, single source of truth" },
+      { id: "FOUNDATION-FieldManager", group: "🏗️ Foundation", type: "module", architecturalLayer: "Foundation",
+        label: "FieldManager", description: "DOM generation, section coordination" },
+      { id: "FOUNDATION-ReferenceValues", group: "🏗️ Foundation", type: "module", architecturalLayer: "Foundation",
+        label: "ReferenceValues", description: "Building code standards database" },
+      { id: "COORDINATION-Calculator", group: "🧮 Coordination", type: "module", architecturalLayer: "Coordination",
+        label: "Calculator", description: "Traffic Cop coordination, orchestrates calculateAll()" },
+      { id: "COORDINATION-ReferenceSystem", group: "🧮 Coordination", type: "module", architecturalLayer: "Coordination",
+        label: "Reference System", description: "Master dual-state coordination" },
+      { id: "COORDINATION-SectionIntegrator", group: "🧮 Coordination", type: "module", architecturalLayer: "Coordination",
+        label: "SectionIntegrator", description: "Cross-section data flow patterns" },
+      { id: "MODULE-Section01", group: "🎯 Application", type: "module", architecturalLayer: "Application",
+        label: "Section 01 (Key Values)", description: "Dashboard, consumes S15 outputs" },
+      { id: "MODULE-Section03", group: "🎯 Application", type: "module", architecturalLayer: "Application",
+        label: "Section 03 (Climate)", description: "Climate data, foundation calculations" },
+      { id: "MODULE-Section14", group: "🎯 Application", type: "module", architecturalLayer: "Application",
+        label: "Section 14 (TEDI)", description: "Summary calculations, consumes S9-S13" },
+      { id: "MODULE-Section15", group: "🎯 Application", type: "module", architecturalLayer: "Application",
+        label: "Section 15 (TEUI)", description: "Final energy summary, feeds S01" }
+    ];
+
+    // Add architectural module dependencies
+    const architecturalLinks = [
+      // Foundation dependencies
+      { source: "FOUNDATION-StateManager", target: "FOUNDATION-FieldManager" },
+      { source: "FOUNDATION-StateManager", target: "COORDINATION-Calculator" },
+      { source: "FOUNDATION-FieldManager", target: "COORDINATION-SectionIntegrator" },
+      { source: "FOUNDATION-ReferenceValues", target: "COORDINATION-ReferenceSystem" },
+      
+      // Coordination dependencies  
+      { source: "COORDINATION-Calculator", target: "MODULE-Section03" },
+      { source: "COORDINATION-Calculator", target: "MODULE-Section14" },
+      { source: "COORDINATION-Calculator", target: "MODULE-Section15" },
+      { source: "COORDINATION-Calculator", target: "MODULE-Section01" },
+      { source: "COORDINATION-ReferenceSystem", target: "MODULE-Section01" },
+      
+      // Section execution flow (from Calculator.js calculateAll order)
+      { source: "MODULE-Section03", target: "MODULE-Section14" },
+      { source: "MODULE-Section14", target: "MODULE-Section15" },
+      { source: "MODULE-Section15", target: "MODULE-Section01" }
+    ];
+
+    // Add architectural nodes and links
+    architecturalNodes.forEach(node => nodes.set(node.id, node));
+    links.push(...architecturalLinks);
 
     // Iterate through the dependencies map (source -> Set<target>)
     dependencies.forEach((targets, sourceId) => {
