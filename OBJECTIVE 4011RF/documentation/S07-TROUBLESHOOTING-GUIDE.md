@@ -176,4 +176,77 @@ j_32 = j_27 + j_28 + j_29 + j_30 + j_31
 - `/documentation/DUAL-STATE-CHEATSHEET.md` - Architecture compliance guide
 
 ---
-*Last Updated: Current session - Post AFUE fix, pre j_32 investigation*
+
+## 🎯 **PHASE 3: REFERENCE STATE INITIALIZATION PLAN (ROOT CAUSE FIX)**
+
+### **🚨 ARCHITECTURAL ROOT CAUSE IDENTIFIED**
+
+**Problem**: S07 lacks proper Reference state initialization, causing state contamination
+- **Missing**: `ReferenceState.setDefaults()` function (DUAL-STATE-CHEATSHEET.md violation)
+- **Missing**: Reference user input publication to StateManager (`ref_d_49`, `ref_d_51`)
+- **Dependency**: S09 doesn't publish `ref_d_63` (occupancy) to StateManager
+
+### **📋 ESTABLISHED PATTERNS FROM DUAL-STATE-CHEATSHEET.md**
+
+**✅ Confirmed Architecture Design (NO RE-ENGINEERING NEEDED):**
+1. **Single Source of Truth**: FieldDefinitions (`sectionRows`) contain ALL default values
+2. **setDefaults() Pattern**: Read from FieldDefinitions, NEVER hardcode duplicates
+3. **ReferenceValues Overlay**: Runtime overlay on ReferenceState only (doesn't modify FieldDefinitions)
+4. **S07 Status**: Already has FieldDefinitions + `getFieldDefault()`, missing only `setDefaults()` functions
+
+**✅ S07 Current Compliance:**
+- ✅ **FieldDefinitions**: `d_49="User Defined"`, `d_51="Heatpump"` in `sectionRows`
+- ✅ **`getFieldDefault()`**: Already reads from `sectionRows` correctly
+- ❌ **Missing**: `TargetState.setDefaults()` and `ReferenceState.setDefaults()` functions
+
+### **🔧 IMPLEMENTATION PLAN**
+
+**Phase 3A: S07 Reference State Initialization (15 mins)**
+1. Add `TargetState.setDefaults()` and `ReferenceState.setDefaults()` using existing `getFieldDefault()`
+2. Fix `ModeManager.setValue()` to publish Reference inputs to StateManager with `ref_` prefix (copy S02 pattern)
+3. Call `setDefaults()` on initialization to populate state from FieldDefinitions
+4. Verify `d_49="User Defined"` and `d_51="Heatpump"` are available as `ref_d_49` and `ref_d_51`
+
+**Phase 3B: S09 Dependency Fix (15 mins)**  
+4. Add `storeReferenceResults()` to S09 to publish `ref_d_63` (occupancy)
+5. Ensure S09's `ModeManager.setValue()` follows S02 pattern for Reference inputs
+6. Test `ref_d_63` availability for S07 Reference calculations
+
+**Phase 3C: Remove Strategic Fallbacks (10 mins)**
+7. Remove strategic fallback logging from S07 once dependencies are properly established
+8. Verify perfect state isolation: Target changes don't affect Reference TEUI (`e_10`)
+9. Test both directions: Reference changes don't affect Target TEUI (`h_10`)
+
+### **🎯 SUCCESS CRITERIA**
+- **NO fallback warnings** in logs for `ref_d_51`, `ref_d_49`, `ref_d_63`
+- **State isolation**: Changing Target `d_49` doesn't change Reference `e_10`
+- **DUAL-STATE-CHEATSHEET.md compliance**: S07 has required `setDefaults()` functions
+- **Cross-section consistency**: S07 follows established S02/S11/S12 patterns
+
+### **📚 REFERENCE IMPLEMENTATION**
+
+**S07 setDefaults() Pattern (using existing getFieldDefault):**
+```javascript
+// Use S07's existing getFieldDefault() that reads from sectionRows
+TargetState.setDefaults = function () {
+  this.values.d_49 = ModeManager.getFieldDefault("d_49"); // "User Defined"
+  this.values.d_51 = ModeManager.getFieldDefault("d_51"); // "Heatpump"
+};
+ReferenceState.setDefaults = function () {
+  this.values.d_49 = ModeManager.getFieldDefault("d_49"); // Same as Target
+  this.values.d_51 = ModeManager.getFieldDefault("d_51"); // Same as Target
+};
+```
+
+**S02 ModeManager.setValue() Pattern (lines 1772-1774):**
+```javascript
+// Reference inputs published to StateManager with ref_ prefix
+if (this.currentMode === "reference" && window.TEUI?.StateManager) {
+  window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, source);
+}
+```
+
+**Next Section Dependency**: S09 must be updated to publish `ref_d_63` before S07 can achieve perfect isolation.
+
+---
+*Last Updated: Current session - Reference initialization plan established*

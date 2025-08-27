@@ -22,6 +22,21 @@ window.TEUI.SectionModules.sect07 = (function () {
     setValue: function (fieldId, value) {
       this.values[fieldId] = value;
     },
+    
+    // ✅ DUAL-STATE-CHEATSHEET.md COMPLIANCE: Initialize from FieldDefinitions (single source of truth)
+    setDefaults: function () {
+      console.log(`🔧 [S07] TargetState.setDefaults: Initializing from FieldDefinitions`);
+      this.values.d_49 = ModeManager.getFieldDefault("d_49") || "User Defined";
+      this.values.d_51 = ModeManager.getFieldDefault("d_51") || "Heatpump";
+      console.log(`✅ [S07] TargetState.setDefaults: d_49="${this.values.d_49}", d_51="${this.values.d_51}"`);
+      
+      // ✅ CRITICAL: Publish defaults to StateManager for cross-section communication
+      if (window.TEUI?.StateManager) {
+        window.TEUI.StateManager.setValue("d_49", this.values.d_49, "default");
+        window.TEUI.StateManager.setValue("d_51", this.values.d_51, "default");
+        console.log(`🌐 [S07] TargetState.setDefaults: Published to StateManager`);
+      }
+    },
     getNumericValue: function (fieldId, defaultValue = 0) {
       const value = this.getValue(fieldId);
       if (value === null || value === undefined || value === "")
@@ -39,6 +54,21 @@ window.TEUI.SectionModules.sect07 = (function () {
     },
     setValue: function (fieldId, value) {
       this.values[fieldId] = value;
+    },
+    
+    // ✅ DUAL-STATE-CHEATSHEET.md COMPLIANCE: Initialize from FieldDefinitions (single source of truth)
+    setDefaults: function () {
+      console.log(`🔧 [S07] ReferenceState.setDefaults: Initializing from FieldDefinitions`);
+      this.values.d_49 = ModeManager.getFieldDefault("d_49") || "User Defined";
+      this.values.d_51 = ModeManager.getFieldDefault("d_51") || "Heatpump";
+      console.log(`✅ [S07] ReferenceState.setDefaults: d_49="${this.values.d_49}", d_51="${this.values.d_51}"`);
+      
+      // ✅ CRITICAL: Publish Reference defaults to StateManager with ref_ prefix
+      if (window.TEUI?.StateManager) {
+        window.TEUI.StateManager.setValue("ref_d_49", this.values.d_49, "default");
+        window.TEUI.StateManager.setValue("ref_d_51", this.values.d_51, "default");
+        console.log(`🔗 [S07] ReferenceState.setDefaults: Published to StateManager with ref_ prefix`);
+      }
     },
     getNumericValue: function (fieldId, defaultValue = 0) {
       const value = this.getValue(fieldId);
@@ -258,18 +288,21 @@ window.TEUI.SectionModules.sect07 = (function () {
         this.currentMode === "target" ? TargetState : ReferenceState;
       currentState.setValue(fieldId, value);
 
-      // ✅ PATTERN A: Store to StateManager for cross-section communication
+      // ✅ CRITICAL BRIDGE: Sync Target changes to StateManager for downstream sections (S02 pattern)
       if (this.currentMode === "target") {
         console.log(
           `🌐 [S07] ModeManager.setValue: Also storing to global StateManager: ${fieldId} = "${value}"`,
         );
         window.TEUI?.StateManager?.setValue(fieldId, value, source);
-      } else {
-        console.log(
-          `🔒 [S07] ModeManager.setValue: Reference value - not storing to global StateManager yet`,
-        );
       }
-      // Reference values don't get stored globally until calculateReferenceModel runs
+      
+      // ✅ CRITICAL BRIDGE: Sync Reference changes to StateManager with ref_ prefix (S02 pattern)
+      if (this.currentMode === "reference" && window.TEUI?.StateManager) {
+        console.log(
+          `🔗 [S07] ModeManager.setValue: Also storing to global StateManager: ref_${fieldId} = "${value}"`,
+        );
+        window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, source);
+      }
     },
   };
 
@@ -595,12 +628,23 @@ window.TEUI.SectionModules.sect07 = (function () {
     const method =
       getSectionValue("d_49", isReferenceCalculation) || "User Defined";
 
-    // ✅ PATTERN A: External dependency - read from StateManager with mode awareness
-    const occupants = isReferenceCalculation
-      ? window.TEUI?.StateManager?.getValue("ref_d_63") ||
-        window.TEUI?.StateManager?.getValue("d_63") ||
-        0
-      : window.TEUI?.StateManager?.getValue("d_63") || 0;
+    // 🔧 STRATEGIC FALLBACK LOGGING: External dependency with fallback tracking
+    let occupants;
+    if (isReferenceCalculation) {
+      const refValue = window.TEUI?.StateManager?.getValue("ref_d_63");
+      const targetFallback = window.TEUI?.StateManager?.getValue("d_63");
+      if (refValue !== null && refValue !== undefined) {
+        occupants = parseFloat(refValue) || 0;
+      } else if (targetFallback !== null && targetFallback !== undefined) {
+        console.warn(`[S07] 🚨 FALLBACK USED: ref_d_63 missing, using d_63="${targetFallback}" for Reference calculation`);
+        occupants = parseFloat(targetFallback) || 0;
+      } else {
+        console.warn(`[S07] 🚨 FALLBACK USED: Both ref_d_63 and d_63 missing, using default 0`);
+        occupants = 0;
+      }
+    } else {
+      occupants = parseFloat(window.TEUI?.StateManager?.getValue("d_63")) || 0;
+    }
 
     const userDefinedValue = getSectionNumericValue(
       "e_49",
@@ -675,12 +719,23 @@ window.TEUI.SectionModules.sect07 = (function () {
       0,
       isReferenceCalculation,
     );
-    // 🔧 FIX: Read d_51 from StateManager for fresh dropdown values
-    const systemType = isReferenceCalculation
-      ? window.TEUI?.StateManager?.getValue("ref_d_51") ||
-        window.TEUI?.StateManager?.getValue("d_51") ||
-        "Heatpump"
-      : window.TEUI?.StateManager?.getValue("d_51") || "Heatpump";
+    // 🔧 STRATEGIC FALLBACK LOGGING: Track when fallbacks are used
+    let systemType;
+    if (isReferenceCalculation) {
+      const refValue = window.TEUI?.StateManager?.getValue("ref_d_51");
+      const targetFallback = window.TEUI?.StateManager?.getValue("d_51");
+      if (refValue) {
+        systemType = refValue;
+      } else if (targetFallback) {
+        console.warn(`[S07] 🚨 FALLBACK USED: ref_d_51 missing, using d_51="${targetFallback}" for Reference calculation`);
+        systemType = targetFallback;
+      } else {
+        console.warn(`[S07] 🚨 FALLBACK USED: Both ref_d_51 and d_51 missing, using default "Heatpump"`);
+        systemType = "Heatpump";
+      }
+    } else {
+      systemType = window.TEUI?.StateManager?.getValue("d_51") || "Heatpump";
+    }
     const efficiencyInput = getSectionNumericValue(
       "d_52",
       300,
@@ -716,12 +771,23 @@ window.TEUI.SectionModules.sect07 = (function () {
 
   function calculateEmissionsAndLosses(isReferenceCalculation = false) {
     // ✅ PATTERN A: Explicit state access while preserving Excel formulas
-    // 🔧 FIX: Read d_51 from StateManager for fresh dropdown values
-    const systemType = isReferenceCalculation
-      ? window.TEUI?.StateManager?.getValue("ref_d_51") ||
-        window.TEUI?.StateManager?.getValue("d_51") ||
-        "Heatpump"
-      : window.TEUI?.StateManager?.getValue("d_51") || "Heatpump";
+    // 🔧 STRATEGIC FALLBACK LOGGING: Track when fallbacks are used
+    let systemType;
+    if (isReferenceCalculation) {
+      const refValue = window.TEUI?.StateManager?.getValue("ref_d_51");
+      const targetFallback = window.TEUI?.StateManager?.getValue("d_51");
+      if (refValue) {
+        systemType = refValue;
+      } else if (targetFallback) {
+        console.warn(`[S07] 🚨 FALLBACK USED: ref_d_51 missing, using d_51="${targetFallback}" for Reference calculation`);
+        systemType = targetFallback;
+      } else {
+        console.warn(`[S07] 🚨 FALLBACK USED: Both ref_d_51 and d_51 missing, using default "Heatpump"`);
+        systemType = "Heatpump";
+      }
+    } else {
+      systemType = window.TEUI?.StateManager?.getValue("d_51") || "Heatpump";
+    }
     
     console.log(`[S07] calculateEmissionsAndLosses: systemType="${systemType}" (${isReferenceCalculation ? 'REF' : 'TGT'})`);
     const netDemandAfterRecovery = getSectionNumericValue(
@@ -1304,15 +1370,20 @@ window.TEUI.SectionModules.sect07 = (function () {
   }
 
   function onSectionRendered() {
-    // 1. Initialize event handlers
+    // 1. ✅ CRITICAL: Initialize state defaults from FieldDefinitions (DUAL-STATE-CHEATSHEET.md compliance)
+    console.log(`🚀 [S07] onSectionRendered: Initializing state defaults from FieldDefinitions`);
+    TargetState.setDefaults();
+    ReferenceState.setDefaults();
+    
+    // 2. Initialize event handlers
     initializeEventHandlers();
 
-    // 2. Inject header controls for mode switching
+    // 3. Inject header controls for mode switching
     injectHeaderControls();
 
-    // 3. Initialize visibility based on current values (using defaults since states start empty)
-    const initialWaterMethod = "User Defined";
-    const initialSystemType = "Heatpump";
+    // 4. Initialize visibility based on current values (now properly initialized from FieldDefinitions)
+    const initialWaterMethod = ModeManager.getFieldDefault("d_49") || "User Defined";
+    const initialSystemType = ModeManager.getFieldDefault("d_51") || "Heatpump";
     updateSection7Visibility(initialWaterMethod, initialSystemType);
 
     // 4. Run initial calculations
