@@ -1,24 +1,54 @@
 # Section 09 (Occupancy & Internal Gains) Troubleshooting Guide
 
-## Current Status ❌
+## Current Status ✅ RESOLVED
 
-### **🚨 CRITICAL ISSUE: Missing Reference Occupancy Dependency**
+### **✅ FIXED: Reference Occupancy Dependency Complete**
 
-**Problem**: S09 does not publish `ref_d_63` (occupancy) to StateManager, causing downstream sections (S07) to use Target fallbacks for Reference calculations.
+**Solution**: S09 now publishes `ref_d_63` (occupancy) to StateManager in its `calculateReferenceModel()` function, ensuring S07 has the correct Reference dependency.
 
-**Impact**: 
-- ✅ **S07 is now perfectly isolated** for its own user inputs (`d_49`, `d_51`)
-- ❌ **S07 Reference calculations still contaminated** by missing `ref_d_63` from S09
-- ❌ **State sovereignty violation**: Reference calculations use Target occupancy values
+**Result**: 
+- ✅ **S07 perfectly isolated** for all inputs (`d_49`, `d_51`, `d_63`)
+- ✅ **S07 Reference calculations clean** - no more fallback contamination
+- ✅ **State sovereignty maintained**: Reference calculations use Reference-only values
 
-### **Evidence from S07 Logs:**
-```
-[S07] 🚨 FALLBACK USED: ref_d_63 missing, using d_63="126" for Reference calculation
+### **Fix Applied:**
+```javascript
+// In S09's calculateReferenceModel()
+window.TEUI.StateManager.setValue("ref_d_63", refOccupants.toString(), "calculated");
 ```
 
 ---
 
-## 🎯 **ROOT CAUSE ANALYSIS**
+## 🎯 **CRITICAL ARCHITECTURAL LESSON LEARNED**
+
+### **⚠️ MAJOR INSIGHT: UI Toggle vs Calculation Engine Confusion**
+
+**WRONG DIAGNOSIS**: Initially thought removing `calculateAll()` from `switchMode()` broke S09.  
+**CORRECT UNDERSTANDING**: The documentation is clear - `switchMode()` should NEVER trigger calculations (Display-Only principle).
+
+**ROOT CAUSE**: S09 was missing `ref_d_63` publication in `calculateReferenceModel()`, not a UI Toggle issue.
+
+### **✅ ARCHITECTURAL PRINCIPLES CONFIRMED**
+
+From DUAL-STATE-IMPLEMENTATION-GUIDE.md:
+
+1. **✅ `switchMode()` is Display-Only**: "UI toggle only switches display, never triggers calculations"
+2. **✅ Dual-Engine Always**: "`calculateAll()` ALWAYS runs both engines in parallel on every data change"  
+3. **✅ Values Pre-Calculated**: "Values are pre-calculated and stored in StateManager"
+4. **❌ Anti-Pattern**: "`calculateAll()` in `switchMode()` (major anti-pattern)"
+
+### **🔧 PREVENTION: How to Avoid Future Confusion**
+
+**When Reference values seem stuck:**
+1. ✅ **First check**: Are Reference inputs published to StateManager?
+2. ✅ **Then check**: Are downstream sections listening for these dependencies?  
+3. ❌ **NEVER assume**: UI Toggle behavior is wrong
+
+**The architecture is clear - follow the documentation exactly.**
+
+---
+
+## 🎯 **ROOT CAUSE ANALYSIS (RESOLVED)**
 
 ### **S09 Current Architecture Status**
 
