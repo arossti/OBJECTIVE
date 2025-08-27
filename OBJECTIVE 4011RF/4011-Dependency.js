@@ -1,6 +1,21 @@
 // 4011-Dependency.js
 // Dependency graph visualization using D3.js for TEUI Calculator v4.011
 // Based on structure from 4007-dependency-graph.js
+//
+// This module provides interactive visualization of field dependencies and architectural 
+// relationships to help AI agents understand the application's execution flow and data dependencies.
+//
+// TODO - LOW PRIORITY UI/UX IMPROVEMENTS:
+// - Fix architectural module borders (green=Foundation, blue=Coordination, red=Application)
+// - Implement reset view button functionality (currently disabled)
+// - Add focusOnNode implementation for better navigation
+// - Optimize color mappings and legend organization
+// - Performance improvements for large dependency graphs
+// - Enhanced tooltip formatting and architectural module descriptions
+// - Improve mobile responsiveness and touch interactions
+//
+// NOTE: Core functionality (field dependencies + architectural framework) is working.
+// These improvements are aesthetic/UX enhancements, not mission-critical features.
 
 // Ensure TEUI namespace exists
 window.TEUI = window.TEUI || {};
