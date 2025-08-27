@@ -732,20 +732,8 @@ window.TEUI.SectionModules.sect01 = (function () {
     }
 
     // 🔧 DEBUG: Track h_10 update call
-    console.log(`[S01DB] 📞 About to call updateDisplayValue("h_10", "${h10Formatted}", "${calculatedTier}")`);
+    // console.log(`[S01DB] 📞 About to call updateDisplayValue("h_10", "${h10Formatted}", "${calculatedTier}")`);
     updateDisplayValue("h_10", h10Formatted, calculatedTier);
-    
-    // 🔍 RACE CONDITION DEBUG: Check actual DOM value after animation completes
-    setTimeout(() => {
-      const h10Element = document.querySelector('[data-field-id="h_10"] .key-value');
-      const domValue = h10Element ? h10Element.textContent.trim() : 'NOT FOUND';
-      console.log(`[S01DB] 🚨 DOM CHECK: h_10 element shows "${domValue}" after updateDisplayValue("${h10Formatted}")`);
-      if (!domValue.includes(h10Formatted)) {
-        console.log(`[S01DB] ❌ RACE CONDITION DETECTED: Expected "${h10Formatted}" but DOM shows "${domValue}"`);
-      } else {
-        console.log(`[S01DB] ✅ DOM UPDATE SUCCESS: h_10 correctly shows "${domValue}"`);
-      }
-    }, 600); // Wait 600ms for 500ms animation + 100ms buffer
     updateDisplayValue("h_8", h8Formatted);
     updateDisplayValue("h_6", h6Formatted);
 
@@ -939,8 +927,9 @@ window.TEUI.SectionModules.sect01 = (function () {
   // DUAL-ENGINE ORCHESTRATION
   //==========================================================================
 
-  // Add recursion protection flag
+  // Add recursion protection flag and debouncing
   let calculationInProgress = false;
+  let calculationTimeout = null;
   // ⚠️ WARNING: ESLint flags isInitializing as unused, but may be needed for future initialization logic
   // DO NOT remove - preserved for development (June 13, 2025)
   let isInitializing = false;
@@ -998,12 +987,18 @@ window.TEUI.SectionModules.sect01 = (function () {
   }
 
   function runAllCalculations() {
-    // Add recursion protection
-    if (calculationInProgress) {
-      return;
+    // Debounce rapid calls to prevent race conditions
+    if (calculationTimeout) {
+      clearTimeout(calculationTimeout);
     }
+    
+    calculationTimeout = setTimeout(() => {
+      // Add recursion protection
+      if (calculationInProgress) {
+        return;
+      }
 
-    calculationInProgress = true;
+      calculationInProgress = true;
 
     // console.log("🚀 [S01] =================================");
     // console.log("🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED");
@@ -1035,6 +1030,7 @@ window.TEUI.SectionModules.sect01 = (function () {
     } finally {
       calculationInProgress = false;
     }
+    }, 50); // 50ms debounce to prevent race conditions
   }
 
   //==========================================================================

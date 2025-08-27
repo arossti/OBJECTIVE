@@ -1460,9 +1460,9 @@ window.TEUI.SectionModules.sect15 = (function () {
       const h124 = parseFloat(getRefValue("h_124")) || 0;
       const m19_days = parseFloat(getRefValue("m_19")) || 120;
 
-      console.log(
-        `✅ S15 Reference Model: All values converted to numbers for proper math`,
-      );
+      // console.log(
+      //   `✅ S15 Reference Model: All values converted to numbers for proper math`,
+      // );
 
       // ✅ Get additional fuel and cost variables with parseFloat conversion
       const d28 = parseFloat(getRefValue("d_28")) || 0; // Total Fossil Gas Use (m3/yr)
@@ -1473,9 +1473,9 @@ window.TEUI.SectionModules.sect15 = (function () {
       const refTEUI_e10 = parseFloat(getRefValue("e_10")) || 0; // Reference TEUI (Sec 1)
       const targetTEUI_h10 = parseFloat(getRefValue("h_10")) || 0; // Target TEUI (Sec 1)
 
-      console.log(
-        `✅ S15 Reference Model: Additional fuel variables declared for cost calculations`,
-      );
+      // console.log(
+      //   `✅ S15 Reference Model: Additional fuel variables declared for cost calculations`,
+      // );
 
       // Get cooling type for d117 logic
       const coolingType_d116 =

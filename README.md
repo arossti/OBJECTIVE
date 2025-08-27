@@ -996,6 +996,30 @@ The application follows a precise initialization sequence critical for proper op
 2. Never modify calculation sequences without understanding dependency flow
 3. Never hardcode defaults in state objects (use field definitions as single source)
 4. Never add `calculateAll()` to `switchMode()` (UI toggle is display-only)
+
+### **🧠 Dual-State Dependency Analysis (Programmatic Access)**
+
+AI agents can programmatically access complete dual-state calculation dependencies without relying on visual parsing:
+
+```javascript
+// Access Target state dependencies (user design calculations)
+const targetGraph = window.TEUI.StateManager.exportDependencyGraph("target");
+
+// Access Reference state dependencies (building code compliance)
+const referenceGraph = window.TEUI.StateManager.exportDependencyGraph("reference");
+
+// Get comprehensive dual-state analysis with coverage metrics
+const analysis = window.TEUI.StateManager.getDualStateDependencyAnalysis();
+console.log(`Coverage: ${analysis.analysis.coverageRatio}`);
+console.log(`Total dependencies: ${analysis.analysis.totalDependencies}`);
+
+// Query specific dependency chains (e.g., climate impact on energy)
+const climateLinks = referenceGraph.links.filter(l => 
+  l.source.includes("ref_d_20") || l.source.includes("ref_h_22")
+);
+```
+
+This provides **100% dual-state visibility** for agents to understand calculation flow, dependency chains, and architectural relationships programmatically.
 5. Never throw out working calculation functions from BACKUP files
 6. Never bypass Reference System for dual-state coordination (use ReferenceToggle for master control)
 7. Never modify Reference System without understanding three setup modes (Mirror Target, Mirror+Reference, Independent)

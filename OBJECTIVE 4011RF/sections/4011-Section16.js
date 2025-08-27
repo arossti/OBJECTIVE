@@ -568,25 +568,25 @@ window.TEUI.SectionModules.sect16 = (function () {
         isEmissions: link.isEmissions,
       }));
 
-      // Debug checks
-      console.log("Rendering Sankey links, count:", links.length);
+      // Debug checks (commented out to reduce log spam)
+      // console.log("Rendering Sankey links, count:", links.length);
 
       // Check a sample link to verify data
-      if (links.length > 0) {
-        const sampleLink = links[0];
-        console.log("Sample link:", {
-          source:
-            typeof sampleLink.source === "object"
-              ? sampleLink.source.name
-              : "index:" + sampleLink.source,
-          target:
-            typeof sampleLink.target === "object"
-              ? sampleLink.target.name
-              : "index:" + sampleLink.target,
-          value: sampleLink.value,
-          width: sampleLink.width || "not set",
-        });
-      }
+      // if (links.length > 0) {
+      //   const sampleLink = links[0];
+      //   console.log("Sample link:", {
+      //     source:
+      //       typeof sampleLink.source === "object"
+      //         ? sampleLink.source.name
+      //         : "index:" + sampleLink.source,
+      //     target:
+      //       typeof sampleLink.target === "object"
+      //         ? sampleLink.target.name
+      //         : "index:" + sampleLink.target,
+      //     value: sampleLink.value,
+      //     width: sampleLink.width || "not set",
+      //   });
+      // }
 
       // Select and bind links with consistent key function
       const link = this.linkGroup
@@ -665,11 +665,11 @@ window.TEUI.SectionModules.sect16 = (function () {
           .attr("stroke-dashoffset", null);
       }, 2500);
 
-      // Final check - count links actually displayed
-      console.log(
-        "Links after rendering:",
-        this.linkGroup.selectAll(".link").size(),
-      );
+      // Final check - count links actually displayed (commented out to reduce log spam)
+      // console.log(
+      //   "Links after rendering:",
+      //   this.linkGroup.selectAll(".link").size(),
+      // );
 
       return linkUpdate;
     }
@@ -1904,9 +1904,10 @@ window.TEUI.SectionModules.sect16 = (function () {
   }
 
   function handleStateChange(newValue) {
+    // Sankey now only refreshes manually via refresh button
+    // No automatic re-rendering on state changes for better performance
     if (window.TEUI.sect16.isActive) {
-      // console.log("Section 16: Relevant state changed, refreshing Sankey.");
-      fetchDataAndRenderSankey(false);
+      // console.log("Section 16: State changed, but Sankey will only refresh manually via button.");
     }
   }
 
@@ -2192,21 +2193,9 @@ window.TEUI.SectionModules.sect16 = (function () {
   }
 
   function calculateAll() {
-    // console.log("[sect16] calculateAll called. Attempting to refresh Sankey Diagram.");
-    if (typeof fetchDataAndRenderSankey === "function") {
-      try {
-        fetchDataAndRenderSankey(false); // Pass false as it's a refresh, not initial load
-      } catch (error) {
-        console.error(
-          "[sect16] Error calling fetchDataAndRenderSankey:",
-          error,
-        );
-      }
-    } else {
-      console.warn(
-        "[sect16] fetchDataAndRenderSankey function not found. Sankey diagram may be stale.",
-      );
-    }
+    // Sankey now only refreshes manually via refresh button
+    // No automatic re-rendering on calculations for better performance
+    // console.log("[sect16] calculateAll called. Sankey will only refresh manually via button.");
   }
 
   // --- Public API ---
