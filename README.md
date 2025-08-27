@@ -923,6 +923,9 @@ The application follows a precise initialization sequence critical for proper op
 1. index.html loads external dependencies (Bootstrap, D3, Chart.js, XLSX, Dagre)
 2. Core modules load in dependency order:
    ├── 4011-StateManager.js        ← FOUNDATION (state persistence, field registry)
+   ├── 4011-ReferenceValues.js     ← FOUNDATION (building code standards)
+   ├── 4011-ReferenceManager.js    ← COORDINATION (state setup functions)
+   ├── 4011-ReferenceToggle.js     ← COORDINATION (master display toggle)
    ├── 4011-FieldManager.js        ← DEPENDS ON StateManager
    ├── 4011-SectionIntegrator.js   ← DEPENDS ON managers  
    ├── 4011-Calculator.js          ← ORCHESTRATOR
@@ -963,7 +966,10 @@ The application follows a precise initialization sequence critical for proper op
 🧮 COORDINATION LAYER  
 ├── Calculator (calculation orchestration, Traffic Cop implementation)
 ├── SectionIntegrator (cross-section data flow, TEUI integration patterns)
-└── ReferenceToggle (UI mode switching, dual-state display management)
+└── Reference System (master dual-state coordination)
+    ├── ReferenceToggle (master display toggle, section synchronization)
+    ├── ReferenceManager (state setup functions, mode coordination)
+    └── ReferenceValues (building code standards database)
 
 🎯 APPLICATION LAYER
 ├── Section01-18 (calculation logic, dual-state objects, UI rendering)
@@ -986,12 +992,44 @@ The application follows a precise initialization sequence critical for proper op
 3. Never hardcode defaults in state objects (use field definitions as single source)
 4. Never add `calculateAll()` to `switchMode()` (UI toggle is display-only)
 5. Never throw out working calculation functions from BACKUP files
+6. Never bypass Reference System for dual-state coordination (use ReferenceToggle for master control)
+7. Never modify Reference System without understanding three setup modes (Mirror Target, Mirror+Reference, Independent)
 
 **🎯 Key Architectural Concepts**:
 - **Dual-Engine Architecture**: Every calculation produces both Target and Reference results
 - **StateManager Centrality**: All data flows through StateManager, never direct between sections
 - **Event-Driven Updates**: Cross-section communication via StateManager listeners
 - **State Sovereignty**: Each section manages its own Target/Reference state objects
+
+### **🏛️ Reference System Architecture**
+
+The Reference System provides master coordination for dual-state operations across all sections:
+
+**🎯 Three Reference Setup Modes**:
+1. **Mirror Target**: Copy all Target values to Reference for identical model comparison
+2. **Mirror Target + Reference**: Copy Target inputs + overlay building code standards from ReferenceValues.js
+3. **Independent Models**: Complete freedom for custom Target vs Reference scenarios
+
+**🔧 Reference System Components**:
+- **ReferenceToggle**: Master display toggle coordinating all section header toggles
+- **ReferenceManager**: State setup functions and cross-section mode coordination  
+- **ReferenceValues**: Building code standards database (NBC, OBC, etc.)
+
+**🚦 Reference System Flow**:
+```
+1. User selects setup mode → ReferenceManager applies state changes
+2. User toggles display mode → ReferenceToggle coordinates all sections
+3. Section ModeManagers switch → Individual TargetState/ReferenceState objects
+4. Global CSS applied → Red (Reference) / Blue (Target) UI theming
+5. Cross-section values → StateManager stores with ref_ prefix (e.g., ref_j_32)
+```
+
+**⚠️ Reference System Critical Rules**:
+- **Display-Only System**: Master toggle switches display, never triggers calculations
+- **State Isolation**: Reference operations never contaminate Target values
+- **Global Coordination**: All sections synchronize automatically via master control
+- **Building Code Integration**: ReferenceValues.js provides regulatory standards overlay
+- **User Editing**: Reference mode allows editing Reference fields with persistence
 
 ## 1. Core Architectural Components
 
