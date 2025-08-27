@@ -50,6 +50,12 @@ window.TEUI.SectionModules.sect09 = (function () {
         // Calculated values will be computed
       };
       console.log("S09: Target defaults set");
+      
+      // ✅ CRITICAL: Publish Target defaults to StateManager for downstream sections (S07 pattern)
+      if (window.TEUI?.StateManager) {
+        window.TEUI.StateManager.setValue("d_63", this.state.d_63, "default");
+        console.log(`🌐 [S09] TargetState.setDefaults: Published d_63="${this.state.d_63}" to StateManager`);
+      }
     },
     saveState: function () {
       localStorage.setItem("S09_TARGET_STATE", JSON.stringify(this.state));
@@ -99,6 +105,12 @@ window.TEUI.SectionModules.sect09 = (function () {
       console.log(
         `S09: Reference defaults loaded from standard: ${currentStandard}, lighting: ${this.state.d_66}`,
       );
+      
+      // ✅ CRITICAL: Publish Reference defaults to StateManager with ref_ prefix (S07 pattern)
+      if (window.TEUI?.StateManager) {
+        window.TEUI.StateManager.setValue("ref_d_63", this.state.d_63, "default");
+        console.log(`🔗 [S09] ReferenceState.setDefaults: Published ref_d_63="${this.state.d_63}" to StateManager`);
+      }
     },
     saveState: function () {
       localStorage.setItem("S09_REFERENCE_STATE", JSON.stringify(this.state));
@@ -141,8 +153,9 @@ window.TEUI.SectionModules.sect09 = (function () {
       this.currentMode = mode;
       console.log(`S09: Switched to ${mode.toUpperCase()} mode`);
 
+      // ✅ DUAL-STATE-CHEATSHEET.md COMPLIANCE: UI Toggle is Display-Only
+      // Values should already be calculated and available, just refresh UI
       this.refreshUI();
-      calculateAll(); // Recalculate for the new mode
     },
     resetState: function () {
       console.log("S09: Resetting states to defaults");
@@ -164,12 +177,18 @@ window.TEUI.SectionModules.sect09 = (function () {
     setValue: function (fieldId, value, source = "user") {
       this.getCurrentState().setValue(fieldId, value);
 
-      // Bridge to global StateManager for backward compatibility (only Target mode)
+      // ✅ CRITICAL BRIDGE: Sync Target changes to StateManager for downstream sections
       if (
         this.currentMode === "target" &&
         window.TEUI?.StateManager?.setValue
       ) {
         window.TEUI.StateManager.setValue(fieldId, value, source);
+      }
+      
+      // ✅ CRITICAL BRIDGE: Sync Reference changes to StateManager with ref_ prefix (S07 pattern)
+      if (this.currentMode === "reference" && window.TEUI?.StateManager) {
+        console.log(`🔗 [S09] ModeManager.setValue: Also storing to global StateManager: ref_${fieldId} = "${value}"`);
+        window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, source);
       }
     },
     refreshUI: function () {

@@ -3264,9 +3264,22 @@ window.TEUI.SectionModules.sect13 = (function () {
     // Direct StateManager access for Target mode to ensure clean values
     const systemType = window.TEUI.StateManager?.getValue("d_113") || "Heatpump";
     const tedTarget = window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("d_127")) || 0;
-    const hspf = window.TEUI.parseNumeric(TargetState.getValue("f_113")) || 3.5;
+    
+    // ✅ EFFICIENCY FIX: Use correct efficiency type based on system
+    let efficiency, efficiencyType;
+    if (systemType === "Heatpump") {
+      efficiency = window.TEUI.parseNumeric(TargetState.getValue("f_113")) || 3.5;
+      efficiencyType = "HSPF";
+    } else if (systemType === "Electric") {
+      efficiency = 1.0; // 100% efficiency for electric systems
+      efficiencyType = "EFFICIENCY";
+    } else {
+      // Gas and Oil systems use AFUE
+      efficiency = window.TEUI.parseNumeric(TargetState.getValue("j_115")) || 0.9;
+      efficiencyType = "AFUE";
+    }
 
-    console.log(`[S13] TGT HEATING: ${systemType}, HSPF=${hspf}`);
+    console.log(`[S13] TGT HEATING: ${systemType}, ${efficiencyType}=${efficiency}`);
 
     let heatingDemand_d114 = 0;
     let heatingSink_l113 = 0;
@@ -3279,7 +3292,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     setFieldDisabled("l_113", !isHeatpump);
 
     if (isHeatpump) {
-      const local_copheat = hspf > 0 ? hspf / 3.412 : 1;
+      const local_copheat = efficiency > 0 ? efficiency / 3.412 : 1;
       const local_copcool = Math.max(1, local_copheat - 1);
       const local_ceer = 3.412 * local_copcool;
 

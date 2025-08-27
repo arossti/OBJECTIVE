@@ -610,6 +610,9 @@ window.TEUI.SectionModules.sect01 = (function () {
     // e_10 = ref_j_32 / ref_h_15 (Reference TEUI)
     const e_10 =
       referenceArea > 0 ? Math.round((refEnergy / referenceArea) * 10) / 10 : 0;
+    
+    // 🔧 DEBUG: Track e_10 calculation for Reference system debugging
+    console.log(`[S01] e_10 calc: ref_j_32=${refEnergy} ÷ ref_h_15=${referenceArea} = ${e_10}`);
 
     // e_8 = ref_k_32 / ref_h_15 (Reference Annual Carbon)
     const e_8 =
@@ -686,6 +689,7 @@ window.TEUI.SectionModules.sect01 = (function () {
       window.TEUI?.formatNumber?.(e_6, "number-1dp") ?? e_6.toString();
 
     updateDisplayValue("e_10", e10Formatted);
+    console.log(`[S01] e_10 update: value=${e_10}, formatted=${e10Formatted}`);
     updateDisplayValue("e_8", e8Formatted);
     updateDisplayValue("e_6", e6Formatted);
 
@@ -1085,8 +1089,8 @@ window.TEUI.SectionModules.sect01 = (function () {
       "ref_h_13", // Service life (Reference)
       "i_41", // Embodied carbon
 
-      // S15: Final Reference TEUI calculation (critical for Reference column)
-      "ref_h_136", // Reference TEUI from Section 15 (final Reference calculation)
+      // S15: Final Reference TEUI calculation (critical for Reference column)  
+      // REMOVED: "ref_h_136" - S01 calculates its own e_10 from ref_j_32 (same fix pattern as h_10)
 
       // S05: Reference embodied carbon
       "ref_i_39", // Reference embodied carbon

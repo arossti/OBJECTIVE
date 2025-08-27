@@ -919,3 +919,286 @@ ModeManager.updateCalculatedDisplayValues();
 - **S12-TROUBLESHOOTING-GUIDE.md**: Ready-to-implement audit and workplan
 - **S13-TROUBLESHOOTING-GUIDE.md**: Complex HVAC calculation patterns
 - **S10-DOWNSTREAM-FLOW-ISSUE.md**: System integration dependencies
+
+
+FINAL STEP
+
+# 🔄 **FALLBACK-TO-STRICT TRANSITION GUIDE**
+
+## **The Strategic Transition from Fallbacks to Perfect Compliance**
+
+**Created**: Based on S07 Phase 3A successful implementation  
+**Purpose**: Document the systematic process for eliminating dependency contamination  
+**Status**: ✅ **PROVEN PATTERN** - Successfully applied in S07
+
+---
+
+## 🎯 **OVERVIEW: THE THREE-PHASE APPROACH**
+
+The transition from fallback patterns to strict dual-state compliance follows a systematic three-phase approach that ensures no functionality is broken during dependency resolution.
+
+### **Core Principle: Fix Dependencies Before Removing Fallbacks**
+
+**❌ WRONG**: Remove fallbacks immediately → causes calculation failures  
+**✅ RIGHT**: Strategic fallback logging → fix dependencies → remove fallbacks gracefully
+
+---
+
+## 📋 **PHASE 1: STRATEGIC FALLBACK LOGGING**
+
+### **Purpose**: Identify exactly where and when contamination occurs
+
+**Implementation Pattern:**
+```javascript
+// ✅ STRATEGIC FALLBACK LOGGING (temporary debugging pattern)
+let systemType;
+if (isReferenceCalculation) {
+  const refValue = window.TEUI?.StateManager?.getValue("ref_d_51");
+  const targetFallback = window.TEUI?.StateManager?.getValue("d_51");
+  if (refValue) {
+    systemType = refValue;
+  } else if (targetFallback) {
+    console.warn(`[S07] 🚨 FALLBACK USED: ref_d_51 missing, using d_51="${targetFallback}" for Reference calculation`);
+    systemType = targetFallback;
+  } else {
+    console.warn(`[S07] 🚨 FALLBACK USED: Both ref_d_51 and d_51 missing, using default "Heatpump"`);
+    systemType = "Heatpump";
+  }
+} else {
+  systemType = window.TEUI?.StateManager?.getValue("d_51") || "Heatpump";
+}
+```
+
+### **Key Benefits:**
+1. **Preserves working calculations** while identifying issues
+2. **Clear logging** shows exactly which dependencies are missing
+3. **Non-breaking** - allows continued development and testing
+4. **Evidence-based** - provides specific fix targets
+
+---
+
+## 📋 **PHASE 2: SYSTEMATIC DEPENDENCY RESOLUTION**
+
+### **A. Root Cause Analysis Pattern**
+
+Based on fallback logs, categorize missing dependencies:
+
+**1. Missing Local State Initialization:**
+- **Symptom**: `ref_d_51 missing` for section's own user inputs
+- **Root Cause**: No `setDefaults()` functions 
+- **Fix**: Implement FieldDefinitions-based initialization
+
+**2. Missing Cross-Section Dependencies:**
+- **Symptom**: `ref_d_63 missing` for external dependencies
+- **Root Cause**: Upstream section not publishing Reference results
+- **Fix**: Add `storeReferenceResults()` to upstream section
+
+**3. Missing StateManager Publication:**
+- **Symptom**: Local state populated but StateManager empty
+- **Root Cause**: `setDefaults()` not publishing to StateManager
+- **Fix**: Add StateManager publication to initialization
+
+### **B. Implementation Priority Order**
+
+**1. Fix Self-Dependencies First** (highest impact)
+```javascript
+// S07 Example: Add missing setDefaults() functions
+TargetState.setDefaults = function () {
+  this.values.d_49 = ModeManager.getFieldDefault("d_49") || "User Defined";
+  this.values.d_51 = ModeManager.getFieldDefault("d_51") || "Heatpump";
+  
+  // ✅ CRITICAL: Publish to StateManager for cross-section communication
+  if (window.TEUI?.StateManager) {
+    window.TEUI.StateManager.setValue("d_49", this.values.d_49, "default");
+    window.TEUI.StateManager.setValue("d_51", this.values.d_51, "default");
+  }
+};
+
+ReferenceState.setDefaults = function () {
+  this.values.d_49 = ModeManager.getFieldDefault("d_49") || "User Defined";
+  this.values.d_51 = ModeManager.getFieldDefault("d_51") || "Heatpump";
+  
+  // ✅ CRITICAL: Publish Reference defaults with ref_ prefix
+  if (window.TEUI?.StateManager) {
+    window.TEUI.StateManager.setValue("ref_d_49", this.values.d_49, "default");
+    window.TEUI.StateManager.setValue("ref_d_51", this.values.d_51, "default");
+  }
+};
+```
+
+**2. Fix ModeManager.setValue() Pattern** (ensures ongoing isolation)
+```javascript
+// ✅ S02 PROVEN PATTERN: Reference inputs published with ref_ prefix
+setValue: function (fieldId, value, source = "user-modified") {
+  const currentState = this.currentMode === "target" ? TargetState : ReferenceState;
+  currentState.setValue(fieldId, value);
+
+  // ✅ Target changes to StateManager for downstream sections
+  if (this.currentMode === "target") {
+    window.TEUI?.StateManager?.setValue(fieldId, value, source);
+  }
+  
+  // ✅ Reference changes to StateManager with ref_ prefix
+  if (this.currentMode === "reference" && window.TEUI?.StateManager) {
+    window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, source);
+  }
+}
+```
+
+**3. Fix Cross-Section Dependencies** (requires coordination)
+- Add `storeReferenceResults()` to upstream sections
+- Ensure upstream sections follow same patterns
+
+---
+
+## 📋 **PHASE 3: GRACEFUL FALLBACK ELIMINATION**
+
+### **When to Remove Fallbacks:**
+
+**✅ Safe to Remove When:**
+1. **Zero fallback warnings** in logs during comprehensive testing
+2. **Perfect state isolation** verified (Target changes don't affect Reference results)
+3. **All dependencies established** (both local and cross-section)
+4. **Working calculations maintained** (no regression in core functionality)
+
+### **Graceful Removal Pattern:**
+
+**From Strategic Fallback:**
+```javascript
+// Phase 1: Strategic fallback with logging
+const refValue = window.TEUI?.StateManager?.getValue("ref_d_51");
+const targetFallback = window.TEUI?.StateManager?.getValue("d_51");
+if (refValue) {
+  systemType = refValue;
+} else if (targetFallback) {
+  console.warn(`[S07] 🚨 FALLBACK USED: ref_d_51 missing, using d_51="${targetFallback}"`);
+  systemType = targetFallback;
+} else {
+  systemType = "Heatpump";
+}
+```
+
+**To Strict Compliance:**
+```javascript
+// Phase 3: Strict compliance (no fallbacks)
+if (isReferenceCalculation) {
+  systemType = window.TEUI?.StateManager?.getValue("ref_d_51") || "Heatpump";
+} else {
+  systemType = window.TEUI?.StateManager?.getValue("d_51") || "Heatpump";
+}
+```
+
+**With Error Detection:**
+```javascript
+// Optional: Add error detection for missing critical dependencies
+const systemType = isReferenceCalculation 
+  ? window.TEUI?.StateManager?.getValue("ref_d_51")
+  : window.TEUI?.StateManager?.getValue("d_51");
+
+if (!systemType) {
+  console.error(`[S07] CRITICAL: Missing ${isReferenceCalculation ? 'ref_' : ''}d_51 dependency`);
+  // Handle gracefully with documented default
+  return "Heatpump";
+}
+```
+
+---
+
+## 🧪 **VERIFICATION TESTING PROTOCOL**
+
+### **Phase 2 Verification (After Each Fix):**
+1. **Refresh page** → check initialization logs
+2. **Change values in Target mode** → verify no Reference contamination
+3. **Change values in Reference mode** → verify no Target contamination  
+4. **Review fallback logs** → confirm reduction in warnings
+5. **Test calculations** → ensure no regression
+
+### **Phase 3 Verification (Before Fallback Removal):**
+1. **Comprehensive user input testing** → all dropdowns, sliders, editable fields
+2. **Mode switching testing** → values persist correctly between modes
+3. **Cross-section impact testing** → downstream sections unaffected
+4. **Performance testing** → no calculation slowdowns
+5. **Edge case testing** → undefined values handled gracefully
+
+---
+
+## 📚 **CRITICAL IMPLEMENTATION INSIGHTS**
+
+### **1. StateManager Publication is Essential**
+
+**Key Discovery**: `setDefaults()` must publish to StateManager, not just local state:
+
+```javascript
+// ❌ INSUFFICIENT: Only populates local state
+ReferenceState.setDefaults = function () {
+  this.values.d_51 = "Heatpump";  // Only local
+};
+
+// ✅ COMPLETE: Publishes to StateManager for cross-section access
+ReferenceState.setDefaults = function () {
+  this.values.d_51 = "Heatpump";
+  window.TEUI.StateManager.setValue("ref_d_51", this.values.d_51, "default");
+};
+```
+
+### **2. FieldDefinitions as Single Source of Truth**
+
+**Architectural Compliance**: Always read defaults from FieldDefinitions:
+
+```javascript
+// ✅ CORRECT: Read from field definitions (single source of truth)
+TargetState.setDefaults = function () {
+  this.values.d_51 = ModeManager.getFieldDefault("d_51") || "Heatpump";
+};
+
+// ❌ WRONG: Hardcode defaults (creates maintenance nightmare)
+TargetState.setDefaults = function () {
+  this.values.d_51 = "Heatpump";  // Duplicate of field definition
+};
+```
+
+### **3. Incremental Testing is Critical**
+
+**Lesson**: Test after each fix, don't batch multiple changes:
+- **Fix 1**: Add `setDefaults()` → Test → Verify improvement
+- **Fix 2**: Fix `ModeManager.setValue()` → Test → Verify further improvement  
+- **Fix 3**: Add StateManager publication → Test → Verify completion
+
+---
+
+## 🎯 **SUCCESS PATTERNS**
+
+### **S07 Success Metrics (Achieved):**
+- ✅ **`d_49` state isolation**: No contamination when changing water use method
+- ✅ **`d_51` state isolation**: No contamination when changing DHW system
+- ✅ **Reduced fallback warnings**: Only `ref_d_63` remains (external dependency)
+- ✅ **Maintained functionality**: All calculations work correctly
+- ✅ **Clean architecture**: Follows DUAL-STATE-CHEATSHEET.md patterns
+
+### **Ready for Cross-Section Dependencies:**
+- Next target: S09 `ref_d_63` publication
+- Pattern established for other sections
+- Systematic approach validated
+
+---
+
+## 📋 **RECOMMENDED DOCUMENTATION ADDITIONS**
+
+### **For DUAL-STATE-CHEATSHEET.md:**
+1. **Add "Fallback Transition Strategy" section**
+2. **Document StateManager publication requirement for setDefaults()**
+3. **Add verification testing checklist**
+
+### **For DUAL-STATE-IMPLEMENTATION-GUIDE.md:**
+1. **Add Phase 1-3 systematic approach**
+2. **Document strategic fallback logging pattern**
+3. **Add dependency resolution priority order**
+
+### **For AI-FRIENDLY-PATTERNS.md:**
+1. **Update Pattern 7 with StateManager publication requirement**
+2. **Add "Graceful Fallback Elimination" as new pattern**
+3. **Document verification testing protocol**
+
+---
+
+**This guide captures the proven systematic approach for moving from fallback contamination to perfect dual-state isolation, based on the successful S07 Phase 3A implementation.**
