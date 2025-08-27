@@ -119,55 +119,23 @@ window.TEUI.DependencyGraph = class DependencyGraph {
 
   /** Helper to determine node group */
   getNodeGroup(nodeId, fieldDef) {
-    // Prioritize section info if available
+    // Prioritize section info if available - now returns camelCase to match colorScheme
     if (fieldDef?.section) {
-      switch (fieldDef.section) {
-        case "keyValues":
-          return "1. Key Values";
-        case "buildingInfo":
-          return "2. Building Information";
-        case "climateCalculations":
-          return "3. Climate Calculations";
-        case "actualTargetEnergy":
-          return "4. Actual vs. Target Energy";
-        case "emissions":
-          return "5. CO2e Emissions";
-        case "onSiteEnergy":
-          return "6. Renewable Energy";
-        case "waterUse":
-          return "7. Water Use";
-        case "indoorAirQuality":
-          return "8. Indoor Air Quality";
-        case "occupantInternalGains":
-          return "9. Occupant + Internal Gains";
-        case "envelopeRadiantGains":
-          return "10. Radiant Gains";
-        case "envelopeTransmissionLosses":
-          return "11. Transmission Losses";
-        case "volumeSurfaceMetrics":
-          return "12. Volume and Surface Metrics";
-        case "mechanicalLoads":
-          return "13. Mechanical Loads";
-        case "tediSummary":
-          return "14. TEDI & TELI";
-        case "teuiSummary":
-          return "15. TEUI Summary";
-        default:
-          break;
-      }
+      // Return the section as-is since it's already in camelCase
+      return fieldDef.section;
     }
 
-    // Fallback to prefix-based section identification
+    // Fallback to prefix-based section identification (camelCase)
     if (
       nodeId.startsWith("d_11") ||
       nodeId.startsWith("h_11") ||
       nodeId.startsWith("i_11")
     )
-      return "11. Transmission Losses";
+      return "transmissionLosses";
     if (nodeId.startsWith("d_13") || nodeId.startsWith("h_13"))
-      return "13. Mechanical Loads";
-    if (nodeId.startsWith("g_6")) return "13. Mechanical Loads"; // Equipment loads
-    if (nodeId.startsWith("h_6")) return "13. Mechanical Loads"; // Equipment-related
+      return "mechanicalLoads";
+    if (nodeId.startsWith("g_6")) return "mechanicalLoads"; // Equipment loads
+    if (nodeId.startsWith("h_6")) return "mechanicalLoads"; // Equipment-related
 
     return "Other";
   }

@@ -1097,37 +1097,37 @@ TEUI.StateManager = (function () {
    * @returns {string} The determined group name.
    */
   function getNodeGroup(nodeId, _fieldDef) {
-    // RESTORED: Fallback to prefix/pattern matching (less reliable, but maybe better coverage?)
+    // Updated to match the colorScheme's camelCase naming
     if (nodeId.includes("_1") && nodeId.split("_").length > 1)
-      return "1. Key Values"; // Approximate
+      return "keyValues"; // Section 01
     if (nodeId.includes("_2") && nodeId.split("_").length > 1)
-      return "2. Building Information";
+      return "buildingInfo"; // Section 02
     if (nodeId.includes("_3") && nodeId.split("_").length > 1)
-      return "3. Climate Calculations";
+      return "climateCalculations"; // Section 03
     if (nodeId.includes("_4") && nodeId.split("_").length > 1)
-      return "4. Actual vs. Target Energy";
+      return "actualTargetEnergy"; // Section 04
     if (nodeId.includes("_5") && nodeId.split("_").length > 1)
-      return "5. CO2e Emissions";
+      return "co2eEmissions"; // Section 05
     if (nodeId.includes("_6") && nodeId.split("_").length > 1)
-      return "6. Renewable Energy";
+      return "renewableEnergy"; // Section 06
     if (nodeId.includes("_7") && nodeId.split("_").length > 1)
-      return "7. Water Use";
+      return "waterUse"; // Section 07
     if (nodeId.includes("_8") && nodeId.split("_").length > 1)
-      return "8. Indoor Air Quality";
+      return "indoorAirQuality"; // Section 08
     if (nodeId.includes("_9") && nodeId.split("_").length > 1)
-      return "9. Occupant + Internal Gains";
+      return "occupantInternalGains"; // Section 09
     if (nodeId.includes("_10") && nodeId.split("_").length > 1)
-      return "10. Radiant Gains";
+      return "radiantGains"; // Section 10
     if (nodeId.includes("_11") && nodeId.split("_").length > 1)
-      return "11. Transmission Losses";
+      return "transmissionLosses"; // Section 11
     if (nodeId.includes("_12") && nodeId.split("_").length > 1)
-      return "12. Volume and Surface Metrics";
+      return "volumeSurfaceMetrics"; // Section 12
     if (nodeId.includes("_13") && nodeId.split("_").length > 1)
-      return "13. Mechanical Loads";
+      return "mechanicalLoads"; // Section 13
     if (nodeId.includes("_14") && nodeId.split("_").length > 1)
-      return "14. TEDI & TELI";
+      return "tediSummary"; // Section 14
     if (nodeId.includes("_15") && nodeId.split("_").length > 1)
-      return "15. TEUI Summary";
+      return "teuiSummary"; // Section 15
 
     return "Other"; // Default fallback
   }
