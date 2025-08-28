@@ -1,6 +1,39 @@
 # Section 09 (Occupancy & Internal Gains) Troubleshooting Guide
 
-## Current Status ✅ COMPLETE SUCCESS
+## Current Status 🔧 ARCHITECTURAL CLEANUP IN PROGRESS (Aug 28, 2025)
+
+### **📊 PROGRESS SUMMARY: 2 Days of S09 Investigation**
+
+**MAJOR INSIGHT DISCOVERED**: After extensive S09 debugging, **the real issue is Section 04**, not S09!
+
+**Evidence**: 
+- S09 Reference calculations work correctly
+- S09 publishes `ref_` values properly to StateManager
+- **S04 feeds stale `ref_j_32=334368.22220641375` to S01**, causing persistent `e_10=234.3`
+
+### **🎯 ARCHITECTURAL PROGRESS COMPLETED**
+
+**✅ Step 1: Fixed switchMode() Toxicity**
+- Removed `calculateAll()` from `switchMode()` (violates DUAL-STATE-CHEATSHEET.md)
+- Mode switching now display-only as designed
+
+**✅ Step 2: Added Missing updateCalculatedDisplayValues() Function**
+- Added complete DOM update function with strict mode isolation
+- Added 6 mandatory calls after every `calculateAll()`
+- Function logs: `[S09] Updated calculated display values for reference mode`
+
+**🔧 REMAINING ARCHITECTURAL WORK (Steps 3-5)**
+- Step 3: Remove duplicate defaults anti-pattern (data corruption risk)
+- Step 4: Fix Phase 2 anti-patterns (38 getFieldValue() ambiguous calls)
+- Step 5: Final QA/QC compliance verification
+
+### **🐛 DEBUGGING STATUS**
+
+**MYSTERY SOLVED**: `i_63` still stuck at 4380 in Reference mode despite DOM updates
+**ROOT CAUSE**: Architecture not the issue - likely **Section 04** not consuming S09 Reference values
+
+**PERSISTENT BUG**: `e_10` consistently shows 234.3 regardless of S09 Reference changes
+**ROOT CAUSE**: **Section 04** feeds stale `ref_j_32` to Section 01 (S09 → S04 → S01 chain broken)
 
 ### **✅ FIXED: Reference Occupancy Dependency Chain Complete**
 
@@ -14,7 +47,29 @@
 - ✅ **Complete Reference chain**: S09 → S04 → S01 now flows correctly
 - ✅ **State sovereignty maintained**: Reference calculations use Reference-only values
 
-**Issue Remaining**: S09 Reference user activity level (d_64) changes not flowing through - needs investigation in future session.
+### **🎯 NEXT SESSION PLAN**
+
+**Priority 1: Complete S09 Architectural Cleanup (Steps 3-5)**
+1. **Step 3**: Remove duplicate defaults from state objects (prevent data corruption)
+2. **Step 4**: Replace 38 ambiguous `getFieldValue()` calls with explicit state access
+3. **Step 5**: Run final QA/QC compliance audit
+
+**Priority 2: Investigate Real Culprit - Section 04**
+1. **Audit S04 Reference Model**: Does it consume S09 `ref_i_71`, `ref_k_71` values?
+2. **Debug S04 → S01 chain**: Why is `ref_j_32` stuck at stale value?
+3. **Fix S04 dependencies**: Ensure S04 Reference model recalculates when S09 changes
+
+**Priority 3: Targeted Bug Fixes**
+1. **i_63 Reference mode**: Debug why DOM updates not showing calculated values
+2. **e_10 persistence**: Fix S04 → S01 chain to eliminate 234.3 stuck value
+3. **End-to-end testing**: Verify S09 Reference changes propagate to final TEUI
+
+### **💡 KEY LESSONS LEARNED**
+
+1. **Architectural compliance critical**: Missing DOM updates caused widespread display issues
+2. **Cross-section dependencies**: S09 works correctly, S04 is the real bottleneck  
+3. **Systematic approach works**: QA/QC audit identified exact failure points
+4. **Follow the data flow**: Always trace values through complete dependency chain
 
 ### **Fix Applied:**
 ```javascript
