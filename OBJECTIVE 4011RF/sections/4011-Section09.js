@@ -1691,6 +1691,17 @@ window.TEUI.SectionModules.sect09 = (function () {
           );
         }
       });
+      
+      // ✅ CRITICAL FIX: Also update DOM when in Reference mode (matches Target pattern)
+      if (ModeManager.currentMode === "reference") {
+        console.log(`[S09DB] calculateReferenceModel: Updating DOM (Reference mode)`);
+        Object.entries(results).forEach(([fieldId, value]) => {
+          // Use ModeManager.setValue to update both state and DOM
+          ModeManager.setValue(fieldId, String(value), "calculated");
+        });
+      } else {
+        console.log(`[S09DB] calculateReferenceModel: Skipping DOM update (Target mode)`);
+      }
       // CRITICAL: also publish the user-input values that might be needed downstream
        window.TEUI.StateManager.setValue("ref_d_63", ReferenceState.getValue("d_63"), "calculated");
        window.TEUI.StateManager.setValue("ref_d_64", ReferenceState.getValue("d_64"), "calculated");
