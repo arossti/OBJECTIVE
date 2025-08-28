@@ -1611,184 +1611,24 @@ window.TEUI.SectionModules.sect09 = (function () {
    */
   function calculateReferenceModel() {
     try {
-      // Calculate occupant energy using Reference state
-      const refOccupants = window.TEUI.parseNumeric(
-        ReferenceState.getValue("d_63"),
-      );
-      const refDailyHours = window.TEUI.parseNumeric(
-        ReferenceState.getValue("g_63"),
-      );
-      const refActivityLevel = ReferenceState.getValue("d_64");
-      const refActivityWatts = calculateActivityWatts(refActivityLevel);
-      const refAnnualHours = refDailyHours * 365;
-      const refOccupantEnergy =
-        (refOccupants * refActivityWatts * refAnnualHours) / 1000;
+      const results = calculateModel(ReferenceState, true);
+      const prefix = "ref_";
 
-      // Calculate plug loads using Reference state
-      const refPlugDensity = window.TEUI.parseNumeric(
-        ReferenceState.getValue("d_65"),
-      );
-      const refArea = window.TEUI.parseNumeric(
-        window.TEUI?.StateManager?.getValue("ref_h_15") ||
-          window.TEUI?.StateManager?.getValue("h_15"),
-      );
-      const refPlugEnergy = (refPlugDensity * refArea * refAnnualHours) / 1000;
+      // Store all results in StateManager with "ref_" prefix
+      Object.entries(results).forEach(([fieldId, value]) => {
+        if (value !== null && value !== undefined) {
+          window.TEUI.StateManager.setValue(
+            prefix + fieldId,
+            String(value),
+            "calculated",
+          );
+        }
+      });
+      // CRITICAL: also publish the user-input values that might be needed downstream
+       window.TEUI.StateManager.setValue("ref_d_63", ReferenceState.getValue("d_63"), "calculated");
+       window.TEUI.StateManager.setValue("ref_d_64", ReferenceState.getValue("d_64"), "calculated");
 
-      // Calculate lighting loads using Reference state
-      const refLightingDensity = window.TEUI.parseNumeric(
-        ReferenceState.getValue("d_66"),
-      );
-      const refLightingEnergy =
-        (refLightingDensity * refArea * refAnnualHours) / 1000;
 
-      // Calculate equipment loads using Reference state
-      const refEquipmentDensity = calculateEquipmentDensityForReference();
-      const refEquipmentEnergy =
-        (refEquipmentDensity * refArea * refAnnualHours) / 1000;
-
-      // Get DHW losses
-      const refDHWLosses =
-        window.TEUI.parseNumeric(
-          window.TEUI?.StateManager?.getValue("ref_d_54") ||
-            window.TEUI?.StateManager?.getValue("d_54"),
-        ) || 0;
-
-      // Calculate heating/cooling splits using Reference climate data
-      const refCoolingDays =
-        window.TEUI.parseNumeric(
-          window.TEUI?.StateManager?.getValue("ref_m_19") ||
-            window.TEUI?.StateManager?.getValue("m_19"),
-        ) || 120;
-      const refHeatingDays = 365 - refCoolingDays;
-      const refHeatingRatio = refHeatingDays / 365;
-      const refCoolingRatio = refCoolingDays / 365;
-
-      // Calculate totals
-      const refSubtotal =
-        refPlugEnergy + refLightingEnergy + refEquipmentEnergy;
-      const refTotal = refOccupantEnergy + refSubtotal + refDHWLosses;
-
-      // Store Reference Model results with ref_ prefix
-      if (window.TEUI?.StateManager) {
-        // Individual components
-        window.TEUI.StateManager.setValue(
-          "ref_h_64",
-          refOccupantEnergy.toString(),
-          "calculated",
-        );
-        window.TEUI.StateManager.setValue(
-          "ref_h_65",
-          refPlugEnergy.toString(),
-          "calculated",
-        );
-        window.TEUI.StateManager.setValue(
-          "ref_h_66",
-          refLightingEnergy.toString(),
-          "calculated",
-        );
-        window.TEUI.StateManager.setValue(
-          "ref_h_67",
-          refEquipmentEnergy.toString(),
-          "calculated",
-        );
-        window.TEUI.StateManager.setValue(
-          "ref_h_69",
-          refDHWLosses.toString(),
-          "calculated",
-        );
-
-        // Heating/cooling splits
-        window.TEUI.StateManager.setValue(
-          "ref_i_64",
-          (refOccupantEnergy * refHeatingRatio).toString(),
-          "calculated",
-        );
-        window.TEUI.StateManager.setValue(
-          "ref_k_64",
-          (refOccupantEnergy * refCoolingRatio).toString(),
-          "calculated",
-        );
-        window.TEUI.StateManager.setValue(
-          "ref_i_65",
-          (refPlugEnergy * refHeatingRatio).toString(),
-          "calculated",
-        );
-        window.TEUI.StateManager.setValue(
-          "ref_k_65",
-          (refPlugEnergy * refCoolingRatio).toString(),
-          "calculated",
-        );
-        window.TEUI.StateManager.setValue(
-          "ref_i_66",
-          (refLightingEnergy * refHeatingRatio).toString(),
-          "calculated",
-        );
-        window.TEUI.StateManager.setValue(
-          "ref_k_66",
-          (refLightingEnergy * refCoolingRatio).toString(),
-          "calculated",
-        );
-        window.TEUI.StateManager.setValue(
-          "ref_i_67",
-          (refEquipmentEnergy * refHeatingRatio).toString(),
-          "calculated",
-        );
-        window.TEUI.StateManager.setValue(
-          "ref_k_67",
-          (refEquipmentEnergy * refCoolingRatio).toString(),
-          "calculated",
-        );
-        window.TEUI.StateManager.setValue(
-          "ref_i_69",
-          (refDHWLosses * refHeatingRatio).toString(),
-          "calculated",
-        );
-        window.TEUI.StateManager.setValue(
-          "ref_k_69",
-          (refDHWLosses * refCoolingRatio).toString(),
-          "calculated",
-        );
-
-        // Subtotals and totals
-        window.TEUI.StateManager.setValue(
-          "ref_h_70",
-          refSubtotal.toString(),
-          "calculated",
-        );
-        window.TEUI.StateManager.setValue(
-          "ref_i_70",
-          (refSubtotal * refHeatingRatio).toString(),
-          "calculated",
-        );
-        window.TEUI.StateManager.setValue(
-          "ref_k_70",
-          (refSubtotal * refCoolingRatio).toString(),
-          "calculated",
-        );
-        window.TEUI.StateManager.setValue(
-          "ref_h_71",
-          refTotal.toString(),
-          "calculated",
-        );
-        window.TEUI.StateManager.setValue(
-          "ref_i_71",
-          (refTotal * refHeatingRatio).toString(),
-          "calculated",
-        );
-        window.TEUI.StateManager.setValue(
-          "ref_k_71",
-          (refTotal * refCoolingRatio).toString(),
-          "calculated",
-        );
-
-        // ✅ CRITICAL: Publish Reference input values for downstream sections (S07 needs ref_d_63)
-        window.TEUI.StateManager.setValue(
-          "ref_d_63",
-          refOccupants.toString(),
-          "calculated",
-        );
-        console.log(`[S09] Published ref_d_63="${refOccupants}" for S07 Reference calculations`);
-      }
     } catch (error) {
       console.error("[S09] Error in Reference Model calculations:", error);
     }
@@ -1830,27 +1670,122 @@ window.TEUI.SectionModules.sect09 = (function () {
    */
   function calculateTargetModel() {
     try {
-      // Calculate preliminary values
-      const activityLevel = TargetState.getValue("d_64");
-      const activityWatts = calculateActivityWatts(activityLevel);
-      setCalculatedValue("f_64", activityWatts, "number-2dp-comma");
+      const results = calculateModel(TargetState, false);
 
-      const dailyHours = TargetState.getValue("g_63");
-      const annualHours = calculateOccupiedHoursRatio(dailyHours);
-      setCalculatedValue("i_63", annualHours, "raw");
+      // Update DOM and StateManager for Target mode
+      Object.entries(results).forEach(([fieldId, value]) => {
+        setCalculatedValue(fieldId, value);
+      });
 
-      // Calculate energy usage using Target state
-      calculateOccupantEnergy();
-      calculatePlugLoads();
-      calculateLightingLoads();
-      calculateEquipmentLoads();
-      calculateTotals();
-
-      // Update reference indicators (only for Target mode)
+      updatePercentages(results.i_71, results.k_71);
       updateAllReferenceIndicators();
     } catch (error) {
       console.error("[S09] Error in Target Model calculations:", error);
     }
+  }
+
+  /**
+   * UNIFIED MODEL CALCULATION ENGINE
+   * This new function contains the complete calculation logic for this section.
+   * It is called for both the Target and Reference models to ensure identical logic.
+   *
+   * @param {object} state - The state object to use for inputs (TargetState or ReferenceState).
+   * @param {boolean} isReference - Flag to determine if this is a Reference calculation.
+   * @returns {object} A comprehensive object with all calculated results.
+   */
+  function calculateModel(state, isReference) {
+    // Get upstream dependencies, aware of the current mode
+    const conditionedArea = window.TEUI.parseNumeric(
+      window.TEUI.StateManager.getValue(isReference ? "ref_h_15" : "h_15"),
+      0,
+    );
+    const dhwLosses = window.TEUI.parseNumeric(
+      window.TEUI.StateManager.getValue(isReference ? "ref_d_54" : "d_54"),
+      0,
+    );
+    const buildingType =
+      window.TEUI.StateManager.getValue("d_12") || "A-Assembly";
+
+    // Preliminary calculations based on the section's internal state
+    const activityLevel = state.getValue("d_64");
+    const activityWatts = calculateActivityWatts(activityLevel);
+    const dailyHours = window.TEUI.parseNumeric(state.getValue("g_63"));
+    const annualHours = dailyHours * 365;
+
+    // Store these preliminary results back into the state object
+    state.setValue("f_64", activityWatts.toString());
+    state.setValue("i_63", annualHours.toString());
+
+    // --- Main Energy Calculations ---
+    const occupantEnergy =
+      (window.TEUI.parseNumeric(state.getValue("d_63")) *
+        activityWatts *
+        annualHours) /
+      1000;
+    const plugEnergy =
+      (window.TEUI.parseNumeric(state.getValue("d_65")) *
+        conditionedArea *
+        annualHours) /
+      1000;
+    const lightingEnergy =
+      (window.TEUI.parseNumeric(state.getValue("d_66")) *
+        conditionedArea *
+        annualHours) /
+      1000;
+
+    // Equipment loads are complex and depend on a lookup table
+    const efficiencyType = state.getValue("g_67");
+    const elevatorStatus = state.getValue("d_68");
+    const formattedBuildingType = formatBuildingTypeForLookup(buildingType);
+    let equipmentDensity = defaultEquipmentLoad;
+    if (
+      equipmentLoadsTable[formattedBuildingType]?.[efficiencyType]?.[
+        elevatorStatus
+      ] !== undefined
+    ) {
+      equipmentDensity =
+        equipmentLoadsTable[formattedBuildingType][efficiencyType][elevatorStatus];
+    }
+    const equipmentEnergy = (equipmentDensity * conditionedArea * annualHours) / 1000;
+    state.setValue("d_67", equipmentDensity.toFixed(2));
+
+    // --- Heating/Cooling Splits ---
+    const { heatingRatio, coolingRatio } = calculateHeatingCoolingSplit(isReference);
+
+    // --- Assemble All Results ---
+    const results = {
+      f_64: activityWatts,
+      i_63: annualHours,
+      h_64: occupantEnergy,
+      i_64: occupantEnergy * heatingRatio,
+      k_64: occupantEnergy * coolingRatio,
+      h_65: plugEnergy,
+      i_65: plugEnergy * heatingRatio,
+      k_65: plugEnergy * coolingRatio,
+      h_66: lightingEnergy,
+      i_66: lightingEnergy * heatingRatio,
+      k_66: lightingEnergy * coolingRatio,
+      d_67: equipmentDensity,
+      h_67: equipmentEnergy,
+      i_67: equipmentEnergy * heatingRatio,
+      k_67: equipmentEnergy * coolingRatio,
+      h_69: dhwLosses,
+      i_69: dhwLosses * heatingRatio,
+      k_69: dhwLosses * coolingRatio,
+    };
+
+    // --- Calculate Subtotals and Totals ---
+    const pleTotalEnergy = plugEnergy + lightingEnergy + equipmentEnergy;
+    results.h_70 = pleTotalEnergy;
+    results.i_70 = results.i_65 + results.i_66 + results.i_67;
+    results.k_70 = results.k_65 + results.k_66 + results.k_67;
+
+    const totalEnergy = pleTotalEnergy + occupantEnergy + dhwLosses;
+    results.h_71 = totalEnergy;
+    results.i_71 = results.i_70 + results.i_64 + results.i_69;
+    results.k_71 = results.k_70 + results.k_64 + results.k_69;
+
+    return results;
   }
 
   /**
@@ -2567,6 +2502,8 @@ window.TEUI.SectionModules.sect09 = (function () {
     getInternalGainsCooling: function () {
       return getFieldValue("k_71");
     },
+    // ✅ CRITICAL FIX: Expose ModeManager for FieldManager integration
+    ModeManager: ModeManager,
   };
 })();
 
