@@ -39,6 +39,7 @@
 2.  **UI Toggle is Display-Only**: The `switchMode()` function **MUST NOT** trigger calculations. It is a UI filter that only changes which pre-calculated state is displayed.
 3.  **State Sovereignty**: Each section manages its own `TargetState` and `ReferenceState`. It does not read `target_` or `ref_` prefixed values from other sections for its internal calculations.
 4.  **Reference Results are Shared**: To communicate with downstream sections (like S01), a section's `calculateReferenceModel()` **MUST** store its results in the global `StateManager` with a `ref_` prefix (e.g., `StateManager.setValue('ref_i_98', ...)`).
+5.  **🚨 Mode-Aware DOM Updates**: Calculation engines **MUST ONLY** update DOM when their mode matches the current UI mode. Target calculations updating DOM in Reference mode creates display bugs.
 
 ---
 
@@ -238,27 +239,66 @@ window.TEUI.StateManager.setValue(
     - External dependency listeners
     - State resets
 
-### **🚨 CRITICAL DOM UPDATE PATTERN (Newly Discovered)**
+### **🚨 CRITICAL DOM UPDATE PATTERN**
 
-**Component-Level DOM Updates**: Reference calculations MUST call `setCalculatedValue()` just like Target calculations
+**RULE**: Calculation engines must ONLY update DOM when their mode matches the current UI mode.
 
 ```javascript
-// ❌ WRONG PATTERN (S11 bug): Reference calculations skip DOM updates
-if (!isReferenceCalculation) {
-  setCalculatedValue(fieldId, value, format); // Only Target updates DOM!
+// ❌ WRONG: Target calculations always update DOM (overwrites Reference display)
+function calculateTargetModel() {
+  const results = calculateModel(TargetState, false);
+  Object.entries(results).forEach(([fieldId, value]) => {
+    setCalculatedValue(fieldId, value); // ❌ Overwrites Reference DOM!
+  });
 }
 
-// ✅ CORRECT PATTERN: Both Target and Reference update DOM
-setCalculatedValue(fieldId, value, format); // Mode-aware via ModeManager
+// ✅ CORRECT: Mode-aware DOM updates prevent overwriting
+function calculateTargetModel() {
+  const results = calculateModel(TargetState, false);
+  
+  // Store in StateManager for cross-section communication
+  Object.entries(results).forEach(([fieldId, value]) => {
+    StateManager.setValue(fieldId, value, "calculated");
+  });
+  
+  // ✅ ONLY update DOM when in Target mode
+  if (ModeManager.currentMode === "target") {
+    Object.entries(results).forEach(([fieldId, value]) => {
+      setCalculatedValue(fieldId, value);
+    });
+  }
+}
 ```
 
-**Why This Works**:
-- `setCalculatedValue()` is already mode-aware via `ModeManager.setValue()`
-- Automatically writes to correct state (Target/Reference) based on `currentMode`
-- Automatically updates DOM with formatted values
-- **No special Reference handling needed** - emulate Target mode exactly
+**Successful Implementation Patterns**:
 
-**Common Failure**: Reference calculations store values but never update DOM, causing stale displays
+**Pattern 1: Mode-aware helper function (S02)**
+```javascript
+function setFieldValue(fieldId, value, fieldType = "calculated") {
+  // Always store in StateManager with mode prefix
+  const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+  StateManager.setValue(`${prefix}${fieldId}`, value, fieldType);
+  
+  // CRITICAL: Only update DOM when in target mode
+  if (ModeManager.currentMode === "target") {
+    StateManager.setValue(fieldId, value, fieldType); // Global state
+    updateDOMElement(fieldId, value); // DOM update
+  }
+}
+```
+
+**Pattern 2: Centralized DOM updates (S07)**
+```javascript
+function calculateAll() {
+  calculateReferenceModel(); // Stores ref_ values only
+  calculateTargetModel();    // Stores unprefixed values only
+}
+
+// After calculations, update DOM based on current mode
+ModeManager.updateCalculatedDisplayValues(); // Mode-aware DOM updates
+```
+
+**Common Failure**: Target calculations overwrite Reference mode display by updating DOM regardless of current mode
 6.  **Verify working functions preserved**: Compare with BACKUP file - NO calculation functions should be deleted
     - Calculate functions (like `calculateTypologyBasedCap`)
     - Formula implementations (Excel compliance)

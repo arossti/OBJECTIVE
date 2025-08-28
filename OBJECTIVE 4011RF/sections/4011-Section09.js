@@ -1739,10 +1739,23 @@ window.TEUI.SectionModules.sect09 = (function () {
     try {
       const results = calculateModel(TargetState, false);
 
-      // Update DOM and StateManager for Target mode
-      Object.entries(results).forEach(([fieldId, value]) => {
-        setCalculatedValue(fieldId, value);
-      });
+      // ✅ CRITICAL FIX: Only call setCalculatedValue() when in Target mode
+      // This prevents Target calculations from overwriting Reference mode display
+      console.log(`[S09DB] calculateTargetModel: currentMode=${ModeManager.currentMode}`);
+      if (ModeManager.currentMode === "target") {
+        console.log(`[S09DB] calculateTargetModel: Updating DOM (Target mode)`);
+        Object.entries(results).forEach(([fieldId, value]) => {
+          setCalculatedValue(fieldId, value);
+        });
+      } else {
+        console.log(`[S09DB] calculateTargetModel: Skipping DOM update (Reference mode)`);
+        // Still store in StateManager for backward compatibility, but don't update DOM
+        Object.entries(results).forEach(([fieldId, value]) => {
+          if (window.TEUI?.StateManager && value !== null && value !== undefined) {
+            window.TEUI.StateManager.setValue(fieldId, String(value), "calculated");
+          }
+        });
+      }
 
       updatePercentages(results.i_71, results.k_71);
       updateAllReferenceIndicators();
@@ -1777,7 +1790,9 @@ window.TEUI.SectionModules.sect09 = (function () {
     const activityLevel = state.getValue("d_64");
     const activityWatts = calculateActivityWatts(activityLevel);
     const dailyHours = window.TEUI.parseNumeric(state.getValue("g_63"));
+    console.log(`[S09DB] calculateModel: state.getValue("g_63")="${state.getValue("g_63")}", dailyHours=${dailyHours}, isReference=${isReference}`);
     const annualHours = dailyHours * 365;
+    console.log(`[S09DB] calculateModel: annualHours = ${dailyHours} * 365 = ${annualHours}`);
 
     // Store these preliminary results back into the state object
     state.setValue("f_64", activityWatts.toString());
