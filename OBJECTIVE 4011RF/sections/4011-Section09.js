@@ -172,6 +172,8 @@ window.TEUI.SectionModules.sect09 = (function () {
       return this.getCurrentState().getValue(fieldId);
     },
     setValue: function (fieldId, value, source = "user") {
+      console.log(`[S09DB] ModeManager.setValue: ${fieldId}=${value}, mode=${this.currentMode}, source=${source}`);
+      
       const currentState = this.currentMode === "target" ? TargetState : ReferenceState;
       currentState.setValue(fieldId, value);
 
@@ -180,9 +182,11 @@ window.TEUI.SectionModules.sect09 = (function () {
         if (this.currentMode === "target") {
           // Target changes go to StateManager for downstream sections
           window.TEUI.StateManager.setValue(fieldId, value, source);
+          console.log(`[S09DB] Stored in StateManager: ${fieldId}=${value}`);
         } else if (this.currentMode === "reference") {
           // Reference changes go to StateManager with ref_ prefix
           window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, source);
+          console.log(`[S09DB] Stored in StateManager: ref_${fieldId}=${value}`);
         }
       }
     },
@@ -1856,12 +1860,12 @@ window.TEUI.SectionModules.sect09 = (function () {
    * Replaces the original calculateAll function
    */
   function calculateAll() {
-    // console.log('[Section09] Running dual-engine calculations...'); // Comment out
+    console.log('[S09DB] calculateAll() triggered - running dual-engine calculations...');
 
     calculateReferenceModel();
     calculateTargetModel();
 
-    // console.log('[Section09] Dual-engine calculations complete'); // Comment out
+    console.log('[S09DB] calculateAll() complete - both engines ran');
   }
 
   /**
@@ -1930,22 +1934,20 @@ window.TEUI.SectionModules.sect09 = (function () {
       });
     });
 
-    // Add dropdown change event handlers
+    // Add dropdown change event handlers (following S13 working pattern)
     const dropdowns = sectionElement.querySelectorAll("select");
-    dropdowns.forEach((dropdown) => {
-      dropdown.addEventListener("change", function () {
-        const fieldId = this.getAttribute("data-field-id");
-        if (!fieldId) return;
-
-        // Store via ModeManager (dual-state aware)
-        if (ModeManager && typeof ModeManager.setValue === "function") {
-          ModeManager.setValue(fieldId, this.value, "user-modified");
-        }
-
-        // Recalculate
-        calculateAll();
-        ModeManager.updateCalculatedDisplayValues();
-      });
+    console.log(`[S09DB] DOM SETUP: Found ${dropdowns.length} dropdowns in section`);
+    
+    dropdowns.forEach((dropdown, index) => {
+      const fieldId = dropdown.getAttribute("data-field-id");
+      const currentValue = dropdown.value;
+      console.log(`[S09DB] DOM SETUP: Dropdown ${index}: fieldId="${fieldId}", value="${currentValue}", id="${dropdown.id}"`);
+      
+      // Remove any existing handlers to avoid duplicates (S13 pattern)
+      dropdown.removeEventListener("change", handleDropdownChange);
+      
+      // Add the event listener (S13 pattern)
+      dropdown.addEventListener("change", handleDropdownChange);
     });
 
     // Add special handling for equipment dropdowns
@@ -1953,6 +1955,39 @@ window.TEUI.SectionModules.sect09 = (function () {
 
     // Add cross-section dependency updates
     addStateManagerListeners();
+  }
+
+  /**
+   * Handle dropdown changes (following S13 working pattern)
+   * ✅ CRITICAL: Store dropdown changes in current state via ModeManager
+   */
+  function handleDropdownChange(e) {
+    console.log(`[S09DB] DROPDOWN EVENT FIRED! dropdown.value=${e.target.value}`);
+    
+    const fieldId = e.target.getAttribute("data-field-id");
+    console.log(`[S09DB] fieldId from dropdown: ${fieldId}`);
+    
+    if (!fieldId) {
+      console.log(`[S09DB] ERROR: No fieldId found on dropdown!`);
+      return;
+    }
+
+    const newValue = e.target.value;
+    console.log(`[S09DB] Dropdown changed: ${fieldId}=${newValue}, current mode=${ModeManager?.currentMode || 'ModeManager not available'}`);
+
+    // Store via ModeManager (dual-state aware)
+    if (ModeManager && typeof ModeManager.setValue === "function") {
+      console.log(`[S09DB] Calling ModeManager.setValue...`);
+      ModeManager.setValue(fieldId, newValue, "user-modified");
+    } else {
+      console.log(`[S09DB] ERROR: ModeManager.setValue not available!`);
+    }
+
+    // Recalculate and update display
+    console.log(`[S09DB] About to call calculateAll() from dropdown handler`);
+    calculateAll();
+    console.log(`[S09DB] About to call updateCalculatedDisplayValues()`);
+    ModeManager.updateCalculatedDisplayValues();
   }
 
   /**
