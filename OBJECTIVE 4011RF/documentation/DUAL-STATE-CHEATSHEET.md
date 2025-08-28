@@ -467,6 +467,7 @@ StateManager.addListener("ref_d_43", calculateReferenceModel); // Reference → 
 
 🛑 **CRITICAL ANTI-PATTERN PREVENTION** 🛑
 
+### **🚨 ANTI-PATTERN #1: State Contamination**
 **NEVER** make Target and Reference models read the same user input values.
 Target and Reference must have **completely independent input states**.
 
@@ -475,11 +476,39 @@ Target and Reference must have **completely independent input states**.
 - Target: `const systemType = TargetState.getValue("d_113");`
 - Reference: `const systemType = ReferenceState.getValue("d_113");`
 
-This independence allows comparing different systems, locations, and even geometry scenarios (e.g., Gas vs Electric heating, Attawapiskat vs. Alexandria, ON, Future vs. Present Weather values, etc.).
+### **🚨 ANTI-PATTERN #2: DOM Overwrite Bug (S09 Case Study)**
+**NEVER** let calculation engines update DOM regardless of current mode.
+
+❌ **WRONG**: Target calculations always update DOM
+```javascript
+function calculateTargetModel() {
+  const results = calculateModel(TargetState, false);
+  Object.entries(results).forEach(([fieldId, value]) => {
+    setCalculatedValue(fieldId, value); // ❌ Overwrites Reference display!
+  });
+}
+```
+
+✅ **CORRECT**: Mode-aware DOM updates
+```javascript
+function calculateTargetModel() {
+  const results = calculateModel(TargetState, false);
+  
+  // Only update DOM when in Target mode
+  if (ModeManager.currentMode === "target") {
+    Object.entries(results).forEach(([fieldId, value]) => {
+      setCalculatedValue(fieldId, value);
+    });
+  }
+}
+```
+
+**Why This Matters**: In S09, this bug caused a 48-hour debugging nightmare where Reference mode inputs appeared to not trigger calculations, when actually Target calculations were immediately overwriting the Reference display.
 
 **🎯 CALCULATION vs INPUT BEHAVIOR**:
 - **Input Changes**: Only affect the current mode (Target changes only in Target mode, Reference changes only in Reference mode)
 - **Calculation Execution**: BOTH Target and Reference calculations run after ANY input change (efficient - keeps both models current)
+- **DOM Updates**: ONLY the current mode's calculations should update DOM
 
 🛑 **CRITICAL DROPDOWN EVENT HANDLER REQUIREMENT** 🛑
 
