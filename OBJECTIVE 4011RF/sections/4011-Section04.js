@@ -2646,6 +2646,25 @@ window.TEUI.SectionModules.sect04 = (function () {
         calculateReferenceModel(); // This has the function override to ensure ref_ routing
         ModeManager.updateCalculatedDisplayValues();
       });
+
+      // ✅ CRITICAL: React to S09 Reference mode internal gains changes  
+      window.TEUI.StateManager.addListener("ref_h_71", () => {
+        console.log(`[S04] S09 total internal gains changed (Reference): ref_h_71`);
+        calculateReferenceModel();
+        ModeManager.updateCalculatedDisplayValues();
+      });
+
+      window.TEUI.StateManager.addListener("ref_i_71", () => {
+        console.log(`[S04] S09 heating internal gains changed (Reference): ref_i_71`);
+        calculateReferenceModel();
+        ModeManager.updateCalculatedDisplayValues();
+      });
+
+      window.TEUI.StateManager.addListener("ref_k_71", () => {
+        console.log(`[S04] S09 cooling internal gains changed (Reference): ref_k_71`);
+        calculateReferenceModel();
+        ModeManager.updateCalculatedDisplayValues();
+      });
     }
   }
 
