@@ -29,40 +29,22 @@ window.TEUI.SectionModules.sect10 = (function () {
       }
     },
     setDefaults: function () {
-      // These defaults MUST match the 'value' properties in the sectionRows definition
-      this.state = {
-        d_73: "7.50",
-        e_73: "Average",
-        f_73: "0.50",
-        g_73: "0",
-        h_73: "100",
-        d_74: "81.14",
-        e_74: "North",
-        f_74: "0.50",
-        g_74: "0",
-        h_74: "100",
-        d_75: "3.83",
-        e_75: "East",
-        f_75: "0.50",
-        g_75: "0",
-        h_75: "100",
-        d_76: "159.00",
-        e_76: "South",
-        f_76: "0.50",
-        g_76: "0",
-        h_76: "100",
-        d_77: "100.66",
-        e_77: "West",
-        f_77: "0.50",
-        g_77: "0",
-        h_77: "90",
-        d_78: "0.00",
-        e_78: "Skylight",
-        f_78: "0.50",
-        g_78: "0",
-        h_78: "80",
-        d_80: "NRC 40%",
-      };
+      // ✅ SINGLE SOURCE OF TRUTH: Read defaults from field definitions only
+      // This prevents data corruption from duplicate defaults
+      this.state = {};
+      
+      // Get all field definitions
+      const fields = getFields();
+      
+      // Only populate defaults that exist in field definitions
+      Object.keys(fields).forEach(fieldId => {
+        const defaultValue = getFieldDefault(fieldId);
+        if (defaultValue !== "") {
+          this.state[fieldId] = defaultValue;
+        }
+      });
+      
+      console.log("S10: TargetState defaults loaded from field definitions (single source of truth)");
     },
     saveState: function () {
       localStorage.setItem("S10_TARGET_STATE", JSON.stringify(this.state));
@@ -88,39 +70,41 @@ window.TEUI.SectionModules.sect10 = (function () {
       }
     },
     setDefaults: function () {
-      this.state = {
-        d_73: "5.00",
-        e_73: "South",
-        f_73: "0.35",
-        g_73: "0",
-        h_73: "0",
-        d_74: "60.00",
-        e_74: "East",
-        f_74: "0.35",
-        g_74: "0",
-        h_74: "0",
-        d_75: "2.50",
-        e_75: "West",
-        f_75: "0.35",
-        g_75: "0",
-        h_75: "0",
-        d_76: "159.00",
-        e_76: "South",
-        f_76: "0.35",
-        g_76: "0",
-        h_76: "0",
-        d_77: "100.66",
-        e_77: "West",
-        f_77: "0.35",
-        g_77: "0",
-        h_77: "0",
-        d_78: "0.00",
-        e_78: "Skylight",
-        f_78: "0.35",
-        g_78: "0",
-        h_78: "0",
-        d_80: "NRC 40%", // Reference method
-      };
+      // ✅ SINGLE SOURCE OF TRUTH: Read defaults from field definitions only
+      // This prevents data corruption from duplicate/different defaults
+      this.state = {};
+      
+      // Get all field definitions
+      const fields = getFields();
+      
+      // Start with field definition defaults
+      Object.keys(fields).forEach(fieldId => {
+        const defaultValue = getFieldDefault(fieldId);
+        if (defaultValue !== "") {
+          this.state[fieldId] = defaultValue;
+        }
+      });
+      
+      // ✅ REFERENCE MODE OVERRIDES: Only values that should differ from Target
+      // These represent building code reference values vs actual building values
+      this.state.d_73 = "5.00";    // Reference: Smaller window area
+      this.state.e_73 = "South";   // Reference: Optimal orientation
+      this.state.f_73 = "0.35";    // Reference: Better shading factor
+      this.state.h_73 = "0";       // Reference: No user adjustments
+      this.state.d_74 = "60.00";   // Reference: Smaller window area
+      this.state.f_74 = "0.35";    // Reference: Better shading factor
+      this.state.h_74 = "0";       // Reference: No user adjustments
+      this.state.d_75 = "2.50";    // Reference: Smaller window area
+      this.state.f_75 = "0.35";    // Reference: Better shading factor
+      this.state.h_75 = "0";       // Reference: No user adjustments
+      this.state.f_76 = "0.35";    // Reference: Better shading factor
+      this.state.h_76 = "0";       // Reference: No user adjustments
+      this.state.f_77 = "0.35";    // Reference: Better shading factor
+      this.state.h_77 = "0";       // Reference: No user adjustments
+      this.state.f_78 = "0.35";    // Reference: Better shading factor
+      this.state.h_78 = "0";       // Reference: No user adjustments
+      
+      console.log("S10: ReferenceState defaults loaded from field definitions with Reference overrides");
     },
     saveState: function () {
       localStorage.setItem("S10_REFERENCE_STATE", JSON.stringify(this.state));
@@ -376,6 +360,15 @@ window.TEUI.SectionModules.sect10 = (function () {
     // For values EXTERNAL to this section (from global StateManager)
     const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
     return window.TEUI.parseNumeric(rawValue) || 0;
+  }
+
+  /**
+   * Get field default value from field definitions (single source of truth)
+   * Prevents hardcoded defaults anti-pattern
+   */
+  function getFieldDefault(fieldId) {
+    const fields = getFields();
+    return fields[fieldId]?.defaultValue || fields[fieldId]?.value || "";
   }
 
   function getFieldValue(fieldId) {
@@ -2128,9 +2121,10 @@ window.TEUI.SectionModules.sect10 = (function () {
       // Get total solar gains (internal to S10)
       const solarGains = getNumericValue("i_79");
       // EXTERNAL DEPENDENCY: Get internal gains from S09 via global state (MODE-AWARE)
+      // ✅ EXPLICIT MODE ISOLATION: No cross-mode fallbacks (prevents silent failures)
       const internalGains = ModeManager.currentMode === "reference" 
-        ? (getGlobalNumericValue("ref_i_71") || getGlobalNumericValue("i_71") || 0)
-        : (getGlobalNumericValue("i_71") || 0);
+        ? (getGlobalNumericValue("ref_i_71") || 0)  // ✅ Reference only - no Target fallback
+        : (getGlobalNumericValue("i_71") || 0);     // ✅ Target only
       
       // console.log(`[S10] 🔗 Utilization calc: i_71=${internalGains} [mode=${ModeManager.currentMode}]`);
       const totalGains = solarGains + internalGains;

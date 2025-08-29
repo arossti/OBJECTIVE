@@ -186,6 +186,30 @@ switchMode: function (mode) {
 
 **Required Fix**: Remove all hardcoded defaults, implement `getFieldDefault()` pattern.
 
+### **🚑 CRITICAL ISSUE #4: Fallback Usage Patterns (NEEDS AUDIT)**
+
+**Concern**: S01 state mixing observed on first S09 changes  
+**Risk**: Silent failures from fallback contamination  
+**DUAL-STATE-CHEATSHEET**: Phase 2 - Current State Anti-Pattern Elimination
+
+**Evidence**: Initial S09 changes cause S01 state mixing, then system self-corrects  
+**Hypothesis**: Fallback patterns causing temporary state contamination:
+
+```javascript
+// ❌ RISKY: Fallback to opposite mode (silent failure)
+const value = getGlobalNumericValue("ref_i_71") || getGlobalNumericValue("i_71") || 0;
+
+// ✅ SAFER: Explicit mode isolation (fail fast)
+const value = isReferenceCalculation 
+  ? getGlobalNumericValue("ref_i_71") || 0
+  : getGlobalNumericValue("i_71") || 0;
+```
+
+**Required Audit**: 
+- S09: Check all `||` fallback patterns for cross-mode contamination
+- S10: Check all `||` fallback patterns for cross-mode contamination  
+- S01: Investigate why initial state mixing occurs
+
 ## ⚠️ **CRITICAL ANTI-PATTERNS TO CHECK**
 
 Based on DUAL-STATE-CHEATSHEET.md findings:
@@ -252,12 +276,21 @@ switchMode: function(mode) {
 2. ✅ **Troubleshooting Guide Updated** - Comprehensive audit plan documented
 3. **Ready for Commit** - Clean code ready for version control
 
-### **After Break** (S10 Remaining Fixes):
-1. ✅ **switchMode Anti-Pattern** - FIXED (removed `calculateAll()` from line 154)
-2. ✅ **DOM Update Missing** - FIXED (added `updateCalculatedDisplayValues()` calls)
-3. 🚨 **Hardcoded Defaults Removal** - **CRITICAL PRIORITY** (lines 31-58, 90-117)
+### **After Break** (Priority Order):
+
+#### **🚑 CRITICAL DATA INTEGRITY (Must Fix First):**
+1. 🚨 **Hardcoded Defaults Removal** - **DATA CORRUPTION RISK** (lines 31-58, 90-117)
+2. 🚑 **Fallback Usage Audit** - **SILENT FAILURE RISK** (S09/S10 joint review)
+3. 🔍 **S01 State Mixing Investigation** - Check fallback contamination patterns
+
+#### **🔧 ARCHITECTURAL CLEANUP (After Critical Fixes):**
 4. 🔍 **getFieldDefault() Implementation** - Single source of truth pattern
 5. 📋 **Final DUAL-STATE-CHEATSHEET Compliance** - Complete remaining QA/QC checks
+
+#### **✅ COMPLETED TODAY:**
+- ✅ **switchMode Anti-Pattern** - FIXED (removed `calculateAll()` from line 154)
+- ✅ **DOM Update Missing** - FIXED (added `updateCalculatedDisplayValues()` calls)
+- ✅ **d_64 Reference Chain** - FIXED (S09 → S10 → S15 → S04 → S01 working)
 
 ---
 
