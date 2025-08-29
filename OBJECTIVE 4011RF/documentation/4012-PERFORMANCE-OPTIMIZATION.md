@@ -350,6 +350,94 @@ function calculateAll(source = "unknown") {
 
 ---
 
+## 🏆 **PHASE 5: RUNLOOP ARCHITECTURE (PRODUCTION REFACTOR)**
+
+### **🎯 CTO CONCEPT: Operating System Runloop Pattern**
+
+**Current Problem**: Verbose, repetitive calculation triggering
+```javascript
+// CURRENT ANTI-PATTERN: Immediate execution cascade
+registerDependency(field1); calculateAll(); // 50 values processed
+registerDependency(field2); calculateAll(); // Same 50 values again  
+registerDependency(field3); calculateAll(); // Same 50 values again
+// Result: 3x unnecessary work, 150 total calculations
+```
+
+**Solution**: **Runloop with "Needs Update" Flags**
+```javascript
+// PROPOSED RUNLOOP PATTERN: Consolidation + Deferred Execution
+registerDependency(field1); setNeedsUpdate(); // Flag only
+registerDependency(field2); setNeedsUpdate(); // Flag only
+registerDependency(field3); setNeedsUpdate(); // Flag only
+// Next runloop turn: calculateAll() once → 50 calculations total
+```
+
+### **🔧 Implementation Strategy**
+
+**Core Runloop Manager**:
+```javascript
+window.TEUI.Runloop = {
+  needsUpdate: false,
+  scheduledUpdate: null,
+  
+  setNeedsUpdate() {
+    if (!this.needsUpdate) {
+      this.needsUpdate = true;
+      this.scheduledUpdate = requestAnimationFrame(() => {
+        this.processUpdate();
+      });
+    }
+  },
+  
+  processUpdate() {
+    if (this.needsUpdate) {
+      window.TEUI.Calculator.calculateAll();
+      this.needsUpdate = false;
+      this.scheduledUpdate = null;
+    }
+  }
+};
+```
+
+**Consolidated Registration Functions**:
+```javascript
+// BEFORE: Verbose repetition
+function registerSection15Dependencies() {
+  sm.addListener('i_80', () => calculateAll());     // 50 calcs
+  sm.addListener('h_70', () => calculateAll());     // 50 calcs  
+  sm.addListener('d_117', () => calculateAll());    // 50 calcs
+  // Total: 150 calculations for 3 dependencies
+}
+
+// AFTER: Runloop consolidation
+function registerSection15Dependencies() {
+  const deps = ['i_80', 'h_70', 'd_117'];
+  deps.forEach(dep => {
+    sm.addListener(dep, () => TEUI.Runloop.setNeedsUpdate());
+  });
+  // Total: 50 calculations for all 3 dependencies combined
+}
+```
+
+### **🎯 Benefits**
+
+**Performance**: **60-80% reduction** in redundant calculations  
+**Code Quality**: **90% reduction** in repetitive listener code  
+**Maintainability**: Single source of truth for update scheduling  
+**User Experience**: Smoother, more responsive interface
+
+### **📋 Implementation Phases**
+
+1. **Create Runloop Manager**: Central update scheduling system
+2. **Consolidate Listeners**: Array-based dependency registration  
+3. **Replace calculateAll() Calls**: Use setNeedsUpdate() flags
+4. **Test Performance**: Measure with Clock.js before/after
+5. **Production Deploy**: Final architecture for optimal performance
+
+**🎯 Expected Result**: **2000ms → 400ms** calculation time achieved through systematic consolidation
+
+---
+
 ## 🚀 **NEXT STEPS**
 
 ### **Immediate Priority (Before Break):**

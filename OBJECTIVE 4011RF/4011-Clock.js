@@ -59,6 +59,7 @@ window.TEUI.Clock = {
       console.log(`[CLOCK] Initial load completed: ${this.initTime.toFixed(0)}ms`);
     } else if (window.TEUI.timing.currentStartTime) {
       const currentTime = now - window.TEUI.timing.currentStartTime;
+      window.TEUI.timing.lastCalculationTime = currentTime;
       console.log(`[CLOCK] Current calculation completed: ${currentTime.toFixed(0)}ms`);
     }
     
@@ -81,12 +82,9 @@ window.TEUI.Clock = {
       // Show initialization time (persistent)
       displayText = `Initialization: ${this.formatTime(this.initTime)}`;
       
-      // Add current time if available
-      if (window.TEUI.timing.currentStartTime) {
-        const currentTime = performance.now() - window.TEUI.timing.currentStartTime;
-        if (currentTime > 50) { // Only show if calculation is taking time
-          displayText += `\nCurrent: ${this.formatTime(currentTime)}`;
-        }
+      // Add current time if we have recent calculation data
+      if (window.TEUI.timing.lastCalculationTime) {
+        displayText += `\nCurrent: ${this.formatTime(window.TEUI.timing.lastCalculationTime)}`;
       }
     } else if (window.TEUI.timing.initStartTime) {
       // Show ongoing initialization
