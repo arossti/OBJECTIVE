@@ -178,6 +178,14 @@ sm.addListener("h_15", debouncedCalculateAll);
 
 ## 🛠️ **IMPLEMENTATION ROADMAP**
 
+### **Phase 0: Performance Clock Implementation (Foundation)**
+1. **Add S01 Performance Clock**: User-visible timing display in dashboard
+2. **Baseline Measurement**: Document current Init and Last calculation times  
+3. **Regression Detection**: Monitor performance impact of each optimization
+4. **Success Tracking**: Real-time feedback on optimization improvements
+
+**Expected Benefit**: Quantifiable performance improvement tracking
+
 ### **Phase 1: Timeout Audit & Elimination (High Impact)**
 1. **Audit**: `grep -r "setTimeout" sections/` - find all timeout usage
 2. **Analyze**: Determine which timeouts are for race conditions vs legitimate delays
@@ -214,7 +222,47 @@ sm.addListener("h_15", debouncedCalculateAll);
 
 ## 🔍 **DIAGNOSTIC TOOLS**
 
-### **Performance Measurement**
+### **S01 Runtime Performance Clock (User-Visible)**
+
+**Implementation**: Add fine-print performance indicator to S01 dashboard
+```javascript
+// Add to S01 after e_10/h_10 calculations complete:
+function updatePerformanceClock() {
+  const calculationTime = performance.now() - window.TEUI.calculationStartTime;
+  const clockElement = document.querySelector('#performance-clock');
+  
+  if (clockElement) {
+    if (window.TEUI.isInitialLoad) {
+      // Show initial load time (persistent)
+      clockElement.textContent = `Init: ${calculationTime.toFixed(0)}ms | Last: ${calculationTime.toFixed(0)}ms`;
+      window.TEUI.isInitialLoad = false;
+    } else {
+      // Update only the "Last" time (preserves init time)
+      const initTime = clockElement.textContent.split('|')[0];
+      clockElement.textContent = `${initTime}| Last: ${calculationTime.toFixed(0)}ms`;
+    }
+  }
+}
+
+// Trigger timing start in StateManager or FieldManager:
+window.TEUI.calculationStartTime = performance.now();
+```
+
+**HTML Addition to S01**:
+```html
+<!-- Add to S01 dashboard, small fine-print -->
+<div id="performance-clock" style="font-size: 10px; color: #666; margin-top: 5px;">
+  Calculating...
+</div>
+```
+
+**Benefits**:
+- **Real-time feedback** on optimization improvements
+- **Init vs subsequent** timing comparison  
+- **User-visible** performance metrics
+- **Regression detection** if changes slow things down
+
+### **Console Performance Measurement**
 ```javascript
 // Add to key calculation functions:
 function calculateAll() {
