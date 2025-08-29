@@ -1033,6 +1033,11 @@ window.TEUI.SectionModules.sect01 = (function () {
       if (window.TEUI?.Clock?.markCalculationEnd) {
         window.TEUI.Clock.markCalculationEnd();
       }
+      
+      // 🎯 USER INTERACTION TIMING: Mark end of user interaction → h_10 settlement chain
+      if (window.TEUI?.Clock?.markUserInteractionEnd) {
+        window.TEUI.Clock.markUserInteractionEnd();
+      }
 
       console.log("✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10");
       // console.log("🚀 [S01] =================================");

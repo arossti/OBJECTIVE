@@ -2016,6 +2016,7 @@ window.TEUI.SectionModules.sect09 = (function () {
     }
 
     // Store via ModeManager (dual-state aware)
+    // ✅ StateManager will automatically trigger Clock timing on "user-modified" state
     if (ModeManager && typeof ModeManager.setValue === "function") {
       // console.log(`[S09DB] Calling ModeManager.setValue...`);
       ModeManager.setValue(fieldId, newValue, "user-modified");

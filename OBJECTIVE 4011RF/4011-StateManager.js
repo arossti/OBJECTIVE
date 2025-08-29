@@ -330,6 +330,11 @@ TEUI.StateManager = (function () {
    * @returns {boolean} True if the value changed
    */
   function setValue(fieldId, value, state = VALUE_STATES.USER_MODIFIED) {
+    // 🎯 SMART USER INTERACTION TIMING: Auto-detect user changes and start performance timing
+    if (state === VALUE_STATES.USER_MODIFIED && window.TEUI?.Clock?.markUserInteractionStart) {
+      window.TEUI.Clock.markUserInteractionStart();
+    }
+
     // 🔍 RACE CONDITION DEBUG: Track all h_10 setValue calls
     if (fieldId === "h_10") {
       console.log(`[StateManager] 🎯 h_10 setValue: "${value}" (state: ${state})`);

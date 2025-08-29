@@ -132,6 +132,30 @@ window.TEUI.Clock = {
   },
 
   /**
+   * Mark start of user interaction (dropdown, slider, input change)
+   * This tracks user-perceived performance: interaction → h_10 settlement
+   */
+  markUserInteractionStart() {
+    if (this.initDisplayed) { // Only track subsequent interactions after init
+      window.TEUI.timing.currentStartTime = performance.now();
+      console.log('[CLOCK] 🎯 User interaction started - timing to h_10 settlement');
+    }
+  },
+
+  /**
+   * Mark end of user interaction chain (called from S01 h_10 completion)
+   * This gives us the real user-perceived calculation time
+   */
+  markUserInteractionEnd() {
+    if (this.initDisplayed && window.TEUI.timing.currentStartTime) {
+      const currentTime = performance.now() - window.TEUI.timing.currentStartTime;
+      window.TEUI.timing.lastCalculationTime = currentTime;
+      console.log(`🕐 [CLOCK] ⚡ USER INTERACTION COMPLETE: ${currentTime.toFixed(0)}ms (interaction → h_10 settlement)`);
+      this.updateDisplay();
+    }
+  },
+
+  /**
    * Reset timing for new session (useful for testing)
    */
   reset() {
@@ -154,3 +178,5 @@ if (document.readyState === 'loading') {
 } else {
   window.TEUI.Clock.init();
 }
+
+// Note: User interaction timing now handled automatically by StateManager integration
