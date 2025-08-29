@@ -519,10 +519,8 @@ TEUI.Calculator = (function () {
       }
     });
 
-    // End performance timing and update display
-    if (window.TEUI?.Clock?.markCalculationEnd) {
-      window.TEUI.Clock.markCalculationEnd();
-    }
+    // Note: Performance timing ends in S01 after h_10 finalization
+    // Clock.markCalculationEnd() called from Section01.runAllCalculations()
   }
 
   /**

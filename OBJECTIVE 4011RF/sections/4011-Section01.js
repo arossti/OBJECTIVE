@@ -1029,7 +1029,12 @@ window.TEUI.SectionModules.sect01 = (function () {
       updateTEUIDisplay(); // Calculates all values and updates display
       updateTitleModeIndicators(); // Update mode indicators
 
-      // console.log("✅ [S01] PURE DISPLAY CONSUMER COMPLETE");
+      // 🕐 PERFORMANCE CLOCK: Mark calculation chain completion (after h_10 finalized)
+      if (window.TEUI?.Clock?.markCalculationEnd) {
+        window.TEUI.Clock.markCalculationEnd();
+      }
+
+      console.log("✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10");
       // console.log("🚀 [S01] =================================");
     } finally {
       calculationInProgress = false;

@@ -56,11 +56,11 @@ window.TEUI.Clock = {
       this.initTime = now - window.TEUI.timing.initStartTime;
       this.initDisplayed = true;
       window.TEUI.timing.isInitialLoad = false;
-      console.log(`[CLOCK] Initial load completed: ${this.initTime.toFixed(0)}ms`);
+      console.log(`🕐 [CLOCK] ⭐ INITIALIZATION COMPLETE: ${this.initTime.toFixed(0)}ms (all calculations finalized)`);
     } else if (window.TEUI.timing.currentStartTime) {
       const currentTime = now - window.TEUI.timing.currentStartTime;
       window.TEUI.timing.lastCalculationTime = currentTime;
-      console.log(`[CLOCK] Current calculation completed: ${currentTime.toFixed(0)}ms`);
+      console.log(`🕐 [CLOCK] ⚡ CALCULATION COMPLETE: ${currentTime.toFixed(0)}ms (subsequent update)`);
     }
     
     this.updateDisplay();
