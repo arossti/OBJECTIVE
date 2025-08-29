@@ -172,7 +172,7 @@ window.TEUI.SectionModules.sect09 = (function () {
       return this.getCurrentState().getValue(fieldId);
     },
     setValue: function (fieldId, value, source = "user") {
-      console.log(`[S09DB] ModeManager.setValue: ${fieldId}=${value}, mode=${this.currentMode}, source=${source}`);
+      // console.log(`[S09DB] ModeManager.setValue: ${fieldId}=${value}, mode=${this.currentMode}, source=${source}`);
       
       const currentState = this.currentMode === "target" ? TargetState : ReferenceState;
       currentState.setValue(fieldId, value);
@@ -182,11 +182,15 @@ window.TEUI.SectionModules.sect09 = (function () {
         if (this.currentMode === "target") {
           // Target changes go to StateManager for downstream sections
           window.TEUI.StateManager.setValue(fieldId, value, source);
-          console.log(`[S09DB] Stored in StateManager: ${fieldId}=${value}`);
+          // console.log(`[S09DB] Stored in StateManager: ${fieldId}=${value}`);
         } else if (this.currentMode === "reference") {
           // Reference changes go to StateManager with ref_ prefix
           window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, source);
-          console.log(`[S09DB] Stored in StateManager: ref_${fieldId}=${value}`);
+          // console.log(`[S09DB] Stored in StateManager: ref_${fieldId}=${value}`);
+          // 🔍 KEY: Only log critical total internal gains for downstream debugging
+          if (fieldId === "h_71") {
+            console.log(`[S09] ✅ ref_h_71 updated: ${value} (for S15/S04 debugging)`);
+          }
         }
       }
     },
@@ -1694,13 +1698,13 @@ window.TEUI.SectionModules.sect09 = (function () {
       
       // ✅ CRITICAL FIX: Also update DOM when in Reference mode (matches Target pattern)
       if (ModeManager.currentMode === "reference") {
-        console.log(`[S09DB] calculateReferenceModel: Updating DOM (Reference mode)`);
+        // console.log(`[S09DB] calculateReferenceModel: Updating DOM (Reference mode)`);
         Object.entries(results).forEach(([fieldId, value]) => {
           // Use ModeManager.setValue to update both state and DOM
           ModeManager.setValue(fieldId, String(value), "calculated");
         });
       } else {
-        console.log(`[S09DB] calculateReferenceModel: Skipping DOM update (Target mode)`);
+        // console.log(`[S09DB] calculateReferenceModel: Skipping DOM update (Target mode)`);
       }
       // CRITICAL: also publish the user-input values that might be needed downstream
        window.TEUI.StateManager.setValue("ref_d_63", ReferenceState.getValue("d_63"), "calculated");
@@ -1752,14 +1756,14 @@ window.TEUI.SectionModules.sect09 = (function () {
 
       // ✅ CRITICAL FIX: Only call setCalculatedValue() when in Target mode
       // This prevents Target calculations from overwriting Reference mode display
-      console.log(`[S09DB] calculateTargetModel: currentMode=${ModeManager.currentMode}`);
+      // console.log(`[S09DB] calculateTargetModel: currentMode=${ModeManager.currentMode}`);
       if (ModeManager.currentMode === "target") {
-        console.log(`[S09DB] calculateTargetModel: Updating DOM (Target mode)`);
+        // console.log(`[S09DB] calculateTargetModel: Updating DOM (Target mode)`);
         Object.entries(results).forEach(([fieldId, value]) => {
           setCalculatedValue(fieldId, value);
         });
       } else {
-        console.log(`[S09DB] calculateTargetModel: Skipping DOM update (Reference mode)`);
+        // console.log(`[S09DB] calculateTargetModel: Skipping DOM update (Reference mode)`);
         // Still store in StateManager for backward compatibility, but don't update DOM
         Object.entries(results).forEach(([fieldId, value]) => {
           if (window.TEUI?.StateManager && value !== null && value !== undefined) {
@@ -1801,9 +1805,9 @@ window.TEUI.SectionModules.sect09 = (function () {
     const activityLevel = state.getValue("d_64");
     const activityWatts = calculateActivityWatts(activityLevel);
     const dailyHours = window.TEUI.parseNumeric(state.getValue("g_63"));
-    console.log(`[S09DB] calculateModel: state.getValue("g_63")="${state.getValue("g_63")}", dailyHours=${dailyHours}, isReference=${isReference}`);
+    // console.log(`[S09DB] calculateModel: state.getValue("g_63")="${state.getValue("g_63")}", dailyHours=${dailyHours}, isReference=${isReference}`);
     const annualHours = dailyHours * 365;
-    console.log(`[S09DB] calculateModel: annualHours = ${dailyHours} * 365 = ${annualHours}`);
+    // console.log(`[S09DB] calculateModel: annualHours = ${dailyHours} * 365 = ${annualHours}`);
 
     // Store these preliminary results back into the state object
     state.setValue("f_64", activityWatts.toString());
@@ -1886,12 +1890,12 @@ window.TEUI.SectionModules.sect09 = (function () {
    * Replaces the original calculateAll function
    */
   function calculateAll() {
-    console.log('[S09DB] calculateAll() triggered - running dual-engine calculations...');
+    // console.log('[S09DB] calculateAll() triggered - running dual-engine calculations...');
 
     calculateReferenceModel();
     calculateTargetModel();
 
-    console.log('[S09DB] calculateAll() complete - both engines ran');
+    // console.log('[S09DB] calculateAll() complete - both engines ran');
   }
 
   /**
@@ -1962,12 +1966,12 @@ window.TEUI.SectionModules.sect09 = (function () {
 
     // Add dropdown change event handlers (following S13 working pattern)
     const dropdowns = sectionElement.querySelectorAll("select");
-    console.log(`[S09DB] DOM SETUP: Found ${dropdowns.length} dropdowns in section`);
-    
+        // console.log(`[S09DB] DOM SETUP: Found ${dropdowns.length} dropdowns in section`);
+
     dropdowns.forEach((dropdown, index) => {
       const fieldId = dropdown.getAttribute("data-field-id");
       const currentValue = dropdown.value;
-      console.log(`[S09DB] DOM SETUP: Dropdown ${index}: fieldId="${fieldId}", value="${currentValue}", id="${dropdown.id}"`);
+      // console.log(`[S09DB] DOM SETUP: Dropdown ${index}: fieldId="${fieldId}", value="${currentValue}", id="${dropdown.id}"`);
       
       // Remove any existing handlers to avoid duplicates (S13 pattern)
       dropdown.removeEventListener("change", handleDropdownChange);
@@ -1988,10 +1992,10 @@ window.TEUI.SectionModules.sect09 = (function () {
    * ✅ CRITICAL: Store dropdown changes in current state via ModeManager
    */
   function handleDropdownChange(e) {
-    console.log(`[S09DB] DROPDOWN EVENT FIRED! dropdown.value=${e.target.value}`);
+    // console.log(`[S09DB] DROPDOWN EVENT FIRED! dropdown.value=${e.target.value}`);
     
     const fieldId = e.target.getAttribute("data-field-id");
-    console.log(`[S09DB] fieldId from dropdown: ${fieldId}`);
+    // console.log(`[S09DB] fieldId from dropdown: ${fieldId}`);
     
     if (!fieldId) {
       console.log(`[S09DB] ERROR: No fieldId found on dropdown!`);
@@ -1999,20 +2003,23 @@ window.TEUI.SectionModules.sect09 = (function () {
     }
 
     const newValue = e.target.value;
-    console.log(`[S09DB] Dropdown changed: ${fieldId}=${newValue}, current mode=${ModeManager?.currentMode || 'ModeManager not available'}`);
+    // 🔍 KEY: Only log d_64 changes for debugging downstream flow
+    if (fieldId === "d_64") {
+      console.log(`[S09] 🎯 d_64 changed: ${newValue}, mode=${ModeManager?.currentMode || 'unknown'}`);
+    }
 
     // Store via ModeManager (dual-state aware)
     if (ModeManager && typeof ModeManager.setValue === "function") {
-      console.log(`[S09DB] Calling ModeManager.setValue...`);
+      // console.log(`[S09DB] Calling ModeManager.setValue...`);
       ModeManager.setValue(fieldId, newValue, "user-modified");
     } else {
       console.log(`[S09DB] ERROR: ModeManager.setValue not available!`);
     }
 
     // Recalculate and update display
-    console.log(`[S09DB] About to call calculateAll() from dropdown handler`);
+    // console.log(`[S09DB] About to call calculateAll() from dropdown handler`);
     calculateAll();
-    console.log(`[S09DB] About to call updateCalculatedDisplayValues()`);
+    // console.log(`[S09DB] About to call updateCalculatedDisplayValues()`);
     ModeManager.updateCalculatedDisplayValues();
   }
 

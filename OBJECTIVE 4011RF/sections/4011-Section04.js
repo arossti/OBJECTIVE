@@ -1189,6 +1189,9 @@ window.TEUI.SectionModules.sect04 = (function () {
       // 🔧 FIX: Use StateManager directly for fresh Target values
       result = window.TEUI.StateManager?.getValue("d_136") || 0;
     }
+    
+    // console.log(`[S04] 🔗 H27 calc: ${result} from S15 d_136 [mode=${ModeManager.currentMode}]`);
+    
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
     setCalculatedValue("h_27", result);
     return result;
@@ -1379,6 +1382,8 @@ window.TEUI.SectionModules.sect04 = (function () {
 
     const result = h_27 - d_43 - i_43; // NET target electricity consumption after renewable offsets
 
+    // console.log(`[S04] 🔗 J27 calc: ${result} = h_27(${h_27}) - d_43(${d_43}) - i_43(${i_43}) [mode=${ModeManager.currentMode}]`);
+
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
     setCalculatedValue("j_27", result);
     return result;
@@ -1520,7 +1525,7 @@ window.TEUI.SectionModules.sect04 = (function () {
     const j_31 = ModeManager.getValue("j_31") || 0;
     const result = j_27 + j_28 + j_29 + j_30 + j_31;
     
-    console.log(`[S04] j_32 calc: ${j_27}+${j_28}+${j_29}+${j_30}+${j_31} = ${result}`);
+    // console.log(`[S04] 🔗 J32 calc: ${result} = j_27(${j_27}) + j_28(${j_28}) + j_29(${j_29}) + j_30(${j_30}) + j_31(${j_31}) [mode=${ModeManager.currentMode}]`);
     
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
     setCalculatedValue("j_32", result);

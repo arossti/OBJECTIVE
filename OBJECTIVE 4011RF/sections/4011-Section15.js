@@ -1417,7 +1417,7 @@ window.TEUI.SectionModules.sect15 = (function () {
       // ✅ Get other Reference dependencies with parseFloat conversion
       const m43 = parseFloat(getRefValue("m_43")) || 0;
       const k51 = parseFloat(getRefValue("k_51")) || 0;
-      const h70 = parseFloat(getRefValue("h_70")) || 0;
+      const h70 = parseFloat(getRefValue("h_70")) || 0;  // ✅ CORRECT: Read PLE subtotal (h_70) as per Excel formula
       const i104 = ref_i104; // Use Reference values for Reference calculations
       const m121 = ref_m121; // Use Reference values for Reference calculations
       const i80 = ref_i80; // Use Reference values for Reference calculations
@@ -1489,6 +1489,9 @@ window.TEUI.SectionModules.sect15 = (function () {
       // d_135: TEU Targeted Electricity (Reference)
       let ref_teuTargetTotal =
         m43 + k51 + h70 + d117_effective + i104 + m121 - i80;
+      
+      // console.log(`[S15] 🔗 REF d_135 calc: ${ref_teuTargetTotal} = m43(${m43}) + k51(${k51}) + h70(${h70}) + d117(${d117_effective}) + i104(${i104}) + m121(${m121}) - i80(${i80})`);
+      
       setRefValueIfChanged("ref_d_135", ref_teuTargetTotal);
 
       // h_135: TEUI (Reference)
@@ -1504,6 +1507,10 @@ window.TEUI.SectionModules.sect15 = (function () {
       } else {
         ref_teuTargetedElecHPGasOil = k51 + d117_effective + m43 + h70;
       }
+      
+      // 🔍 KEY: Log S15 Reference calculation for S04 debugging
+      // console.log(`[S15] 🔗 REF d_136 calc: ${ref_teuTargetedElecHPGasOil} (heating=${primaryHeating}, h70=${h70} PLE subtotal, i80=${i80} from S10)`);
+      
       setRefValueIfChanged("ref_d_136", ref_teuTargetedElecHPGasOil);
 
       // h_136: TEUI (HP/Gas/Oil) (Reference)
@@ -1765,6 +1772,9 @@ window.TEUI.SectionModules.sect15 = (function () {
 
       // d_135: =M43+K51+H70+D117+I104+M121-I80
       let teuTargetTotal = m43 + k51 + h70 + d117_effective + i104 + m121 - i80;
+      
+      // console.log(`[S15] 🔗 TAR d_135 calc: ${teuTargetTotal} = m43(${m43}) + k51(${k51}) + h70(${h70}) + d117(${d117_effective}) + i104(${i104}) + m121(${m121}) - i80(${i80})`);
+      
       setCalculatedValue("d_135", teuTargetTotal);
 
       // h_135: =D135/H15
@@ -1781,6 +1791,10 @@ window.TEUI.SectionModules.sect15 = (function () {
         // Gas or Oil - sum elec loads only, exclude heating demand (d114)
         teuTargetedElecHPGasOil = k51 + d117_effective + m43 + h70;
       }
+      
+      // 🔍 KEY: Log S15 Target calculation for comparison
+      // console.log(`[S15] 🔗 TAR d_136 calc: ${teuTargetedElecHPGasOil} (heating=${primaryHeating}, h70=${h70} PLE subtotal, i80=${i80} from S10)`);
+      
       setCalculatedValue("d_136", teuTargetedElecHPGasOil);
 
       // h_136: =D136/H15

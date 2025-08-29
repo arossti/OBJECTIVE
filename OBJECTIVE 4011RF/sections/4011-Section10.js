@@ -177,9 +177,13 @@ window.TEUI.SectionModules.sect10 = (function () {
     setValue: function (fieldId, value, source = "user") {
       this.getCurrentState().setValue(fieldId, value, source);
 
-      // BRIDGE: For backward compatibility, sync Target changes to global StateManager.
+      // BRIDGE: Sync changes to global StateManager for downstream sections
       if (this.currentMode === "target") {
-        window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
+        window.TEUI.StateManager.setValue(fieldId, value, source);
+      } else if (this.currentMode === "reference") {
+        // 🔧 FIX: Bridge Reference values with ref_ prefix for downstream consumption
+        window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, source);
+        // console.log(`[S10] 🔗 Published ref_${fieldId}=${value} to StateManager for S15`);
       }
     },
     refreshUI: function () {
@@ -2122,8 +2126,12 @@ window.TEUI.SectionModules.sect10 = (function () {
     try {
       // Get total solar gains (internal to S10)
       const solarGains = getNumericValue("i_79");
-      // EXTERNAL DEPENDENCY: Get internal gains from S09 via global state
-      const internalGains = getGlobalNumericValue("i_71") || 0;
+      // EXTERNAL DEPENDENCY: Get internal gains from S09 via global state (MODE-AWARE)
+      const internalGains = ModeManager.currentMode === "reference" 
+        ? (getGlobalNumericValue("ref_i_71") || getGlobalNumericValue("i_71") || 0)
+        : (getGlobalNumericValue("i_71") || 0);
+      
+      // console.log(`[S10] 🔗 Utilization calc: i_71=${internalGains} [mode=${ModeManager.currentMode}]`);
       const totalGains = solarGains + internalGains;
 
       // Set total gains for both rows 80 and 81 (DOM only)
@@ -2171,6 +2179,8 @@ window.TEUI.SectionModules.sect10 = (function () {
       }
 
       const usableGains = totalGains * utilizationFactor;
+
+      // console.log(`[S10] 🔗 Final i_80 calc: ${usableGains} = totalGains(${totalGains}) × utilizationFactor(${utilizationFactor}) [mode=${ModeManager.currentMode}]`);
 
       // Set state via ModeManager
       ModeManager.setValue("g_80", utilizationFactor.toString(), "calculated");
