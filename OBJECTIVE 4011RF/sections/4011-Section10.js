@@ -168,7 +168,7 @@ window.TEUI.SectionModules.sect10 = (function () {
       } else if (this.currentMode === "reference") {
         // 🔧 FIX: Bridge Reference values with ref_ prefix for downstream consumption
         window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, source);
-        console.log(`[S10] 🔗 Published ref_${fieldId}=${value} to StateManager for S15`);
+        // console.log(`[S10] 🔗 Published ref_${fieldId}=${value} to StateManager for S15`);
       }
     },
     refreshUI: function () {
@@ -1918,7 +1918,7 @@ window.TEUI.SectionModules.sect10 = (function () {
         utilizationE80.toString(),
         "calculated",
       );
-      console.log(`[S10] 🔗 Published ref_i_80=${utilizationE80} for S15 (Reference utilization)`);
+      // console.log(`[S10] 🔗 Published ref_i_80=${utilizationE80} for S15 (Reference utilization)`);
       window.TEUI.StateManager.setValue(
         "ref_e_82",
         utilizationE82.toString(),
