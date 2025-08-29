@@ -178,13 +178,15 @@ sm.addListener("h_15", debouncedCalculateAll);
 
 ## 🛠️ **IMPLEMENTATION ROADMAP**
 
-### **Phase 0: Performance Clock Implementation (Foundation)**
-1. **Add S01 Performance Clock**: User-visible timing display in dashboard
-2. **Baseline Measurement**: Document current Init and Last calculation times  
-3. **Regression Detection**: Monitor performance impact of each optimization
-4. **Success Tracking**: Real-time feedback on optimization improvements
+### **Phase 0: Performance Clock Implementation (Foundation)** ✅ **COMPLETED**
+1. **✅ Add S01 Performance Clock**: User-visible timing display in Key Values header
+2. **✅ Baseline Measurement**: Clock.js tracks Init vs Current calculation times  
+3. **✅ Regression Detection**: Real-time monitoring of performance impact
+4. **✅ Success Tracking**: Automatic feedback on optimization improvements
 
-**Expected Benefit**: Quantifiable performance improvement tracking
+**✅ IMPLEMENTED**: 4011-Clock.js integrated into Calculator.calculateAll()  
+**📍 LOCATION**: Key Values header feedback area (white monospace text)  
+**🎯 BENEFIT**: Foundation for measuring all subsequent optimizations
 
 ### **Phase 1: Timeout Audit & Elimination (High Impact)**
 1. **Audit**: `grep -r "setTimeout" sections/` - find all timeout usage
@@ -222,45 +224,37 @@ sm.addListener("h_15", debouncedCalculateAll);
 
 ## 🔍 **DIAGNOSTIC TOOLS**
 
-### **S01 Runtime Performance Clock (User-Visible)**
+### **S01 Runtime Performance Clock (User-Visible)** ✅ **IMPLEMENTED**
 
-**Implementation**: Add fine-print performance indicator to S01 dashboard
+**✅ Implementation**: 4011-Clock.js integrated into Key Values header feedback area
 ```javascript
-// Add to S01 after e_10/h_10 calculations complete:
-function updatePerformanceClock() {
-  const calculationTime = performance.now() - window.TEUI.calculationStartTime;
-  const clockElement = document.querySelector('#performance-clock');
+// Clock.js automatically tracks timing in Calculator.calculateAll():
+function calculateAll() {
+  if (window.TEUI?.Clock?.markCalculationStart) {
+    window.TEUI.Clock.markCalculationStart();  // Start timing
+  }
   
-  if (clockElement) {
-    if (window.TEUI.isInitialLoad) {
-      // Show initial load time (persistent)
-      clockElement.textContent = `Init: ${calculationTime.toFixed(0)}ms | Last: ${calculationTime.toFixed(0)}ms`;
-      window.TEUI.isInitialLoad = false;
-    } else {
-      // Update only the "Last" time (preserves init time)
-      const initTime = clockElement.textContent.split('|')[0];
-      clockElement.textContent = `${initTime}| Last: ${calculationTime.toFixed(0)}ms`;
-    }
+  // ... all section calculations ...
+  
+  if (window.TEUI?.Clock?.markCalculationEnd) {
+    window.TEUI.Clock.markCalculationEnd();    // End timing & update display
   }
 }
-
-// Trigger timing start in StateManager or FieldManager:
-window.TEUI.calculationStartTime = performance.now();
 ```
 
-**HTML Addition to S01**:
+**✅ Display Location**: Key Values header `#feedback-area`
 ```html
-<!-- Add to S01 dashboard, small fine-print -->
-<div id="performance-clock" style="font-size: 10px; color: #666; margin-top: 5px;">
-  Calculating...
-</div>
+<!-- Clock updates existing feedback area with white monospace text -->
+<span id="feedback-area" style="color: white; font-family: monospace;">
+  Initialization: 2,400ms<br>Current: 1,800ms
+</span>
 ```
 
-**Benefits**:
-- **Real-time feedback** on optimization improvements
-- **Init vs subsequent** timing comparison  
-- **User-visible** performance metrics
-- **Regression detection** if changes slow things down
+**✅ Benefits**:
+- **Real-time feedback** on optimization improvements ✅
+- **Init vs subsequent** timing comparison ✅
+- **User-visible** performance metrics ✅
+- **Regression detection** if changes slow things down ✅
 
 ### **Console Performance Measurement**
 ```javascript
