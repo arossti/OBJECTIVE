@@ -150,8 +150,8 @@ window.TEUI.SectionModules.sect10 = (function () {
       this.currentMode = mode;
       console.log(`S10: Switched to ${mode.toUpperCase()} mode`);
 
+      // ✅ PATTERN A: UI toggle only switches display, values should already be calculated
       this.refreshUI();
-      calculateAll(); // Recalculate for the new mode
       this.updateCalculatedDisplayValues(); // ✅ ADD: Update calculated field displays for new mode
     },
     resetState: function () {
@@ -167,6 +167,7 @@ window.TEUI.SectionModules.sect10 = (function () {
       // After resetting, refresh the UI and recalculate.
       this.refreshUI();
       calculateAll();
+      this.updateCalculatedDisplayValues(); // ✅ CRITICAL: Update DOM after calculations
     },
     getCurrentState: function () {
       return this.currentMode === "target" ? TargetState : ReferenceState;
@@ -2335,6 +2336,7 @@ window.TEUI.SectionModules.sect10 = (function () {
 
         ModeManager.setValue(fieldId, this.value, "user-modified");
         calculateAll();
+        ModeManager.updateCalculatedDisplayValues(); // ✅ CRITICAL: Update DOM after calculations
       });
     });
 
@@ -2362,6 +2364,7 @@ window.TEUI.SectionModules.sect10 = (function () {
       slider.addEventListener("change", function () {
         // We only need to trigger the recalculation
         calculateAll();
+        ModeManager.updateCalculatedDisplayValues(); // ✅ CRITICAL: Update DOM after calculations
       });
     });
   }

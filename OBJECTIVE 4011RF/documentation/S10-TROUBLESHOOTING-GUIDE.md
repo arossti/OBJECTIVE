@@ -120,15 +120,71 @@ Based on the successful d_64 bug fix, S10 needs a complete DUAL-STATE-CHEATSHEET
 4. **Dual-Engine Calculations** - Target and Reference calculations run in parallel
 5. **Excel Formula Compliance** - Utilization calculations work correctly
 
-### **🔍 NEEDS AUDIT:**
+### **🚨 QA/QC AUDIT RESULTS (August 29, 2024):**
 
-1. **switchMode Anti-Pattern** - Check for `calculateAll()` in mode switching
-2. **DOM Update Isolation** - Verify mode-aware DOM updates
-3. **Hardcoded Defaults** - Remove duplicate defaults from state objects
-4. **updateCalculatedDisplayValues** - Ensure proper implementation
-5. **Field Definition Compliance** - Single source of truth for defaults
+#### **❌ CRITICAL ISSUES FOUND:**
+
+1. **switchMode Anti-Pattern** - `calculateAll()` on line 154 (**FIXED**)
+2. **Missing DOM Updates** - Missing `updateCalculatedDisplayValues()` calls (**FIXED**)
+3. **Hardcoded Defaults Anti-Pattern** - Massive duplicate defaults in state objects (**NEEDS FIX**)
+
+#### **✅ COMPLIANCE VERIFIED:**
+
+1. **Pattern B Contamination** - No toxic `target_`/`ref_` reading patterns
+2. **Mode-Aware External Dependencies** - Proper `ref_i_71` reading 
+3. **StateManager Bridge** - Proper `ref_` prefix publishing
+4. **Dual-Engine Architecture** - Both Target and Reference calculations
+5. **Current State Anti-Pattern** - `getFieldValue()` is mode-aware via `ModeManager`
 
 ---
+
+## 🚨 **DETAILED QA/QC AUDIT FINDINGS**
+
+### **❌ CRITICAL ISSUE #1: switchMode Anti-Pattern (FIXED)**
+
+**Location**: Line 154 in `ModeManager.switchMode()`  
+**Issue**: `calculateAll()` triggered on UI mode switching  
+**Risk**: State contamination, unnecessary recalculations  
+**DUAL-STATE-CHEATSHEET**: Phase 1 - Core Principle #2
+
+```javascript
+// ❌ BEFORE: Anti-pattern
+switchMode: function (mode) {
+  this.currentMode = mode;
+  this.refreshUI();
+  calculateAll(); // ❌ Major anti-pattern!
+}
+
+// ✅ AFTER: Correct pattern
+switchMode: function (mode) {
+  this.currentMode = mode;
+  this.refreshUI();
+  this.updateCalculatedDisplayValues(); // ✅ UI update only
+}
+```
+
+### **❌ CRITICAL ISSUE #2: Missing DOM Updates (FIXED)**
+
+**Locations**: Lines 2337, 2366 - `calculateAll()` without `updateCalculatedDisplayValues()`  
+**Issue**: DOM not updated after calculations  
+**Risk**: Stale display values, user confusion  
+**DUAL-STATE-CHEATSHEET**: Phase 3 - DOM Updates
+
+**Fix Applied**: Added `ModeManager.updateCalculatedDisplayValues()` after every `calculateAll()` call.
+
+### **🚨 CRITICAL ISSUE #3: Hardcoded Defaults Anti-Pattern (NEEDS FIX)**
+
+**Location**: Lines 31-58 (`TargetState.setDefaults`) and 90-117 (`ReferenceState.setDefaults`)  
+**Issue**: Massive duplicate defaults that duplicate field definitions  
+**Risk**: **DATA CORRUPTION** - version drift between field definitions and state objects  
+**DUAL-STATE-CHEATSHEET**: Phase 5 - Anti-Pattern #1
+
+**Evidence**:
+- **Field Definition**: `d_73` has `value: "7.50"`
+- **TargetState**: `d_73: "7.50"` (duplicate)
+- **ReferenceState**: `d_73: "5.00"` (different value - corruption risk!)
+
+**Required Fix**: Remove all hardcoded defaults, implement `getFieldDefault()` pattern.
 
 ## ⚠️ **CRITICAL ANTI-PATTERNS TO CHECK**
 
@@ -196,11 +252,12 @@ switchMode: function(mode) {
 2. ✅ **Troubleshooting Guide Updated** - Comprehensive audit plan documented
 3. **Ready for Commit** - Clean code ready for version control
 
-### **After Break** (S10 Comprehensive Audit):
-1. **switchMode Anti-Pattern Check** - Remove any calculation triggers
-2. **DOM Update Isolation Audit** - Ensure mode-aware updates
-3. **Hardcoded Defaults Removal** - Single source of truth implementation
-4. **Complete DUAL-STATE-CHEATSHEET Compliance** - Full QA/QC checklist
+### **After Break** (S10 Remaining Fixes):
+1. ✅ **switchMode Anti-Pattern** - FIXED (removed `calculateAll()` from line 154)
+2. ✅ **DOM Update Missing** - FIXED (added `updateCalculatedDisplayValues()` calls)
+3. 🚨 **Hardcoded Defaults Removal** - **CRITICAL PRIORITY** (lines 31-58, 90-117)
+4. 🔍 **getFieldDefault() Implementation** - Single source of truth pattern
+5. 📋 **Final DUAL-STATE-CHEATSHEET Compliance** - Complete remaining QA/QC checks
 
 ---
 
