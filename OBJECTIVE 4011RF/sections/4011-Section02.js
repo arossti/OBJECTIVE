@@ -546,15 +546,17 @@ window.TEUI.SectionModules.sect02 = (function () {
    * This function reads from the correct state (`target_` or `ref_`) based on the current mode.
    */
   function getNumericValue(fieldId, defaultValue = 0) {
-    const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
-    const prefixedFieldId = `${prefix}${fieldId}`;
-
-    // First, try to get the mode-specific value.
-    let rawValue = window.TEUI?.StateManager?.getValue(prefixedFieldId);
-
-    // If the mode-specific value is not found, fall back to the global value.
-    // This is crucial for handling dependencies from sections not yet fully refactored.
-    if (rawValue === null || rawValue === undefined) {
+    // ✅ PATTERN A: EXPLICIT STATE ACCESS - No target_/ref_ prefix contamination
+    let rawValue;
+    
+    if (ModeManager.currentMode === "reference") {
+      // Reference mode: Try ref_ prefixed first (for external dependencies), then fallback
+      rawValue = window.TEUI?.StateManager?.getValue(`ref_${fieldId}`);
+      if (rawValue === null || rawValue === undefined) {
+        rawValue = window.TEUI?.StateManager?.getValue(fieldId);
+      }
+    } else {
+      // Target mode: Read unprefixed (standard) values
       rawValue = window.TEUI?.StateManager?.getValue(fieldId);
     }
 
@@ -568,23 +570,20 @@ window.TEUI.SectionModules.sect02 = (function () {
    * state when in 'target' mode to prevent state contamination.
    */
   function setFieldValue(fieldId, value, fieldType = "calculated") {
-    const modePrefix =
-      ModeManager.currentMode === "target" ? "target_" : "ref_";
-    const prefixedFieldId = `${modePrefix}${fieldId}`;
+    // ✅ PATTERN A: EXPLICIT STATE ACCESS - Store in current state object
+    const currentState = ModeManager.currentMode === "target" ? TargetState : ReferenceState;
+    currentState.setValue(fieldId, value, fieldType);
 
-    // Always store with prefix for dual-state isolation.
-    if (window.TEUI?.StateManager) {
-      window.TEUI.StateManager.setValue(
-        prefixedFieldId,
-        value.toString(),
-        fieldType,
-      );
-    }
-
-    // CRITICAL: Only update the global state (for DOM binding) when in target mode.
+    // Store in StateManager for cross-section communication
     if (ModeManager.currentMode === "target") {
+      // Target mode: Store unprefixed for DOM binding and downstream consumption
       if (window.TEUI?.StateManager) {
         window.TEUI.StateManager.setValue(fieldId, value.toString(), fieldType);
+      }
+    } else {
+      // Reference mode: Store with ref_ prefix for downstream consumption
+      if (window.TEUI?.StateManager) {
+        window.TEUI.StateManager.setValue(`ref_${fieldId}`, value.toString(), fieldType);
       }
     }
 
