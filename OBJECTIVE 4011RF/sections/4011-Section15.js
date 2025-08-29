@@ -2064,12 +2064,19 @@ window.TEUI.SectionModules.sect15 = (function () {
     // Create a flat list of all unique dependencies
     const dependencies = [
       "m_43",
+      "ref_m_43", // ✅ S06 Reference renewable energy
       "k_51",
+      "ref_k_51", // ✅ S07 Reference DHW electrical demand
       "h_70",
+      "ref_h_70", // ✅ FIX: S09 Reference PLE subtotal (critical for Reference d_135 calculation)
       "d_117",
+      "ref_d_117", // ✅ S07 Reference cooling load
       "i_104",
+      "ref_i_104", // ✅ S12 Reference building envelope
       "m_121",
+      "ref_m_121", // ✅ S13 Reference ventilation
       "i_80",
+      "ref_i_80", // ✅ FIX: S10 Reference utilization factors (critical for Reference d_135 calculation)
       "h_15",
       "d_113",
       "d_114",
