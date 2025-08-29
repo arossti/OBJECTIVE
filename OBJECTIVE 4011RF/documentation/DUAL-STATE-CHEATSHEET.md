@@ -43,6 +43,42 @@
 
 ---
 
+## 🏛️ **DEFAULTS IMPLEMENTATION PATTERN (CRITICAL)**
+
+### **🚨 S02 LESSON LEARNED: DEFAULTS FIX CAUSES REGRESSION**
+
+**CRITICAL DISCOVERY**: S02 hardcoded defaults fix caused **wild e_10 value oscillations** and state mixing. The defaults implementation requires **extreme care** to prevent:
+
+1. **State initialization race conditions**
+2. **Missing field definition mappings** 
+3. **Reference value publication failures**
+4. **Cross-section dependency breaks**
+
+### **⚠️ APPROACH WITH CAUTION**
+
+**S02 Status**: Pattern B contamination fixed ✅, but **hardcoded defaults fix DANGEROUS** ⚠️  
+**Safe State**: Commit `05e8d1a` (Pattern B fix only)  
+**Required**: More careful analysis of field definition → state object mapping
+
+### **✅ PROVEN SAFE PATTERN (S09/S10)**
+
+```javascript
+// ✅ SUCCESS PATTERN: Start with field definitions + selective overrides
+ReferenceState.setDefaults = function () {
+  this.state = {
+    // Foundation: Target field definitions
+    d_63: TargetState.getFieldDefault("d_63") || "126", // Same as Target
+    h_15: TargetState.getFieldDefault("h_15") || "1427.20", // Same as Target
+    
+    // Selective Reference overrides ONLY
+    d_66: referenceValues.t_66 || "2.0", // REFERENCE OVERRIDE: Building code
+    g_67: "Regular", // REFERENCE OVERRIDE: Equipment spec
+  };
+};
+```
+
+**🎯 S02 requires special analysis** - defaults implementation must preserve existing calculation flows.
+
 ## Reference Standard Application (Clarified)
 
 **Defaults single source of truth**:
