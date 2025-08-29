@@ -1490,7 +1490,7 @@ window.TEUI.SectionModules.sect15 = (function () {
       let ref_teuTargetTotal =
         m43 + k51 + h70 + d117_effective + i104 + m121 - i80;
       
-      // console.log(`[S15] 🔗 REF d_135 calc: ${ref_teuTargetTotal} = m43(${m43}) + k51(${k51}) + h70(${h70}) + d117(${d117_effective}) + i104(${i104}) + m121(${m121}) - i80(${i80})`);
+      console.log(`[S15] 🔗 REF d_135 calc: ${ref_teuTargetTotal} = m43(${m43}) + k51(${k51}) + h70(${h70}) + d117(${d117_effective}) + i104(${i104}) + m121(${m121}) - i80(${i80})`);
       
       setRefValueIfChanged("ref_d_135", ref_teuTargetTotal);
 
@@ -1509,7 +1509,7 @@ window.TEUI.SectionModules.sect15 = (function () {
       }
       
       // 🔍 KEY: Log S15 Reference calculation for S04 debugging
-      // console.log(`[S15] 🔗 REF d_136 calc: ${ref_teuTargetedElecHPGasOil} (heating=${primaryHeating}, h70=${h70} PLE subtotal, i80=${i80} from S10)`);
+      console.log(`[S15] 🔗 REF d_136 calc: ${ref_teuTargetedElecHPGasOil} (heating=${primaryHeating}, h70=${h70} PLE subtotal, i80=${i80} from S10)`);
       
       setRefValueIfChanged("ref_d_136", ref_teuTargetedElecHPGasOil);
 
