@@ -2106,7 +2106,6 @@ window.TEUI.SectionModules.sect15 = (function () {
       "h_23", "ref_h_23", // Heating design temperature
       "h_24", "ref_h_24", // Cooling design temperature
       "h_70", "ref_h_70", // S09 PLE (Plug+Light+Equipment) subtotal
-      "h_71", "ref_h_71", // S09 Total internal gains (CRITICAL for d_64 chain)
       "h_124", "ref_h_124", // Occupant losses
       
       // S12 Building Envelope U-values (Independent Models: different envelope performance)

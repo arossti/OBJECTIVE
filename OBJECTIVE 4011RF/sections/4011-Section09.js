@@ -1706,9 +1706,16 @@ window.TEUI.SectionModules.sect09 = (function () {
       } else {
         // console.log(`[S09DB] calculateReferenceModel: Skipping DOM update (Target mode)`);
       }
-      // CRITICAL: also publish the user-input values that might be needed downstream
+      // CRITICAL: also publish values needed by downstream sections
        window.TEUI.StateManager.setValue("ref_d_63", ReferenceState.getValue("d_63"), "calculated");
        window.TEUI.StateManager.setValue("ref_d_64", ReferenceState.getValue("d_64"), "calculated");
+       
+       // ✅ CRITICAL: Publish ref_i_71 for S10 (heating season internal gains)
+       const ref_i_71 = ReferenceState.getValue("i_71");
+       if (ref_i_71 !== null && ref_i_71 !== undefined) {
+         window.TEUI.StateManager.setValue("ref_i_71", ref_i_71, "calculated");
+         console.log(`[S09] 🔗 Published ref_i_71=${ref_i_71} for S10`);
+       }
 
 
     } catch (error) {
