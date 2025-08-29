@@ -1,0 +1,158 @@
+/**
+ * TEUI Performance Clock - Real-time calculation timing display
+ * Displays in Key Values header feedback area: Init vs Current calculation times
+ * Author: TEUI Development Team
+ * Version: 4.012RF
+ */
+
+window.TEUI = window.TEUI || {};
+
+window.TEUI.Clock = {
+  initTime: null,
+  initDisplayed: false,
+  
+  /**
+   * Initialize performance tracking
+   * Called once during app startup
+   */
+  init() {
+    // Initialize global timing namespace
+    if (!window.TEUI.timing) {
+      window.TEUI.timing = {
+        initStartTime: null,
+        currentStartTime: null,
+        isInitialLoad: true
+      };
+    }
+    
+    console.log('[CLOCK] Performance monitoring initialized');
+  },
+
+  /**
+   * Start timing measurement
+   * @param {boolean} isInitialLoad - True for first app load, false for subsequent calculations
+   */
+  startTiming(isInitialLoad = false) {
+    const now = performance.now();
+    
+    if (isInitialLoad) {
+      window.TEUI.timing.initStartTime = now;
+      window.TEUI.timing.isInitialLoad = true;
+      console.log('[CLOCK] Starting initial load timing');
+    } else {
+      window.TEUI.timing.currentStartTime = now;
+      console.log('[CLOCK] Starting current calculation timing');
+    }
+  },
+
+  /**
+   * End timing measurement and update display
+   * @param {boolean} isInitialLoad - True for first app load, false for subsequent calculations
+   */
+  endTiming(isInitialLoad = false) {
+    const now = performance.now();
+    
+    if (isInitialLoad && window.TEUI.timing.initStartTime) {
+      this.initTime = now - window.TEUI.timing.initStartTime;
+      this.initDisplayed = true;
+      window.TEUI.timing.isInitialLoad = false;
+      console.log(`[CLOCK] Initial load completed: ${this.initTime.toFixed(0)}ms`);
+    } else if (window.TEUI.timing.currentStartTime) {
+      const currentTime = now - window.TEUI.timing.currentStartTime;
+      console.log(`[CLOCK] Current calculation completed: ${currentTime.toFixed(0)}ms`);
+    }
+    
+    this.updateDisplay();
+  },
+
+  /**
+   * Update the visual display in Key Values header
+   */
+  updateDisplay() {
+    const feedbackArea = document.getElementById('feedback-area');
+    if (!feedbackArea) {
+      console.warn('[CLOCK] Feedback area not found - cannot display timing');
+      return;
+    }
+
+    let displayText = '';
+    
+    if (this.initTime && this.initDisplayed) {
+      // Show initialization time (persistent)
+      displayText = `Initialization: ${this.formatTime(this.initTime)}`;
+      
+      // Add current time if available
+      if (window.TEUI.timing.currentStartTime) {
+        const currentTime = performance.now() - window.TEUI.timing.currentStartTime;
+        if (currentTime > 50) { // Only show if calculation is taking time
+          displayText += `\nCurrent: ${this.formatTime(currentTime)}`;
+        }
+      }
+    } else if (window.TEUI.timing.initStartTime) {
+      // Show ongoing initialization
+      const elapsed = performance.now() - window.TEUI.timing.initStartTime;
+      displayText = `Initializing: ${this.formatTime(elapsed)}...`;
+    }
+
+    // Apply styling for white text and proper formatting
+    feedbackArea.innerHTML = displayText.replace(/\n/g, '<br>');
+    feedbackArea.style.color = 'white';
+    feedbackArea.style.fontSize = '0.8rem';
+    feedbackArea.style.fontFamily = 'monospace';
+    feedbackArea.style.whiteSpace = 'nowrap';
+  },
+
+  /**
+   * Format milliseconds for display
+   * @param {number} ms - Milliseconds to format
+   * @returns {string} Formatted time string
+   */
+  formatTime(ms) {
+    if (ms >= 1000) {
+      return `${(ms / 1000).toFixed(1)}s`;
+    } else {
+      return `${Math.round(ms)}ms`;
+    }
+  },
+
+  /**
+   * Convenience method for marking calculation start
+   * Automatically determines if this is initial load or subsequent calculation
+   */
+  markCalculationStart() {
+    const isInitial = window.TEUI.timing.isInitialLoad && !this.initDisplayed;
+    this.startTiming(isInitial);
+  },
+
+  /**
+   * Convenience method for marking calculation end
+   * Automatically determines if this is initial load or subsequent calculation
+   */
+  markCalculationEnd() {
+    const isInitial = window.TEUI.timing.isInitialLoad && !this.initDisplayed;
+    this.endTiming(isInitial);
+  },
+
+  /**
+   * Reset timing for new session (useful for testing)
+   */
+  reset() {
+    this.initTime = null;
+    this.initDisplayed = false;
+    window.TEUI.timing = {
+      initStartTime: null,
+      currentStartTime: null,
+      isInitialLoad: true
+    };
+    console.log('[CLOCK] Performance timing reset');
+  }
+};
+
+// Auto-initialize when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    window.TEUI.Clock.init();
+  });
+} else {
+  window.TEUI.Clock.init();
+}

@@ -479,6 +479,11 @@ TEUI.Calculator = (function () {
    * Recalculate all values
    */
   function calculateAll() {
+    // Start performance timing
+    if (window.TEUI?.Clock?.markCalculationStart) {
+      window.TEUI.Clock.markCalculationStart();
+    }
+
     // Define a logical calculation order based on major dependencies
     const calcOrder = [
       "sect02", // Building Info
@@ -513,6 +518,11 @@ TEUI.Calculator = (function () {
         // Section module not found or doesn't have calculateAll method
       }
     });
+
+    // End performance timing and update display
+    if (window.TEUI?.Clock?.markCalculationEnd) {
+      window.TEUI.Clock.markCalculationEnd();
+    }
   }
 
   /**
