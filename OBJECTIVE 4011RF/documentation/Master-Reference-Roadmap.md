@@ -112,6 +112,64 @@
 
 ---
 
+## 🎯 **COMPLETE DUAL-ENGINE LISTENER ARCHITECTURE**
+
+### **🏛️ 100% State Isolation Requirement**
+
+For true "Independent Models" capability, every section MUST have **complete Target/Reference listener pairs**:
+
+#### **Complete Dual-Engine External Dependency Pattern**
+```javascript
+// ✅ COMPLETE DUAL-ENGINE PATTERN: Every Target dependency has Reference pair
+const dependencies = [
+  // Building Geometry (Independent Models: different building sizes)
+  "h_15", "ref_h_15", // Conditioned area
+  
+  // Location Data (Independent Models: different locations)
+  "d_19", "ref_d_19", // Province (affects emission factors)
+  "j_19", "ref_j_19", // Climate zone
+  
+  // Reporting Context (Independent Models: different years)
+  "h_12", "ref_h_12", // Reporting year (affects emission factors)
+  
+  // System Configuration (Independent Models: different equipment)
+  "d_113", "ref_d_113", // Primary heating system
+  "d_114", "ref_d_114", // Heating demand
+  
+  // Cross-Section Calculations (Independent Models: different performance)
+  "i_80", "ref_i_80", // S10 Utilization factors
+  "k_71", "ref_k_71", // S09 Internal gains
+  "m_121", "ref_m_121", // S13 Ventilation load
+  
+  // ... complete alphabetical pairing for ALL dependencies
+];
+```
+
+#### **Three Reference Model Scenarios Enabled**:
+
+1. **Mirror Target**: Start with identical building, customize specific differences
+   - Target: 1500m² Toronto heatpump building 
+   - Reference: 1500m² Toronto heatpump building (initially identical)
+   - User edits: Change specific Reference values to test variations
+
+2. **Mirror Target + Reference**: Apply building code standards via ReferenceValues.js
+   - Target: 1500m² Toronto heatpump building (actual design)
+   - Reference: 1500m² Toronto building with code minimums from ReferenceValues.js
+   - Comparison: Actual design vs code compliance
+
+3. **Independent Models**: Complete freedom - any building vs any building
+   - Target: 1500m² Toronto heatpump building in 2024
+   - Reference: 2000m² Vancouver gas building in 2030
+   - Comparison: Completely different scenarios
+
+#### **Why Complete Listener Pairs Are Critical**:
+- **Missing Reference Listeners**: Cause calculation chain delays/failures
+- **Incomplete Dual-Engine**: Breaks "Independent Models" capability  
+- **Silent Failures**: Reference changes don't propagate through system
+- **State Contamination Risk**: Fallback to Target values when Reference missing
+
+---
+
 ## 🚨 **Root Cause Analysis**
 
 ### **Current Problem**

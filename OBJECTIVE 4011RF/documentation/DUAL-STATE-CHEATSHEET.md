@@ -205,6 +205,82 @@ window.TEUI.StateManager.setValue(
 ### **Phase 2: "Current State" Anti-Pattern Elimination (CRITICAL)**
 
 3.  **Scan for ambiguous reads**: `grep -n "getFieldValue\|getGlobalNumericValue" sections/4011-SectionXX.js`
+
+### **🚨 Phase 2.5: External Dependency Listener Pairs (CRITICAL)**
+
+4.  **Scan for incomplete listener pairs**: `grep -n "addListener.*ref_\|addListener" sections/4011-SectionXX.js`
+5.  **Check for External Dependency Silent Failures**:
+    - **Missing Reference Listeners**: Section listens for `"i_80"` but not `"ref_i_80"`
+    - **Fallback Contamination**: `getGlobalNumericValue("ref_x") || getGlobalNumericValue("x")` patterns
+    - **Calculation Delays**: Reference changes require workarounds to propagate
+    - **State Isolation Breaks**: Reference mode uses Target values due to missing listeners
+
+    ```javascript
+    // ❌ WRONG: Incomplete listener pairs (causes silent failures)
+    const dependencies = ["i_80", "k_71", "m_121"]; // Only Target listeners
+    
+    // ✅ CORRECT: Complete dual-engine listener pairs  
+    const dependencies = [
+      "i_80", "ref_i_80", // S10 Utilization factors (both modes)
+      "k_71", "ref_k_71", // S09 Internal gains (both modes)
+      "m_121", "ref_m_121", // S13 Ventilation (both modes)
+    ];
+    ```
+
+    **📋 MANDATORY**: Every external dependency MUST have Target/Reference listener pair for 100% state isolation.
+
+### **📋 SECTION-BY-SECTION EXTERNAL DEPENDENCY AUDIT CHECKLIST**
+
+**Status as of August 29, 2024:**
+
+- [ ] **S01** - Consumer section (reads final values, minimal external dependencies)
+- [ ] **S02** - Climate data (may have minimal external dependencies)  
+- [ ] **S03** - Location/climate (may have minimal external dependencies)
+- [x] **S04** - ✅ **COMPLETED** - Enhanced with missing Reference pairs (ref_h_15, ref_d_63, ref_d_14, ref_d_60)
+- [ ] **S05** - Pattern A consumer (needs audit for external dependencies)
+- [ ] **S06** - Renewable energy (needs audit for external dependencies)
+- [ ] **S07** - Domestic hot water (needs audit for external dependencies)
+- [ ] **S08** - Carbon storage (needs audit for external dependencies)
+- [ ] **S09** - ⚠️  **NEEDS AUDIT** - Object-based listeners, missing Reference pairs (h_15→ref_h_15, d_54→ref_d_54, etc.)
+- [x] **S10** - ✅ **COMPLETED** - Complete Target/Reference listener pairs implemented
+- [ ] **S11** - Building envelope (needs audit for external dependencies)
+- [ ] **S12** - ✅ **GOOD** - Has explicit referenceUValueDeps array (verify completeness)
+- [ ] **S13** - Mechanical loads (needs audit for external dependencies)
+- [x] **S14** - ✅ **COMPLETED** - Complete dual-engine listener pairs implemented  
+- [x] **S15** - ✅ **COMPLETED** - Complete alphabetical Target/Reference pairs implemented
+
+**🎯 PRIORITY**: Complete S09 Reference listener pairs (critical for d_64 chain reliability)
+
+### **🔧 RECOMMENDED LISTENER PATTERN (Standardization)**
+
+**✅ STANDARD PATTERN A: Simple Array + forEach (Recommended)**
+```javascript
+// ✅ USE THIS PATTERN: Simple, fast, maintainable
+const dependencies = [
+  "h_15", "ref_h_15", // Building geometry (Target/Reference pair)
+  "i_80", "ref_i_80", // Cross-section calculations (Target/Reference pair)
+  "d_54", "ref_d_54", // External dependencies (Target/Reference pair)
+];
+
+dependencies.forEach(dep => {
+  sm.addListener(dep, () => {
+    calculateAll();
+    ModeManager.updateCalculatedDisplayValues();
+  });
+});
+```
+
+**❌ AVOID PATTERN B: Object-Based (S09 Legacy)**
+```javascript
+// ❌ AVOID: Complex, harder to maintain, missing Reference pairs
+const dependencies = [
+  { source: "h_15", handler: calculateAll, description: "..." }
+  // Missing: { source: "ref_h_15", handler: calculateAll, description: "..." }
+];
+```
+
+**🎯 MIGRATION STRATEGY**: Convert S09 to Pattern A with complete Reference pairs.
+
 4.  **Look for Current State Anti-Patterns**:
     - `getFieldValue("d_113")` - **FIX**: Use explicit `TargetState.getValue("d_113")` or `ReferenceState.getValue("d_113")`
     - `getGlobalNumericValue("g_32")` in calculations - **FIX**: Use mode-aware access:
