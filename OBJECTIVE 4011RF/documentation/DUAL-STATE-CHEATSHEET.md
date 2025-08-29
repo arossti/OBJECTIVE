@@ -241,7 +241,7 @@ window.TEUI.StateManager.setValue(
 - [ ] **S06** - Renewable energy (needs audit for external dependencies)
 - [ ] **S07** - Domestic hot water (needs audit for external dependencies)
 - [ ] **S08** - Carbon storage (needs audit for external dependencies)
-- [ ] **S09** - ⚠️  **NEEDS AUDIT** - Object-based listeners, missing Reference pairs (h_15→ref_h_15, d_54→ref_d_54, etc.)
+- [x] **S09** - ✅ **COMPLETED** - Pattern A dual-engine listeners implemented (h_15→ref_h_15, d_54→ref_d_54, d_12→ref_d_12, d_13→ref_d_13, m_19→ref_m_19)
 - [x] **S10** - ✅ **COMPLETED** - Complete Target/Reference listener pairs implemented
 - [ ] **S11** - Building envelope (needs audit for external dependencies)
 - [ ] **S12** - ✅ **GOOD** - Has explicit referenceUValueDeps array (verify completeness)

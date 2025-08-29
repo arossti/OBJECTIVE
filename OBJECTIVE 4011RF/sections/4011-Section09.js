@@ -2036,72 +2036,86 @@ window.TEUI.SectionModules.sect09 = (function () {
   function addStateManagerListeners() {
     if (!window.TEUI?.StateManager) return;
 
-    // Define dependencies
-    const dependencies = [
-      {
-        source: "h_15",
-        handler: calculateAll,
-        description: "Update when conditioned area changes",
-      },
-      {
-        source: "d_54",
-        handler: function () {
-          // Get DHW system losses using parseNumeric
-          const dhwLosses =
-            window.TEUI.parseNumeric(getFieldValueModeAware("d_54")) || 0;
-          // Use local helper
-          setCalculatedValue("h_69", dhwLosses, "number");
-          calculateTotals();
-        },
-        description: "Update when DHW system losses change",
-      },
-      {
-        source: "d_12",
-        handler: function () {
-          calculatePlugLoads(); // These internally use getFieldValue -> parseNumeric
-          calculateEquipmentLoads();
-          calculateTotals();
-        },
-        description: "Update when building type changes",
-      },
-      {
-        source: "d_13",
-        handler: function () {
-          // Update Reference State with new standard values
-          const newStandard = window.TEUI.StateManager.getValue("d_13");
-          if (newStandard && ReferenceState.onReferenceStandardChange) {
-            ReferenceState.onReferenceStandardChange(newStandard);
+    const sm = window.TEUI.StateManager;
 
-            // Refresh UI if currently in reference mode
-            if (ModeManager.currentMode === "reference") {
-              ModeManager.refreshUI();
-            }
-          }
-
-          calculatePlugLoads();
-          calculateTotals();
-          updateAllReferenceIndicators();
-        },
-        description: "Update when reference standard changes",
-      },
-      {
-        source: "m_19",
-        handler: function () {
-          // Recalculate all loads when cooling days change
-          calculateOccupantEnergy();
-          calculatePlugLoads();
-          calculateLightingLoads();
-          calculateEquipmentLoads();
-          calculateTotals();
-        },
-        description: "Update when cooling days change",
-      },
-    ];
-
-    // Register each dependency
-    dependencies.forEach((dep) => {
-      window.TEUI.StateManager.addListener(dep.source, dep.handler);
+    // ✅ PATTERN A DUAL-ENGINE LISTENERS: Complete Target/Reference pairs
+    
+    // 1. Conditioned Area (h_15 / ref_h_15)
+    sm.addListener('h_15', () => {
+      calculateTargetModel();
+      ModeManager.updateCalculatedDisplayValues();
     });
+    sm.addListener('ref_h_15', () => {
+      calculateReferenceModel();
+      ModeManager.updateCalculatedDisplayValues();
+    });
+
+    // 2. DHW System Losses (d_54 / ref_d_54)
+    sm.addListener('d_54', () => {
+      const dhwLosses = window.TEUI.parseNumeric(getFieldValueModeAware("d_54")) || 0;
+      setCalculatedValue("h_69", dhwLosses, "number");
+      calculateTargetModel();
+      ModeManager.updateCalculatedDisplayValues();
+    });
+    sm.addListener('ref_d_54', () => {
+      // Reference DHW calculation
+      const dhwLosses = window.TEUI.parseNumeric(sm.getValue("ref_d_54")) || 0;
+      if (ModeManager.currentMode === "reference") {
+        setCalculatedValue("h_69", dhwLosses, "number");
+      }
+      calculateReferenceModel();
+      ModeManager.updateCalculatedDisplayValues();
+    });
+
+    // 3. Building Type (d_12 / ref_d_12)  
+    sm.addListener('d_12', () => {
+      calculateTargetModel();
+      ModeManager.updateCalculatedDisplayValues();
+    });
+    sm.addListener('ref_d_12', () => {
+      calculateReferenceModel();
+      ModeManager.updateCalculatedDisplayValues();
+    });
+
+    // 4. Reference Standard (d_13 / ref_d_13)
+    sm.addListener('d_13', () => {
+      // Update Reference State with new standard values
+      const newStandard = sm.getValue("d_13");
+      if (newStandard && ReferenceState.onReferenceStandardChange) {
+        ReferenceState.onReferenceStandardChange(newStandard);
+        if (ModeManager.currentMode === "reference") {
+          ModeManager.refreshUI();
+        }
+      }
+      calculateTargetModel();
+      updateAllReferenceIndicators();
+      ModeManager.updateCalculatedDisplayValues();
+    });
+    sm.addListener('ref_d_13', () => {
+      // Reference standard changes
+      const newStandard = sm.getValue("ref_d_13");
+      if (newStandard && ReferenceState.onReferenceStandardChange) {
+        ReferenceState.onReferenceStandardChange(newStandard);
+        if (ModeManager.currentMode === "reference") {
+          ModeManager.refreshUI();
+        }
+      }
+      calculateReferenceModel();
+      updateAllReferenceIndicators();
+      ModeManager.updateCalculatedDisplayValues();
+    });
+
+    // 5. Cooling Days (m_19 / ref_m_19)
+    sm.addListener('m_19', () => {
+      calculateTargetModel();
+      ModeManager.updateCalculatedDisplayValues();
+    });
+    sm.addListener('ref_m_19', () => {
+      calculateReferenceModel();
+      ModeManager.updateCalculatedDisplayValues();
+    });
+
+    console.log('[S09] ✅ Pattern A dual-engine listeners registered (5 Target/Reference pairs)');
   }
 
   /**
