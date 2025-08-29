@@ -2495,16 +2495,34 @@ window.TEUI.SectionModules.sect04 = (function () {
         console.log(`[S04] Conditioned area changed: h_15`);
         calculateAll();
       });
+      
+      // ✅ DUAL-ENGINE: React to Reference conditioned area changes
+      window.TEUI.StateManager.addListener("ref_h_15", () => {
+        console.log(`[S04] Conditioned area changed (Reference): ref_h_15`);
+        calculateAll();
+      });
 
       // React to occupancy changes (affects per-capita calculations)
       window.TEUI.StateManager.addListener("d_63", () => {
         console.log(`[S04] Occupancy changed: d_63`);
         calculateAll();
       });
+      
+      // ✅ DUAL-ENGINE: React to Reference occupancy changes
+      window.TEUI.StateManager.addListener("ref_d_63", () => {
+        console.log(`[S04] Occupancy changed (Reference): ref_d_63`);
+        calculateAll();
+      });
 
       // React to building status changes (affects primary energy calculation)
       window.TEUI.StateManager.addListener("d_14", () => {
         console.log(`[S04] Building status changed: d_14`);
+        calculateAll();
+      });
+      
+      // ✅ DUAL-ENGINE: React to Reference building status changes
+      window.TEUI.StateManager.addListener("ref_d_14", () => {
+        console.log(`[S04] Building status changed (Reference): ref_d_14`);
         calculateAll();
       });
 
@@ -2515,6 +2533,13 @@ window.TEUI.SectionModules.sect04 = (function () {
         calculateG32();
         calculateK32();
         // Update display values
+        ModeManager.updateCalculatedDisplayValues();
+      });
+      
+      // ✅ DUAL-ENGINE: React to Reference S08 forestry offset changes
+      window.TEUI.StateManager.addListener("ref_d_60", () => {
+        console.log(`[S04] S08 forestry offset changed (Reference): ref_d_60`);
+        calculateReferenceModel(); // Reference subtotals include wood emissions offset
         ModeManager.updateCalculatedDisplayValues();
       });
 

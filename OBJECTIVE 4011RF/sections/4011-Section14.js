@@ -1420,21 +1420,37 @@ window.TEUI.SectionModules.sect14 = (function () {
 
     // Create a list of all unique dependencies needed by this section's calculations
     // Restoring S13 dependencies (d_122, h_124, d_123, m_121)
+    // ✅ COMPLETE DUAL-ENGINE DEPENDENCY PAIRS: 100% State Isolation Support
+    // Every dependency has Target/Reference pair for "Independent Models" capability
+    // Ordered alphabetically for easy scanning and maintenance
     const dependencies = [
-      "h_15",
-      "i_97",
-      "i_98",
-      "i_103",
-      "m_121",
-      "i_80",
-      "k_71",
-      "k_79",
-      "k_97",
-      "k_98",
-      "k_103",
-      "d_122",
-      "h_124",
-      "d_123",
+      // Additional gains and losses
+      "d_122", "ref_d_122", // Additional gains
+      "d_123", "ref_d_123", // Additional parameters
+      
+      // Building Geometry (Independent Models: different building sizes)
+      "h_15", "ref_h_15", // Conditioned area
+      "h_124", "ref_h_124", // Occupant losses
+      
+      // S10 Radiant Gains (Independent Models: different solar performance)
+      "i_80", "ref_i_80", // Utilization factors
+      
+      // S11 Envelope Dependencies (Independent Models: different envelope performance)
+      "i_97", "ref_i_97", // Envelope loss factors
+      "i_98", "ref_i_98", // Total envelope loss
+      "i_103", "ref_i_103", // Additional loss factors
+      
+      // S09 Internal Gains (Independent Models: different occupancy/internal loads)
+      "k_71", "ref_k_71", // Total internal gains (cooling season)
+      
+      // Solar and Cross-Section Gains (Independent Models: different solar/radiant performance)
+      "k_79", "ref_k_79", // Solar gains
+      "k_97", "ref_k_97", // Additional gain factors
+      "k_98", "ref_k_98", // Total envelope gain
+      "k_103", "ref_k_103", // Additional gain factors
+      
+      // S13 Ventilation (Independent Models: different ventilation systems)
+      "m_121", "ref_m_121", // Ventilation load
     ];
 
     // Remove duplicates
