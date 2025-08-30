@@ -1095,7 +1095,6 @@ window.TEUI.SectionModules.sect04 = (function () {
     const result = d_28 * 0.0373 * 277.7778; // Gas m³ to ekWh
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
     setCalculatedValue("f_28", result);
-    setCalculatedValue("f_28", result);
     return result;
   }
 
@@ -1104,7 +1103,6 @@ window.TEUI.SectionModules.sect04 = (function () {
     const d_29 = ModeManager.getValue("d_29") || 0;
     const result = d_29 * 14.019; // Propane kg to ekWh
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("f_29", result);
     setCalculatedValue("f_29", result);
     return result;
   }
@@ -1115,7 +1113,6 @@ window.TEUI.SectionModules.sect04 = (function () {
     const result = d_30 * 36.72 * 0.2777778; // Oil L to ekWh
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
     setCalculatedValue("f_30", result);
-    setCalculatedValue("f_30", result);
     return result;
   }
 
@@ -1124,7 +1121,6 @@ window.TEUI.SectionModules.sect04 = (function () {
     const d_31 = ModeManager.getValue("d_31") || 0;
     const result = d_31 * 1000; // Wood m³ to ekWh
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("f_31", result);
     setCalculatedValue("f_31", result);
     return result;
   }
@@ -1138,7 +1134,6 @@ window.TEUI.SectionModules.sect04 = (function () {
     const result = (f_27 * l_27) / 1000; // Convert gCO2e to kgCO2e
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
     setCalculatedValue("g_27", result);
-    setCalculatedValue("g_27", result);
     return result;
   }
 
@@ -1147,7 +1142,6 @@ window.TEUI.SectionModules.sect04 = (function () {
     const d_28 = ModeManager.getValue("d_28") || 0;
     const result = (d_28 * 1921) / 1000; // Gas emissions
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("g_28", result);
     setCalculatedValue("g_28", result);
     return result;
   }
@@ -1158,7 +1152,6 @@ window.TEUI.SectionModules.sect04 = (function () {
     const result = (d_29 * 2970) / 1000; // Propane emissions
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
     setCalculatedValue("g_29", result);
-    setCalculatedValue("g_29", result);
     return result;
   }
 
@@ -1168,7 +1161,6 @@ window.TEUI.SectionModules.sect04 = (function () {
     const result = (d_30 * 2753) / 1000; // Oil emissions
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
     setCalculatedValue("g_30", result);
-    setCalculatedValue("g_30", result);
     return result;
   }
 
@@ -1177,7 +1169,6 @@ window.TEUI.SectionModules.sect04 = (function () {
     const d_31 = ModeManager.getValue("d_31") || 0;
     const result = d_31 * 150; // Wood emissions (already in kgCO2e/m³)
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("g_31", result);
     setCalculatedValue("g_31", result);
     return result;
   }
@@ -1260,7 +1251,6 @@ window.TEUI.SectionModules.sect04 = (function () {
 
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
     setCalculatedValue("h_28", result);
-    setCalculatedValue("h_28", result);
     return result;
   }
 
@@ -1268,7 +1258,6 @@ window.TEUI.SectionModules.sect04 = (function () {
     // ✅ PHASE 6 FIX: Target propane mirrors actual (user-controlled) - no fallback needed
     const result = ModeManager.getValue("d_29") || 0;
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("h_29", result);
     setCalculatedValue("h_29", result);
     return result;
   }
@@ -1332,7 +1321,6 @@ window.TEUI.SectionModules.sect04 = (function () {
 
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
     setCalculatedValue("h_30", result);
-    setCalculatedValue("h_30", result);
     return result;
   }
 
@@ -1341,7 +1329,6 @@ window.TEUI.SectionModules.sect04 = (function () {
     const result = ModeManager.getValue("d_31") || 0;
 
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("h_31", result);
     setCalculatedValue("h_31", result);
     return result;
   }
@@ -1376,7 +1363,6 @@ window.TEUI.SectionModules.sect04 = (function () {
     const result = h_28 * 0.0373 * 277.7778; // Gas m³ to ekWh
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
     setCalculatedValue("j_28", result);
-    setCalculatedValue("j_28", result);
     return result;
   }
 
@@ -1384,7 +1370,6 @@ window.TEUI.SectionModules.sect04 = (function () {
     const h_29 = ModeManager.getValue("h_29") || 0;
     const result = h_29 * 14.019; // Propane kg to ekWh
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("j_29", result);
     setCalculatedValue("j_29", result);
     return result;
   }
@@ -1394,7 +1379,6 @@ window.TEUI.SectionModules.sect04 = (function () {
     const result = h_30 * 36.72 * 0.2777778; // Oil L to ekWh
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
     setCalculatedValue("j_30", result);
-    setCalculatedValue("j_30", result);
     return result;
   }
 
@@ -1402,7 +1386,6 @@ window.TEUI.SectionModules.sect04 = (function () {
     const h_31 = ModeManager.getValue("h_31") || 0;
     const result = h_31 * 1000; // Wood m³ to ekWh
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("j_31", result);
     setCalculatedValue("j_31", result);
     return result;
   }
@@ -1416,7 +1399,6 @@ window.TEUI.SectionModules.sect04 = (function () {
     const result = (j_27 * l_27) / 1000; // Excel: =J27*L27/1000
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
     setCalculatedValue("k_27", result);
-    setCalculatedValue("k_27", result);
     return result;
   }
 
@@ -1426,7 +1408,6 @@ window.TEUI.SectionModules.sect04 = (function () {
     const result = (h_28 * l_28) / 1000; // Excel: =H28*L28/1000
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
     setCalculatedValue("k_28", result);
-    setCalculatedValue("k_28", result);
     return result;
   }
 
@@ -1434,7 +1415,6 @@ window.TEUI.SectionModules.sect04 = (function () {
     const h_29 = ModeManager.getValue("h_29") || 0;
     const result = (h_29 * 2970) / 1000; // Propane target emissions
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("k_29", result);
     setCalculatedValue("k_29", result);
     return result;
   }
@@ -1444,7 +1424,6 @@ window.TEUI.SectionModules.sect04 = (function () {
     const l_30 = getGlobalNumericValue("l_30") || 2753; // Dynamic oil emission factor
     const result = (h_30 * l_30) / 1000; // Excel: =H30*L30/1000
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("k_30", result);
     setCalculatedValue("k_30", result);
     return result;
   }
@@ -1478,7 +1457,6 @@ window.TEUI.SectionModules.sect04 = (function () {
     const f_31 = ModeManager.getValue("f_31") || 0;
     const result = f_27 + f_28 + f_29 + f_30 + f_31;
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("f_32", result);
     setCalculatedValue("f_32", result);
     return result;
   }
