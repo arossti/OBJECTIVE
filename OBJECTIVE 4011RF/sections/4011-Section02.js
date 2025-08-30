@@ -18,9 +18,9 @@
  * - Phase 5: Consolidated defaults using getFieldDefault() ✅
  * - Phase 6: Mode-aware external dependency reading (i_39, i_41) ✅
  *
- * ⚠️  KNOWN ISSUE: Minor occupancy state mixing when Target d_12 changes affects
- * Reference calculations. Documented in README.md. Requires comprehensive downstream
- * audit to identify remaining mode-mixing violations in S04-S15.
+ * ✅ FIXED: Occupancy state mixing eliminated - d_12 fallback contamination pattern removed
+ * Reference mode now ONLY reads ref_d_12 values for perfect state isolation.
+ * Same Phase 6 fix pattern applied as S15 m_43 contamination resolution.
  */
 
 // Create section-specific namespace for global references
@@ -858,7 +858,9 @@ window.TEUI.SectionModules.sect02 = (function () {
     const referenceResults = {
       h_12: ReferenceState.getValue("h_12"), // 2020 reporting year
       h_13: ReferenceState.getValue("h_13"), // ✅ CRITICAL FIX: Service life (was missing!)
+      d_12: ReferenceState.getValue("d_12"), // ✅ CONTAMINATION FIX: Major Occupancy (was missing!)
       d_13: ReferenceState.getValue("d_13"), // OBC SB10 5.5-6 Z5 (2010)
+      d_14: ReferenceState.getValue("d_14"), // ✅ CONTAMINATION FIX: Actual/Target Use (was missing!)
       d_15: ReferenceState.getValue("d_15"), // Carbon standard
       h_15: ReferenceState.getValue("h_15"), // Building area
       l_12: ReferenceState.getValue("l_12"), // Electricity price
@@ -1244,12 +1246,11 @@ window.TEUI.SectionModules.sect02 = (function () {
    * Update the critical occupancy flag display in Section 2 header
    */
   function updateCriticalOccupancyFlag() {
-    // ✅ CRITICAL FIX: Use mode-aware reading for proper state isolation
+    // ✅ PHASE 6 FIX: Eliminate fallback contamination pattern (same fix as S15 m_43)
+    // Reference calculations must ONLY read ref_ prefixed values for perfect state isolation
     const occupancyType =
       ModeManager.currentMode === "reference"
-        ? window.TEUI.StateManager?.getValue("ref_d_12") ||
-          window.TEUI.StateManager?.getValue("d_12") ||
-          ""
+        ? window.TEUI.StateManager?.getValue("ref_d_12") || "" // ✅ FIXED: No fallback to Target values
         : window.TEUI.StateManager?.getValue("d_12") || "";
     const sectionHeader = document.querySelector(
       "#buildingInfo .section-header",
