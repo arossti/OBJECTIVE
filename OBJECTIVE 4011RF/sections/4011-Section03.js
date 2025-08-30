@@ -9,7 +9,9 @@
  * Key improvements: Reference calculations now use Reference state values directly
  * instead of reading from current DOM selections, preventing one-time climate data
  * corruption during Target location changes. Reference defaults updated to Ontario/
- * Alexandria for Excel compliance parity testing.
+ * Alexandria for Excel compliance parity testing. Phase 3: Consolidated defaults
+ * to use field definitions as single source of truth; climate data populated from
+ * ClimateValues.js to eliminate hardcoded weather duplicates.
  */
 
 // Ensure namespace exists
@@ -40,17 +42,20 @@ window.TEUI.SectionModules.sect03 = (function () {
       }
     },
     setDefaults: function () {
+      // ✅ PHASE 3: Read defaults from field definitions (single source of truth)
+      // Climate data will be populated by updateWeatherData() from ClimateValues.js
       this.state = {
-        d_19: "ON", // Province
-        h_19: "Alexandria", // City
-        h_20: "Present", // Timeframe
-        h_21: "Capacitance", // Capacitance setting
-        h_23: 18, // Heating setpoint
-        h_24: 24, // Cooling setpoint
-        m_19: 120, // Cooling days
-        l_22: 80, // Elevation
-        l_24: 24, // Cooling override
-        i_21: 50, // Capacitance percentage
+        d_19: getFieldDefault("d_19") || "ON", // Province
+        h_19: getFieldDefault("h_19") || "Alexandria", // City  
+        h_20: getFieldDefault("h_20") || "Present", // Timeframe
+        h_21: getFieldDefault("h_21") || "Capacitance", // Capacitance setting
+        h_23: getFieldDefault("h_23") || "18", // Heating setpoint
+        h_24: getFieldDefault("h_24") || "24", // Cooling setpoint
+        m_19: getFieldDefault("m_19") || "120", // Cooling days
+        l_22: getFieldDefault("l_22") || "80", // Elevation
+        l_24: getFieldDefault("l_24") || "24", // Cooling override
+        i_21: getFieldDefault("i_21") || "50", // Capacitance percentage
+        // ✅ Climate data removed - populated by updateWeatherData() from ClimateValues.js
       };
       // console.log("S03 TARGET STATE: Set to defaults");
     },
@@ -101,19 +106,23 @@ window.TEUI.SectionModules.sect03 = (function () {
       }
     },
     setDefaults: function () {
-      // ✅ COMPLIANCE FIX: Reference defaults now match Excel baseline (Ontario/Alexandria)
-      // This ensures Excel parity testing uses identical climate data for both Target and Reference
+      // ✅ PHASE 3: Initialize with base defaults from field definitions, then apply Reference-specific overrides
       this.state = {
-        d_19: "ON", // Ontario (same as Target for Excel compliance)
-        h_19: "Alexandria", // Alexandria (same as Target for Excel compliance)
-        h_20: "Present", // Timeframe
-        h_21: "Capacitance", // Capacitance setting
-        h_23: 18, // Heating setpoint
-        h_24: 24, // Cooling setpoint
-        m_19: 120, // Cooling days
-        l_22: 80, // Elevation
-        l_24: 24, // Cooling override
-        i_21: 75, // Different capacitance for testing isolation
+        // 1. Base defaults from field definitions (single source of truth)
+        d_19: getFieldDefault("d_19") || "ON", // Province
+        h_19: getFieldDefault("h_19") || "Alexandria", // City
+        h_20: getFieldDefault("h_20") || "Present", // Timeframe
+        h_21: getFieldDefault("h_21") || "Capacitance", // Capacitance setting
+        h_23: getFieldDefault("h_23") || "18", // Heating setpoint
+        h_24: getFieldDefault("h_24") || "24", // Cooling setpoint
+        m_19: getFieldDefault("m_19") || "120", // Cooling days
+        l_22: getFieldDefault("l_22") || "80", // Elevation
+        l_24: getFieldDefault("l_24") || "24", // Cooling override
+        i_21: getFieldDefault("i_21") || "50", // Capacitance percentage
+        
+        // 2. Reference-specific overrides (only differences from Target)
+        // Both Target and Reference use Ontario/Alexandria for Excel compliance
+        // ✅ Climate data removed - populated by updateWeatherData() from ClimateValues.js
       };
       // console.log("S03 REFERENCE STATE: Set to Excel compliance defaults (ON/Alexandria)");
     },
@@ -382,6 +391,29 @@ window.TEUI.SectionModules.sect03 = (function () {
     // For string values EXTERNAL to this section (from global StateManager)
     const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
     return rawValue ? rawValue.toString() : "";
+  }
+
+  /**
+   * ✅ PHASE 2: Mode-aware external dependency reader for Target/Reference pairs
+   * Reads the correct state value based on current calculation mode
+   */
+  function getModeAwareGlobalValue(fieldId) {
+    if (!window.TEUI?.StateManager) return "";
+    
+    if (ModeManager.currentMode === "reference") {
+      // Reference mode: Try ref_ prefixed first, then fallback to unprefixed
+      const refValue = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
+      if (refValue !== null && refValue !== undefined) {
+        return refValue.toString();
+      }
+      // Fallback to unprefixed if ref_ version doesn't exist
+      const fallbackValue = window.TEUI.StateManager.getValue(fieldId);
+      return fallbackValue ? fallbackValue.toString() : "";
+    } else {
+      // Target mode: Read unprefixed values directly
+      const targetValue = window.TEUI.StateManager.getValue(fieldId);
+      return targetValue ? targetValue.toString() : "";
+    }
   }
 
   function getFieldValue(fieldId) {
@@ -1014,6 +1046,26 @@ window.TEUI.SectionModules.sect03 = (function () {
     return rowDef;
   }
 
+  /**
+   * ✅ PHASE 3: Retrieves a field's default value from the sectionRows definition.
+   * This is the single source of truth for non-climate default values.
+   * Climate data should come from ClimateValues.js, not hardcoded defaults.
+   * @param {string} fieldId The ID of the field (e.g., "d_19")
+   * @returns {string|null} The default value or null if not found.
+   */
+  function getFieldDefault(fieldId) {
+    for (const row of Object.values(sectionRows)) {
+      if (row.cells) {
+        for (const cell of Object.values(row.cells)) {
+          if (cell.fieldId === fieldId && cell.value !== undefined) {
+            return cell.value;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
   //==========================================================================
   // EVENT HANDLING AND CALCULATIONS
   //==========================================================================
@@ -1485,8 +1537,8 @@ window.TEUI.SectionModules.sect03 = (function () {
    * Calculate Heating Setpoint (h_23) based on Occupancy Type (d_12)
    */
   function calculateHeatingSetpoint() {
-    const referenceStandard = getGlobalStringValue("d_13"); // Get from S02 via global state
-    const occupancyType = getGlobalStringValue("d_12"); // Get from S02 via global state
+    const referenceStandard = getModeAwareGlobalValue("d_13"); // ✅ PHASE 2: Mode-aware external dependency
+    const occupancyType = getModeAwareGlobalValue("d_12"); // ✅ PHASE 2: Mode-aware external dependency
     let heatingSetpoint;
 
     // Check if the reference standard indicates a Passive House related standard
@@ -1517,7 +1569,7 @@ window.TEUI.SectionModules.sect03 = (function () {
    * Calculate Base Cooling Setpoint (h_24) based on Occupancy Type (d_12)
    */
   function calculateCoolingSetpoint_h24() {
-    const occupancyType = getGlobalStringValue("d_12"); // Get from S02 via global state
+    const occupancyType = getModeAwareGlobalValue("d_12"); // ✅ PHASE 2: Mode-aware external dependency
     let coolingSetpoint = 24; // Default for all types currently
 
     // Add specific logic based on occupancy if needed in the future
@@ -1564,7 +1616,7 @@ window.TEUI.SectionModules.sect03 = (function () {
    * Update the critical occupancy flag display based on d_12
    */
   function updateCriticalOccupancyFlag() {
-    const occupancyType = getGlobalStringValue("d_12"); // Get from S02 via global state
+    const occupancyType = getModeAwareGlobalValue("d_12"); // ✅ PHASE 2: Mode-aware external dependency
     const sectionHeader = document.querySelector(
       "#climateCalculations .section-header",
     ); // Target the main header
