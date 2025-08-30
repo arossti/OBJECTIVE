@@ -567,6 +567,11 @@ window.TEUI.SectionModules.sect01 = (function () {
     const useType =
       window.TEUI.StateManager?.getValue("d_14") || "Targeted Use";
     const isUtilityMode = useType === "Utility Bills";
+    
+    // 🔍 CONTAMINATION TRACE: Log current TEUI values (same as m_43 debug pattern)
+    const current_e_10 = window.TEUI.StateManager?.getValue("e_10") || "0.0";
+    const current_h_10 = window.TEUI.StateManager?.getValue("h_10") || "0.0";
+    console.log(`🔍 [S01DB] updateTEUIDisplay START: e_10=${current_e_10}, h_10=${current_h_10}, useType=${useType}`);
 
     // ✅ CONSUMER PATTERN: Read upstream values directly from StateManager
     // Building data from S02 - CRITICAL FIX: Separate Target and Reference areas

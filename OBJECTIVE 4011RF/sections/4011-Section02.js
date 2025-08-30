@@ -878,6 +878,10 @@ window.TEUI.SectionModules.sect02 = (function () {
           String(value),
           "calculated",
         );
+        // 🔍 CONTAMINATION TRACE: Log d_12 Reference storage
+        if (fieldId === "d_12") {
+          console.log(`🔍 [S02DB] storeReferenceResults: ref_${fieldId}=${value} stored in StateManager`);
+        }
       }
     });
 
@@ -1839,14 +1843,25 @@ window.TEUI.SectionModules.sect02 = (function () {
         this.currentMode === "target" ? TargetState : ReferenceState;
       currentState.setValue(fieldId, value, source);
 
+      // 🔍 CONTAMINATION TRACE: Log d_12 (Major Occupancy) changes
+      if (fieldId === "d_12") {
+        console.log(`🔍 [S02DB] d_12 setValue: field=${fieldId}, value=${value}, mode=${this.currentMode}, source=${source}`);
+      }
+
       // ✅ CRITICAL BRIDGE: Sync Target changes to StateManager for downstream sections
       if (this.currentMode === "target" && window.TEUI?.StateManager) {
         window.TEUI.StateManager.setValue(fieldId, value, source);
+        if (fieldId === "d_12") {
+          console.log(`🔍 [S02DB] Target d_12 published to StateManager: ${fieldId}=${value}`);
+        }
       }
 
       // ✅ CRITICAL BRIDGE: Sync Reference changes to StateManager with ref_ prefix
       if (this.currentMode === "reference" && window.TEUI?.StateManager) {
         window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, source);
+        if (fieldId === "d_12") {
+          console.log(`🔍 [S02DB] Reference d_12 published to StateManager: ref_${fieldId}=${value}`);
+        }
       }
     },
 
