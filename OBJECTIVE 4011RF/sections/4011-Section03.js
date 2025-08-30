@@ -4,6 +4,12 @@
  *
  * BREAKTHROUGH: Integrated proven Target/Reference state isolation
  * Using ClimateValues JSON for data lookup (no Excel import needed)
+ *
+ * ARCHITECTURAL NOTE (Aug 2025 Refactor): Reference calculation contamination fixed.
+ * Key improvements: Reference calculations now use Reference state values directly
+ * instead of reading from current DOM selections, preventing one-time climate data
+ * corruption during Target location changes. Reference defaults updated to Ontario/
+ * Alexandria for Excel compliance parity testing.
  */
 
 // Ensure namespace exists
@@ -95,11 +101,11 @@ window.TEUI.SectionModules.sect03 = (function () {
       }
     },
     setDefaults: function () {
-      // For S03, Reference defaults are based on a different climate location for comparison
-      // This allows testing Target (e.g. Toronto) vs Reference (e.g. Attawapiskat, cold climate)
+      // ✅ COMPLIANCE FIX: Reference defaults now match Excel baseline (Ontario/Alexandria)
+      // This ensures Excel parity testing uses identical climate data for both Target and Reference
       this.state = {
-        d_19: "BC", // Different province for climate comparison
-        h_19: "Vancouver", // Different city for climate comparison
+        d_19: "ON", // Ontario (same as Target for Excel compliance)
+        h_19: "Alexandria", // Alexandria (same as Target for Excel compliance)
         h_20: "Present", // Timeframe
         h_21: "Capacitance", // Capacitance setting
         h_23: 18, // Heating setpoint
@@ -107,9 +113,9 @@ window.TEUI.SectionModules.sect03 = (function () {
         m_19: 120, // Cooling days
         l_22: 80, // Elevation
         l_24: 24, // Cooling override
-        i_21: 75, // DIFFERENT capacitance for testing isolation
+        i_21: 75, // Different capacitance for testing isolation
       };
-      // console.log("S03 REFERENCE STATE: Set to climate comparison defaults");
+      // console.log("S03 REFERENCE STATE: Set to Excel compliance defaults (ON/Alexandria)");
     },
     saveState: function () {
       try {
@@ -396,6 +402,8 @@ window.TEUI.SectionModules.sect03 = (function () {
   function setFieldValue(fieldId, value, source = "calculated") {
     const rawValue =
       value !== null && value !== undefined ? value.toString() : null;
+
+
 
     // Set raw value in ModeManager (automatically handles current mode)
     ModeManager.setValue(fieldId, rawValue, source);
@@ -1192,6 +1200,8 @@ window.TEUI.SectionModules.sect03 = (function () {
 
     // Run all calculations after weather data update
     calculateAll();
+    // ✅ PHASE 1: Add missing DOM update after calculations
+    ModeManager.updateCalculatedDisplayValues();
 
     console.log(
       `S03: Weather data updated for ${cityValue}, ${provinceValue} (${timeframe})`,
@@ -1378,17 +1388,44 @@ window.TEUI.SectionModules.sect03 = (function () {
 
   /**
    * REFERENCE MODEL ENGINE: Calculate all values using Reference state
+   * ✅ CRITICAL FIX: Uses Reference state values directly, not current DOM selections
    * Stores results with ref_ prefix for downstream sections (S15, S14, etc.)
    */
   function calculateReferenceModel() {
     // console.log("[Section03] Running Reference Model calculations...");
 
     try {
-      // Force Reference mode temporarily to get Reference calculations
+      // ✅ CRITICAL FIX: Calculate Reference climate using Reference state values ONLY
+      // This prevents contamination from Target mode DOM selections
+      const refProvince = ReferenceState.getValue("d_19") || "ON";
+      const refCity = ReferenceState.getValue("h_19") || "Alexandria";
+      const refTimeframe = ReferenceState.getValue("h_20") || "Present";
+
+      // Get Reference climate data directly from ClimateDataService
+      const refCityData = ClimateDataService.getCityData(refProvince, refCity);
+      
+      if (refCityData) {
+        // Update Reference climate values using Reference location data
+        const refHddValue = refTimeframe === "Future" ? refCityData.HDD18_2021_2050 : refCityData.HDD18;
+        const refCddValue = refTimeframe === "Future" ? refCityData.CDD24_2021_2050 : refCityData.CDD24;
+        
+        // Store Reference climate values in Reference state
+        ReferenceState.setValue("d_20", refHddValue || "N/A", "calculated");
+        ReferenceState.setValue("d_21", refCddValue || "N/A", "calculated");
+        ReferenceState.setValue("d_23", refCityData.January_2_5 || "-24", "calculated");
+        ReferenceState.setValue("d_24", refCityData.July_2_5_Tdb || "34", "calculated");
+        ReferenceState.setValue("l_22", refCityData["Elev ASL (m)"] || "80", "calculated");
+        
+        // Calculate Reference climate zone
+        const refClimateZone = determineClimateZone(refHddValue);
+        ReferenceState.setValue("j_19", refClimateZone, "calculated");
+      }
+
+      // Force Reference mode temporarily for setpoint calculations
       const originalMode = ModeManager.currentMode;
       ModeManager.currentMode = "reference";
 
-      // Run all calculations using Reference state values (Vancouver climate)
+      // Run setpoint calculations using Reference state values
       calculateHeatingSetpoint();
       calculateCoolingSetpoint_h24();
       calculateTemperatures();
@@ -1415,41 +1452,18 @@ window.TEUI.SectionModules.sect03 = (function () {
 
     // Get Reference state climate values and store with ref_ prefix
     const referenceResults = {
-      h_23: ReferenceState.getValue("h_23"), // Vancouver heating setpoint
-      d_23: ReferenceState.getValue("d_23"), // Vancouver coldest day
-      d_24: ReferenceState.getValue("d_24"), // Vancouver hottest day
-      h_24: ReferenceState.getValue("h_24"), // Vancouver cooling setpoint
-      d_20: ReferenceState.getValue("d_20"), // Vancouver HDD
-      d_21: ReferenceState.getValue("d_21"), // Vancouver CDD
-      d_22: ReferenceState.getValue("d_22"), // Vancouver GF HDD
-      h_22: ReferenceState.getValue("h_22"), // Vancouver GF CDD
-      j_19: ReferenceState.getValue("j_19"), // Vancouver climate zone
+      h_23: ReferenceState.getValue("h_23"), // Reference heating setpoint
+      d_23: ReferenceState.getValue("d_23"), // Reference coldest day
+      d_24: ReferenceState.getValue("d_24"), // Reference hottest day
+      h_24: ReferenceState.getValue("h_24"), // Reference cooling setpoint
+      d_20: ReferenceState.getValue("d_20"), // Reference HDD
+      d_21: ReferenceState.getValue("d_21"), // Reference CDD
+      d_22: ReferenceState.getValue("d_22"), // Reference GF HDD
+      h_22: ReferenceState.getValue("h_22"), // Reference GF CDD
+      j_19: ReferenceState.getValue("j_19"), // Reference climate zone
     };
 
-    // [S03DB] Targeted logging to verify Reference writes are happening
-    try {
-      const refProvince = ReferenceState.getValue("d_19");
-      const refCity = ReferenceState.getValue("h_19");
-      console.log(
-        "[S03DB] storeReferenceResults: mode=reference, province=",
-        refProvince,
-        "city=",
-        refCity,
-        "values=",
-        {
-          d_20: referenceResults.d_20,
-          d_21: referenceResults.d_21,
-          d_23: referenceResults.d_23,
-          d_24: referenceResults.d_24,
-          j_19: referenceResults.j_19,
-        },
-      );
-    } catch (e) {
-      console.warn(
-        "[S03DB] storeReferenceResults: pre-write logging failed",
-        e,
-      );
-    }
+
 
     // Store with ref_ prefix for downstream sections
     Object.entries(referenceResults).forEach(([fieldId, value]) => {
@@ -1462,25 +1476,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       }
     });
 
-    // [S03DB] Read-back verification for key fields
-    try {
-      const readBack = {
-        ref_d_20: window.TEUI.StateManager.getValue("ref_d_20"),
-        ref_d_21: window.TEUI.StateManager.getValue("ref_d_21"),
-        ref_d_23: window.TEUI.StateManager.getValue("ref_d_23"),
-        ref_d_24: window.TEUI.StateManager.getValue("ref_d_24"),
-        ref_j_19: window.TEUI.StateManager.getValue("ref_j_19"),
-      };
-      console.log(
-        "[S03DB] storeReferenceResults: wrote ref_ values (read-back)",
-        readBack,
-      );
-    } catch (e) {
-      console.warn(
-        "[S03DB] storeReferenceResults: post-write read-back failed",
-        e,
-      );
-    }
+
   }
 
   // --- New Calculation Functions ---
