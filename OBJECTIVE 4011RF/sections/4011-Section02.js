@@ -1205,7 +1205,10 @@ window.TEUI.SectionModules.sect02 = (function () {
    * Update the critical occupancy flag display in Section 2 header
    */
   function updateCriticalOccupancyFlag() {
-    const occupancyType = window.TEUI.StateManager?.getValue("d_12") || "";
+    // ✅ CRITICAL FIX: Use mode-aware reading for proper state isolation
+    const occupancyType = ModeManager.currentMode === "reference" 
+      ? (window.TEUI.StateManager?.getValue("ref_d_12") || window.TEUI.StateManager?.getValue("d_12") || "")
+      : (window.TEUI.StateManager?.getValue("d_12") || "");
     const sectionHeader = document.querySelector(
       "#buildingInfo .section-header",
     ); // Target the Section 2 header

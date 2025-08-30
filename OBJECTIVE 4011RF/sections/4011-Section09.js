@@ -1727,7 +1727,9 @@ window.TEUI.SectionModules.sect09 = (function () {
    * Helper function to calculate equipment density for Reference model
    */
   function calculateEquipmentDensityForReference() {
+    // ✅ CRITICAL FIX: Read Reference occupancy, not Target occupancy
     const buildingType =
+      window.TEUI?.StateManager?.getValue("ref_d_12") || 
       window.TEUI?.StateManager?.getValue("d_12") || "A-Assembly";
     const efficiencyType = ReferenceState.getValue("g_67") || "Regular"; // Reference always uses Regular
     const elevatorStatus = ReferenceState.getValue("d_68") || "No Elevators";
@@ -1805,8 +1807,8 @@ window.TEUI.SectionModules.sect09 = (function () {
       window.TEUI.StateManager.getValue(isReference ? "ref_d_54" : "d_54"),
       0,
     );
-    const buildingType =
-      window.TEUI.StateManager.getValue("d_12") || "A-Assembly";
+    // ✅ CRITICAL FIX: Use mode-aware reading for proper state isolation
+    const buildingType = getFieldValueModeAware("d_12") || "A-Assembly";
 
     // Preliminary calculations based on the section's internal state
     const activityLevel = state.getValue("d_64");
