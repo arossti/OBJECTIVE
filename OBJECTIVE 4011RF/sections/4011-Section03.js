@@ -5,13 +5,22 @@
  * BREAKTHROUGH: Integrated proven Target/Reference state isolation
  * Using ClimateValues JSON for data lookup (no Excel import needed)
  *
- * ARCHITECTURAL NOTE (Aug 2025 Refactor): Reference calculation contamination fixed.
- * Key improvements: Reference calculations now use Reference state values directly
- * instead of reading from current DOM selections, preventing one-time climate data
- * corruption during Target location changes. Reference defaults updated to Ontario/
- * Alexandria for Excel compliance parity testing. Phase 3: Consolidated defaults
- * to use field definitions as single source of truth; climate data populated from
- * ClimateValues.js to eliminate hardcoded weather duplicates.
+ * ARCHITECTURAL STATUS (Aug 30 2025): ✅ DUAL-STATE-CHEATSHEET COMPLIANT
+ * ✅ S03-REPAIRS.md ALL ISSUES RESOLVED
+ * 
+ * ✅ All critical anti-patterns eliminated:
+ * - Phase 1: DOM update pattern violations fixed ✅
+ * - Phase 2: Mode-aware external dependency reading implemented ✅  
+ * - Phase 3: Consolidated defaults using field definitions as single source ✅
+ * - Phase 4: switchMode display-only ✅
+ * - Phase 5: No duplicate defaults ✅
+ * - Phase 6: Proper state isolation ✅
+ * 
+ * ✅ Critical fixes implemented:
+ * - Reference climate data contamination eliminated ✅
+ * - Excel compliance: Ontario/Alexandria baseline for both models ✅
+ * - Perfect state isolation: Reference calculations use Reference state only ✅
+ * - ClimateValues.js integration: No hardcoded weather duplicates ✅
  */
 
 // Ensure namespace exists
