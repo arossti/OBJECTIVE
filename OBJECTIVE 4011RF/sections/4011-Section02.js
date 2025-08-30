@@ -16,7 +16,7 @@
  * - Phase 3: DOM update pattern compliant ✅
  * - Phase 4: switchMode display-only ✅
  * - Phase 5: Consolidated defaults using getFieldDefault() ✅
- * - Phase 6: Mode-aware external dependency reading ✅
+ * - Phase 6: Mode-aware external dependency reading (i_39, i_41) ✅
  * 
  * ⚠️  KNOWN ISSUE: Minor occupancy state mixing when Target d_12 changes affects 
  * Reference calculations. Documented in README.md. Requires comprehensive downstream
@@ -605,6 +605,29 @@ window.TEUI.SectionModules.sect02 = (function () {
   }
 
   /**
+   * ✅ PHASE 6: Mode-aware external dependency reader for Target/Reference pairs
+   * Reads the correct state value based on current calculation mode
+   */
+  function getModeAwareGlobalValue(fieldId) {
+    if (!window.TEUI?.StateManager) return "";
+    
+    if (ModeManager.currentMode === "reference") {
+      // Reference mode: Try ref_ prefixed first, then fallback to unprefixed
+      const refValue = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
+      if (refValue !== null && refValue !== undefined) {
+        return refValue.toString();
+      }
+      // Fallback to unprefixed if ref_ version doesn't exist
+      const fallbackValue = window.TEUI.StateManager.getValue(fieldId);
+      return fallbackValue ? fallbackValue.toString() : "";
+    } else {
+      // Target mode: Read unprefixed values directly
+      const targetValue = window.TEUI.StateManager.getValue(fieldId);
+      return targetValue ? targetValue.toString() : "";
+    }
+  }
+
+  /**
    * Helper function to set a calculated value in the StateManager and update the DOM.
    * STANDARD MODE-AWARE PATTERN
    * This function writes to the correct state and only updates the global (unprefixed)
@@ -763,8 +786,8 @@ window.TEUI.SectionModules.sect02 = (function () {
       // ✅ CRITICAL FIX: Read from sovereign ReferenceState, not global StateManager with prefixes
       const carbonStandard = ReferenceState.getValue("d_15") || "Self Reported";
 
-      // For external dependencies (from other sections), still use getNumericValue fallback
-      const modelledValueI41 = getNumericValue("i_41", 345.82);
+      // ✅ PHASE 6: Use mode-aware reading for external dependencies
+      const modelledValueI41 = window.TEUI?.parseNumeric?.(getModeAwareGlobalValue("i_41"), 345.82) ?? 345.82;
 
       if (carbonStandard === "Not Reported") {
         setFieldValue("d_16", "N/A", "calculated");
@@ -772,7 +795,7 @@ window.TEUI.SectionModules.sect02 = (function () {
       }
 
       if (carbonStandard === "TGS4") {
-        const tgs4Value = getNumericValue("i_39", 0);
+        const tgs4Value = window.TEUI?.parseNumeric?.(getModeAwareGlobalValue("i_39"), 0) ?? 0;
         setFieldValue("d_16", tgs4Value, "calculated");
         return;
       }
@@ -868,8 +891,8 @@ window.TEUI.SectionModules.sect02 = (function () {
       // ✅ CRITICAL FIX: Read from sovereign TargetState, not global StateManager
       const carbonStandard = TargetState.getValue("d_15") || "Self Reported";
 
-      // For external dependencies (from other sections), still use getNumericValue fallback
-      const modelledValueI41 = getNumericValue("i_41", 345.82);
+      // ✅ PHASE 6: Use mode-aware reading for external dependencies
+      const modelledValueI41 = window.TEUI?.parseNumeric?.(getModeAwareGlobalValue("i_41"), 345.82) ?? 345.82;
 
       if (carbonStandard === "Not Reported") {
         setFieldValue("d_16", "N/A", "calculated");
@@ -877,7 +900,7 @@ window.TEUI.SectionModules.sect02 = (function () {
       }
 
       if (carbonStandard === "TGS4") {
-        const tgs4Value = getNumericValue("i_39", 0);
+        const tgs4Value = window.TEUI?.parseNumeric?.(getModeAwareGlobalValue("i_39"), 0) ?? 0;
         setFieldValue("d_16", tgs4Value, "calculated");
         return;
       }
