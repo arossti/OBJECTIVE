@@ -18,9 +18,10 @@
  * - Phase 5: Consolidated defaults using getFieldDefault() ✅
  * - Phase 6: Mode-aware external dependency reading (i_39, i_41) ✅
  *
- * ✅ FIXED: Occupancy state mixing eliminated - d_12 fallback contamination pattern removed
- * Reference mode now ONLY reads ref_d_12 values for perfect state isolation.
- * Same Phase 6 fix pattern applied as S15 m_43 contamination resolution.
+ * ⚠️ PARTLY FIXED: Occupancy state mixing (d_12) 
+ * ✅ Target contamination eliminated - Target d_12 changes no longer affect Reference e_10
+ * ❌ Reference dependency broken - Reference d_12 changes do nothing (under investigation)
+ * Fixed S09 d_12 contamination patterns, strategic logging added for dependency chain tracing.
  */
 
 // Create section-specific namespace for global references
