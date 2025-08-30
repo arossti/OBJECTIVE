@@ -1020,6 +1020,9 @@ window.TEUI.SectionModules.sect02 = (function () {
       window.TEUI.sect02.userInteracted = true;
     }
 
+    // 🔍 CONTAMINATION TRACE: Log the change
+    console.log(`🔍 [S02DB] d_12 dropdown change: ${selectedValue}, mode=${ModeManager.currentMode}`);
+
     // ✅ CRITICAL FIX: Save to current state (Target or Reference) via ModeManager
     // This ensures user changes persist when toggling between modes
     ModeManager.setValue(fieldId, selectedValue, "user-modified");
