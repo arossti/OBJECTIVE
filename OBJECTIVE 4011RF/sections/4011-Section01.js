@@ -725,6 +725,9 @@ window.TEUI.SectionModules.sect01 = (function () {
       }
     }
 
+    // ✅ STRATEGIC LOGGING: Track e_10/h_10 changes during m_43 testing
+    console.log(`[S01DB] 🎯 TEUI UPDATE: e_10=${e10Formatted} (ref_j_32=${refEnergy}), h_10=${h10Formatted} (j_32=${targetEnergy})`);
+    
     updateDisplayValue("h_10", h10Formatted, calculatedTier);
     updateDisplayValue("h_8", h8Formatted);
     updateDisplayValue("h_6", h6Formatted);
