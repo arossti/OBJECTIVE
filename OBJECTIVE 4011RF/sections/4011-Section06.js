@@ -174,19 +174,15 @@ window.TEUI.SectionModules.sect06 = (function () {
     },
 
     setValue: function (fieldId, value, source = "user") {
-      // ✅ STRATEGIC LOGGING: Track state mixing issues
-      console.log(`[S06DB] setValue: field=${fieldId}, value=${value}, mode=${this.currentMode}, source=${source}`);
-      
+
       this.getCurrentState().setValue(fieldId, value, source);
 
       // ✅ CRITICAL STATE MIXING FIX: Proper dual-state publication
       if (this.currentMode === "target") {
         // Target changes to StateManager for downstream sections (unprefixed)
-        console.log(`[S06DB] Publishing Target: ${fieldId}=${value} (unprefixed)`);
         window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
       } else if (this.currentMode === "reference") {
         // ✅ MISSING: Reference changes must be published with ref_ prefix
-        console.log(`[S06DB] Publishing Reference: ref_${fieldId}=${value} (ref_ prefixed)`);
         window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "user-modified");
       }
     },
@@ -507,12 +503,12 @@ window.TEUI.SectionModules.sect06 = (function () {
 
     if (isReferenceCalculation) {
       console.log(
-        `🔵 [S06-REF] Storing ref_d_43 = ${d_43_result} (from d_44=${d_44_value}, d_45=${d_45_value}, d_46=${d_46_value}) → S15 D135/D136`,
+        `🔵 [S06-REF] Storing ref_d_43 = ${d_43_result} (from d_44=${d_44_value}, d_45=${d_45_value}, d_46=${d_46_value})`,
       );
       window.TEUI.StateManager.setValue("ref_d_43", d_43_result, "calculated");
     } else {
       console.log(
-        `🟢 [S06-TAR] Storing d_43 = ${d_43_result} (from d_44=${d_44_value}, d_45=${d_45_value}, d_46=${d_46_value}) → S15 D135/D136`,
+        `🟢 [S06-TAR] Storing d_43 = ${d_43_result} (from d_44=${d_44_value}, d_45=${d_45_value}, d_46=${d_46_value})`,
       );
       window.TEUI.StateManager.setValue("d_43", d_43_result, "calculated");
     }
@@ -640,16 +636,7 @@ window.TEUI.SectionModules.sect06 = (function () {
         field.addEventListener("blur", () => {
           const newValue = field.textContent.trim();
           
-          // ✅ STRATEGIC LOGGING: Track m_43 state mixing issue
-          if (fieldId === "m_43") {
-            console.log(`[S06DB] 🎯 m_43 blur event: value=${newValue}, mode=${ModeManager.currentMode}`);
-            console.log(`[S06DB] 🔍 BEFORE m_43 entry - checking current S01 TEUI values...`);
-            // Capture current S01 values before the change
-            const currentE10 = document.querySelector('[data-field-id="e_10"]')?.textContent || 'unknown';
-            const currentH10 = document.querySelector('[data-field-id="h_10"]')?.textContent || 'unknown';
-            console.log(`[S06DB] 🔍 BEFORE: e_10=${currentE10}, h_10=${currentH10} (UI mode=${ModeManager.currentMode})`);
-          }
-          
+
           // ✅ CLEAN: Update via ModeManager
           ModeManager.setValue(fieldId, newValue, "user-modified");
           calculateAll(); // Trigger both engines
