@@ -1322,16 +1322,17 @@ window.TEUI.SectionModules.sect02 = (function () {
     // Initialize Pattern A Dual-State Module
     ModeManager.initialize();
 
-    // Initialize event handlers
-    initializeEventHandlers();
-
     // Inject header controls for Target/Reference toggle
     injectHeaderControls();
 
     // ✅ PATTERN A: Defaults are now handled by TargetState.setDefaults() and ReferenceState.setDefaults()
     // No need to set defaults in StateManager - the dual-state architecture handles this
 
-    isSect02Initialized = true; // Set flag to allow calculations now that initialization is complete
+    isSect02Initialized = true; // ✅ RACE CONDITION FIX: Set flag BEFORE external listeners
+
+    // ✅ RACE CONDITION FIX: Initialize event handlers AFTER initialization flag is set
+    // This prevents external listeners from triggering calculateAll() before we're ready
+    initializeEventHandlers();
 
     // Run initial calculations
     calculateAll();
