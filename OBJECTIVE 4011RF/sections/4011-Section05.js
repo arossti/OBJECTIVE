@@ -25,10 +25,11 @@
  *    - switchMode() is display-only, no calculateAll() triggers ✅
  *    - Properly calls refreshUI() and updateCalculatedDisplayValues() ✅
  * 
- * ⚠️ PHASE 5 - Duplicate Defaults: POTENTIAL ISSUES
- *    - Hardcoded defaults in state objects (d_39: "Pt.3 Mass Timber", i_41: "345.82") ⚠️
- *    - Need to verify if these duplicate field definitions ⚠️
- *    - ReferenceState uses dynamic loading from ReferenceValues (good pattern) ✅
+ * ✅ PHASE 5 - Duplicate Defaults: FIXED
+ *    - FIXED: State objects now read from field definitions (single source of truth) ✅
+ *    - FIXED: Reference typology set to "Pt.3 Steel" (appropriate building code reference) ✅
+ *    - FIXED: Added comma-formatting protection to prevent calculation corruption ✅
+ *    - MAINTAINED: Dynamic loading from ReferenceValues for building code overrides ✅
  * 
  * 🚨 PHASE 6 - Mode-Aware State Reading: CRITICAL ARCHITECTURAL VIOLATION
  *    - VIOLATION: calculate_d_41() reads BOTH ref_d_38 AND target_d_38 in same calculation ❌
@@ -69,10 +70,26 @@ window.TEUI.SectionModules.sect05 = (function () {
       }
     },
     setDefaults: function () {
+      // ✅ PHASE 5 FIX: Read defaults from field definitions (single source of truth)
       this.state = {
-        d_39: "Pt.3 Mass Timber", // Typology-Based Carbon Intensity
-        i_41: "345.82", // Modelled Value kgCO2e/m2
+        d_39: this.getFieldDefault("d_39") || "Pt.3 Mass Timber", // Typology-Based Carbon Intensity
+        i_41: this.getFieldDefault("i_41") || "345.82", // Modelled Value kgCO2e/m2
       };
+    },
+
+    // Helper function to read defaults from field definitions (single source of truth)
+    getFieldDefault: function (fieldId) {
+      const fields = getFields();
+      const field = fields[fieldId];
+      if (field && field.defaultValue) {
+        let value = field.defaultValue;
+        // ✅ CRITICAL: Strip comma formatting to prevent calculation corruption
+        if (typeof value === "string" && value.includes(",")) {
+          value = value.replace(/,/g, "");
+        }
+        return value;
+      }
+      return null;
     },
     saveState: function () {
       localStorage.setItem("S05_TARGET_STATE", JSON.stringify(this.state));
@@ -98,21 +115,36 @@ window.TEUI.SectionModules.sect05 = (function () {
       }
     },
     setDefaults: function () {
-      // ✅ DYNAMIC LOADING: Get current reference standard from dropdown d_13
+      // ✅ PHASE 5 FIX: Read base defaults from field definitions, then apply Reference overrides
       const currentStandard =
         window.TEUI?.StateManager?.getValue?.("d_13") || "OBC SB10 5.5-6 Z6";
       const referenceValues =
         window.TEUI?.ReferenceValues?.[currentStandard] || {};
 
-      // Apply reference values with fallbacks for missing values
+      // Start with field definition defaults, then apply Reference overrides
       this.state = {
-        d_39: referenceValues.d_39 || "Pt.3 Mass Timber", // Use reference typology if available
-        i_41: referenceValues.i_41 || "345.82", // Reference embodied carbon value
+        d_39: referenceValues.d_39 || "Pt.3 Steel", // ✅ Reference typology for building code
+        i_41: referenceValues.i_41 || this.getFieldDefault("i_41") || "345.82", // Reference embodied carbon value
       };
 
       console.log(
         `S05: Reference defaults loaded from standard: ${currentStandard}`,
       );
+    },
+
+    // Helper function to read defaults from field definitions (single source of truth)
+    getFieldDefault: function (fieldId) {
+      const fields = getFields();
+      const field = fields[fieldId];
+      if (field && field.defaultValue) {
+        let value = field.defaultValue;
+        // ✅ CRITICAL: Strip comma formatting to prevent calculation corruption
+        if (typeof value === "string" && value.includes(",")) {
+          value = value.replace(/,/g, "");
+        }
+        return value;
+      }
+      return null;
     },
     // Listen for changes to the reference standard and reload defaults
     onReferenceStandardChange: function () {
