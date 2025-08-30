@@ -1363,10 +1363,10 @@ window.TEUI.SectionModules.sect15 = (function () {
       const getRefValue = (fieldId) => {
         const refFieldId = `ref_${fieldId}`;
         const refValue = window.TEUI?.StateManager?.getValue(refFieldId);
-        
+
         // ✅ CRITICAL CONTAMINATION FIX: No fallbacks to Target values (Phase 6 compliance)
         // Reference calculations must ONLY read ref_ prefixed values for perfect state isolation
-        const finalValue = refValue || 0;  // No fallback contamination
+        const finalValue = refValue || 0; // No fallback contamination
 
         // ✅ CRITICAL: Convert strings to numbers for math (prevents concatenation)
         return parseFloat(finalValue) || 0;
@@ -1416,7 +1416,7 @@ window.TEUI.SectionModules.sect15 = (function () {
       // ✅ Get other Reference dependencies with parseFloat conversion
       const m43 = parseFloat(getRefValue("m_43")) || 0;
       const k51 = parseFloat(getRefValue("k_51")) || 0;
-      const h70 = parseFloat(getRefValue("h_70")) || 0;  // ✅ CORRECT: Read PLE subtotal (h_70) as per Excel formula
+      const h70 = parseFloat(getRefValue("h_70")) || 0; // ✅ CORRECT: Read PLE subtotal (h_70) as per Excel formula
       const i104 = ref_i104; // Use Reference values for Reference calculations
       const m121 = ref_m121; // Use Reference values for Reference calculations
       const i80 = ref_i80; // Use Reference values for Reference calculations
@@ -1488,9 +1488,9 @@ window.TEUI.SectionModules.sect15 = (function () {
       // d_135: TEU Targeted Electricity (Reference)
       let ref_teuTargetTotal =
         m43 + k51 + h70 + d117_effective + i104 + m121 - i80;
-      
+
       // console.log(`[S15] 🔗 REF d_135 calc: ${ref_teuTargetTotal} = m43(${m43}) + k51(${k51}) + h70(${h70}) + d117(${d117_effective}) + i104(${i104}) + m121(${m121}) - i80(${i80})`);
-      
+
       setRefValueIfChanged("ref_d_135", ref_teuTargetTotal);
 
       // h_135: TEUI (Reference)
@@ -1506,10 +1506,10 @@ window.TEUI.SectionModules.sect15 = (function () {
       } else {
         ref_teuTargetedElecHPGasOil = k51 + d117_effective + m43 + h70;
       }
-      
+
       // 🔍 KEY: Log S15 Reference calculation for S04 debugging
       // console.log(`[S15] 🔗 REF d_136 calc: ${ref_teuTargetedElecHPGasOil} (heating=${primaryHeating}, h70=${h70} PLE subtotal, i80=${i80} from S10)`);
-      
+
       setRefValueIfChanged("ref_d_136", ref_teuTargetedElecHPGasOil);
 
       // h_136: TEUI (HP/Gas/Oil) (Reference)
@@ -1771,9 +1771,9 @@ window.TEUI.SectionModules.sect15 = (function () {
 
       // d_135: =M43+K51+H70+D117+I104+M121-I80
       let teuTargetTotal = m43 + k51 + h70 + d117_effective + i104 + m121 - i80;
-      
+
       // console.log(`[S15] 🔗 TAR d_135 calc: ${teuTargetTotal} = m43(${m43}) + k51(${k51}) + h70(${h70}) + d117(${d117_effective}) + i104(${i104}) + m121(${m121}) - i80(${i80})`);
-      
+
       setCalculatedValue("d_135", teuTargetTotal);
 
       // h_135: =D135/H15
@@ -1790,10 +1790,10 @@ window.TEUI.SectionModules.sect15 = (function () {
         // Gas or Oil - sum elec loads only, exclude heating demand (d114)
         teuTargetedElecHPGasOil = k51 + d117_effective + m43 + h70;
       }
-      
+
       // 🔍 KEY: Log S15 Target calculation for comparison
       // console.log(`[S15] 🔗 TAR d_136 calc: ${teuTargetedElecHPGasOil} (heating=${primaryHeating}, h70=${h70} PLE subtotal, i80=${i80} from S10)`);
-      
+
       setCalculatedValue("d_136", teuTargetedElecHPGasOil);
 
       // h_136: =D136/H15
@@ -2065,91 +2065,138 @@ window.TEUI.SectionModules.sect15 = (function () {
     // Ordered alphabetically for easy scanning and maintenance
     const dependencies = [
       // Building Status (Independent Models: different project status)
-      "d_14", "ref_d_14", // Building completion status
-      
+      "d_14",
+      "ref_d_14", // Building completion status
+
       // Location Data (Independent Models: different locations)
-      "d_19", "ref_d_19", // Province (affects emission factors)
-      
+      "d_19",
+      "ref_d_19", // Province (affects emission factors)
+
       // Climate Data (Independent Models: different climates)
-      "d_23", "ref_d_23", // Heating design temperature
-      "d_24", "ref_d_24", // Cooling design temperature
-      
+      "d_23",
+      "ref_d_23", // Heating design temperature
+      "d_24",
+      "ref_d_24", // Cooling design temperature
+
       // Utility Consumption (Independent Models: different actual usage)
-      "d_28", "ref_d_28", // Gas consumption
-      "d_29", "ref_d_29", // Propane consumption  
-      "d_30", "ref_d_30", // Oil consumption
-      "d_31", "ref_d_31", // Wood consumption
-      
+      "d_28",
+      "ref_d_28", // Gas consumption
+      "d_29",
+      "ref_d_29", // Propane consumption
+      "d_30",
+      "ref_d_30", // Oil consumption
+      "d_31",
+      "ref_d_31", // Wood consumption
+
       // Internal Gains (Independent Models: different occupancy patterns)
-      "d_65", "ref_d_65", // Occupant density
-      "d_66", "ref_d_66", // Plug load density
-      "d_67", "ref_d_67", // Lighting density
-      
+      "d_65",
+      "ref_d_65", // Occupant density
+      "d_66",
+      "ref_d_66", // Plug load density
+      "d_67",
+      "ref_d_67", // Lighting density
+
       // S12 Building Envelope (Independent Models: different building performance)
-      "d_101", "ref_d_101", // Area air
-      "d_102", "ref_d_102", // Area ground
-      "d_113", "ref_d_113", // Primary heating system
-      "d_114", "ref_d_114", // Heating demand
-      "d_117", "ref_d_117", // S07 Cooling load
-      "d_122", "ref_d_122", // Additional gains
-      "d_142", "ref_d_142", // Cost premium
-      
+      "d_101",
+      "ref_d_101", // Area air
+      "d_102",
+      "ref_d_102", // Area ground
+      "d_113",
+      "ref_d_113", // Primary heating system
+      "d_114",
+      "ref_d_114", // Heating demand
+      "d_117",
+      "ref_d_117", // S07 Cooling load
+      "d_122",
+      "ref_d_122", // Additional gains
+      "d_142",
+      "ref_d_142", // Cost premium
+
       // S01 Dashboard Values (Independent Models: different TEUI targets)
-      "e_10", "ref_e_10", // Reference TEUI
-      "h_10", "ref_h_10", // Target TEUI  
-      "k_10", "ref_k_10", // TEUI tier
-      
+      "e_10",
+      "ref_e_10", // Reference TEUI
+      "h_10",
+      "ref_h_10", // Target TEUI
+      "k_10",
+      "ref_k_10", // TEUI tier
+
       // Building Geometry (Independent Models: different building sizes)
-      "h_12", "ref_h_12", // Reporting year (affects emission factors)
-      "h_15", "ref_h_15", // Conditioned area
-      "h_23", "ref_h_23", // Heating design temperature
-      "h_24", "ref_h_24", // Cooling design temperature
-      "h_70", "ref_h_70", // S09 PLE (Plug+Light+Equipment) subtotal
-      "h_124", "ref_h_124", // Occupant losses
-      
+      "h_12",
+      "ref_h_12", // Reporting year (affects emission factors)
+      "h_15",
+      "ref_h_15", // Conditioned area
+      "h_23",
+      "ref_h_23", // Heating design temperature
+      "h_24",
+      "ref_h_24", // Cooling design temperature
+      "h_70",
+      "ref_h_70", // S09 PLE (Plug+Light+Equipment) subtotal
+      "h_124",
+      "ref_h_124", // Occupant losses
+
       // S12 Building Envelope U-values (Independent Models: different envelope performance)
-      "g_101", "ref_g_101", // U-value air
-      "g_102", "ref_g_102", // U-value ground
-      "g_104", "ref_g_104", // Weighted U-value
-      
+      "g_101",
+      "ref_g_101", // U-value air
+      "g_102",
+      "ref_g_102", // U-value ground
+      "g_104",
+      "ref_g_104", // Weighted U-value
+
       // S10 Radiant Gains (Independent Models: different window/solar performance)
-      "i_80", "ref_i_80", // Utilization factors (CRITICAL for d_135 calculation)
-      "i_98", "ref_i_98", // S11 Total envelope loss
-      "i_104", "ref_i_104", // S12 Total envelope loss
-      
+      "i_80",
+      "ref_i_80", // Utilization factors (CRITICAL for d_135 calculation)
+      "i_98",
+      "ref_i_98", // S11 Total envelope loss
+      "i_104",
+      "ref_i_104", // S12 Total envelope loss
+
       // Climate Zone (Independent Models: different climate zones)
-      "j_19", "ref_j_19", // Climate zone
-      
+      "j_19",
+      "ref_j_19", // Climate zone
+
       // Energy Subtotals (Independent Models: different energy performance)
-      "k_32", "ref_k_32", // S04 Energy subtotals (fix: was "reference_k_32")
-      "k_51", "ref_k_51", // S07 DHW electrical demand
-      "k_64", "ref_k_64", // Occupant gains
-      "k_79", "ref_k_79", // Solar gains
-      "k_98", "ref_k_98", // S11 Total envelope gain
-      
+      "k_32",
+      "ref_k_32", // S04 Energy subtotals (fix: was "reference_k_32")
+      "k_51",
+      "ref_k_51", // S07 DHW electrical demand
+      "k_64",
+      "ref_k_64", // Occupant gains
+      "k_79",
+      "ref_k_79", // Solar gains
+      "k_98",
+      "ref_k_98", // S11 Total envelope gain
+
       // Energy Prices (Independent Models: different utility rates/locations)
-      "l_12", "ref_l_12", // Electricity price
-      "l_13", "ref_l_13", // Gas price
-      "l_14", "ref_l_14", // Propane price
-      "l_15", "ref_l_15", // Wood price
-      "l_16", "ref_l_16", // Oil price
-      
+      "l_12",
+      "ref_l_12", // Electricity price
+      "l_13",
+      "ref_l_13", // Gas price
+      "l_14",
+      "ref_l_14", // Propane price
+      "l_15",
+      "ref_l_15", // Wood price
+      "l_16",
+      "ref_l_16", // Oil price
+
       // Utility Billing (Independent Models: different billing periods)
-      "m_19", "ref_m_19", // Billing period
-      "m_43", "ref_m_43", // S06 Onsite renewable subtotal
-      "m_121", "ref_m_121", // S13 Ventilation load
+      "m_19",
+      "ref_m_19", // Billing period
+      "m_43",
+      "ref_m_43", // S06 Onsite renewable subtotal
+      "m_121",
+      "ref_m_121", // S13 Ventilation load
     ];
 
     const uniqueDependencies = [...new Set(dependencies)];
 
-    // ✅ FIXED: Add listeners correctly for mixed prefixed/unprefixed dependencies  
+    // ✅ FIXED: Add listeners correctly for mixed prefixed/unprefixed dependencies
     // console.log(`[S15DEBUG] Setting up ${uniqueDependencies.length} dependencies:`, uniqueDependencies);
     uniqueDependencies.forEach((dep) => {
       addCalculationListener(dep); // Add listener for the dependency as-is
       // console.log(`[S15DEBUG] Added listener for: ${dep}`);
-      
+
       // Only add ref_ prefix if dependency doesn't already have it
-      if (!dep.startsWith('ref_')) {
+      if (!dep.startsWith("ref_")) {
         addCalculationListener(`ref_${dep}`); // Add ref_ prefixed version for Target deps
         // console.log(`[S15DEBUG] Added listener for: ref_${dep}`);
       }

@@ -4,45 +4,45 @@
  *
  * DUAL-STATE-CHEATSHEET AUDIT STATUS (December 2024):
  * ================================================================================
- * 
+ *
  * 🏆 COMPLIANCE SUMMARY: ✅ 100% DUAL-STATE-CHEATSHEET COMPLIANT
- * 
+ *
  * ✅ PHASE 1 - Pattern B Contamination: FIXED
  *    - FIXED: Eliminated target_d_38 variable usage - no more Pattern B contamination ✅
  *    - FIXED: Proper mode-aware state reading implemented throughout ✅
  *    - FIXED: Clean Pattern A implementation - no hybrid patterns ✅
- * 
- * ✅ PHASE 2 - ComponentBridge Contamination: CLEAN  
+ *
+ * ✅ PHASE 2 - ComponentBridge Contamination: CLEAN
  *    - No ComponentBridge usage found ✅
  *    - Clean post-retirement architecture ✅
- * 
+ *
  * ✅ PHASE 3 - DOM Update Pattern: FIXED
  *    - switchMode() is display-only ✅
  *    - All calculateAll() calls properly paired with updateCalculatedDisplayValues() ✅
  *    - FIXED: Added missing updateCalculatedDisplayValues() call in ReferenceState.onReferenceStandardChange() ✅
- * 
+ *
  * ✅ PHASE 4 - switchMode Anti-pattern: CLEAN
  *    - switchMode() is display-only, no calculateAll() triggers ✅
  *    - Properly calls refreshUI() and updateCalculatedDisplayValues() ✅
- * 
+ *
  * ✅ PHASE 5 - Duplicate Defaults: FIXED
  *    - FIXED: State objects now read from field definitions (single source of truth) ✅
  *    - FIXED: Reference typology set to "Pt.3 Steel" (appropriate building code reference) ✅
  *    - FIXED: Added comma-formatting protection to prevent calculation corruption ✅
  *    - MAINTAINED: Dynamic loading from ReferenceValues for building code overrides ✅
- * 
+ *
  * ✅ PHASE 6 - Mode-Aware State Reading: FIXED
  *    - FIXED: calculate_d_41() now has separate calculations for Target and Reference modes ✅
  *    - FIXED: Perfect state isolation - no cross-state reading in calculations ✅
  *    - FIXED: Reference mode uses ref_ values only, Target mode uses unprefixed values ✅
  *    - FIXED: Eliminated the exact cross-state contamination that caused state mixing ✅
- * 
+ *
  * 🏆 ALL CRITICAL FIXES COMPLETED:
  * 1. ✅ FIXED: Pattern B contamination eliminated - perfect state isolation achieved
- * 2. ✅ FIXED: Cross-state reading eliminated in calculate_d_41() - perfect state isolation  
+ * 2. ✅ FIXED: Cross-state reading eliminated in calculate_d_41() - perfect state isolation
  * 3. ✅ FIXED: DOM update pattern complete - all calculateAll() calls properly paired
  * 4. ✅ FIXED: Duplicate defaults eliminated - field definitions as single source of truth
- * 
+ *
  * 🏆 ARCHITECTURAL IMPACT: EXCELLENT - S05 now matches S04 production-ready compliance level
  * ================================================================================
  */
@@ -836,27 +836,27 @@ window.TEUI.SectionModules.sect05 = (function () {
    */
   function calculate_d_41(isReferenceCalculation = false) {
     let d_41_result;
-    
+
     if (isReferenceCalculation) {
       // ✅ REFERENCE MODE: Compare Reference operational vs Reference baseline
       const ref_d_38 = window.TEUI.StateManager.getValue("ref_d_38") || 0;
       const ref_baseline = window.TEUI.StateManager.getValue("ref_d_38") || 0; // Reference baseline (could be from different standard)
       const ref_h_13 = getGlobalNumericValue("ref_h_13") || 50;
-      
+
       // For Reference mode: typically shows avoided emissions vs building code baseline
       // Note: This may need refinement based on regulatory requirements
       d_41_result = (ref_baseline - ref_d_38) * ref_h_13;
-      
+
       window.TEUI.StateManager.setValue("ref_d_41", d_41_result, "calculated");
     } else {
       // ✅ TARGET MODE: Compare Target operational vs Reference baseline (standard pattern)
       const target_d_38 = window.TEUI.StateManager.getValue("d_38") || 0;
       const ref_d_38 = window.TEUI.StateManager.getValue("ref_d_38") || 0;
       const target_h_13 = getGlobalNumericValue("h_13") || 50;
-      
+
       // Standard avoided emissions: Reference baseline minus Target performance
       d_41_result = (ref_d_38 - target_d_38) * target_h_13;
-      
+
       window.TEUI.StateManager.setValue("d_41", d_41_result, "calculated");
     }
   }

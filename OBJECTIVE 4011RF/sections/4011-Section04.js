@@ -4,45 +4,45 @@
  *
  * DUAL-STATE-CHEATSHEET AUDIT STATUS (December 2024):
  * ================================================================================
- * 
+ *
  * 🏆 COMPLIANCE SUMMARY: ✅ 100% DUAL-STATE-CHEATSHEET COMPLIANT
- * 
+ *
  * ✅ PHASE 1 - Pattern B Contamination: CLEAN
  *    - No target_ prefixes found ✅
  *    - Extensive ref_ prefix usage indicates good dual-state foundation ✅
- * 
- * ✅ PHASE 2 - ComponentBridge Contamination: CLEAN  
+ *
+ * ✅ PHASE 2 - ComponentBridge Contamination: CLEAN
  *    - No ComponentBridge usage found ✅
  *    - Clean post-retirement architecture ✅
- * 
+ *
  * ✅ PHASE 3 - DOM Update Pattern: FIXED
  *    - switchMode() is display-only ✅
  *    - refreshUI() properly calls updateCalculatedDisplayValues() ✅
  *    - FIXED: Added missing updateCalculatedDisplayValues() calls to 11+ calculateAll() instances ✅
  *    - All external dependency listeners now properly update DOM after calculations ✅
- * 
+ *
  * ✅ PHASE 4 - switchMode Anti-pattern: CLEAN
  *    - switchMode() is display-only, no calculateAll() triggers ✅
  *    - Properly calls refreshUI() → updateCalculatedDisplayValues() ✅
- * 
+ *
  * ✅ PHASE 5 - Duplicate Defaults: FIXED
  *    - FIXED: Removed 50+ duplicate defaults from state objects ✅
  *    - FIXED: State objects now contain only 6 user input defaults (D27-D31, H35) ✅
  *    - FIXED: All calculated values come from calculation functions, not defaults ✅
  *    - FIXED: Field definitions are now single source of truth with comma-formatting protection ✅
- * 
+ *
  * ✅ PHASE 6 - Mode-Aware State Reading: FIXED
  *    - FIXED: Eliminated ALL fallback contamination patterns ✅
  *    - FIXED: Implemented strict mode-aware external dependency reading ✅
  *    - FIXED: Reference mode only reads ref_ values, Target mode only reads unprefixed values ✅
  *    - FIXED: Perfect state isolation achieved - no cross-mode contamination ✅
- * 
+ *
  * 🏆 ALL PRIORITY FIXES COMPLETED:
  * 1. ✅ FIXED: Remove duplicate defaults (Phase 5) - data corruption risk eliminated
- * 2. ✅ FIXED: Add missing updateCalculatedDisplayValues() calls (Phase 3) - DOM updates working  
+ * 2. ✅ FIXED: Add missing updateCalculatedDisplayValues() calls (Phase 3) - DOM updates working
  * 3. ✅ FIXED: Eliminate fallback contamination patterns (Phase 6) - state isolation achieved
  * 4. ✅ FIXED: Implement proper mode-aware external dependency reading - perfect compliance
- * 
+ *
  * EXCEL METHODOLOGY (FORMULAE-3039.csv rows 26-36):
  * - Consumer section that reads calculated values from upstream sections (S15, etc.)
  * - User inputs for actual utility bill data (D27:D31) - mostly state agnostic
@@ -164,10 +164,10 @@ window.TEUI.SectionModules.sect04 = (function () {
         d_29: this.getFieldDefault("d_29") || "0", // Propane L/yr
         d_30: this.getFieldDefault("d_30") || "0", // Oil L/yr
         d_31: this.getFieldDefault("d_31") || "0", // Wood m3/yr
-        
+
         // Only other user-editable field
         h_35: this.getFieldDefault("h_35") || "1.0", // PER Factor
-        
+
         // ✅ ALL CALCULATED VALUES REMOVED - they come from calculation functions, not defaults!
         // This eliminates 50+ duplicate defaults that were causing data corruption risk
       };
@@ -252,14 +252,16 @@ window.TEUI.SectionModules.sect04 = (function () {
         d_29: this.getFieldDefault("d_29") || "0", // Propane L/yr
         d_30: this.getFieldDefault("d_30") || "0", // Oil L/yr
         d_31: this.getFieldDefault("d_31") || "0", // Wood m3/yr
-        
+
         // Only other user-editable field
         h_35: this.getFieldDefault("h_35") || "1.0", // PER Factor
-        
+
         // ✅ ALL CALCULATED VALUES REMOVED - Reference calculations produce different values
         // but they come from calculation functions, not defaults!
       };
-      console.log("S04: ReferenceState minimal defaults set (user inputs only)");
+      console.log(
+        "S04: ReferenceState minimal defaults set (user inputs only)",
+      );
     },
 
     // Helper function to read defaults from field definitions (single source of truth)
@@ -1022,9 +1024,10 @@ window.TEUI.SectionModules.sect04 = (function () {
     const j_32 = ModeManager.getValue("j_32") || 0; // Target energy total
     const h_33 = ModeManager.getValue("h_33") || 0; // Target GJ
     // ✅ PHASE 6 FIX: Occupancy from S09 - use mode-aware reading
-    const d_63 = ModeManager.currentMode === "reference"
-      ? getGlobalNumericValue("ref_d_63") || 1  // Reference mode: only ref_ values
-      : getGlobalNumericValue("d_63") || 1;     // Target mode: only unprefixed values
+    const d_63 =
+      ModeManager.currentMode === "reference"
+        ? getGlobalNumericValue("ref_d_63") || 1 // Reference mode: only ref_ values
+        : getGlobalNumericValue("d_63") || 1; // Target mode: only unprefixed values
 
     const d_34 = f_32 / d_63; // Actual energy per person
     const f_34 = d_33 / d_63; // Actual GJ per person
@@ -1043,16 +1046,18 @@ window.TEUI.SectionModules.sect04 = (function () {
    */
   function calculateRow35() {
     // ✅ PHASE 6 FIX: Building status from S02 - use mode-aware reading
-    const d_14 = ModeManager.currentMode === "reference"
-      ? getGlobalNumericValue("ref_d_14") || "Utility Bills"  // Reference mode: only ref_ values
-      : getGlobalNumericValue("d_14") || "Utility Bills";     // Target mode: only unprefixed values
+    const d_14 =
+      ModeManager.currentMode === "reference"
+        ? getGlobalNumericValue("ref_d_14") || "Utility Bills" // Reference mode: only ref_ values
+        : getGlobalNumericValue("d_14") || "Utility Bills"; // Target mode: only unprefixed values
     const j_27 = ModeManager.getValue("j_27") || 0;
     const f_27 = ModeManager.getValue("f_27") || 0;
     const h_35 = ModeManager.getValue("h_35") || 1.0; // PER Factor
     // ✅ PHASE 6 FIX: Conditioned area from S02 - use mode-aware reading
-    const h_15 = ModeManager.currentMode === "reference"
-      ? getGlobalNumericValue("ref_h_15") || 1  // Reference mode: only ref_ values
-      : getGlobalNumericValue("h_15") || 1;     // Target mode: only unprefixed values
+    const h_15 =
+      ModeManager.currentMode === "reference"
+        ? getGlobalNumericValue("ref_h_15") || 1 // Reference mode: only ref_ values
+        : getGlobalNumericValue("h_15") || 1; // Target mode: only unprefixed values
 
     // d_35: Primary Energy - conditional based on building status
     const d_35 = d_14 === "Targeted Use" ? j_27 * h_35 : f_27 * h_35;
@@ -1184,9 +1189,9 @@ window.TEUI.SectionModules.sect04 = (function () {
       // Target mode: read from S15's Target calculations
       result = window.TEUI.StateManager?.getValue("d_136") || 0;
     }
-    
+
     // console.log(`[S04] 🔗 H27 calc: ${result} from S15 d_136 [mode=${ModeManager.currentMode}]`);
-    
+
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
     setCalculatedValue("h_27", result);
     return result;
@@ -1205,11 +1210,15 @@ window.TEUI.SectionModules.sect04 = (function () {
 
     if (ModeManager.currentMode === "reference") {
       // ✅ PHASE 6 FIX: Strict Reference mode - only read ref_ values from S07/S13
-      spaceHeatingFuel = window.TEUI?.StateManager?.getValue("ref_d_113") || "Heatpump";
-      waterHeatingFuel = window.TEUI?.StateManager?.getValue("ref_d_51") || "Electricity";
+      spaceHeatingFuel =
+        window.TEUI?.StateManager?.getValue("ref_d_113") || "Heatpump";
+      waterHeatingFuel =
+        window.TEUI?.StateManager?.getValue("ref_d_51") || "Electricity";
     } else {
-      spaceHeatingFuel = window.TEUI?.StateManager?.getValue("d_113") || "Heatpump";
-      waterHeatingFuel = window.TEUI?.StateManager?.getValue("d_51") || "Electricity";
+      spaceHeatingFuel =
+        window.TEUI?.StateManager?.getValue("d_113") || "Heatpump";
+      waterHeatingFuel =
+        window.TEUI?.StateManager?.getValue("d_51") || "Electricity";
     }
 
     // Read gas volumes based on current mode
@@ -1275,11 +1284,15 @@ window.TEUI.SectionModules.sect04 = (function () {
 
     if (ModeManager.currentMode === "reference") {
       // ✅ PHASE 6 FIX: Strict Reference mode - only read ref_ values from S07/S13
-      spaceHeatingFuel = window.TEUI?.StateManager?.getValue("ref_d_113") || "Heatpump";
-      waterHeatingFuel = window.TEUI?.StateManager?.getValue("ref_d_51") || "Electricity";
+      spaceHeatingFuel =
+        window.TEUI?.StateManager?.getValue("ref_d_113") || "Heatpump";
+      waterHeatingFuel =
+        window.TEUI?.StateManager?.getValue("ref_d_51") || "Electricity";
     } else {
-      spaceHeatingFuel = window.TEUI?.StateManager?.getValue("d_113") || "Heatpump";
-      waterHeatingFuel = window.TEUI?.StateManager?.getValue("d_51") || "Electricity";
+      spaceHeatingFuel =
+        window.TEUI?.StateManager?.getValue("d_113") || "Heatpump";
+      waterHeatingFuel =
+        window.TEUI?.StateManager?.getValue("d_51") || "Electricity";
     }
 
     // Read oil volumes based on current mode
@@ -1336,18 +1349,21 @@ window.TEUI.SectionModules.sect04 = (function () {
   // J-column calculations (target energy to ekWh)
   function calculateJ27() {
     // 🔧 FIX: Use mode-aware access to prevent stale values
-    const h_27 = ModeManager.currentMode === "reference" 
-      ? getGlobalNumericValue("ref_h_27") || 0
-      : window.TEUI.StateManager?.getValue("h_27") || 0;
+    const h_27 =
+      ModeManager.currentMode === "reference"
+        ? getGlobalNumericValue("ref_h_27") || 0
+        : window.TEUI.StateManager?.getValue("h_27") || 0;
 
     // ✅ EXCEL FORMULA PRESERVED: J27 = H27 - D43 - I43 (Target electricity minus renewables)
     // ✅ PHASE 6 FIX: Strict mode-aware reading for S06 renewable subtotals
-    const d_43 = ModeManager.currentMode === "reference" 
-      ? getGlobalNumericValue("ref_d_43") || 0  // Reference mode: only ref_ values
-      : getGlobalNumericValue("d_43") || 0;     // Target mode: only unprefixed values
-    const i_43 = ModeManager.currentMode === "reference"
-      ? getGlobalNumericValue("ref_i_43") || 0  // Reference mode: only ref_ values  
-      : getGlobalNumericValue("i_43") || 0;     // Target mode: only unprefixed values
+    const d_43 =
+      ModeManager.currentMode === "reference"
+        ? getGlobalNumericValue("ref_d_43") || 0 // Reference mode: only ref_ values
+        : getGlobalNumericValue("d_43") || 0; // Target mode: only unprefixed values
+    const i_43 =
+      ModeManager.currentMode === "reference"
+        ? getGlobalNumericValue("ref_i_43") || 0 // Reference mode: only ref_ values
+        : getGlobalNumericValue("i_43") || 0; // Target mode: only unprefixed values
 
     const result = h_27 - d_43 - i_43; // NET target electricity consumption after renewable offsets
 
@@ -1484,9 +1500,9 @@ window.TEUI.SectionModules.sect04 = (function () {
     const j_30 = ModeManager.getValue("j_30") || 0;
     const j_31 = ModeManager.getValue("j_31") || 0;
     const result = j_27 + j_28 + j_29 + j_30 + j_31;
-    
+
     // console.log(`[S04] 🔗 J32 calc: ${result} = j_27(${j_27}) + j_28(${j_28}) + j_29(${j_29}) + j_30(${j_30}) + j_31(${j_31}) [mode=${ModeManager.currentMode}]`);
-    
+
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
     setCalculatedValue("j_32", result);
     return result;
@@ -2316,7 +2332,6 @@ window.TEUI.SectionModules.sect04 = (function () {
   }
 
   function setupEventHandlers() {
-    
     // ✅ FIX: Use BACKUP's proven approach for comprehensive field handling
     const sectionElement = document.getElementById("actualTargetEnergy");
     if (!sectionElement) {
@@ -2463,7 +2478,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         // ✅ CRITICAL FIX: Update DOM after calculations (DUAL-STATE-CHEATSHEET Phase 3)
         ModeManager.updateCalculatedDisplayValues();
       });
-      
+
       // ✅ DUAL-ENGINE: React to Reference conditioned area changes
       window.TEUI.StateManager.addListener("ref_h_15", () => {
         console.log(`[S04] Conditioned area changed (Reference): ref_h_15`);
@@ -2479,7 +2494,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         // ✅ CRITICAL FIX: Update DOM after calculations (DUAL-STATE-CHEATSHEET Phase 3)
         ModeManager.updateCalculatedDisplayValues();
       });
-      
+
       // ✅ DUAL-ENGINE: React to Reference occupancy changes
       window.TEUI.StateManager.addListener("ref_d_63", () => {
         console.log(`[S04] Occupancy changed (Reference): ref_d_63`);
@@ -2495,7 +2510,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         // ✅ CRITICAL FIX: Update DOM after calculations (DUAL-STATE-CHEATSHEET Phase 3)
         ModeManager.updateCalculatedDisplayValues();
       });
-      
+
       // ✅ DUAL-ENGINE: React to Reference building status changes
       window.TEUI.StateManager.addListener("ref_d_14", () => {
         console.log(`[S04] Building status changed (Reference): ref_d_14`);
@@ -2513,7 +2528,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         // Update display values
         ModeManager.updateCalculatedDisplayValues();
       });
-      
+
       // ✅ DUAL-ENGINE: React to Reference S08 forestry offset changes
       window.TEUI.StateManager.addListener("ref_d_60", () => {
         console.log(`[S04] S08 forestry offset changed (Reference): ref_d_60`);
@@ -2582,7 +2597,6 @@ window.TEUI.SectionModules.sect04 = (function () {
         calculateK32(); // Recalculate TARGET emissions subtotal
         ModeManager.updateCalculatedDisplayValues();
       });
-
 
       // ✅ CRITICAL: React to S06 renewable energy changes (affects F27, J27, and subtotals)
       // Excel formulas: F27 = D27 - D43 - I43, J27 = H27 - D43 - I43
@@ -2655,21 +2669,27 @@ window.TEUI.SectionModules.sect04 = (function () {
         ModeManager.updateCalculatedDisplayValues();
       });
 
-      // ✅ CRITICAL: React to S09 Reference mode internal gains changes  
+      // ✅ CRITICAL: React to S09 Reference mode internal gains changes
       window.TEUI.StateManager.addListener("ref_h_71", () => {
-        console.log(`[S04] S09 total internal gains changed (Reference): ref_h_71`);
+        console.log(
+          `[S04] S09 total internal gains changed (Reference): ref_h_71`,
+        );
         calculateReferenceModel();
         ModeManager.updateCalculatedDisplayValues();
       });
 
       window.TEUI.StateManager.addListener("ref_i_71", () => {
-        console.log(`[S04] S09 heating internal gains changed (Reference): ref_i_71`);
+        console.log(
+          `[S04] S09 heating internal gains changed (Reference): ref_i_71`,
+        );
         calculateReferenceModel();
         ModeManager.updateCalculatedDisplayValues();
       });
 
       window.TEUI.StateManager.addListener("ref_k_71", () => {
-        console.log(`[S04] S09 cooling internal gains changed (Reference): ref_k_71`);
+        console.log(
+          `[S04] S09 cooling internal gains changed (Reference): ref_k_71`,
+        );
         calculateReferenceModel();
         ModeManager.updateCalculatedDisplayValues();
       });
@@ -2729,7 +2749,6 @@ window.TEUI.SectionModules.sect04 = (function () {
 
     // Event setup - Pattern A initialization
     onSectionRendered: function () {
-
       // Initialize Pattern A dual-state architecture
       ModeManager.initialize();
 
@@ -2743,7 +2762,6 @@ window.TEUI.SectionModules.sect04 = (function () {
       calculateAll();
       // ✅ CRITICAL FIX: Update DOM after initial calculations (DUAL-STATE-CHEATSHEET Phase 3)
       ModeManager.updateCalculatedDisplayValues();
-
     },
 
     // Expose ModeManager for global toggle integration

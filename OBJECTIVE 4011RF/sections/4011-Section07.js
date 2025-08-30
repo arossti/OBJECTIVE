@@ -22,19 +22,25 @@ window.TEUI.SectionModules.sect07 = (function () {
     setValue: function (fieldId, value) {
       this.values[fieldId] = value;
     },
-    
+
     // ✅ DUAL-STATE-CHEATSHEET.md COMPLIANCE: Initialize from FieldDefinitions (single source of truth)
     setDefaults: function () {
-      console.log(`🔧 [S07] TargetState.setDefaults: Initializing from FieldDefinitions`);
+      console.log(
+        `🔧 [S07] TargetState.setDefaults: Initializing from FieldDefinitions`,
+      );
       this.values.d_49 = ModeManager.getFieldDefault("d_49") || "User Defined";
       this.values.d_51 = ModeManager.getFieldDefault("d_51") || "Heatpump";
-      console.log(`✅ [S07] TargetState.setDefaults: d_49="${this.values.d_49}", d_51="${this.values.d_51}"`);
-      
+      console.log(
+        `✅ [S07] TargetState.setDefaults: d_49="${this.values.d_49}", d_51="${this.values.d_51}"`,
+      );
+
       // ✅ CRITICAL: Publish defaults to StateManager for cross-section communication
       if (window.TEUI?.StateManager) {
         window.TEUI.StateManager.setValue("d_49", this.values.d_49, "default");
         window.TEUI.StateManager.setValue("d_51", this.values.d_51, "default");
-        console.log(`🌐 [S07] TargetState.setDefaults: Published to StateManager`);
+        console.log(
+          `🌐 [S07] TargetState.setDefaults: Published to StateManager`,
+        );
       }
     },
     getNumericValue: function (fieldId, defaultValue = 0) {
@@ -55,19 +61,33 @@ window.TEUI.SectionModules.sect07 = (function () {
     setValue: function (fieldId, value) {
       this.values[fieldId] = value;
     },
-    
+
     // ✅ DUAL-STATE-CHEATSHEET.md COMPLIANCE: Initialize from FieldDefinitions (single source of truth)
     setDefaults: function () {
-      console.log(`🔧 [S07] ReferenceState.setDefaults: Initializing from FieldDefinitions`);
+      console.log(
+        `🔧 [S07] ReferenceState.setDefaults: Initializing from FieldDefinitions`,
+      );
       this.values.d_49 = ModeManager.getFieldDefault("d_49") || "User Defined";
       this.values.d_51 = ModeManager.getFieldDefault("d_51") || "Heatpump";
-      console.log(`✅ [S07] ReferenceState.setDefaults: d_49="${this.values.d_49}", d_51="${this.values.d_51}"`);
-      
+      console.log(
+        `✅ [S07] ReferenceState.setDefaults: d_49="${this.values.d_49}", d_51="${this.values.d_51}"`,
+      );
+
       // ✅ CRITICAL: Publish Reference defaults to StateManager with ref_ prefix
       if (window.TEUI?.StateManager) {
-        window.TEUI.StateManager.setValue("ref_d_49", this.values.d_49, "default");
-        window.TEUI.StateManager.setValue("ref_d_51", this.values.d_51, "default");
-        console.log(`🔗 [S07] ReferenceState.setDefaults: Published to StateManager with ref_ prefix`);
+        window.TEUI.StateManager.setValue(
+          "ref_d_49",
+          this.values.d_49,
+          "default",
+        );
+        window.TEUI.StateManager.setValue(
+          "ref_d_51",
+          this.values.d_51,
+          "default",
+        );
+        console.log(
+          `🔗 [S07] ReferenceState.setDefaults: Published to StateManager with ref_ prefix`,
+        );
       }
     },
     getNumericValue: function (fieldId, defaultValue = 0) {
@@ -295,7 +315,7 @@ window.TEUI.SectionModules.sect07 = (function () {
         );
         window.TEUI?.StateManager?.setValue(fieldId, value, source);
       }
-      
+
       // ✅ CRITICAL BRIDGE: Sync Reference changes to StateManager with ref_ prefix (S02 pattern)
       if (this.currentMode === "reference" && window.TEUI?.StateManager) {
         console.log(
@@ -594,8 +614,6 @@ window.TEUI.SectionModules.sect07 = (function () {
     }
   }
 
-
-
   function getFieldFormat(fieldId) {
     const formatMap = {
       h_49: "number-2dp",
@@ -636,10 +654,14 @@ window.TEUI.SectionModules.sect07 = (function () {
       if (refValue !== null && refValue !== undefined) {
         occupants = parseFloat(refValue) || 0;
       } else if (targetFallback !== null && targetFallback !== undefined) {
-        console.warn(`[S07] 🚨 FALLBACK USED: ref_d_63 missing, using d_63="${targetFallback}" for Reference calculation`);
+        console.warn(
+          `[S07] 🚨 FALLBACK USED: ref_d_63 missing, using d_63="${targetFallback}" for Reference calculation`,
+        );
         occupants = parseFloat(targetFallback) || 0;
       } else {
-        console.warn(`[S07] 🚨 FALLBACK USED: Both ref_d_63 and d_63 missing, using default 0`);
+        console.warn(
+          `[S07] 🚨 FALLBACK USED: Both ref_d_63 and d_63 missing, using default 0`,
+        );
         occupants = 0;
       }
     } else {
@@ -727,10 +749,14 @@ window.TEUI.SectionModules.sect07 = (function () {
       if (refValue) {
         systemType = refValue;
       } else if (targetFallback) {
-        console.warn(`[S07] 🚨 FALLBACK USED: ref_d_51 missing, using d_51="${targetFallback}" for Reference calculation`);
+        console.warn(
+          `[S07] 🚨 FALLBACK USED: ref_d_51 missing, using d_51="${targetFallback}" for Reference calculation`,
+        );
         systemType = targetFallback;
       } else {
-        console.warn(`[S07] 🚨 FALLBACK USED: Both ref_d_51 and d_51 missing, using default "Heatpump"`);
+        console.warn(
+          `[S07] 🚨 FALLBACK USED: Both ref_d_51 and d_51 missing, using default "Heatpump"`,
+        );
         systemType = "Heatpump";
       }
     } else {
@@ -779,17 +805,23 @@ window.TEUI.SectionModules.sect07 = (function () {
       if (refValue) {
         systemType = refValue;
       } else if (targetFallback) {
-        console.warn(`[S07] 🚨 FALLBACK USED: ref_d_51 missing, using d_51="${targetFallback}" for Reference calculation`);
+        console.warn(
+          `[S07] 🚨 FALLBACK USED: ref_d_51 missing, using d_51="${targetFallback}" for Reference calculation`,
+        );
         systemType = targetFallback;
       } else {
-        console.warn(`[S07] 🚨 FALLBACK USED: Both ref_d_51 and d_51 missing, using default "Heatpump"`);
+        console.warn(
+          `[S07] 🚨 FALLBACK USED: Both ref_d_51 and d_51 missing, using default "Heatpump"`,
+        );
         systemType = "Heatpump";
       }
     } else {
       systemType = window.TEUI?.StateManager?.getValue("d_51") || "Heatpump";
     }
-    
-    console.log(`[S07] calculateEmissionsAndLosses: systemType="${systemType}" (${isReferenceCalculation ? 'REF' : 'TGT'})`);
+
+    console.log(
+      `[S07] calculateEmissionsAndLosses: systemType="${systemType}" (${isReferenceCalculation ? "REF" : "TGT"})`,
+    );
     const netDemandAfterRecovery = getSectionNumericValue(
       "j_52",
       0,
@@ -811,16 +843,22 @@ window.TEUI.SectionModules.sect07 = (function () {
       const conversionFactor = 10.3321;
       gasVolume =
         afue > 0 ? netDemandAfterRecovery / (conversionFactor * afue) : 0;
-      console.log(`[S07] 🔥 Gas calc: demand=${netDemandAfterRecovery}, afue=${afue} → e_51=${gasVolume}, k_54=0 (cleared)`);
+      console.log(
+        `[S07] 🔥 Gas calc: demand=${netDemandAfterRecovery}, afue=${afue} → e_51=${gasVolume}, k_54=0 (cleared)`,
+      );
     } else if (systemType === "Oil") {
       const conversionFactor = 10.18; // 36.72 * 0.2777778
       oilVolume =
         afue > 0 ? netDemandAfterRecovery / (conversionFactor * afue) : 0;
-      console.log(`[S07] 🛢️ Oil calc: demand=${netDemandAfterRecovery}, afue=${afue} → k_54=${oilVolume}, e_51=0 (cleared)`);
+      console.log(
+        `[S07] 🛢️ Oil calc: demand=${netDemandAfterRecovery}, afue=${afue} → k_54=${oilVolume}, e_51=0 (cleared)`,
+      );
     } else {
-      console.log(`[S07] ⚡ Non-fossil fuel: ${systemType} → e_51=0, k_54=0 (both cleared)`);
+      console.log(
+        `[S07] ⚡ Non-fossil fuel: ${systemType} → e_51=0, k_54=0 (both cleared)`,
+      );
     }
-    
+
     // 🔧 CRITICAL: Always set BOTH values - zero out the non-selected fuel to prevent contamination
     setSectionValue("e_51", gasVolume, isReferenceCalculation);
     setSectionValue("k_54", oilVolume, isReferenceCalculation);
@@ -1153,7 +1191,9 @@ window.TEUI.SectionModules.sect07 = (function () {
 
   function handleDHWSourceChange(event) {
     const selectedSource = event.target.value;
-    console.log(`[S07] handleDHWSourceChange called: selectedSource="${selectedSource}"`);
+    console.log(
+      `[S07] handleDHWSourceChange called: selectedSource="${selectedSource}"`,
+    );
     const d52Slider = document.querySelector(
       'input[type="range"][data-field-id="d_52"]',
     );
@@ -1181,20 +1221,38 @@ window.TEUI.SectionModules.sect07 = (function () {
       newValue = 300;
     }
 
-    console.log(`[S07] Setting d_52 slider: min=${newMinValue}, max=${newMaxValue}, value=${newValue}`);
-    
+    console.log(
+      `[S07] Setting d_52 slider: min=${newMinValue}, max=${newMaxValue}, value=${newValue}`,
+    );
+
     if (window.TEUI?.StateManager) {
       if (selectedSource === "Gas" || selectedSource === "Oil") {
         // 🔧 Gas/Oil: Update k_52 (AFUE field) - d_52 slider not used for these
         const afueValue = (newValue / 100).toFixed(2); // Convert 90% to 0.90
         window.TEUI.StateManager.setValue("k_52", afueValue, "system-update");
-        window.TEUI.StateManager.setValue(`ref_k_52`, afueValue, "system-update");
-        console.log(`[S07] Updated ${selectedSource}: k_52=${afueValue} (AFUE)`);
+        window.TEUI.StateManager.setValue(
+          `ref_k_52`,
+          afueValue,
+          "system-update",
+        );
+        console.log(
+          `[S07] Updated ${selectedSource}: k_52=${afueValue} (AFUE)`,
+        );
       } else {
-        // 🔧 Electric/Heatpump: Update d_52 (efficiency slider)  
-        window.TEUI.StateManager.setValue("d_52", newValue.toString(), "system-update");
-        window.TEUI.StateManager.setValue(`ref_d_52`, newValue.toString(), "system-update");
-        console.log(`[S07] Updated ${selectedSource}: d_52=${newValue}% (efficiency)`);
+        // 🔧 Electric/Heatpump: Update d_52 (efficiency slider)
+        window.TEUI.StateManager.setValue(
+          "d_52",
+          newValue.toString(),
+          "system-update",
+        );
+        window.TEUI.StateManager.setValue(
+          `ref_d_52`,
+          newValue.toString(),
+          "system-update",
+        );
+        console.log(
+          `[S07] Updated ${selectedSource}: d_52=${newValue}% (efficiency)`,
+        );
       }
     }
     if (d52Slider) {
@@ -1202,14 +1260,16 @@ window.TEUI.SectionModules.sect07 = (function () {
       d52Slider.max = newMaxValue;
       d52Slider.step = newStep;
       d52Slider.value = newValue;
-      
+
       // Find display element (use nextElementSibling - confirmed working)
       let displayElement = d52Display || d52Slider.nextElementSibling;
       if (displayElement) {
         displayElement.textContent = `${newValue}%`;
-        console.log(`[S07] Updated slider display: ${selectedSource} → d_52=${newValue}%`);
+        console.log(
+          `[S07] Updated slider display: ${selectedSource} → d_52=${newValue}%`,
+        );
       }
-      
+
       // 🔧 CRITICAL: Update local state based on fuel type
       if (selectedSource === "Gas" || selectedSource === "Oil") {
         const afueValue = (newValue / 100).toFixed(2);
@@ -1371,10 +1431,12 @@ window.TEUI.SectionModules.sect07 = (function () {
 
   function onSectionRendered() {
     // 1. ✅ CRITICAL: Initialize state defaults from FieldDefinitions (DUAL-STATE-CHEATSHEET.md compliance)
-    console.log(`🚀 [S07] onSectionRendered: Initializing state defaults from FieldDefinitions`);
+    console.log(
+      `🚀 [S07] onSectionRendered: Initializing state defaults from FieldDefinitions`,
+    );
     TargetState.setDefaults();
     ReferenceState.setDefaults();
-    
+
     // 2. Initialize event handlers
     initializeEventHandlers();
 
@@ -1382,7 +1444,8 @@ window.TEUI.SectionModules.sect07 = (function () {
     injectHeaderControls();
 
     // 4. Initialize visibility based on current values (now properly initialized from FieldDefinitions)
-    const initialWaterMethod = ModeManager.getFieldDefault("d_49") || "User Defined";
+    const initialWaterMethod =
+      ModeManager.getFieldDefault("d_49") || "User Defined";
     const initialSystemType = ModeManager.getFieldDefault("d_51") || "Heatpump";
     updateSection7Visibility(initialWaterMethod, initialSystemType);
 

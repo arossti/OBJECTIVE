@@ -2,7 +2,7 @@
 // Dependency graph visualization using D3.js for TEUI Calculator v4.011
 // Based on structure from 4007-dependency-graph.js
 //
-// This module provides interactive visualization of field dependencies and architectural 
+// This module provides interactive visualization of field dependencies and architectural
 // relationships to help AI agents understand the application's execution flow and data dependencies.
 //
 // TODO - LOW PRIORITY UI/UX IMPROVEMENTS:
@@ -23,7 +23,7 @@
 // // Get Target state dependencies (current visualization)
 // const targetGraph = window.TEUI.StateManager.exportDependencyGraph("target");
 //
-// // Get Reference state dependencies (compliance calculations)  
+// // Get Reference state dependencies (compliance calculations)
 // const refGraph = window.TEUI.StateManager.exportDependencyGraph("reference");
 //
 // // Get complete dual-state analysis
@@ -58,25 +58,25 @@ window.TEUI.DependencyGraph = class DependencyGraph {
       colorScheme: {
         // === ARCHITECTURAL MODULE GROUPS (AI Agent Framework) ===
         "🏗️ Foundation": "#2E8B57", // Sea Green - Core foundation modules
-        "🧮 Coordination": "#4169E1", // Royal Blue - Coordination layer  
+        "🧮 Coordination": "#4169E1", // Royal Blue - Coordination layer
         "🎯 Application": "#DC143C", // Crimson - Application layer sections
-        
+
         // === ACTUAL SECTION GROUPS (from codebase analysis) ===
-        "keyValues": "#b07aa1", // Purple - Section 01 Key Values
-        "buildingInfo": "#4e79a7", // Blue - Section 02 Building Information  
-        "climateCalculations": "#f28e2c", // Orange - Section 03 Climate
-        "actualTargetEnergy": "#e15759", // Red - Section 04 Energy Input/Target
-        "co2eEmissions": "#59a14f", // Green - Section 05 CO2e Emissions
-        "renewableEnergy": "#59a14f", // Green - Section 06 Renewable Energy
-        "waterUse": "#1170aa", // Dark Blue - Section 07 Water Use
-        "indoorAirQuality": "#66c2a5", // Teal - Section 08 Indoor Air Quality
-        "occupantInternalGains": "#ff9d9a", // Light Orange - Section 09 Occupant + Internal Gains
-        "radiantGains": "#fdae6b", // Light Orange - Section 10 Radiant Gains
-        "transmissionLosses": "#76b7b2", // Teal/Green - Section 11 Transmission Losses
-        "volumeSurfaceMetrics": "#9c755f", // Brown - Section 12 Volume and Surface Metrics
-        "mechanicalLoads": "#af7aa1", // Purple - Section 13 Mechanical Loads
-        "tediSummary": "#bab0ab", // Grey - Section 14 TEDI & TELI
-        "teuiSummary": "#b3b3cc", // Light Gray/Blue - Section 15 TEUI Summary
+        keyValues: "#b07aa1", // Purple - Section 01 Key Values
+        buildingInfo: "#4e79a7", // Blue - Section 02 Building Information
+        climateCalculations: "#f28e2c", // Orange - Section 03 Climate
+        actualTargetEnergy: "#e15759", // Red - Section 04 Energy Input/Target
+        co2eEmissions: "#59a14f", // Green - Section 05 CO2e Emissions
+        renewableEnergy: "#59a14f", // Green - Section 06 Renewable Energy
+        waterUse: "#1170aa", // Dark Blue - Section 07 Water Use
+        indoorAirQuality: "#66c2a5", // Teal - Section 08 Indoor Air Quality
+        occupantInternalGains: "#ff9d9a", // Light Orange - Section 09 Occupant + Internal Gains
+        radiantGains: "#fdae6b", // Light Orange - Section 10 Radiant Gains
+        transmissionLosses: "#76b7b2", // Teal/Green - Section 11 Transmission Losses
+        volumeSurfaceMetrics: "#9c755f", // Brown - Section 12 Volume and Surface Metrics
+        mechanicalLoads: "#af7aa1", // Purple - Section 13 Mechanical Loads
+        tediSummary: "#bab0ab", // Grey - Section 14 TEDI & TELI
+        teuiSummary: "#b3b3cc", // Light Gray/Blue - Section 15 TEUI Summary
         Other: "#8da0cb", // Light Blue/Grey Fallback
       },
       labelFontSize: 12, // Increased font size for better readability
@@ -861,7 +861,9 @@ window.TEUI.DependencyGraph = class DependencyGraph {
       .style("fill", (d) => {
         // Architectural modules use their group color with special styling
         if (d.isArchitectural) {
-          const color = this.settings.colorScheme[d.group] || this.settings.colorScheme.Other;
+          const color =
+            this.settings.colorScheme[d.group] ||
+            this.settings.colorScheme.Other;
           return color;
         }
         // High-influence field nodes get bright red
@@ -875,15 +877,15 @@ window.TEUI.DependencyGraph = class DependencyGraph {
       .style("stroke", (d) => {
         if (d.isArchitectural) {
           // Use colored borders to indicate architectural layer
-          return d.architecturalLayer === "Foundation" 
-            ? "#2E7D32"     // Dark green border for Foundation
-            : d.architecturalLayer === "Coordination" 
-            ? "#1565C0"     // Dark blue border for Coordination  
-            : "#C62828";    // Dark red border for Application
+          return d.architecturalLayer === "Foundation"
+            ? "#2E7D32" // Dark green border for Foundation
+            : d.architecturalLayer === "Coordination"
+              ? "#1565C0" // Dark blue border for Coordination
+              : "#C62828"; // Dark red border for Application
         }
         return "#fff"; // White border for regular nodes
       })
-      .style("stroke-width", (d) => d.isArchitectural ? 4 : 2) // Thicker border for modules
+      .style("stroke-width", (d) => (d.isArchitectural ? 4 : 2)) // Thicker border for modules
       .style("filter", (d) => {
         if (d.isArchitectural) {
           return "drop-shadow(0px 0px 16px rgba(0,0,0,0.8))"; // Strong shadow for architectural modules
@@ -931,10 +933,10 @@ window.TEUI.DependencyGraph = class DependencyGraph {
             tooltip += `\nValue: ${formattedValue}`;
           }
         }
-        
+
         if (d.isInfluential) tooltip += "\n★ HIGH INFLUENCE FIELD ★";
       }
-      
+
       return tooltip;
     });
   }
@@ -1701,12 +1703,24 @@ window.TEUI.DependencyGraph = class DependencyGraph {
 
     // Add architectural layer items
     const archItems = [
-      { name: "🏗️ Foundation", color: "#2E7D32", description: "Core infrastructure (StateManager, FieldManager)" },
-      { name: "🧮 Coordination", color: "#1565C0", description: "Orchestration layer (Calculator, Reference System)" },
-      { name: "🎯 Application", color: "#C62828", description: "Section modules (S01-S18)" }
+      {
+        name: "🏗️ Foundation",
+        color: "#2E7D32",
+        description: "Core infrastructure (StateManager, FieldManager)",
+      },
+      {
+        name: "🧮 Coordination",
+        color: "#1565C0",
+        description: "Orchestration layer (Calculator, Reference System)",
+      },
+      {
+        name: "🎯 Application",
+        color: "#C62828",
+        description: "Section modules (S01-S18)",
+      },
     ];
 
-    archItems.forEach(item => {
+    archItems.forEach((item) => {
       const itemDiv = document.createElement("div");
       itemDiv.style.display = "flex";
       itemDiv.style.alignItems = "center";

@@ -1,26 +1,12 @@
 /**
  * 4011-Section02.js
- * Building Information (Section 2) module for TEUI Calculator 4.012
+ * Building Information (Section 2) module for TEUI Calculator 4.011
  *
  * This file contains field definitions, layout templates, and rendering logic
  * specific to the Building Information section.
  *
  * Refactored to use the consolidated declarative approach where field definitions
  * are integrated directly into the layout structure.
- *
- * ARCHITECTURAL STATUS (Aug 30 2025): ✅ DUAL-STATE-CHEATSHEET COMPLIANT
- *
- * ✅ All critical anti-patterns eliminated:
- * - Phase 1: No Pattern B contamination ✅
- * - Phase 2: No ComponentBridge contamination ✅
- * - Phase 3: DOM update pattern compliant ✅
- * - Phase 4: switchMode display-only ✅
- * - Phase 5: Consolidated defaults using getFieldDefault() ✅
- * - Phase 6: Mode-aware external dependency reading (i_39, i_41) ✅
- *
- * ⚠️  KNOWN ISSUE: Minor occupancy state mixing when Target d_12 changes affects
- * Reference calculations. Documented in README.md. Requires comprehensive downstream
- * audit to identify remaining mode-mixing violations in S04-S15.
  */
 
 // Create section-specific namespace for global references
@@ -28,7 +14,6 @@ window.TEUI = window.TEUI || {};
 window.TEUI.sect02 = window.TEUI.sect02 || {};
 window.TEUI.sect02.initialized = false;
 window.TEUI.sect02.userInteracted = false;
-let isSect02Initialized = false; // Initialization flag to prevent race conditions
 
 // Section 2: Building Information Module
 window.TEUI.SectionModules.sect02 = (function () {
@@ -551,32 +536,6 @@ window.TEUI.SectionModules.sect02 = (function () {
     return rowDef;
   }
 
-  /**
-   * Retrieves a field's default value from the sectionRows definition.
-   * This is the single source of truth for all default values.
-   * ✅ CRITICAL FIX: Returns numeric values without comma formatting for calculation stability
-   * @param {string} fieldId The ID of the field (e.g., "d_12").
-   * @returns {string|null} The default value or null if not found.
-   */
-  function getFieldDefault(fieldId) {
-    for (const row of Object.values(sectionRows)) {
-      if (row.cells) {
-        for (const cell of Object.values(row.cells)) {
-          if (cell.fieldId === fieldId && cell.value !== undefined) {
-            let value = cell.value;
-            // ✅ CRITICAL FIX: Remove comma formatting from numeric fields for calculation stability
-            // This prevents floating-point corruption during state operations
-            if (fieldId === "h_15" && typeof value === "string") {
-              value = value.replace(/,/g, ""); // Remove commas: "1,427.20" → "1427.20"
-            }
-            return value;
-          }
-        }
-      }
-    }
-    return null;
-  }
-
   //==========================================================================
   // EVENT HANDLING AND CALCULATIONS
   //==========================================================================
@@ -602,29 +561,6 @@ window.TEUI.SectionModules.sect02 = (function () {
     }
 
     return window.TEUI?.parseNumeric?.(rawValue, defaultValue) ?? defaultValue;
-  }
-
-  /**
-   * ✅ PHASE 6: Mode-aware external dependency reader for Target/Reference pairs
-   * Reads the correct state value based on current calculation mode
-   */
-  function getModeAwareGlobalValue(fieldId) {
-    if (!window.TEUI?.StateManager) return "";
-
-    if (ModeManager.currentMode === "reference") {
-      // Reference mode: Try ref_ prefixed first, then fallback to unprefixed
-      const refValue = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
-      if (refValue !== null && refValue !== undefined) {
-        return refValue.toString();
-      }
-      // Fallback to unprefixed if ref_ version doesn't exist
-      const fallbackValue = window.TEUI.StateManager.getValue(fieldId);
-      return fallbackValue ? fallbackValue.toString() : "";
-    } else {
-      // Target mode: Read unprefixed values directly
-      const targetValue = window.TEUI.StateManager.getValue(fieldId);
-      return targetValue ? targetValue.toString() : "";
-    }
   }
 
   /**
@@ -791,10 +727,8 @@ window.TEUI.SectionModules.sect02 = (function () {
       // ✅ CRITICAL FIX: Read from sovereign ReferenceState, not global StateManager with prefixes
       const carbonStandard = ReferenceState.getValue("d_15") || "Self Reported";
 
-      // ✅ PHASE 6: Use mode-aware reading for external dependencies
-      const modelledValueI41 =
-        window.TEUI?.parseNumeric?.(getModeAwareGlobalValue("i_41"), 345.82) ??
-        345.82;
+      // For external dependencies (from other sections), still use getNumericValue fallback
+      const modelledValueI41 = getNumericValue("i_41", 345.82);
 
       if (carbonStandard === "Not Reported") {
         setFieldValue("d_16", "N/A", "calculated");
@@ -802,8 +736,7 @@ window.TEUI.SectionModules.sect02 = (function () {
       }
 
       if (carbonStandard === "TGS4") {
-        const tgs4Value =
-          window.TEUI?.parseNumeric?.(getModeAwareGlobalValue("i_39"), 0) ?? 0;
+        const tgs4Value = getNumericValue("i_39", 0);
         setFieldValue("d_16", tgs4Value, "calculated");
         return;
       }
@@ -868,6 +801,20 @@ window.TEUI.SectionModules.sect02 = (function () {
       l_16: ReferenceState.getValue("l_16"), // Wood price
     };
 
+    // [S02DB] Targeted logging for critical Reference parameters
+    try {
+      console.log(
+        "[S02DB] storeReference: ref_h_12=",
+        referenceResults.h_12,
+        "ref_h_13=",
+        referenceResults.h_13,
+        "ref_h_15=",
+        referenceResults.h_15,
+      );
+    } catch (e) {
+      console.warn("[S02DB] storeReference logging failed", e);
+    }
+
     // Store with ref_ prefix for downstream sections
     Object.entries(referenceResults).forEach(([fieldId, value]) => {
       if (value !== null && value !== undefined) {
@@ -896,10 +843,8 @@ window.TEUI.SectionModules.sect02 = (function () {
       // ✅ CRITICAL FIX: Read from sovereign TargetState, not global StateManager
       const carbonStandard = TargetState.getValue("d_15") || "Self Reported";
 
-      // ✅ PHASE 6: Use mode-aware reading for external dependencies
-      const modelledValueI41 =
-        window.TEUI?.parseNumeric?.(getModeAwareGlobalValue("i_41"), 345.82) ??
-        345.82;
+      // For external dependencies (from other sections), still use getNumericValue fallback
+      const modelledValueI41 = getNumericValue("i_41", 345.82);
 
       if (carbonStandard === "Not Reported") {
         setFieldValue("d_16", "N/A", "calculated");
@@ -907,8 +852,7 @@ window.TEUI.SectionModules.sect02 = (function () {
       }
 
       if (carbonStandard === "TGS4") {
-        const tgs4Value =
-          window.TEUI?.parseNumeric?.(getModeAwareGlobalValue("i_39"), 0) ?? 0;
+        const tgs4Value = getNumericValue("i_39", 0);
         setFieldValue("d_16", tgs4Value, "calculated");
         return;
       }
@@ -954,12 +898,6 @@ window.TEUI.SectionModules.sect02 = (function () {
    * Replaces the original calculateAll function
    */
   function calculateAll() {
-    if (!isSect02Initialized) {
-      console.warn(
-        "[S02] calculateAll() called before initialization completed. Aborting to prevent race condition.",
-      );
-      return;
-    }
     calculateReferenceModel();
     calculateTargetModel();
   }
@@ -1182,13 +1120,11 @@ window.TEUI.SectionModules.sect02 = (function () {
         // ✅ PATTERN A: Save to current state (Target or Reference) via ModeManager
         ModeManager.setValue("h_12", newYear, "user-modified");
 
-        // ✅ CRITICAL FIX: Only store Reference result for h_12 - do NOT trigger full recalculation
-        // h_12 (reporting year) should NOT affect h_15 (area) or any S02 internal calculations
-        if (ModeManager.currentMode === "reference") {
-          // Only store the h_12 value for downstream sections (S04 needs ref_h_12 for emissions factors)
-          storeReferenceResults();
-        }
-        // No calculateAll() or updateCalculatedDisplayValues() needed - h_12 doesn't affect S02 calculations
+        // Recalculate after year change
+        calculateAll();
+
+        // Update DOM with new calculated values
+        ModeManager.updateCalculatedDisplayValues();
       });
     }
 
@@ -1211,13 +1147,11 @@ window.TEUI.SectionModules.sect02 = (function () {
         // ✅ PATTERN A: Save to current state (Target or Reference) via ModeManager
         ModeManager.setValue("h_13", newServiceLife, "user-modified");
 
-        // ✅ CRITICAL FIX: Only store Reference result for h_13 - do NOT trigger full recalculation
-        // h_13 (service life) affects S01 calculations but NOT S02 internal calculations
-        if (ModeManager.currentMode === "reference") {
-          // Store the h_13 value for downstream sections (S01 needs ref_h_13 for lifetime carbon)
-          storeReferenceResults();
-        }
-        // No calculateAll() or updateCalculatedDisplayValues() needed - h_13 doesn't affect S02 calculations
+        // Recalculate after service life change
+        calculateAll();
+
+        // Update DOM with new calculated values
+        ModeManager.updateCalculatedDisplayValues();
       });
     }
 
@@ -1244,13 +1178,7 @@ window.TEUI.SectionModules.sect02 = (function () {
    * Update the critical occupancy flag display in Section 2 header
    */
   function updateCriticalOccupancyFlag() {
-    // ✅ CRITICAL FIX: Use mode-aware reading for proper state isolation
-    const occupancyType =
-      ModeManager.currentMode === "reference"
-        ? window.TEUI.StateManager?.getValue("ref_d_12") ||
-          window.TEUI.StateManager?.getValue("d_12") ||
-          ""
-        : window.TEUI.StateManager?.getValue("d_12") || "";
+    const occupancyType = window.TEUI.StateManager?.getValue("d_12") || "";
     const sectionHeader = document.querySelector(
       "#buildingInfo .section-header",
     ); // Target the Section 2 header
@@ -1325,8 +1253,6 @@ window.TEUI.SectionModules.sect02 = (function () {
 
     // ✅ PATTERN A: Defaults are now handled by TargetState.setDefaults() and ReferenceState.setDefaults()
     // No need to set defaults in StateManager - the dual-state architecture handles this
-
-    isSect02Initialized = true; // Set flag to allow calculations now that initialization is complete
 
     // Run initial calculations
     calculateAll();
@@ -1683,26 +1609,25 @@ window.TEUI.SectionModules.sect02 = (function () {
 
     setDefaults: function () {
       // S02 Target defaults (Validation Case: 2022 reporting year)
-      // ✅ PATTERN A: Defaults are now sourced from field definitions
+      // ✅ CRITICAL FIX: Don't spread existing data - defaults should ALWAYS take precedence
       this.data = {
-        d_12: getFieldDefault("d_12") || "A-Assembly",
-        d_13: getFieldDefault("d_13") || "OBC SB10 5.5-6 Z6",
-        d_14: getFieldDefault("d_14") || "Utility Bills",
-        d_15: getFieldDefault("d_15") || "Self Reported",
-        h_12: getFieldDefault("h_12") || "2022",
-        h_13: getFieldDefault("h_13") || "50",
-        h_14: getFieldDefault("h_14") || "Three Feathers Terrace",
-        h_15: getFieldDefault("h_15") || "1,427.20", // Critical for e_10
-        i_16: getFieldDefault("i_16") || "Thomson Architecture, Inc.",
-        i_17: getFieldDefault("i_17") || "8154",
-        l_12: getFieldDefault("l_12") || "0.1300",
-        l_13: getFieldDefault("l_13") || "0.5070",
-        l_14: getFieldDefault("l_14") || "1.6200",
-        l_15: getFieldDefault("l_15") || "180.00",
-        l_16: getFieldDefault("l_16") || "1.5000",
+        d_12: "A-Assembly", // Major Occupancy
+        d_13: "OBC SB10 5.5-6 Z6", // Target building code
+        d_14: "Utility Bills", // Actual/Target Use
+        d_15: "Self Reported", // Carbon standard
+        // Reporting year 2022 for Target (affects S04 emissions factors)
+        h_12: "2022", // Reporting Period - Target uses 2022 (actual field is h_12)
+        h_13: "50", // Service life (from field definition) - ✅ CRITICAL FIX: Added missing Target default
+        // h_15 default comes from field definition (value: "1,427.20")
+        // Energy costs - same for both Target and Reference
+        l_12: "0.1300", // Electricity cost
+        l_13: "0.5070", // Gas cost
+        l_14: "1.6200", // Propane cost
+        l_15: "180.00", // Wood cost
+        l_16: "1.5000", // Oil cost
       };
       console.log(
-        `S02: Target defaults set from field definitions - overriding any localStorage empties`,
+        `S02: Target defaults set (2022 reporting year) - overriding any localStorage empties`,
       );
     },
   };
@@ -1756,29 +1681,25 @@ window.TEUI.SectionModules.sect02 = (function () {
 
     setDefaults: function () {
       // S02 Reference defaults (Validation Case: 2020 reporting year)
-      // ✅ PATTERN A: Initialize with base defaults, then apply Reference-specific overrides.
+      // ✅ CRITICAL FIX: Don't spread existing data - defaults should ALWAYS take precedence
       this.data = {
-        // 1. Initialize with base defaults from the single source of truth
-        d_12: getFieldDefault("d_12") || "A-Assembly",
-        d_14: getFieldDefault("d_14") || "Utility Bills",
-        d_15: getFieldDefault("d_15") || "Self Reported",
-        h_13: getFieldDefault("h_13") || "50",
-        h_14: getFieldDefault("h_14") || "Three Feathers Terrace", // Included for completeness
-        h_15: getFieldDefault("h_15") || "1,427.20", // CRITICAL for e_10
-        i_16: getFieldDefault("i_16") || "Thomson Architecture, Inc.",
-        i_17: getFieldDefault("i_17") || "8154",
-        l_12: getFieldDefault("l_12") || "0.1300",
-        l_13: getFieldDefault("l_13") || "0.5070",
-        l_14: getFieldDefault("l_14") || "1.6200",
-        l_15: getFieldDefault("l_15") || "180.00",
-        l_16: getFieldDefault("l_16") || "1.5000",
-
-        // 2. Apply Reference-specific overrides
+        d_12: "A-Assembly", // Major Occupancy (same as Target)
         d_13: "OBC SB10 5.5-6 Z5 (2010)", // Reference building code - earlier standard
-        h_12: "2020", // Reporting Period - Reference uses 2020
+        d_14: "Utility Bills", // Actual/Target Use (same as Target)
+        d_15: "Self Reported", // Carbon standard (same)
+        // Reporting year 2020 for Reference (creates natural S04 emissions differences)
+        h_12: "2020", // Reporting Period - Reference uses 2020 (actual field is h_12)
+        h_13: "50", // Service life (from field definition)
+        h_15: "1427.20", // ✅ CRITICAL FIX: Must be set for ref_h_15 storage
+        // Energy costs - same as Target (differences come from reporting year/location)
+        l_12: "0.1300", // Electricity cost (same as Target)
+        l_13: "0.5070", // Gas cost (same as Target)
+        l_14: "1.6200", // Propane cost (same as Target)
+        l_15: "180.00", // Wood cost (same as Target)
+        l_16: "1.5000", // Oil cost (same as Target)
       };
       console.log(
-        `S02: Reference defaults set from field definitions with overrides - overriding any localStorage empties`,
+        `S02: Reference defaults set (2020 reporting year) - overriding any localStorage empties`,
       );
     },
   };
@@ -1805,6 +1726,14 @@ window.TEUI.SectionModules.sect02 = (function () {
             window.TEUI.StateManager.setValue("ref_h_13", refH13, "default");
           if (refH15)
             window.TEUI.StateManager.setValue("ref_h_15", refH15, "default");
+          console.log(
+            "[S02DB] init publish: ref_h_12=",
+            refH12,
+            "ref_h_13=",
+            refH13,
+            "ref_h_15=",
+            refH15,
+          );
         }
       } catch (e) {
         console.warn("[S02] initialize: state initialization error", e);

@@ -10,7 +10,7 @@ window.TEUI = window.TEUI || {};
 window.TEUI.Clock = {
   initTime: null,
   initDisplayed: false,
-  
+
   /**
    * Initialize performance tracking
    * Called once during app startup
@@ -21,11 +21,11 @@ window.TEUI.Clock = {
       window.TEUI.timing = {
         initStartTime: null,
         currentStartTime: null,
-        isInitialLoad: true
+        isInitialLoad: true,
       };
     }
-    
-    console.log('[CLOCK] Performance monitoring initialized');
+
+    console.log("[CLOCK] Performance monitoring initialized");
   },
 
   /**
@@ -34,14 +34,14 @@ window.TEUI.Clock = {
    */
   startTiming(isInitialLoad = false) {
     const now = performance.now();
-    
+
     if (isInitialLoad) {
       window.TEUI.timing.initStartTime = now;
       window.TEUI.timing.isInitialLoad = true;
-      console.log('[CLOCK] Starting initial load timing');
+      console.log("[CLOCK] Starting initial load timing");
     } else {
       window.TEUI.timing.currentStartTime = now;
-      console.log('[CLOCK] Starting current calculation timing');
+      console.log("[CLOCK] Starting current calculation timing");
     }
   },
 
@@ -51,18 +51,22 @@ window.TEUI.Clock = {
    */
   endTiming(isInitialLoad = false) {
     const now = performance.now();
-    
+
     if (isInitialLoad && window.TEUI.timing.initStartTime) {
       this.initTime = now - window.TEUI.timing.initStartTime;
       this.initDisplayed = true;
       window.TEUI.timing.isInitialLoad = false;
-      console.log(`🕐 [CLOCK] ⭐ INITIALIZATION COMPLETE: ${this.initTime.toFixed(0)}ms (all calculations finalized)`);
+      console.log(
+        `🕐 [CLOCK] ⭐ INITIALIZATION COMPLETE: ${this.initTime.toFixed(0)}ms (all calculations finalized)`,
+      );
     } else if (window.TEUI.timing.currentStartTime) {
       const currentTime = now - window.TEUI.timing.currentStartTime;
       window.TEUI.timing.lastCalculationTime = currentTime;
-      console.log(`🕐 [CLOCK] ⚡ CALCULATION COMPLETE: ${currentTime.toFixed(0)}ms (subsequent update)`);
+      console.log(
+        `🕐 [CLOCK] ⚡ CALCULATION COMPLETE: ${currentTime.toFixed(0)}ms (subsequent update)`,
+      );
     }
-    
+
     this.updateDisplay();
   },
 
@@ -70,18 +74,18 @@ window.TEUI.Clock = {
    * Update the visual display in Key Values header
    */
   updateDisplay() {
-    const feedbackArea = document.getElementById('feedback-area');
+    const feedbackArea = document.getElementById("feedback-area");
     if (!feedbackArea) {
-      console.warn('[CLOCK] Feedback area not found - cannot display timing');
+      console.warn("[CLOCK] Feedback area not found - cannot display timing");
       return;
     }
 
-    let displayText = '';
-    
+    let displayText = "";
+
     if (this.initTime && this.initDisplayed) {
       // Show initialization time (persistent)
       displayText = `Initialization: ${this.formatTime(this.initTime)}`;
-      
+
       // Add current time if we have recent calculation data
       if (window.TEUI.timing.lastCalculationTime) {
         displayText += `\nCurrent: ${this.formatTime(window.TEUI.timing.lastCalculationTime)}`;
@@ -93,11 +97,11 @@ window.TEUI.Clock = {
     }
 
     // Apply styling for white text and proper formatting
-    feedbackArea.innerHTML = displayText.replace(/\n/g, '<br>');
-    feedbackArea.style.color = 'white';
-    feedbackArea.style.fontSize = '0.8rem';
-    feedbackArea.style.fontFamily = 'monospace';
-    feedbackArea.style.whiteSpace = 'nowrap';
+    feedbackArea.innerHTML = displayText.replace(/\n/g, "<br>");
+    feedbackArea.style.color = "white";
+    feedbackArea.style.fontSize = "0.8rem";
+    feedbackArea.style.fontFamily = "monospace";
+    feedbackArea.style.whiteSpace = "nowrap";
   },
 
   /**
@@ -136,9 +140,12 @@ window.TEUI.Clock = {
    * This tracks user-perceived performance: interaction → h_10 settlement
    */
   markUserInteractionStart() {
-    if (this.initDisplayed) { // Only track subsequent interactions after init
+    if (this.initDisplayed) {
+      // Only track subsequent interactions after init
       window.TEUI.timing.currentStartTime = performance.now();
-      console.log('[CLOCK] 🎯 User interaction started - timing to h_10 settlement');
+      console.log(
+        "[CLOCK] 🎯 User interaction started - timing to h_10 settlement",
+      );
     }
   },
 
@@ -148,9 +155,12 @@ window.TEUI.Clock = {
    */
   markUserInteractionEnd() {
     if (this.initDisplayed && window.TEUI.timing.currentStartTime) {
-      const currentTime = performance.now() - window.TEUI.timing.currentStartTime;
+      const currentTime =
+        performance.now() - window.TEUI.timing.currentStartTime;
       window.TEUI.timing.lastCalculationTime = currentTime;
-      console.log(`🕐 [CLOCK] ⚡ USER INTERACTION COMPLETE: ${currentTime.toFixed(0)}ms (interaction → h_10 settlement)`);
+      console.log(
+        `🕐 [CLOCK] ⚡ USER INTERACTION COMPLETE: ${currentTime.toFixed(0)}ms (interaction → h_10 settlement)`,
+      );
       this.updateDisplay();
     }
   },
@@ -164,15 +174,15 @@ window.TEUI.Clock = {
     window.TEUI.timing = {
       initStartTime: null,
       currentStartTime: null,
-      isInitialLoad: true
+      isInitialLoad: true,
     };
-    console.log('[CLOCK] Performance timing reset');
-  }
+    console.log("[CLOCK] Performance timing reset");
+  },
 };
 
 // Auto-initialize when DOM is ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => {
     window.TEUI.Clock.init();
   });
 } else {

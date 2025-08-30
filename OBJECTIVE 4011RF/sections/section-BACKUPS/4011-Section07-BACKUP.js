@@ -561,8 +561,6 @@ window.TEUI.SectionModules.sect07 = (function () {
     }
   }
 
-
-
   function getFieldFormat(fieldId) {
     const formatMap = {
       h_49: "number-2dp",
@@ -722,8 +720,10 @@ window.TEUI.SectionModules.sect07 = (function () {
         window.TEUI?.StateManager?.getValue("d_51") ||
         "Heatpump"
       : window.TEUI?.StateManager?.getValue("d_51") || "Heatpump";
-    
-    console.log(`[S07] calculateEmissionsAndLosses: systemType="${systemType}" (${isReferenceCalculation ? 'REF' : 'TGT'})`);
+
+    console.log(
+      `[S07] calculateEmissionsAndLosses: systemType="${systemType}" (${isReferenceCalculation ? "REF" : "TGT"})`,
+    );
     const netDemandAfterRecovery = getSectionNumericValue(
       "j_52",
       0,
@@ -745,16 +745,22 @@ window.TEUI.SectionModules.sect07 = (function () {
       const conversionFactor = 10.3321;
       gasVolume =
         afue > 0 ? netDemandAfterRecovery / (conversionFactor * afue) : 0;
-      console.log(`[S07] 🔥 Gas calc: demand=${netDemandAfterRecovery}, afue=${afue} → e_51=${gasVolume}, k_54=0 (cleared)`);
+      console.log(
+        `[S07] 🔥 Gas calc: demand=${netDemandAfterRecovery}, afue=${afue} → e_51=${gasVolume}, k_54=0 (cleared)`,
+      );
     } else if (systemType === "Oil") {
       const conversionFactor = 10.18; // 36.72 * 0.2777778
       oilVolume =
         afue > 0 ? netDemandAfterRecovery / (conversionFactor * afue) : 0;
-      console.log(`[S07] 🛢️ Oil calc: demand=${netDemandAfterRecovery}, afue=${afue} → k_54=${oilVolume}, e_51=0 (cleared)`);
+      console.log(
+        `[S07] 🛢️ Oil calc: demand=${netDemandAfterRecovery}, afue=${afue} → k_54=${oilVolume}, e_51=0 (cleared)`,
+      );
     } else {
-      console.log(`[S07] ⚡ Non-fossil fuel: ${systemType} → e_51=0, k_54=0 (both cleared)`);
+      console.log(
+        `[S07] ⚡ Non-fossil fuel: ${systemType} → e_51=0, k_54=0 (both cleared)`,
+      );
     }
-    
+
     // 🔧 CRITICAL: Always set BOTH values - zero out the non-selected fuel to prevent contamination
     setSectionValue("e_51", gasVolume, isReferenceCalculation);
     setSectionValue("k_54", oilVolume, isReferenceCalculation);
@@ -1087,7 +1093,9 @@ window.TEUI.SectionModules.sect07 = (function () {
 
   function handleDHWSourceChange(event) {
     const selectedSource = event.target.value;
-    console.log(`[S07] handleDHWSourceChange called: selectedSource="${selectedSource}"`);
+    console.log(
+      `[S07] handleDHWSourceChange called: selectedSource="${selectedSource}"`,
+    );
     const d52Slider = document.querySelector(
       'input[type="range"][data-field-id="d_52"]',
     );
@@ -1115,20 +1123,38 @@ window.TEUI.SectionModules.sect07 = (function () {
       newValue = 300;
     }
 
-    console.log(`[S07] Setting d_52 slider: min=${newMinValue}, max=${newMaxValue}, value=${newValue}`);
-    
+    console.log(
+      `[S07] Setting d_52 slider: min=${newMinValue}, max=${newMaxValue}, value=${newValue}`,
+    );
+
     if (window.TEUI?.StateManager) {
       if (selectedSource === "Gas" || selectedSource === "Oil") {
         // 🔧 Gas/Oil: Update k_52 (AFUE field) - d_52 slider not used for these
         const afueValue = (newValue / 100).toFixed(2); // Convert 90% to 0.90
         window.TEUI.StateManager.setValue("k_52", afueValue, "system-update");
-        window.TEUI.StateManager.setValue(`ref_k_52`, afueValue, "system-update");
-        console.log(`[S07] Updated ${selectedSource}: k_52=${afueValue} (AFUE)`);
+        window.TEUI.StateManager.setValue(
+          `ref_k_52`,
+          afueValue,
+          "system-update",
+        );
+        console.log(
+          `[S07] Updated ${selectedSource}: k_52=${afueValue} (AFUE)`,
+        );
       } else {
-        // 🔧 Electric/Heatpump: Update d_52 (efficiency slider)  
-        window.TEUI.StateManager.setValue("d_52", newValue.toString(), "system-update");
-        window.TEUI.StateManager.setValue(`ref_d_52`, newValue.toString(), "system-update");
-        console.log(`[S07] Updated ${selectedSource}: d_52=${newValue}% (efficiency)`);
+        // 🔧 Electric/Heatpump: Update d_52 (efficiency slider)
+        window.TEUI.StateManager.setValue(
+          "d_52",
+          newValue.toString(),
+          "system-update",
+        );
+        window.TEUI.StateManager.setValue(
+          `ref_d_52`,
+          newValue.toString(),
+          "system-update",
+        );
+        console.log(
+          `[S07] Updated ${selectedSource}: d_52=${newValue}% (efficiency)`,
+        );
       }
     }
     if (d52Slider) {
@@ -1136,14 +1162,16 @@ window.TEUI.SectionModules.sect07 = (function () {
       d52Slider.max = newMaxValue;
       d52Slider.step = newStep;
       d52Slider.value = newValue;
-      
+
       // Find display element (use nextElementSibling - confirmed working)
       let displayElement = d52Display || d52Slider.nextElementSibling;
       if (displayElement) {
         displayElement.textContent = `${newValue}%`;
-        console.log(`[S07] Updated slider display: ${selectedSource} → d_52=${newValue}%`);
+        console.log(
+          `[S07] Updated slider display: ${selectedSource} → d_52=${newValue}%`,
+        );
       }
-      
+
       // 🔧 CRITICAL: Update local state based on fuel type
       if (selectedSource === "Gas" || selectedSource === "Oil") {
         const afueValue = (newValue / 100).toFixed(2);

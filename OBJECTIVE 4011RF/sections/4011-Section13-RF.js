@@ -23,7 +23,7 @@ window.TEUI.SectionModules.sect13 = (function () {
   //==========================================================================
   // REFERENCE VALUE PERSISTENCE PATTERN (S11 Pattern)
   //==========================================================================
-  
+
   // ✅ PHASE 5: Module-level storage to prevent race conditions
   let lastReferenceResults = {};
 
@@ -1936,7 +1936,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       console.log("[Section13] 🔗 Attaching StateManager listeners...");
 
       // ✅ REMOVED: StateManager listener for d_113 - dropdown handler already covers this
-      // Dropdown changes are now handled exclusively by handleDropdownChange() 
+      // Dropdown changes are now handled exclusively by handleDropdownChange()
       // to prevent dual-listener contamination
 
       // ✅ Reference mode d_113 changes are now handled by ReferenceState.setValue()
@@ -2308,8 +2308,6 @@ window.TEUI.SectionModules.sect13 = (function () {
       ModeManager.setValue(fieldId, newValue, "user-modified");
     }
 
-
-
     // Special handling for heating system changes
     if (fieldId === "d_113") {
       handleHeatingSystemChangeForGhosting(newValue);
@@ -2425,15 +2423,22 @@ window.TEUI.SectionModules.sect13 = (function () {
    * @param {number} tedValue - Total Energy Demand value
    * @returns {Object} Complete heating system results
    */
-  function calculateHeatingSystem(isReferenceCalculation = false, copResults = {}, tedValue = 0) {
+  function calculateHeatingSystem(
+    isReferenceCalculation = false,
+    copResults = {},
+    tedValue = 0,
+  ) {
     const systemType = getSectionValue("d_113", isReferenceCalculation);
-    const afue = window.TEUI.parseNumeric(
-      getSectionValue("j_115", isReferenceCalculation)
-    ) || 1;
-    
+    const afue =
+      window.TEUI.parseNumeric(
+        getSectionValue("j_115", isReferenceCalculation),
+      ) || 1;
+
     const copHeat = copResults.h_113 || 1;
-    
-    console.log(`[S13] ${isReferenceCalculation ? 'REF' : 'TGT'} HEATING: system=${systemType}, ted=${tedValue}, afue=${afue}, cop=${copHeat}`);
+
+    console.log(
+      `[S13] ${isReferenceCalculation ? "REF" : "TGT"} HEATING: system=${systemType}, ted=${tedValue}, afue=${afue}, cop=${copHeat}`,
+    );
 
     let heatingDemand_d114 = 0;
     let heatingSink_l113 = 0;
@@ -2442,7 +2447,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     let gasM3_h115 = 0;
     let exhaust_l115 = 0;
     let emissions_f114 = 0;
-    
+
     // Calculate heating demand and sink
     if (systemType === "Heatpump") {
       if (copHeat > 0) {
@@ -2472,12 +2477,16 @@ window.TEUI.SectionModules.sect13 = (function () {
     // Calculate space heating emissions
     if (systemType === "Oil") {
       const oilEmissionsFactor = isReferenceCalculation
-        ? getGlobalNumericValue("ref_l_30") || getGlobalNumericValue("l_30") || 2753
+        ? getGlobalNumericValue("ref_l_30") ||
+          getGlobalNumericValue("l_30") ||
+          2753
         : getGlobalNumericValue("l_30") || 2753;
       emissions_f114 = (oilLitres_f115 * oilEmissionsFactor) / 1000;
     } else if (systemType === "Gas") {
       const gasEmissionsFactor = isReferenceCalculation
-        ? getGlobalNumericValue("ref_l_28") || getGlobalNumericValue("l_28") || 1921
+        ? getGlobalNumericValue("ref_l_28") ||
+          getGlobalNumericValue("l_28") ||
+          1921
         : getGlobalNumericValue("l_28") || 1921;
       emissions_f114 = (gasM3_h115 * gasEmissionsFactor) / 1000;
     }
@@ -2494,8 +2503,6 @@ window.TEUI.SectionModules.sect13 = (function () {
       f_114: emissions_f114,
     };
   }
-
-
 
   /**
    * Calculate cooling system values
@@ -2906,7 +2913,9 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     // 🚨 CAPTURE MODE AT START: Prevent race conditions from mode changes during calculation
     const modeAtCalculationStart = ModeManager.currentMode;
-    console.log(`[Section13] 🎯 Mode captured at calculation start: ${modeAtCalculationStart}`);
+    console.log(
+      `[Section13] 🎯 Mode captured at calculation start: ${modeAtCalculationStart}`,
+    );
 
     // ✅ DUAL-ENGINE: Always run both engines in parallel
     try {
@@ -2920,23 +2929,32 @@ window.TEUI.SectionModules.sect13 = (function () {
 
       // ✅ PHASE 5: S11 PERSISTENCE PATTERN - Re-write Reference results to prevent race conditions
       // ✅ TIMING FIX: Use captured mode instead of current mode to prevent race conditions
-      if (Object.keys(lastReferenceResults).length > 0 && window.TEUI?.StateManager) {
+      if (
+        Object.keys(lastReferenceResults).length > 0 &&
+        window.TEUI?.StateManager
+      ) {
         const shouldRewrite = modeAtCalculationStart === "reference";
-        
+
         if (shouldRewrite) {
-          console.log("[Section13] 🔄 Re-writing Reference results to prevent race conditions...");
+          console.log(
+            "[Section13] 🔄 Re-writing Reference results to prevent race conditions...",
+          );
           Object.entries(lastReferenceResults).forEach(([fieldId, value]) => {
             if (value !== null && value !== undefined) {
               window.TEUI.StateManager.setValue(
                 `ref_${fieldId}`,
                 value.toString(),
-                "calculated-persistent"
+                "calculated-persistent",
               );
             }
           });
-          console.log(`[Section13] ✅ Re-wrote ${Object.keys(lastReferenceResults).length} Reference values`);
+          console.log(
+            `[Section13] ✅ Re-wrote ${Object.keys(lastReferenceResults).length} Reference values`,
+          );
         } else {
-          console.log(`[Section13] ⏭️ Skipping Reference value re-write - triggered in ${modeAtCalculationStart} mode`);
+          console.log(
+            `[Section13] ⏭️ Skipping Reference value re-write - triggered in ${modeAtCalculationStart} mode`,
+          );
         }
       }
 
@@ -2965,14 +2983,20 @@ window.TEUI.SectionModules.sect13 = (function () {
 
       // 🚨 DEBUG: Track what system type the Reference model is using
       const refSystemType = ReferenceState.getValue("d_113");
-      console.log(`[S13 CONTAMINATION DEBUG] calculateReferenceModel: Using system type = ${refSystemType}`);
+      console.log(
+        `[S13 CONTAMINATION DEBUG] calculateReferenceModel: Using system type = ${refSystemType}`,
+      );
 
       // Get external dependency values for Reference
       const tedValueRef = window.TEUI.parseNumeric(getRefValue("d_127")) || 0;
 
       // ✅ EXPLICIT DATA FLOW: Use same unified functions as Target, but with Reference flag
       const copResults = calculateCOPValues(true);
-      const heatingResults = calculateHeatingSystem(true, copResults, tedValueRef);
+      const heatingResults = calculateHeatingSystem(
+        true,
+        copResults,
+        tedValueRef,
+      );
       const ventilationRatesResults = calculateVentilationRates(true);
       const ventilationEnergyResults = calculateVentilationEnergy(true);
       const coolingVentilationResults = calculateCoolingVentilation(true);
@@ -3016,7 +3040,11 @@ window.TEUI.SectionModules.sect13 = (function () {
 
       // ✅ EXPLICIT DATA FLOW: Chain calculations with parameter passing
       const copResults = calculateCOPValues(false);
-      const heatingResults = calculateHeatingSystem(false, copResults, tedValue);
+      const heatingResults = calculateHeatingSystem(
+        false,
+        copResults,
+        tedValue,
+      );
       const ventilationRatesResults = calculateVentilationRates(false);
       const ventilationEnergyResults = calculateVentilationEnergy(false);
       const coolingVentilationResults = calculateCoolingVentilation(false);
@@ -3025,9 +3053,16 @@ window.TEUI.SectionModules.sect13 = (function () {
       const mitigatedResults = calculateMitigatedCED(false);
 
       // Update DOM with Target calculation results
-      updateTargetModelDOMValues(copResults, heatingResults, coolingResults, ventilationRatesResults, 
-                                  ventilationEnergyResults, coolingVentilationResults, 
-                                  freeCoolingResults, mitigatedResults);
+      updateTargetModelDOMValues(
+        copResults,
+        heatingResults,
+        coolingResults,
+        ventilationRatesResults,
+        ventilationEnergyResults,
+        coolingVentilationResults,
+        freeCoolingResults,
+        mitigatedResults,
+      );
 
       // Update reference indicators after calculations
       updateAllReferenceIndicators();
@@ -3040,56 +3075,131 @@ window.TEUI.SectionModules.sect13 = (function () {
   /**
    * ✅ UPDATE DOM: Update DOM elements with Target calculation results
    */
-  function updateTargetModelDOMValues(copResults, heatingResults, coolingResults, ventilationRatesResults, 
-                                      ventilationEnergyResults, coolingVentilationResults, 
-                                      freeCoolingResults, mitigatedResults) {
+  function updateTargetModelDOMValues(
+    copResults,
+    heatingResults,
+    coolingResults,
+    ventilationRatesResults,
+    ventilationEnergyResults,
+    coolingVentilationResults,
+    freeCoolingResults,
+    mitigatedResults,
+  ) {
     // COP Values
-    if (copResults.h_113 !== undefined) setCalculatedValue("h_113", copResults.h_113, "number-2dp");
-    if (copResults.j_113 !== undefined) setCalculatedValue("j_113", copResults.j_113, "number-1dp");
-    if (copResults.j_114 !== undefined) setCalculatedValue("j_114", copResults.j_114, "number-1dp");
+    if (copResults.h_113 !== undefined)
+      setCalculatedValue("h_113", copResults.h_113, "number-2dp");
+    if (copResults.j_113 !== undefined)
+      setCalculatedValue("j_113", copResults.j_113, "number-1dp");
+    if (copResults.j_114 !== undefined)
+      setCalculatedValue("j_114", copResults.j_114, "number-1dp");
 
     // Heating System Results
-    if (heatingResults.d_114 !== undefined) setCalculatedValue("d_114", heatingResults.d_114, "number-2dp-comma");
-    if (heatingResults.l_113 !== undefined) setCalculatedValue("l_113", heatingResults.l_113, "number-2dp-comma");
-    if (heatingResults.d_115 !== undefined) setCalculatedValue("d_115", heatingResults.d_115, "number-2dp-comma");
-    if (heatingResults.f_115 !== undefined) setCalculatedValue("f_115", heatingResults.f_115, "number-2dp-comma");
-    if (heatingResults.h_115 !== undefined) setCalculatedValue("h_115", heatingResults.h_115, "number-2dp-comma");
-    if (heatingResults.l_115 !== undefined) setCalculatedValue("l_115", heatingResults.l_115, "number-2dp-comma");
-    if (heatingResults.m_115 !== undefined) setCalculatedValue("m_115", heatingResults.m_115, "percent-0dp");
-    if (heatingResults.f_114 !== undefined) setCalculatedValue("f_114", heatingResults.f_114, "number-2dp-comma");
+    if (heatingResults.d_114 !== undefined)
+      setCalculatedValue("d_114", heatingResults.d_114, "number-2dp-comma");
+    if (heatingResults.l_113 !== undefined)
+      setCalculatedValue("l_113", heatingResults.l_113, "number-2dp-comma");
+    if (heatingResults.d_115 !== undefined)
+      setCalculatedValue("d_115", heatingResults.d_115, "number-2dp-comma");
+    if (heatingResults.f_115 !== undefined)
+      setCalculatedValue("f_115", heatingResults.f_115, "number-2dp-comma");
+    if (heatingResults.h_115 !== undefined)
+      setCalculatedValue("h_115", heatingResults.h_115, "number-2dp-comma");
+    if (heatingResults.l_115 !== undefined)
+      setCalculatedValue("l_115", heatingResults.l_115, "number-2dp-comma");
+    if (heatingResults.m_115 !== undefined)
+      setCalculatedValue("m_115", heatingResults.m_115, "percent-0dp");
+    if (heatingResults.f_114 !== undefined)
+      setCalculatedValue("f_114", heatingResults.f_114, "number-2dp-comma");
 
     // Cooling System Results
-    if (coolingResults.j_116 !== undefined) setCalculatedValue("j_116", coolingResults.j_116, "number-1dp");
-    if (coolingResults.l_116 !== undefined) setCalculatedValue("l_116", coolingResults.l_116, "number-2dp-comma");
-    if (coolingResults.l_114 !== undefined) setCalculatedValue("l_114", coolingResults.l_114, "number-2dp-comma");
-    if (coolingResults.d_117 !== undefined) setCalculatedValue("d_117", coolingResults.d_117, "number-2dp-comma");
-    if (coolingResults.f_117 !== undefined) setCalculatedValue("f_117", coolingResults.f_117, "number-2dp");
-    if (coolingResults.j_117 !== undefined) setCalculatedValue("j_117", coolingResults.j_117, "number-1dp");
-    if (coolingResults.m_116 !== undefined) setCalculatedValue("m_116", coolingResults.m_116, "percent-0dp");
-    if (coolingResults.m_117 !== undefined) setCalculatedValue("m_117", coolingResults.m_117, "percent-0dp");
+    if (coolingResults.j_116 !== undefined)
+      setCalculatedValue("j_116", coolingResults.j_116, "number-1dp");
+    if (coolingResults.l_116 !== undefined)
+      setCalculatedValue("l_116", coolingResults.l_116, "number-2dp-comma");
+    if (coolingResults.l_114 !== undefined)
+      setCalculatedValue("l_114", coolingResults.l_114, "number-2dp-comma");
+    if (coolingResults.d_117 !== undefined)
+      setCalculatedValue("d_117", coolingResults.d_117, "number-2dp-comma");
+    if (coolingResults.f_117 !== undefined)
+      setCalculatedValue("f_117", coolingResults.f_117, "number-2dp");
+    if (coolingResults.j_117 !== undefined)
+      setCalculatedValue("j_117", coolingResults.j_117, "number-1dp");
+    if (coolingResults.m_116 !== undefined)
+      setCalculatedValue("m_116", coolingResults.m_116, "percent-0dp");
+    if (coolingResults.m_117 !== undefined)
+      setCalculatedValue("m_117", coolingResults.m_117, "percent-0dp");
 
     // Ventilation Rates Results
-    if (ventilationRatesResults.f_119 !== undefined) setCalculatedValue("f_119", ventilationRatesResults.f_119, "number-2dp");
-    if (ventilationRatesResults.h_119 !== undefined) setCalculatedValue("h_119", ventilationRatesResults.h_119, "number-2dp");
-    if (ventilationRatesResults.d_120 !== undefined) setCalculatedValue("d_120", ventilationRatesResults.d_120, "number-2dp-comma");
-    if (ventilationRatesResults.f_120 !== undefined) setCalculatedValue("f_120", ventilationRatesResults.f_120, "number-2dp-comma");
-    if (ventilationRatesResults.h_120 !== undefined) setCalculatedValue("h_120", ventilationRatesResults.h_120, "number-2dp-comma");
+    if (ventilationRatesResults.f_119 !== undefined)
+      setCalculatedValue("f_119", ventilationRatesResults.f_119, "number-2dp");
+    if (ventilationRatesResults.h_119 !== undefined)
+      setCalculatedValue("h_119", ventilationRatesResults.h_119, "number-2dp");
+    if (ventilationRatesResults.d_120 !== undefined)
+      setCalculatedValue(
+        "d_120",
+        ventilationRatesResults.d_120,
+        "number-2dp-comma",
+      );
+    if (ventilationRatesResults.f_120 !== undefined)
+      setCalculatedValue(
+        "f_120",
+        ventilationRatesResults.f_120,
+        "number-2dp-comma",
+      );
+    if (ventilationRatesResults.h_120 !== undefined)
+      setCalculatedValue(
+        "h_120",
+        ventilationRatesResults.h_120,
+        "number-2dp-comma",
+      );
 
     // Ventilation Energy Results
-    if (ventilationEnergyResults.d_121 !== undefined) setCalculatedValue("d_121", ventilationEnergyResults.d_121, "number-2dp-comma");
-    if (ventilationEnergyResults.i_121 !== undefined) setCalculatedValue("i_121", ventilationEnergyResults.i_121, "number-2dp-comma");
-    if (ventilationEnergyResults.m_121 !== undefined) setCalculatedValue("m_121", ventilationEnergyResults.m_121, "number-2dp-comma");
+    if (ventilationEnergyResults.d_121 !== undefined)
+      setCalculatedValue(
+        "d_121",
+        ventilationEnergyResults.d_121,
+        "number-2dp-comma",
+      );
+    if (ventilationEnergyResults.i_121 !== undefined)
+      setCalculatedValue(
+        "i_121",
+        ventilationEnergyResults.i_121,
+        "number-2dp-comma",
+      );
+    if (ventilationEnergyResults.m_121 !== undefined)
+      setCalculatedValue(
+        "m_121",
+        ventilationEnergyResults.m_121,
+        "number-2dp-comma",
+      );
 
     // Cooling Ventilation Results
-    if (coolingVentilationResults.i_122 !== undefined) setCalculatedValue("i_122", coolingVentilationResults.i_122, "percent-0dp");
-    if (coolingVentilationResults.d_122 !== undefined) setCalculatedValue("d_122", coolingVentilationResults.d_122, "number-2dp-comma");
-    if (coolingVentilationResults.d_123 !== undefined) setCalculatedValue("d_123", coolingVentilationResults.d_123, "number-2dp-comma");
+    if (coolingVentilationResults.i_122 !== undefined)
+      setCalculatedValue(
+        "i_122",
+        coolingVentilationResults.i_122,
+        "percent-0dp",
+      );
+    if (coolingVentilationResults.d_122 !== undefined)
+      setCalculatedValue(
+        "d_122",
+        coolingVentilationResults.d_122,
+        "number-2dp-comma",
+      );
+    if (coolingVentilationResults.d_123 !== undefined)
+      setCalculatedValue(
+        "d_123",
+        coolingVentilationResults.d_123,
+        "number-2dp-comma",
+      );
 
     // Free Cooling Results
-    if (freeCoolingResults.h_124 !== undefined) setCalculatedValue("h_124", freeCoolingResults.h_124, "number-2dp-comma");
+    if (freeCoolingResults.h_124 !== undefined)
+      setCalculatedValue("h_124", freeCoolingResults.h_124, "number-2dp-comma");
 
     // Mitigated CED Results
-    if (mitigatedResults.m_129 !== undefined) setCalculatedValue("m_129", mitigatedResults.m_129, "number-2dp-comma");
+    if (mitigatedResults.m_129 !== undefined)
+      setCalculatedValue("m_129", mitigatedResults.m_129, "number-2dp-comma");
   }
 
   /**
@@ -3121,11 +3231,21 @@ window.TEUI.SectionModules.sect13 = (function () {
     };
 
     // 🚨 DEBUG: Track what Reference values we're about to store
-    console.log(`[S13 CONTAMINATION DEBUG] storeReferenceResults called during ${ModeManager.currentMode} mode`);
-    console.log(`[S13 CONTAMINATION DEBUG] Reference heating system: ${ReferenceState.getValue("d_113")}`);
-    console.log(`[S13 CONTAMINATION DEBUG] Target heating system: ${TargetState.getValue("d_113")}`);
-    console.log(`[S13 CONTAMINATION DEBUG] Reference h_115 (gas volume): ${allResults.h_115}`);
-    console.log(`[S13 CONTAMINATION DEBUG] Reference f_115 (oil volume): ${allResults.f_115}`);
+    console.log(
+      `[S13 CONTAMINATION DEBUG] storeReferenceResults called during ${ModeManager.currentMode} mode`,
+    );
+    console.log(
+      `[S13 CONTAMINATION DEBUG] Reference heating system: ${ReferenceState.getValue("d_113")}`,
+    );
+    console.log(
+      `[S13 CONTAMINATION DEBUG] Target heating system: ${TargetState.getValue("d_113")}`,
+    );
+    console.log(
+      `[S13 CONTAMINATION DEBUG] Reference h_115 (gas volume): ${allResults.h_115}`,
+    );
+    console.log(
+      `[S13 CONTAMINATION DEBUG] Reference f_115 (oil volume): ${allResults.f_115}`,
+    );
 
     // ✅ PHASE 5: Store Reference results in module-level cache for persistence pattern
     lastReferenceResults = { ...allResults };
@@ -3135,7 +3255,9 @@ window.TEUI.SectionModules.sect13 = (function () {
       if (value !== null && value !== undefined) {
         // 🚨 DEBUG: Track what we're writing to StateManager
         if (fieldId === "h_115" || fieldId === "f_115") {
-          console.log(`[S13 CONTAMINATION DEBUG] Writing ref_${fieldId} = ${value}`);
+          console.log(
+            `[S13 CONTAMINATION DEBUG] Writing ref_${fieldId} = ${value}`,
+          );
         }
         window.TEUI.StateManager.setValue(
           `ref_${fieldId}`,
@@ -3286,10 +3408,6 @@ window.TEUI.SectionModules.sect13 = (function () {
   //==========================================================================
   // SIMPLIFIED TARGET MODEL FUNCTIONS (Pattern 2 - Clean Target Functions)
   //==========================================================================
-
-
-
-
 
   //==========================================================================
   // PUBLIC API

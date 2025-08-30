@@ -5,22 +5,12 @@
  * BREAKTHROUGH: Integrated proven Target/Reference state isolation
  * Using ClimateValues JSON for data lookup (no Excel import needed)
  *
- * ARCHITECTURAL STATUS (Aug 30 2025): ✅ DUAL-STATE-CHEATSHEET COMPLIANT
- * ✅ S03-REPAIRS.md ALL ISSUES RESOLVED
- *
- * ✅ All critical anti-patterns eliminated:
- * - Phase 1: DOM update pattern violations fixed ✅
- * - Phase 2: Mode-aware external dependency reading implemented ✅
- * - Phase 3: Consolidated defaults using field definitions as single source ✅
- * - Phase 4: switchMode display-only ✅
- * - Phase 5: No duplicate defaults ✅
- * - Phase 6: Proper state isolation ✅
- *
- * ✅ Critical fixes implemented:
- * - Reference climate data contamination eliminated ✅
- * - Excel compliance: Ontario/Alexandria baseline for both models ✅
- * - Perfect state isolation: Reference calculations use Reference state only ✅
- * - ClimateValues.js integration: No hardcoded weather duplicates ✅
+ * ARCHITECTURAL NOTE (Aug 2025 Refactor): This section is now fully Pattern A compliant
+ * following consolidation of defaults and DOM update pattern fixes. Key improvements:
+ * 1. Mode-aware external dependency reading (d_12, d_13) for Target/Reference pairs
+ * 2. City dropdown properly resets to "Select City" only on user province changes
+ * 3. Reference defaults updated to Ontario/Attawapiskat with Static capacitance (permafrost logic)
+ * 4. All calculateAll() calls properly followed by updateCalculatedDisplayValues()
  */
 
 // Ensure namespace exists
@@ -51,22 +41,20 @@ window.TEUI.SectionModules.sect03 = (function () {
       }
     },
     setDefaults: function () {
-      // ✅ PHASE 3: Read defaults from field definitions (single source of truth)
-      // Climate data will be populated by updateWeatherData() from ClimateValues.js
+      // ✅ PATTERN A: Read defaults from field definitions (single source of truth)
       this.state = {
-        d_19: getFieldDefault("d_19") || "ON", // Province
-        h_19: getFieldDefault("h_19") || "Alexandria", // City
-        h_20: getFieldDefault("h_20") || "Present", // Timeframe
-        h_21: getFieldDefault("h_21") || "Capacitance", // Capacitance setting
-        h_23: getFieldDefault("h_23") || "18", // Heating setpoint
-        h_24: getFieldDefault("h_24") || "24", // Cooling setpoint
-        m_19: getFieldDefault("m_19") || "120", // Cooling days
-        l_22: getFieldDefault("l_22") || "80", // Elevation
-        l_24: getFieldDefault("l_24") || "24", // Cooling override
-        i_21: getFieldDefault("i_21") || "50", // Capacitance percentage
-        // ✅ Climate data removed - populated by updateWeatherData() from ClimateValues.js
+        d_19: getFieldDefault("d_19") || "ON",
+        h_19: getFieldDefault("h_19") || "Alexandria",
+        h_20: getFieldDefault("h_20") || "Present",
+        h_21: getFieldDefault("h_21") || "Capacitance",
+        h_23: getFieldDefault("h_23") || "18",
+        h_24: getFieldDefault("h_24") || "24",
+        m_19: getFieldDefault("m_19") || "120",
+        l_22: getFieldDefault("l_22") || "80",
+        l_24: getFieldDefault("l_24") || "24",
+        i_21: getFieldDefault("i_21") || "50",
       };
-      // console.log("S03 TARGET STATE: Set to defaults");
+      console.log("S03: Target defaults set from field definitions");
     },
     saveState: function () {
       try {
@@ -115,25 +103,26 @@ window.TEUI.SectionModules.sect03 = (function () {
       }
     },
     setDefaults: function () {
-      // ✅ PHASE 3: Initialize with base defaults from field definitions, then apply Reference-specific overrides
+      // ✅ PATTERN A: Initialize with base defaults, then apply Reference-specific overrides
       this.state = {
-        // 1. Base defaults from field definitions (single source of truth)
-        d_19: getFieldDefault("d_19") || "ON", // Province
-        h_19: getFieldDefault("h_19") || "Alexandria", // City
-        h_20: getFieldDefault("h_20") || "Present", // Timeframe
-        h_21: getFieldDefault("h_21") || "Capacitance", // Capacitance setting
-        h_23: getFieldDefault("h_23") || "18", // Heating setpoint
-        h_24: getFieldDefault("h_24") || "24", // Cooling setpoint
-        m_19: getFieldDefault("m_19") || "120", // Cooling days
-        l_22: getFieldDefault("l_22") || "80", // Elevation
-        l_24: getFieldDefault("l_24") || "24", // Cooling override
-        i_21: getFieldDefault("i_21") || "50", // Capacitance percentage
+        // 1. Base defaults from field definitions
+        h_20: getFieldDefault("h_20") || "Present",
+        h_21: getFieldDefault("h_21") || "Capacitance",
+        h_23: getFieldDefault("h_23") || "18",
+        h_24: getFieldDefault("h_24") || "24",
+        m_19: getFieldDefault("m_19") || "120",
+        l_22: getFieldDefault("l_22") || "80",
+        l_24: getFieldDefault("l_24") || "24",
 
-        // 2. Reference-specific overrides (only differences from Target)
-        // Both Target and Reference use Ontario/Alexandria for Excel compliance
-        // ✅ Climate data removed - populated by updateWeatherData() from ClimateValues.js
+        // 2. Reference-specific overrides for climate comparison
+        d_19: "ON", // Ontario for cold climate reference
+        h_19: "Attawapiskat", // Arctic climate for Reference comparison
+        h_21: "Static", // Arctic/Subarctic = no ground coupling (permafrost)
+        i_21: "0", // Static capacitance = 0% (no ground benefits)
       };
-      // console.log("S03 REFERENCE STATE: Set to Excel compliance defaults (ON/Alexandria)");
+      console.log(
+        "S03: Reference defaults set from field definitions with climate comparison overrides",
+      );
     },
     saveState: function () {
       try {
@@ -230,8 +219,8 @@ window.TEUI.SectionModules.sect03 = (function () {
       );
       if (provinceSelect && currentState.getValue("d_19")) {
         provinceSelect.value = currentState.getValue("d_19");
-        // Trigger city dropdown update
-        handleProvinceChange({ target: provinceSelect });
+        // Trigger city dropdown update (initialization)
+        updateCityDropdown(provinceSelect.value, false);
       }
 
       // Update city dropdown
@@ -403,7 +392,7 @@ window.TEUI.SectionModules.sect03 = (function () {
   }
 
   /**
-   * ✅ PHASE 2: Mode-aware external dependency reader for Target/Reference pairs
+   * ✅ PATTERN A: Mode-aware external dependency reader for Target/Reference pairs
    * Reads the correct state value based on current calculation mode
    */
   function getModeAwareGlobalValue(fieldId) {
@@ -415,11 +404,11 @@ window.TEUI.SectionModules.sect03 = (function () {
       if (refValue !== null && refValue !== undefined) {
         return refValue.toString();
       }
-      // Fallback to unprefixed if ref_ version doesn't exist
+      // Fallback to unprefixed for external dependencies not yet publishing ref_ values
       const fallbackValue = window.TEUI.StateManager.getValue(fieldId);
       return fallbackValue ? fallbackValue.toString() : "";
     } else {
-      // Target mode: Read unprefixed values directly
+      // Target mode: Read unprefixed values
       const targetValue = window.TEUI.StateManager.getValue(fieldId);
       return targetValue ? targetValue.toString() : "";
     }
@@ -1054,10 +1043,9 @@ window.TEUI.SectionModules.sect03 = (function () {
   }
 
   /**
-   * ✅ PHASE 3: Retrieves a field's default value from the sectionRows definition.
-   * This is the single source of truth for non-climate default values.
-   * Climate data should come from ClimateValues.js, not hardcoded defaults.
-   * @param {string} fieldId The ID of the field (e.g., "d_19")
+   * Retrieves a field's default value from the sectionRows definition.
+   * This is the single source of truth for all default values.
+   * @param {string} fieldId The ID of the field (e.g., "d_19").
    * @returns {string|null} The default value or null if not found.
    */
   function getFieldDefault(fieldId) {
@@ -1111,14 +1099,16 @@ window.TEUI.SectionModules.sect03 = (function () {
       );
     }
 
-    // Update city dropdown for this province
-    updateCityDropdown(provinceValue);
+    // Update city dropdown for this province (user-triggered change)
+    updateCityDropdown(provinceValue, true);
   }
 
   /**
    * Update city dropdown based on selected province - Using ClimateDataService
+   * @param {string} provinceValue - The selected province
+   * @param {boolean} isUserChange - True if triggered by user province change, false for initialization
    */
-  function updateCityDropdown(provinceValue) {
+  function updateCityDropdown(provinceValue, isUserChange = false) {
     const cityDropdown = getElement(['[data-dropdown-id="dd_h_19"]']);
     if (!cityDropdown) return;
 
@@ -1149,19 +1139,30 @@ window.TEUI.SectionModules.sect03 = (function () {
 
     cityDropdown.disabled = false;
 
-    // Auto-select city from current state if it exists in this province
-    const currentCity = DualState.getValue("h_19");
-    if (currentCity && cities.includes(currentCity)) {
-      cityDropdown.value = currentCity;
-      DualState.setValue("h_19", currentCity, "init");
-    } else if (provinceValue === "ON" && cities.includes("Alexandria")) {
-      // Default to Alexandria for Ontario
-      cityDropdown.value = "Alexandria";
-      DualState.setValue("h_19", "Alexandria", "init");
-    } else if (cities.length > 0) {
-      // Default to first city
-      cityDropdown.value = cities[0];
-      DualState.setValue("h_19", cities[0], "init");
+    if (isUserChange) {
+      // ✅ CRITICAL FIX: Reset to "Select City" only when user changes province
+      // This prevents stale city values from previous province selection
+      cityDropdown.value = "";
+      DualState.setValue("h_19", "", "init");
+
+      // Clear stale city from StateManager to prevent calculation with wrong data
+      if (window.TEUI?.StateManager) {
+        const cityKey =
+          ModeManager.currentMode === "reference" ? "ref_h_19" : "h_19";
+        window.TEUI.StateManager.setValue(cityKey, "", "init");
+      }
+    } else {
+      // ✅ INITIALIZATION: Set proper defaults from current state
+      const currentCity = DualState.getValue("h_19");
+      if (currentCity && cities.includes(currentCity)) {
+        cityDropdown.value = currentCity;
+        // Trigger calculations with the default city
+        updateWeatherData();
+      } else {
+        // If state city not available in this province, reset to empty
+        cityDropdown.value = "";
+        DualState.setValue("h_19", "", "init");
+      }
     }
 
     console.log(
@@ -1188,8 +1189,24 @@ window.TEUI.SectionModules.sect03 = (function () {
       getElement(['[data-dropdown-id="dd_h_20"]'])?.value ||
       "Present";
 
-    if (!provinceValue || !cityValue) {
+    if (!provinceValue || !cityValue || cityValue === "") {
       console.log("S03: Cannot update weather data - missing province or city");
+      // Clear any existing climate data when no city is selected
+      if (!cityValue || cityValue === "") {
+        const fieldsToReset = [
+          "d_20",
+          "d_21",
+          "d_22",
+          "h_22",
+          "d_23",
+          "d_24",
+          "j_19",
+          "l_22",
+        ];
+        fieldsToReset.forEach((fieldId) => {
+          setFieldValue(fieldId, "", "derived");
+        });
+      }
       return;
     }
 
@@ -1259,7 +1276,7 @@ window.TEUI.SectionModules.sect03 = (function () {
 
     // Run all calculations after weather data update
     calculateAll();
-    // ✅ PHASE 1: Add missing DOM update after calculations
+    // ✅ MANDATORY: Update DOM display after calculations
     ModeManager.updateCalculatedDisplayValues();
 
     console.log(
@@ -1447,62 +1464,17 @@ window.TEUI.SectionModules.sect03 = (function () {
 
   /**
    * REFERENCE MODEL ENGINE: Calculate all values using Reference state
-   * ✅ CRITICAL FIX: Uses Reference state values directly, not current DOM selections
    * Stores results with ref_ prefix for downstream sections (S15, S14, etc.)
    */
   function calculateReferenceModel() {
     // console.log("[Section03] Running Reference Model calculations...");
 
     try {
-      // ✅ CRITICAL FIX: Calculate Reference climate using Reference state values ONLY
-      // This prevents contamination from Target mode DOM selections
-      const refProvince = ReferenceState.getValue("d_19") || "ON";
-      const refCity = ReferenceState.getValue("h_19") || "Alexandria";
-      const refTimeframe = ReferenceState.getValue("h_20") || "Present";
-
-      // Get Reference climate data directly from ClimateDataService
-      const refCityData = ClimateDataService.getCityData(refProvince, refCity);
-
-      if (refCityData) {
-        // Update Reference climate values using Reference location data
-        const refHddValue =
-          refTimeframe === "Future"
-            ? refCityData.HDD18_2021_2050
-            : refCityData.HDD18;
-        const refCddValue =
-          refTimeframe === "Future"
-            ? refCityData.CDD24_2021_2050
-            : refCityData.CDD24;
-
-        // Store Reference climate values in Reference state
-        ReferenceState.setValue("d_20", refHddValue || "N/A", "calculated");
-        ReferenceState.setValue("d_21", refCddValue || "N/A", "calculated");
-        ReferenceState.setValue(
-          "d_23",
-          refCityData.January_2_5 || "-24",
-          "calculated",
-        );
-        ReferenceState.setValue(
-          "d_24",
-          refCityData.July_2_5_Tdb || "34",
-          "calculated",
-        );
-        ReferenceState.setValue(
-          "l_22",
-          refCityData["Elev ASL (m)"] || "80",
-          "calculated",
-        );
-
-        // Calculate Reference climate zone
-        const refClimateZone = determineClimateZone(refHddValue);
-        ReferenceState.setValue("j_19", refClimateZone, "calculated");
-      }
-
-      // Force Reference mode temporarily for setpoint calculations
+      // Force Reference mode temporarily to get Reference calculations
       const originalMode = ModeManager.currentMode;
       ModeManager.currentMode = "reference";
 
-      // Run setpoint calculations using Reference state values
+      // Run all calculations using Reference state values (Vancouver climate)
       calculateHeatingSetpoint();
       calculateCoolingSetpoint_h24();
       calculateTemperatures();
@@ -1529,16 +1501,41 @@ window.TEUI.SectionModules.sect03 = (function () {
 
     // Get Reference state climate values and store with ref_ prefix
     const referenceResults = {
-      h_23: ReferenceState.getValue("h_23"), // Reference heating setpoint
-      d_23: ReferenceState.getValue("d_23"), // Reference coldest day
-      d_24: ReferenceState.getValue("d_24"), // Reference hottest day
-      h_24: ReferenceState.getValue("h_24"), // Reference cooling setpoint
-      d_20: ReferenceState.getValue("d_20"), // Reference HDD
-      d_21: ReferenceState.getValue("d_21"), // Reference CDD
-      d_22: ReferenceState.getValue("d_22"), // Reference GF HDD
-      h_22: ReferenceState.getValue("h_22"), // Reference GF CDD
-      j_19: ReferenceState.getValue("j_19"), // Reference climate zone
+      h_23: ReferenceState.getValue("h_23"), // Vancouver heating setpoint
+      d_23: ReferenceState.getValue("d_23"), // Vancouver coldest day
+      d_24: ReferenceState.getValue("d_24"), // Vancouver hottest day
+      h_24: ReferenceState.getValue("h_24"), // Vancouver cooling setpoint
+      d_20: ReferenceState.getValue("d_20"), // Vancouver HDD
+      d_21: ReferenceState.getValue("d_21"), // Vancouver CDD
+      d_22: ReferenceState.getValue("d_22"), // Vancouver GF HDD
+      h_22: ReferenceState.getValue("h_22"), // Vancouver GF CDD
+      j_19: ReferenceState.getValue("j_19"), // Vancouver climate zone
     };
+
+    // [S03DB] Targeted logging to verify Reference writes are happening
+    try {
+      const refProvince = ReferenceState.getValue("d_19");
+      const refCity = ReferenceState.getValue("h_19");
+      console.log(
+        "[S03DB] storeReferenceResults: mode=reference, province=",
+        refProvince,
+        "city=",
+        refCity,
+        "values=",
+        {
+          d_20: referenceResults.d_20,
+          d_21: referenceResults.d_21,
+          d_23: referenceResults.d_23,
+          d_24: referenceResults.d_24,
+          j_19: referenceResults.j_19,
+        },
+      );
+    } catch (e) {
+      console.warn(
+        "[S03DB] storeReferenceResults: pre-write logging failed",
+        e,
+      );
+    }
 
     // Store with ref_ prefix for downstream sections
     Object.entries(referenceResults).forEach(([fieldId, value]) => {
@@ -1550,6 +1547,26 @@ window.TEUI.SectionModules.sect03 = (function () {
         );
       }
     });
+
+    // [S03DB] Read-back verification for key fields
+    try {
+      const readBack = {
+        ref_d_20: window.TEUI.StateManager.getValue("ref_d_20"),
+        ref_d_21: window.TEUI.StateManager.getValue("ref_d_21"),
+        ref_d_23: window.TEUI.StateManager.getValue("ref_d_23"),
+        ref_d_24: window.TEUI.StateManager.getValue("ref_d_24"),
+        ref_j_19: window.TEUI.StateManager.getValue("ref_j_19"),
+      };
+      console.log(
+        "[S03DB] storeReferenceResults: wrote ref_ values (read-back)",
+        readBack,
+      );
+    } catch (e) {
+      console.warn(
+        "[S03DB] storeReferenceResults: post-write read-back failed",
+        e,
+      );
+    }
   }
 
   // --- New Calculation Functions ---
@@ -1558,8 +1575,8 @@ window.TEUI.SectionModules.sect03 = (function () {
    * Calculate Heating Setpoint (h_23) based on Occupancy Type (d_12)
    */
   function calculateHeatingSetpoint() {
-    const referenceStandard = getModeAwareGlobalValue("d_13"); // ✅ PHASE 2: Mode-aware external dependency
-    const occupancyType = getModeAwareGlobalValue("d_12"); // ✅ PHASE 2: Mode-aware external dependency
+    const referenceStandard = getModeAwareGlobalValue("d_13"); // ✅ PATTERN A: Mode-aware external dependency
+    const occupancyType = getModeAwareGlobalValue("d_12"); // ✅ PATTERN A: Mode-aware external dependency
     let heatingSetpoint;
 
     // Check if the reference standard indicates a Passive House related standard
@@ -1590,7 +1607,7 @@ window.TEUI.SectionModules.sect03 = (function () {
    * Calculate Base Cooling Setpoint (h_24) based on Occupancy Type (d_12)
    */
   function calculateCoolingSetpoint_h24() {
-    const occupancyType = getModeAwareGlobalValue("d_12"); // ✅ PHASE 2: Mode-aware external dependency
+    const occupancyType = getModeAwareGlobalValue("d_12"); // ✅ PATTERN A: Mode-aware external dependency
     let coolingSetpoint = 24; // Default for all types currently
 
     // Add specific logic based on occupancy if needed in the future
@@ -1637,7 +1654,7 @@ window.TEUI.SectionModules.sect03 = (function () {
    * Update the critical occupancy flag display based on d_12
    */
   function updateCriticalOccupancyFlag() {
-    const occupancyType = getModeAwareGlobalValue("d_12"); // ✅ PHASE 2: Mode-aware external dependency
+    const occupancyType = getModeAwareGlobalValue("d_12"); // ✅ PATTERN A: Mode-aware external dependency
     const sectionHeader = document.querySelector(
       "#climateCalculations .section-header",
     ); // Target the main header
@@ -1882,6 +1899,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         }
 
         calculateAll(); // CRITICAL: Recalculate GFCDD when capacitance changes
+        ModeManager.updateCalculatedDisplayValues();
       });
     }
 
@@ -2002,6 +2020,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       // Listener for m_19 (Cooling Days) changes
       window.TEUI.StateManager.addListener("m_19", function (newValue) {
         calculateAll(); // Recalculate everything as GF HDD and GF CDD change
+        ModeManager.updateCalculatedDisplayValues();
       });
 
       // ✅ CRITICAL: Bridge FieldManager slider updates to DualState
@@ -2009,6 +2028,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         // When FieldManager updates StateManager, also update DualState for isolation
         DualState.setValue("i_21", newValue, "user");
         calculateAll(); // Recalculate everything as capacitance affects GF CDD
+        ModeManager.updateCalculatedDisplayValues();
         console.log(
           `S03: Capacitance slider updated via FieldManager - bridged to DualState: ${newValue}%`,
         );
@@ -2019,6 +2039,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         // When dropdown updates StateManager, also update DualState for isolation
         DualState.setValue("h_21", newValue, "user");
         calculateAll(); // Recalculate GFCDD when capacitance setting changes
+        ModeManager.updateCalculatedDisplayValues();
         console.log(
           `S03: Capacitance dropdown updated via StateManager - bridged to DualState: ${newValue}`,
         );
@@ -2055,6 +2076,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         );
       }
       calculateAll(); // Recalculate after state update
+      ModeManager.updateCalculatedDisplayValues();
     } else {
       // Revert to previous value if input is invalid
       const previousValue = window.TEUI.StateManager?.getValue(fieldId) || "0"; // Fallback to 0
@@ -2113,8 +2135,8 @@ window.TEUI.SectionModules.sect03 = (function () {
         );
       }
 
-      // Trigger city dropdown update
-      updateCityDropdown(provinceSelect.value);
+      // Trigger city dropdown update (initialization)
+      updateCityDropdown(provinceSelect.value, false);
     }
   }
 

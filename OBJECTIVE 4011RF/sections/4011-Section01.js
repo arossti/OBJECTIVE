@@ -435,7 +435,6 @@ window.TEUI.SectionModules.sect01 = (function () {
   }
 
   function updateDisplayValue(fieldId, value, tierOverride = null) {
-    
     const element = document.querySelector(
       `[data-field-id="${fieldId}"] .key-value, [data-field-id="${fieldId}"] .percent-value`,
     );
@@ -603,8 +602,6 @@ window.TEUI.SectionModules.sect01 = (function () {
     // e_10 = ref_j_32 / ref_h_15 (Reference TEUI)
     const e_10 =
       referenceArea > 0 ? Math.round((refEnergy / referenceArea) * 10) / 10 : 0;
-    
-
 
     // e_8 = ref_k_32 / ref_h_15 (Reference Annual Carbon)
     const e_8 =
@@ -625,8 +622,6 @@ window.TEUI.SectionModules.sect01 = (function () {
     // h_10 = j_32 / h_15 (Target TEUI)
     const h_10 =
       targetArea > 0 ? Math.round((targetEnergy / targetArea) * 10) / 10 : 0;
-    
-
 
     // h_8 = k_32 / h_15 (Target Annual Carbon)
     const h_8 =
@@ -724,7 +719,6 @@ window.TEUI.SectionModules.sect01 = (function () {
         window.TEUI.StateManager.setValue("i_10", calculatedTier, "calculated");
       }
     }
-
 
     updateDisplayValue("h_10", h10Formatted, calculatedTier);
     updateDisplayValue("h_8", h8Formatted);
@@ -984,7 +978,7 @@ window.TEUI.SectionModules.sect01 = (function () {
     if (calculationTimeout) {
       clearTimeout(calculationTimeout);
     }
-    
+
     calculationTimeout = setTimeout(() => {
       // Add recursion protection
       if (calculationInProgress) {
@@ -993,46 +987,48 @@ window.TEUI.SectionModules.sect01 = (function () {
 
       calculationInProgress = true;
 
-    // console.log("🚀 [S01] =================================");
-    // console.log("🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED");
-    // console.log("🚀 [S01] =================================");
-
-    try {
-      // [S01DB] Dump upstream dependency snapshot for TEUI chain
-      try {
-        const snapshot = {
-          ref_j_32: window.TEUI?.StateManager?.getValue("ref_j_32"),
-          ref_k_32: window.TEUI?.StateManager?.getValue("ref_k_32"),
-          j_32: window.TEUI?.StateManager?.getValue("j_32"),
-          k_32: window.TEUI?.StateManager?.getValue("k_32"),
-          ref_h_15: window.TEUI?.StateManager?.getValue("ref_h_15"),
-          h_15: window.TEUI?.StateManager?.getValue("h_15"),
-          ref_h_13: window.TEUI?.StateManager?.getValue("ref_h_13"),
-          h_13: window.TEUI?.StateManager?.getValue("h_13"),
-        };
-        console.log("[S01DB] upstream snapshot", snapshot);
-      } catch (e) {
-        console.warn("[S01DB] snapshot failed", e);
-      }
-      // ✅ PURE DISPLAY CONSUMER: Single function does all math and display
-      updateTEUIDisplay(); // Calculates all values and updates display
-      updateTitleModeIndicators(); // Update mode indicators
-
-      // 🕐 PERFORMANCE CLOCK: Mark calculation chain completion (after h_10 finalized)
-      if (window.TEUI?.Clock?.markCalculationEnd) {
-        window.TEUI.Clock.markCalculationEnd();
-      }
-      
-      // 🎯 USER INTERACTION TIMING: Mark end of user interaction → h_10 settlement chain
-      if (window.TEUI?.Clock?.markUserInteractionEnd) {
-        window.TEUI.Clock.markUserInteractionEnd();
-      }
-
-      console.log("✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10");
       // console.log("🚀 [S01] =================================");
-    } finally {
-      calculationInProgress = false;
-    }
+      // console.log("🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED");
+      // console.log("🚀 [S01] =================================");
+
+      try {
+        // [S01DB] Dump upstream dependency snapshot for TEUI chain
+        try {
+          const snapshot = {
+            ref_j_32: window.TEUI?.StateManager?.getValue("ref_j_32"),
+            ref_k_32: window.TEUI?.StateManager?.getValue("ref_k_32"),
+            j_32: window.TEUI?.StateManager?.getValue("j_32"),
+            k_32: window.TEUI?.StateManager?.getValue("k_32"),
+            ref_h_15: window.TEUI?.StateManager?.getValue("ref_h_15"),
+            h_15: window.TEUI?.StateManager?.getValue("h_15"),
+            ref_h_13: window.TEUI?.StateManager?.getValue("ref_h_13"),
+            h_13: window.TEUI?.StateManager?.getValue("h_13"),
+          };
+          console.log("[S01DB] upstream snapshot", snapshot);
+        } catch (e) {
+          console.warn("[S01DB] snapshot failed", e);
+        }
+        // ✅ PURE DISPLAY CONSUMER: Single function does all math and display
+        updateTEUIDisplay(); // Calculates all values and updates display
+        updateTitleModeIndicators(); // Update mode indicators
+
+        // 🕐 PERFORMANCE CLOCK: Mark calculation chain completion (after h_10 finalized)
+        if (window.TEUI?.Clock?.markCalculationEnd) {
+          window.TEUI.Clock.markCalculationEnd();
+        }
+
+        // 🎯 USER INTERACTION TIMING: Mark end of user interaction → h_10 settlement chain
+        if (window.TEUI?.Clock?.markUserInteractionEnd) {
+          window.TEUI.Clock.markUserInteractionEnd();
+        }
+
+        console.log(
+          "✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10",
+        );
+        // console.log("🚀 [S01] =================================");
+      } finally {
+        calculationInProgress = false;
+      }
     }, 50); // 50ms debounce to prevent race conditions
   }
 
@@ -1088,7 +1084,7 @@ window.TEUI.SectionModules.sect01 = (function () {
       "ref_h_13", // Service life (Reference)
       "i_41", // Embodied carbon
 
-      // S15: Final Reference TEUI calculation (critical for Reference column)  
+      // S15: Final Reference TEUI calculation (critical for Reference column)
       // REMOVED: "ref_h_136" - S01 calculates its own e_10 from ref_j_32 (same fix pattern as h_10)
 
       // S05: Reference embodied carbon
@@ -1105,7 +1101,9 @@ window.TEUI.SectionModules.sect01 = (function () {
           if (newValue !== oldValue) {
             if (fieldId === "j_32") {
               console.log(`[S01] j_32 listener: ${oldValue} → ${newValue}`);
-              console.log(`[S01] 🕐 j_32 listener timing: StateManager current j_32 = ${window.TEUI.StateManager?.getValue("j_32")}`);
+              console.log(
+                `[S01] 🕐 j_32 listener timing: StateManager current j_32 = ${window.TEUI.StateManager?.getValue("j_32")}`,
+              );
             } else if (fieldId === "ref_j_32") {
               // console.log(`🔵 [S01] REFERENCE ENERGY LISTENER: ref_j_32 changed from ${oldValue} to ${newValue} → will update REFERENCE COLUMN E`);
             } else {

@@ -331,16 +331,21 @@ TEUI.StateManager = (function () {
    */
   function setValue(fieldId, value, state = VALUE_STATES.USER_MODIFIED) {
     // 🎯 SMART USER INTERACTION TIMING: Auto-detect user changes and start performance timing
-    if (state === VALUE_STATES.USER_MODIFIED && window.TEUI?.Clock?.markUserInteractionStart) {
+    if (
+      state === VALUE_STATES.USER_MODIFIED &&
+      window.TEUI?.Clock?.markUserInteractionStart
+    ) {
       window.TEUI.Clock.markUserInteractionStart();
     }
 
     // 🔍 RACE CONDITION DEBUG: Track all h_10 setValue calls
     if (fieldId === "h_10") {
-      console.log(`[StateManager] 🎯 h_10 setValue: "${value}" (state: ${state})`);
+      console.log(
+        `[StateManager] 🎯 h_10 setValue: "${value}" (state: ${state})`,
+      );
       console.trace("[StateManager] h_10 setValue stack trace:");
     }
-    
+
     // Check if we're in Reference Mode and this is an independently editable field
     if (
       window.TEUI &&
@@ -1007,26 +1012,86 @@ TEUI.StateManager = (function () {
     // === ARCHITECTURAL MODULE DEPENDENCIES FOR AI AGENTS ===
     // Add module-level architectural nodes to help AI agents understand execution flow
     const architecturalNodes = [
-      { id: "FOUNDATION-StateManager", group: "🏗️ Foundation", type: "module", architecturalLayer: "Foundation",
-        label: "StateManager", description: "Central state management, single source of truth" },
-      { id: "FOUNDATION-FieldManager", group: "🏗️ Foundation", type: "module", architecturalLayer: "Foundation",
-        label: "FieldManager", description: "DOM generation, section coordination" },
-      { id: "FOUNDATION-ReferenceValues", group: "🏗️ Foundation", type: "module", architecturalLayer: "Foundation",
-        label: "ReferenceValues", description: "Building code standards database" },
-      { id: "COORDINATION-Calculator", group: "🧮 Coordination", type: "module", architecturalLayer: "Coordination",
-        label: "Calculator", description: "Traffic Cop coordination, orchestrates calculateAll()" },
-      { id: "COORDINATION-ReferenceSystem", group: "🧮 Coordination", type: "module", architecturalLayer: "Coordination",
-        label: "Reference System", description: "Master dual-state coordination" },
-      { id: "COORDINATION-SectionIntegrator", group: "🧮 Coordination", type: "module", architecturalLayer: "Coordination",
-        label: "SectionIntegrator", description: "Cross-section data flow patterns" },
-      { id: "MODULE-Section01", group: "🎯 Application", type: "module", architecturalLayer: "Application",
-        label: "Section 01 (Key Values)", description: "Dashboard, consumes S15 outputs" },
-      { id: "MODULE-Section03", group: "🎯 Application", type: "module", architecturalLayer: "Application",
-        label: "Section 03 (Climate)", description: "Climate data, foundation calculations" },
-      { id: "MODULE-Section14", group: "🎯 Application", type: "module", architecturalLayer: "Application",
-        label: "Section 14 (TEDI)", description: "Summary calculations, consumes S9-S13" },
-      { id: "MODULE-Section15", group: "🎯 Application", type: "module", architecturalLayer: "Application",
-        label: "Section 15 (TEUI)", description: "Final energy summary, feeds S01" }
+      {
+        id: "FOUNDATION-StateManager",
+        group: "🏗️ Foundation",
+        type: "module",
+        architecturalLayer: "Foundation",
+        label: "StateManager",
+        description: "Central state management, single source of truth",
+      },
+      {
+        id: "FOUNDATION-FieldManager",
+        group: "🏗️ Foundation",
+        type: "module",
+        architecturalLayer: "Foundation",
+        label: "FieldManager",
+        description: "DOM generation, section coordination",
+      },
+      {
+        id: "FOUNDATION-ReferenceValues",
+        group: "🏗️ Foundation",
+        type: "module",
+        architecturalLayer: "Foundation",
+        label: "ReferenceValues",
+        description: "Building code standards database",
+      },
+      {
+        id: "COORDINATION-Calculator",
+        group: "🧮 Coordination",
+        type: "module",
+        architecturalLayer: "Coordination",
+        label: "Calculator",
+        description: "Traffic Cop coordination, orchestrates calculateAll()",
+      },
+      {
+        id: "COORDINATION-ReferenceSystem",
+        group: "🧮 Coordination",
+        type: "module",
+        architecturalLayer: "Coordination",
+        label: "Reference System",
+        description: "Master dual-state coordination",
+      },
+      {
+        id: "COORDINATION-SectionIntegrator",
+        group: "🧮 Coordination",
+        type: "module",
+        architecturalLayer: "Coordination",
+        label: "SectionIntegrator",
+        description: "Cross-section data flow patterns",
+      },
+      {
+        id: "MODULE-Section01",
+        group: "🎯 Application",
+        type: "module",
+        architecturalLayer: "Application",
+        label: "Section 01 (Key Values)",
+        description: "Dashboard, consumes S15 outputs",
+      },
+      {
+        id: "MODULE-Section03",
+        group: "🎯 Application",
+        type: "module",
+        architecturalLayer: "Application",
+        label: "Section 03 (Climate)",
+        description: "Climate data, foundation calculations",
+      },
+      {
+        id: "MODULE-Section14",
+        group: "🎯 Application",
+        type: "module",
+        architecturalLayer: "Application",
+        label: "Section 14 (TEDI)",
+        description: "Summary calculations, consumes S9-S13",
+      },
+      {
+        id: "MODULE-Section15",
+        group: "🎯 Application",
+        type: "module",
+        architecturalLayer: "Application",
+        label: "Section 15 (TEUI)",
+        description: "Final energy summary, feeds S01",
+      },
     ];
 
     // Add architectural module dependencies
@@ -1034,61 +1099,71 @@ TEUI.StateManager = (function () {
       // Foundation dependencies
       { source: "FOUNDATION-StateManager", target: "FOUNDATION-FieldManager" },
       { source: "FOUNDATION-StateManager", target: "COORDINATION-Calculator" },
-      { source: "FOUNDATION-FieldManager", target: "COORDINATION-SectionIntegrator" },
-      { source: "FOUNDATION-ReferenceValues", target: "COORDINATION-ReferenceSystem" },
-      
-      // Coordination dependencies  
+      {
+        source: "FOUNDATION-FieldManager",
+        target: "COORDINATION-SectionIntegrator",
+      },
+      {
+        source: "FOUNDATION-ReferenceValues",
+        target: "COORDINATION-ReferenceSystem",
+      },
+
+      // Coordination dependencies
       { source: "COORDINATION-Calculator", target: "MODULE-Section03" },
       { source: "COORDINATION-Calculator", target: "MODULE-Section14" },
       { source: "COORDINATION-Calculator", target: "MODULE-Section15" },
       { source: "COORDINATION-Calculator", target: "MODULE-Section01" },
       { source: "COORDINATION-ReferenceSystem", target: "MODULE-Section01" },
-      
+
       // Section execution flow (from Calculator.js calculateAll order)
       { source: "MODULE-Section03", target: "MODULE-Section14" },
       { source: "MODULE-Section14", target: "MODULE-Section15" },
-      { source: "MODULE-Section15", target: "MODULE-Section01" }
+      { source: "MODULE-Section15", target: "MODULE-Section01" },
     ];
 
     // Add architectural nodes and links
-    architecturalNodes.forEach(node => nodes.set(node.id, node));
+    architecturalNodes.forEach((node) => nodes.set(node.id, node));
     links.push(...architecturalLinks);
 
     // === MODE-BASED DEPENDENCY PROCESSING ===
     // Process Target, Reference, or both sets of dependencies based on mode
-    
+
     // Iterate through the dependencies map (source -> Set<target>)
     // Process dependencies based on mode for AI agent analysis
-    const processFieldDependencies = (sourcePrefix = "", targetPrefix = "", nodePrefix = "") => {
+    const processFieldDependencies = (
+      sourcePrefix = "",
+      targetPrefix = "",
+      nodePrefix = "",
+    ) => {
       dependencies.forEach((targets, sourceId) => {
         const processedSourceId = sourcePrefix + sourceId;
-        
+
         // Add source node if not already added
         if (!nodes.has(processedSourceId)) {
-          nodes.set(processedSourceId, { 
-            id: processedSourceId, 
+          nodes.set(processedSourceId, {
+            id: processedSourceId,
             originalId: sourceId,
-            dependencyMode: nodePrefix || "target"
+            dependencyMode: nodePrefix || "target",
           });
         }
 
         targets.forEach((targetId) => {
           const processedTargetId = targetPrefix + targetId;
-          
+
           // Add target node if not already added
           if (!nodes.has(processedTargetId)) {
-            nodes.set(processedTargetId, { 
+            nodes.set(processedTargetId, {
               id: processedTargetId,
-              originalId: targetId, 
-              dependencyMode: nodePrefix || "target"
+              originalId: targetId,
+              dependencyMode: nodePrefix || "target",
             });
           }
 
           // Add dependency link
-          links.push({ 
-            source: processedSourceId, 
+          links.push({
+            source: processedSourceId,
             target: processedTargetId,
-            dependencyMode: nodePrefix || "target"
+            dependencyMode: nodePrefix || "target",
           });
         });
       });
@@ -1099,7 +1174,7 @@ TEUI.StateManager = (function () {
       // Standard Target state dependencies (current behavior)
       processFieldDependencies("", "", "target");
     }
-    
+
     if (mode === "reference" || mode === "both") {
       // Reference state dependencies (ref_ prefixed fields)
       // For Reference mode, we map the same logical dependencies but with ref_ prefixes
@@ -1182,31 +1257,32 @@ TEUI.StateManager = (function () {
     const targetGraph = exportDependencyGraph("target");
     const referenceGraph = exportDependencyGraph("reference");
     const combinedGraph = exportDependencyGraph("both");
-    
+
     return {
       target: {
         description: "Target state dependencies (user design values)",
         nodeCount: targetGraph.nodes.length,
         linkCount: targetGraph.links.length,
-        graph: targetGraph
+        graph: targetGraph,
       },
       reference: {
         description: "Reference state dependencies (code compliance values)",
         nodeCount: referenceGraph.nodes.length,
         linkCount: referenceGraph.links.length,
-        graph: referenceGraph
+        graph: referenceGraph,
       },
       combined: {
         description: "Complete dual-state dependency map",
         nodeCount: combinedGraph.nodes.length,
         linkCount: combinedGraph.links.length,
-        graph: combinedGraph
+        graph: combinedGraph,
       },
       analysis: {
         coverageRatio: referenceGraph.nodes.length / targetGraph.nodes.length,
-        totalDependencies: targetGraph.links.length + referenceGraph.links.length,
-        dualStateCompliant: referenceGraph.nodes.length > 0
-      }
+        totalDependencies:
+          targetGraph.links.length + referenceGraph.links.length,
+        dualStateCompliant: referenceGraph.nodes.length > 0,
+      },
     };
   }
 

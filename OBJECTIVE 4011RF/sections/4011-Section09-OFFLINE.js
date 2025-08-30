@@ -162,7 +162,8 @@ window.TEUI.SectionModules.sect09 = (function () {
       return this.getCurrentState().getValue(fieldId);
     },
     setValue: function (fieldId, value, source = "user") {
-      const currentState = this.currentMode === "target" ? TargetState : ReferenceState;
+      const currentState =
+        this.currentMode === "target" ? TargetState : ReferenceState;
       currentState.setValue(fieldId, value);
 
       // Bridge to global StateManager
@@ -1629,10 +1630,16 @@ window.TEUI.SectionModules.sect09 = (function () {
         }
       });
       // CRITICAL: also publish the user-input values that might be needed downstream
-       window.TEUI.StateManager.setValue("ref_d_63", ReferenceState.getValue("d_63"), "calculated");
-       window.TEUI.StateManager.setValue("ref_d_64", ReferenceState.getValue("d_64"), "calculated");
-
-
+      window.TEUI.StateManager.setValue(
+        "ref_d_63",
+        ReferenceState.getValue("d_63"),
+        "calculated",
+      );
+      window.TEUI.StateManager.setValue(
+        "ref_d_64",
+        ReferenceState.getValue("d_64"),
+        "calculated",
+      );
     } catch (error) {
       console.error("[S09] Error in Reference Model calculations:", error);
     }
@@ -1748,13 +1755,17 @@ window.TEUI.SectionModules.sect09 = (function () {
       ] !== undefined
     ) {
       equipmentDensity =
-        equipmentLoadsTable[formattedBuildingType][efficiencyType][elevatorStatus];
+        equipmentLoadsTable[formattedBuildingType][efficiencyType][
+          elevatorStatus
+        ];
     }
-    const equipmentEnergy = (equipmentDensity * conditionedArea * annualHours) / 1000;
+    const equipmentEnergy =
+      (equipmentDensity * conditionedArea * annualHours) / 1000;
     state.setValue("d_67", equipmentDensity.toFixed(2));
 
     // --- Heating/Cooling Splits ---
-    const { heatingRatio, coolingRatio } = calculateHeatingCoolingSplit(isReference);
+    const { heatingRatio, coolingRatio } =
+      calculateHeatingCoolingSplit(isReference);
 
     // --- Assemble All Results ---
     const results = {
