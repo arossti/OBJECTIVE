@@ -1,9 +1,49 @@
 /**
  * 4011-Section05.js
- * CO2e Emissions (Section 5) module for TEUI Calculator 4.011
+ * CO2e Emissions (Section 5) - Lifetime Emissions Intensity
  *
- * Uses the consolidated declarative approach where field definitions
- * are integrated directly into the layout structure.
+ * DUAL-STATE-CHEATSHEET AUDIT STATUS (December 2024):
+ * ================================================================================
+ * 
+ * COMPLIANCE SUMMARY: 🚨 CRITICAL ARCHITECTURAL VIOLATIONS - URGENT FIXES REQUIRED
+ * 
+ * ✅ PHASE 1 - Pattern B Contamination: CRITICAL VIOLATIONS FOUND
+ *    - VIOLATION: target_d_38 variable usage (line 765) - direct Pattern B contamination ❌
+ *    - MIXED: Some proper ref_ prefix usage alongside Pattern B violations ❌
+ *    - RISK: Hybrid Pattern A/B implementation creates state mixing
+ * 
+ * ✅ PHASE 2 - ComponentBridge Contamination: CLEAN  
+ *    - No ComponentBridge usage found ✅
+ *    - Clean post-retirement architecture ✅
+ * 
+ * ⚠️ PHASE 3 - DOM Update Pattern: MINOR ISSUE
+ *    - switchMode() is display-only ✅
+ *    - Most calculateAll() calls properly paired with updateCalculatedDisplayValues() ✅
+ *    - MISSING: One updateCalculatedDisplayValues() call in ReferenceState.onReferenceStandardChange() ❌
+ * 
+ * ✅ PHASE 4 - switchMode Anti-pattern: CLEAN
+ *    - switchMode() is display-only, no calculateAll() triggers ✅
+ *    - Properly calls refreshUI() and updateCalculatedDisplayValues() ✅
+ * 
+ * ⚠️ PHASE 5 - Duplicate Defaults: POTENTIAL ISSUES
+ *    - Hardcoded defaults in state objects (d_39: "Pt.3 Mass Timber", i_41: "345.82") ⚠️
+ *    - Need to verify if these duplicate field definitions ⚠️
+ *    - ReferenceState uses dynamic loading from ReferenceValues (good pattern) ✅
+ * 
+ * 🚨 PHASE 6 - Mode-Aware State Reading: CRITICAL ARCHITECTURAL VIOLATION
+ *    - VIOLATION: calculate_d_41() reads BOTH ref_d_38 AND target_d_38 in same calculation ❌
+ *    - CONTAMINATION: Formula (ref_d_38 - target_d_38) * h_13 violates state isolation ❌
+ *    - RISK: This creates the exact cross-state contamination that causes state mixing ❌
+ *    - REQUIRED: Separate calculations for Target and Reference modes
+ * 
+ * 🚨 CRITICAL FIXES REQUIRED:
+ * 1. Fix Pattern B contamination (target_d_38 usage) - prevents state mixing
+ * 2. Fix cross-state reading in calculate_d_41() - ensures state isolation  
+ * 3. Add missing DOM update call - fixes UI responsiveness
+ * 4. Review duplicate defaults - prevents data corruption
+ * 
+ * ARCHITECTURAL IMPACT: SEVERE - S05 violations may be source of system-wide state mixing
+ * ================================================================================
  */
 
 // Ensure namespace exists
