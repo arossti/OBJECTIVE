@@ -1363,11 +1363,10 @@ window.TEUI.SectionModules.sect15 = (function () {
       const getRefValue = (fieldId) => {
         const refFieldId = `ref_${fieldId}`;
         const refValue = window.TEUI?.StateManager?.getValue(refFieldId);
-        const fallbackValue =
-          window.TEUI?.StateManager?.getReferenceValue(fieldId);
-        const domValue = getNumericValue(fieldId);
-
-        const finalValue = refValue || fallbackValue || domValue;
+        
+        // ✅ CRITICAL CONTAMINATION FIX: No fallbacks to Target values (Phase 6 compliance)
+        // Reference calculations must ONLY read ref_ prefixed values for perfect state isolation
+        const finalValue = refValue || 0;  // No fallback contamination
 
         // ✅ CRITICAL: Convert strings to numbers for math (prevents concatenation)
         return parseFloat(finalValue) || 0;
