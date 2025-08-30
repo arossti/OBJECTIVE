@@ -1816,7 +1816,7 @@ window.TEUI.SectionModules.sect09 = (function () {
    */
   function calculateEquipmentDensityForReference() {
     const buildingType =
-      window.TEUI?.StateManager?.getValue("d_12") || "A-Assembly";
+      window.TEUI?.StateManager?.getValue("ref_d_12") || "A-Assembly";
     const efficiencyType = ReferenceState.getValue("g_67") || "Regular"; // Reference always uses Regular
     const elevatorStatus = ReferenceState.getValue("d_68") || "No Elevators";
 
@@ -1902,7 +1902,7 @@ window.TEUI.SectionModules.sect09 = (function () {
       0,
     );
     const buildingType =
-      window.TEUI.StateManager.getValue("d_12") || "A-Assembly";
+      window.TEUI.StateManager.getValue(isReference ? "ref_d_12" : "d_12") || "A-Assembly";
 
     // Preliminary calculations based on the section's internal state
     const activityLevel = state.getValue("d_64");
