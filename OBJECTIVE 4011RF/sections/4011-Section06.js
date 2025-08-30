@@ -643,6 +643,11 @@ window.TEUI.SectionModules.sect06 = (function () {
           // ✅ STRATEGIC LOGGING: Track m_43 state mixing issue
           if (fieldId === "m_43") {
             console.log(`[S06DB] 🎯 m_43 blur event: value=${newValue}, mode=${ModeManager.currentMode}`);
+            console.log(`[S06DB] 🔍 BEFORE m_43 entry - checking current S01 TEUI values...`);
+            // Capture current S01 values before the change
+            const currentE10 = document.querySelector('[data-field-id="e_10"]')?.textContent || 'unknown';
+            const currentH10 = document.querySelector('[data-field-id="h_10"]')?.textContent || 'unknown';
+            console.log(`[S06DB] 🔍 BEFORE: e_10=${currentE10}, h_10=${currentH10} (UI mode=${ModeManager.currentMode})`);
           }
           
           // ✅ CLEAN: Update via ModeManager

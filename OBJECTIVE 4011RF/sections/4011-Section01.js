@@ -728,6 +728,16 @@ window.TEUI.SectionModules.sect01 = (function () {
     // ✅ STRATEGIC LOGGING: Track e_10/h_10 changes during m_43 testing
     console.log(`[S01DB] 🎯 TEUI UPDATE: e_10=${e10Formatted} (ref_j_32=${refEnergy}), h_10=${h10Formatted} (j_32=${targetEnergy})`);
     
+    // ✅ CRITICAL: Track if e_10 changes during Target mode operations
+    if (window.TEUI._lastE10 !== undefined && window.TEUI._lastE10 !== e_10) {
+      console.log(`[S01DB] 🚨 e_10 CHANGED: ${window.TEUI._lastE10} → ${e_10} (should NOT change during Target mode operations!)`);
+    }
+    if (window.TEUI._lastH10 !== undefined && window.TEUI._lastH10 !== h_10) {
+      console.log(`[S01DB] ✅ h_10 CHANGED: ${window.TEUI._lastH10} → ${h_10} (expected during Target mode operations)`);
+    }
+    window.TEUI._lastE10 = e_10;
+    window.TEUI._lastH10 = h_10;
+    
     updateDisplayValue("h_10", h10Formatted, calculatedTier);
     updateDisplayValue("h_8", h8Formatted);
     updateDisplayValue("h_6", h6Formatted);
