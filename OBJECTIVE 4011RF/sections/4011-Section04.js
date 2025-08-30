@@ -1483,9 +1483,15 @@ window.TEUI.SectionModules.sect04 = (function () {
     const j_29 = ModeManager.getValue("j_29") || 0;
     const j_30 = ModeManager.getValue("j_30") || 0;
     const j_31 = ModeManager.getValue("j_31") || 0;
-    const result = j_27 + j_28 + j_29 + j_30 + j_31;
     
-    // console.log(`[S04] 🔗 J32 calc: ${result} = j_27(${j_27}) + j_28(${j_28}) + j_29(${j_29}) + j_30(${j_30}) + j_31(${j_31}) [mode=${ModeManager.currentMode}]`);
+    // ✅ CRITICAL FIX: Include S06 exterior/site loads (m_43) in Target total
+    const m_43 = ModeManager.currentMode === "reference"
+      ? getGlobalNumericValue("ref_m_43") || 0  // Reference mode: only ref_ values
+      : getGlobalNumericValue("m_43") || 0;     // Target mode: only unprefixed values
+    
+    const result = j_27 + j_28 + j_29 + j_30 + j_31 + m_43;
+    
+    console.log(`[S04] 🔗 J32 calc: ${result} = j_27(${j_27}) + j_28(${j_28}) + j_29(${j_29}) + j_30(${j_30}) + j_31(${j_31}) + m_43(${m_43}) [mode=${ModeManager.currentMode}]`);
     
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
     setCalculatedValue("j_32", result);
@@ -2005,7 +2011,7 @@ window.TEUI.SectionModules.sect04 = (function () {
           fieldId: "j_32",
           type: "calculated",
           value: "0",
-          dependencies: ["j_27", "j_28", "j_29", "j_30", "j_31"],
+          dependencies: ["j_27", "j_28", "j_29", "j_30", "j_31", "m_43"],
           classes: ["calculated-value"],
           section: "actualTargetEnergy",
         },
@@ -2614,6 +2620,19 @@ window.TEUI.SectionModules.sect04 = (function () {
       window.TEUI.StateManager.addListener("ref_i_43", () => {
         // ✅ FIX: Use calculateReferenceModel() to ensure function override routing
         calculateReferenceModel(); // This has the function override to route j_27 → ref_j_27
+        ModeManager.updateCalculatedDisplayValues();
+      });
+
+      // ✅ CRITICAL MISSING: React to S06 exterior/site load changes (m_43)
+      window.TEUI.StateManager.addListener("m_43", () => {
+        console.log(`[S04] S06 exterior/site loads changed: m_43`);
+        calculateAll(); // Recalculate all totals including j_32 which S01 reads
+        ModeManager.updateCalculatedDisplayValues();
+      });
+
+      window.TEUI.StateManager.addListener("ref_m_43", () => {
+        console.log(`[S04] S06 Reference exterior/site loads changed: ref_m_43`);
+        calculateReferenceModel(); // Recalculate Reference totals including ref_j_32
         ModeManager.updateCalculatedDisplayValues();
       });
 
