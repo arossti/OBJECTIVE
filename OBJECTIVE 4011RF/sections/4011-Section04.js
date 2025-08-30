@@ -1,14 +1,55 @@
 /**
  * 4011-Section04.js
- * Actual vs. Target Energy & Carbon (Section 4) - SIMPLIFIED EXCEL-COMPLIANT VERSION
+ * Actual vs. Target Energy & Carbon (Section 4) - DUAL-STATE ARCHITECTURE
  *
+ * DUAL-STATE-CHEATSHEET AUDIT STATUS (December 2024):
+ * ================================================================================
+ * 
+ * COMPLIANCE SUMMARY: ⚠️ PARTIAL COMPLIANCE - CRITICAL ISSUES REQUIRE FIXES
+ * 
+ * ✅ PHASE 1 - Pattern B Contamination: CLEAN
+ *    - No target_ prefixes found ✅
+ *    - Extensive ref_ prefix usage indicates good dual-state foundation ✅
+ * 
+ * ✅ PHASE 2 - ComponentBridge Contamination: CLEAN  
+ *    - No ComponentBridge usage found ✅
+ *    - Clean post-retirement architecture ✅
+ * 
+ * ✅ PHASE 3 - DOM Update Pattern: FIXED
+ *    - switchMode() is display-only ✅
+ *    - refreshUI() properly calls updateCalculatedDisplayValues() ✅
+ *    - FIXED: Added missing updateCalculatedDisplayValues() calls to 11+ calculateAll() instances ✅
+ *    - All external dependency listeners now properly update DOM after calculations ✅
+ * 
+ * ✅ PHASE 4 - switchMode Anti-pattern: CLEAN
+ *    - switchMode() is display-only, no calculateAll() triggers ✅
+ *    - Properly calls refreshUI() → updateCalculatedDisplayValues() ✅
+ * 
+ * 🚨 PHASE 5 - Duplicate Defaults: CRITICAL DATA CORRUPTION RISK
+ *    - VIOLATION: Extensive duplicate defaults between field definitions and state objects ❌
+ *    - EXAMPLE: d_27 field has "132938.00" vs TargetState has 132938 (number vs formatted string)
+ *    - RISK: Version drift, calculation corruption, maintenance nightmare
+ *    - REQUIRED: Remove ALL hardcoded defaults from state objects, use field definitions only
+ * 
+ * 🚨 PHASE 6 - Mode-Aware State Reading: CRITICAL CONTAMINATION FOUND
+ *    - VIOLATION: Extensive fallback patterns violate strict mode isolation ❌
+ *    - EXAMPLES: getGlobalNumericValue("ref_d_43") || getGlobalNumericValue("d_43")
+ *    - CONTAMINATION: Reference mode changes can affect Target calculations and vice versa
+ *    - COUNT: 43+ instances of fallback contamination patterns found
+ *    - REQUIRED: Eliminate ALL fallback patterns, implement strict mode-aware reading
+ * 
+ * PRIORITY FIXES REQUIRED:
+ * 1. Remove duplicate defaults (Phase 5) - prevents data corruption
+ * 2. Add missing updateCalculatedDisplayValues() calls (Phase 3) - fixes DOM updates  
+ * 3. Eliminate fallback contamination patterns (Phase 6) - ensures state isolation
+ * 4. Implement proper mode-aware external dependency reading
+ * 
  * EXCEL METHODOLOGY (FORMULAE-3039.csv rows 26-36):
  * - Consumer section that reads calculated values from upstream sections (S15, etc.)
  * - User inputs for actual utility bill data (D27:D31) - mostly state agnostic
  * - Simple conversions and calculations based on Excel formulas
- * - Minimal dual-state only for modelled values (H27:H31, J27:J31, K27:K31)
- *
- * REDUCED FROM 2,715 LINES TO ~464 LINES (83% REDUCTION)
+ * - Dual-state for modelled values (H27:H31, J27:J31, K27:K31)
+ * ================================================================================
  */
 
 // Ensure namespace exists
@@ -402,6 +443,8 @@ window.TEUI.SectionModules.sect04 = (function () {
       // Refresh UI and recalculate
       this.refreshUI();
       calculateAll();
+      // ✅ CRITICAL FIX: Update DOM after calculations (DUAL-STATE-CHEATSHEET Phase 3)
+      this.updateCalculatedDisplayValues();
     },
 
     refreshUI: function () {
@@ -2413,6 +2456,8 @@ window.TEUI.SectionModules.sect04 = (function () {
 
           // Trigger calculations
           calculateAll();
+          // ✅ CRITICAL FIX: Update DOM after calculations (DUAL-STATE-CHEATSHEET Phase 3)
+          ModeManager.updateCalculatedDisplayValues();
         }
       });
 
@@ -2448,12 +2493,16 @@ window.TEUI.SectionModules.sect04 = (function () {
       window.TEUI.StateManager.addListener("d_136", () => {
         console.log(`[S04] S15 target electricity changed: d_136`);
         calculateAll();
+        // ✅ CRITICAL FIX: Update DOM after calculations (DUAL-STATE-CHEATSHEET Phase 3)
+        ModeManager.updateCalculatedDisplayValues();
       });
 
       // React to S15's reference electricity calculation
       window.TEUI.StateManager.addListener("ref_d_136", () => {
         console.log(`[S04] S15 reference electricity changed: ref_d_136`);
         calculateAll();
+        // ✅ CRITICAL FIX: Update DOM after calculations (DUAL-STATE-CHEATSHEET Phase 3)
+        ModeManager.updateCalculatedDisplayValues();
       });
 
       // ✅ CRITICAL: React to province changes from S03 (affects emission factors)
@@ -2494,36 +2543,48 @@ window.TEUI.SectionModules.sect04 = (function () {
       window.TEUI.StateManager.addListener("h_15", () => {
         console.log(`[S04] Conditioned area changed: h_15`);
         calculateAll();
+        // ✅ CRITICAL FIX: Update DOM after calculations (DUAL-STATE-CHEATSHEET Phase 3)
+        ModeManager.updateCalculatedDisplayValues();
       });
       
       // ✅ DUAL-ENGINE: React to Reference conditioned area changes
       window.TEUI.StateManager.addListener("ref_h_15", () => {
         console.log(`[S04] Conditioned area changed (Reference): ref_h_15`);
         calculateAll();
+        // ✅ CRITICAL FIX: Update DOM after calculations (DUAL-STATE-CHEATSHEET Phase 3)
+        ModeManager.updateCalculatedDisplayValues();
       });
 
       // React to occupancy changes (affects per-capita calculations)
       window.TEUI.StateManager.addListener("d_63", () => {
         console.log(`[S04] Occupancy changed: d_63`);
         calculateAll();
+        // ✅ CRITICAL FIX: Update DOM after calculations (DUAL-STATE-CHEATSHEET Phase 3)
+        ModeManager.updateCalculatedDisplayValues();
       });
       
       // ✅ DUAL-ENGINE: React to Reference occupancy changes
       window.TEUI.StateManager.addListener("ref_d_63", () => {
         console.log(`[S04] Occupancy changed (Reference): ref_d_63`);
         calculateAll();
+        // ✅ CRITICAL FIX: Update DOM after calculations (DUAL-STATE-CHEATSHEET Phase 3)
+        ModeManager.updateCalculatedDisplayValues();
       });
 
       // React to building status changes (affects primary energy calculation)
       window.TEUI.StateManager.addListener("d_14", () => {
         console.log(`[S04] Building status changed: d_14`);
         calculateAll();
+        // ✅ CRITICAL FIX: Update DOM after calculations (DUAL-STATE-CHEATSHEET Phase 3)
+        ModeManager.updateCalculatedDisplayValues();
       });
       
       // ✅ DUAL-ENGINE: React to Reference building status changes
       window.TEUI.StateManager.addListener("ref_d_14", () => {
         console.log(`[S04] Building status changed (Reference): ref_d_14`);
         calculateAll();
+        // ✅ CRITICAL FIX: Update DOM after calculations (DUAL-STATE-CHEATSHEET Phase 3)
+        ModeManager.updateCalculatedDisplayValues();
       });
 
       // ✅ CRITICAL: React to S08 forestry offset changes (affects G32/K32 subtotals)
@@ -2763,6 +2824,8 @@ window.TEUI.SectionModules.sect04 = (function () {
 
       // Run initial calculations
       calculateAll();
+      // ✅ CRITICAL FIX: Update DOM after initial calculations (DUAL-STATE-CHEATSHEET Phase 3)
+      ModeManager.updateCalculatedDisplayValues();
 
     },
 
