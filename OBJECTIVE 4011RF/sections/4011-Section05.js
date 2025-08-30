@@ -16,10 +16,10 @@
  *    - No ComponentBridge usage found ✅
  *    - Clean post-retirement architecture ✅
  * 
- * ⚠️ PHASE 3 - DOM Update Pattern: MINOR ISSUE
+ * ✅ PHASE 3 - DOM Update Pattern: FIXED
  *    - switchMode() is display-only ✅
- *    - Most calculateAll() calls properly paired with updateCalculatedDisplayValues() ✅
- *    - MISSING: One updateCalculatedDisplayValues() call in ReferenceState.onReferenceStandardChange() ❌
+ *    - All calculateAll() calls properly paired with updateCalculatedDisplayValues() ✅
+ *    - FIXED: Added missing updateCalculatedDisplayValues() call in ReferenceState.onReferenceStandardChange() ✅
  * 
  * ✅ PHASE 4 - switchMode Anti-pattern: CLEAN
  *    - switchMode() is display-only, no calculateAll() triggers ✅
@@ -123,6 +123,8 @@ window.TEUI.SectionModules.sect05 = (function () {
       if (ModeManager.currentMode === "reference") {
         ModeManager.refreshUI();
         calculateAll();
+        // ✅ PHASE 3 FIX: Update DOM after calculations (DUAL-STATE-CHEATSHEET requirement)
+        ModeManager.updateCalculatedDisplayValues();
       }
     },
     saveState: function () {
