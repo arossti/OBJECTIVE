@@ -1149,8 +1149,7 @@ window.TEUI.SectionModules.sect02 = (function () {
       window.TEUI.sect02.initialized = true;
     }
 
-    // Initialize user-editable area field
-    ensureAreaValueIsSet();
+    // ✅ RACE CONDITION FIX: Area initialization moved to onSectionRendered() after init flag
 
     // Area field blur event
     const areaField = document.querySelector('[data-field-id="h_15"]');
@@ -1333,6 +1332,10 @@ window.TEUI.SectionModules.sect02 = (function () {
     // ✅ RACE CONDITION FIX: Initialize event handlers AFTER initialization flag is set
     // This prevents external listeners from triggering calculateAll() before we're ready
     initializeEventHandlers();
+
+    // ✅ RACE CONDITION FIX: Initialize area field AFTER initialization is complete
+    // This prevents updateAreaValue() from calling calculateAll() before we're ready
+    ensureAreaValueIsSet();
 
     // Run initial calculations
     calculateAll();
