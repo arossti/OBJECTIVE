@@ -1,12 +1,20 @@
 /**
  * 4011-Section02.js
- * Building Information (Section 2) module for TEUI Calculator 4.011
+ * Building Information (Section 2) module for TEUI Calculator 4.012
  *
  * This file contains field definitions, layout templates, and rendering logic
  * specific to the Building Information section.
  *
  * Refactored to use the consolidated declarative approach where field definitions
  * are integrated directly into the layout structure.
+ *
+ * ARCHITECTURAL NOTE (Aug 2025 Refactor): This section is now fully Pattern A compliant
+ * following the consolidation of default values. Two minor anti-patterns remain for
+ * future cleanup during a production refactor:
+ * 1. The local `getNumericValue()` helper contains fallback logic.
+ * 2. `ModeManager.updateCalculatedDisplayValues()` contains fallback logic.
+ * These do not currently cause issues due to robust initialization, but should be
+ * refactored to use strict mode isolation. See DUAL-STATE-CHEATSHEET.md Phase 6.
  */
 
 // Create section-specific namespace for global references
@@ -14,6 +22,7 @@ window.TEUI = window.TEUI || {};
 window.TEUI.sect02 = window.TEUI.sect02 || {};
 window.TEUI.sect02.initialized = false;
 window.TEUI.sect02.userInteracted = false;
+let isSect02Initialized = false; // Initialization flag to prevent race conditions
 
 // Section 2: Building Information Module
 window.TEUI.SectionModules.sect02 = (function () {
@@ -536,6 +545,25 @@ window.TEUI.SectionModules.sect02 = (function () {
     return rowDef;
   }
 
+  /**
+   * Retrieves a field's default value from the sectionRows definition.
+   * This is the single source of truth for all default values.
+   * @param {string} fieldId The ID of the field (e.g., "d_12").
+   * @returns {string|null} The default value or null if not found.
+   */
+  function getFieldDefault(fieldId) {
+    for (const row of Object.values(sectionRows)) {
+      if (row.cells) {
+        for (const cell of Object.values(row.cells)) {
+          if (cell.fieldId === fieldId && cell.value !== undefined) {
+            return cell.value;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
   //==========================================================================
   // EVENT HANDLING AND CALCULATIONS
   //==========================================================================
@@ -782,6 +810,8 @@ window.TEUI.SectionModules.sect02 = (function () {
   function storeReferenceResults() {
     if (!window.TEUI?.StateManager) return;
 
+    const h15_from_ref_state = ReferenceState.getValue("h_15");
+    console.log(`[S02DB] storeReferenceResults reading from ReferenceState: h_15 = "${h15_from_ref_state}"`);
     // Store Reference values for downstream consumption
     const referenceResults = {
       h_12: ReferenceState.getValue("h_12"), // 2020 reporting year
@@ -893,6 +923,10 @@ window.TEUI.SectionModules.sect02 = (function () {
    * Replaces the original calculateAll function
    */
   function calculateAll() {
+    if (!isSect02Initialized) {
+      console.warn("[S02] calculateAll() called before initialization completed. Aborting to prevent race condition.");
+      return;
+    }
     calculateReferenceModel();
     calculateTargetModel();
   }
@@ -1248,6 +1282,8 @@ window.TEUI.SectionModules.sect02 = (function () {
 
     // ✅ PATTERN A: Defaults are now handled by TargetState.setDefaults() and ReferenceState.setDefaults()
     // No need to set defaults in StateManager - the dual-state architecture handles this
+    
+    isSect02Initialized = true; // Set flag to allow calculations now that initialization is complete
 
     // Run initial calculations
     calculateAll();
@@ -1604,25 +1640,26 @@ window.TEUI.SectionModules.sect02 = (function () {
 
     setDefaults: function () {
       // S02 Target defaults (Validation Case: 2022 reporting year)
-      // ✅ CRITICAL FIX: Don't spread existing data - defaults should ALWAYS take precedence
+      // ✅ PATTERN A: Defaults are now sourced from field definitions
       this.data = {
-        d_12: "A-Assembly", // Major Occupancy
-        d_13: "OBC SB10 5.5-6 Z6", // Target building code
-        d_14: "Utility Bills", // Actual/Target Use
-        d_15: "Self Reported", // Carbon standard
-        // Reporting year 2022 for Target (affects S04 emissions factors)
-        h_12: "2022", // Reporting Period - Target uses 2022 (actual field is h_12)
-        h_13: "50", // Service life (from field definition) - ✅ CRITICAL FIX: Added missing Target default
-        // h_15 default comes from field definition (value: "1,427.20")
-        // Energy costs - same for both Target and Reference
-        l_12: "0.1300", // Electricity cost
-        l_13: "0.5070", // Gas cost
-        l_14: "1.6200", // Propane cost
-        l_15: "180.00", // Wood cost
-        l_16: "1.5000", // Oil cost
+        d_12: getFieldDefault("d_12") || "A-Assembly",
+        d_13: getFieldDefault("d_13") || "OBC SB10 5.5-6 Z6",
+        d_14: getFieldDefault("d_14") || "Utility Bills",
+        d_15: getFieldDefault("d_15") || "Self Reported",
+        h_12: getFieldDefault("h_12") || "2022",
+        h_13: getFieldDefault("h_13") || "50",
+        h_14: getFieldDefault("h_14") || "Three Feathers Terrace",
+        h_15: getFieldDefault("h_15") || "1,427.20", // Critical for e_10
+        i_16: getFieldDefault("i_16") || "Thomson Architecture, Inc.",
+        i_17: getFieldDefault("i_17") || "8154",
+        l_12: getFieldDefault("l_12") || "0.1300",
+        l_13: getFieldDefault("l_13") || "0.5070",
+        l_14: getFieldDefault("l_14") || "1.6200",
+        l_15: getFieldDefault("l_15") || "180.00",
+        l_16: getFieldDefault("l_16") || "1.5000",
       };
       console.log(
-        `S02: Target defaults set (2022 reporting year) - overriding any localStorage empties`,
+        `S02: Target defaults set from field definitions - overriding any localStorage empties`,
       );
     },
   };
@@ -1676,25 +1713,29 @@ window.TEUI.SectionModules.sect02 = (function () {
 
     setDefaults: function () {
       // S02 Reference defaults (Validation Case: 2020 reporting year)
-      // ✅ CRITICAL FIX: Don't spread existing data - defaults should ALWAYS take precedence
+      // ✅ PATTERN A: Initialize with base defaults, then apply Reference-specific overrides.
       this.data = {
-        d_12: "A-Assembly", // Major Occupancy (same as Target)
+        // 1. Initialize with base defaults from the single source of truth
+        d_12: getFieldDefault("d_12") || "A-Assembly",
+        d_14: getFieldDefault("d_14") || "Utility Bills",
+        d_15: getFieldDefault("d_15") || "Self Reported",
+        h_13: getFieldDefault("h_13") || "50",
+        h_14: getFieldDefault("h_14") || "Three Feathers Terrace", // Included for completeness
+        h_15: getFieldDefault("h_15") || "1,427.20", // CRITICAL for e_10
+        i_16: getFieldDefault("i_16") || "Thomson Architecture, Inc.",
+        i_17: getFieldDefault("i_17") || "8154",
+        l_12: getFieldDefault("l_12") || "0.1300",
+        l_13: getFieldDefault("l_13") || "0.5070",
+        l_14: getFieldDefault("l_14") || "1.6200",
+        l_15: getFieldDefault("l_15") || "180.00",
+        l_16: getFieldDefault("l_16") || "1.5000",
+
+        // 2. Apply Reference-specific overrides
         d_13: "OBC SB10 5.5-6 Z5 (2010)", // Reference building code - earlier standard
-        d_14: "Utility Bills", // Actual/Target Use (same as Target)
-        d_15: "Self Reported", // Carbon standard (same)
-        // Reporting year 2020 for Reference (creates natural S04 emissions differences)
-        h_12: "2020", // Reporting Period - Reference uses 2020 (actual field is h_12)
-        h_13: "50", // Service life (from field definition)
-        h_15: "1427.20", // ✅ CRITICAL FIX: Must be set for ref_h_15 storage
-        // Energy costs - same as Target (differences come from reporting year/location)
-        l_12: "0.1300", // Electricity cost (same as Target)
-        l_13: "0.5070", // Gas cost (same as Target)
-        l_14: "1.6200", // Propane cost (same as Target)
-        l_15: "180.00", // Wood cost (same as Target)
-        l_16: "1.5000", // Oil cost (same as Target)
+        h_12: "2020", // Reporting Period - Reference uses 2020
       };
       console.log(
-        `S02: Reference defaults set (2020 reporting year) - overriding any localStorage empties`,
+        `S02: Reference defaults set from field definitions with overrides - overriding any localStorage empties`,
       );
     },
   };
@@ -1721,14 +1762,6 @@ window.TEUI.SectionModules.sect02 = (function () {
             window.TEUI.StateManager.setValue("ref_h_13", refH13, "default");
           if (refH15)
             window.TEUI.StateManager.setValue("ref_h_15", refH15, "default");
-          console.log(
-            "[S02DB] init publish: ref_h_12=",
-            refH12,
-            "ref_h_13=",
-            refH13,
-            "ref_h_15=",
-            refH15,
-          );
         }
       } catch (e) {
         console.warn("[S02] initialize: state initialization error", e);
