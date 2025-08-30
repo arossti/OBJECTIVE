@@ -435,18 +435,11 @@ window.TEUI.SectionModules.sect01 = (function () {
   }
 
   function updateDisplayValue(fieldId, value, tierOverride = null) {
-    // 🔧 DEBUG: Monitor h_10 updates for fuel system debugging (S13/S07)
-    if (fieldId === "h_10") {
-      console.log(`[S01] h_10 update: value=${value}, tier=${tierOverride}`);
-    }
     
     const element = document.querySelector(
       `[data-field-id="${fieldId}"] .key-value, [data-field-id="${fieldId}"] .percent-value`,
     );
     if (!element) {
-      if (fieldId === "h_10") {
-        console.log(`[S01DB] ❌ h_10 element NOT FOUND in DOM!`);
-      }
       return;
     }
 
@@ -611,8 +604,7 @@ window.TEUI.SectionModules.sect01 = (function () {
     const e_10 =
       referenceArea > 0 ? Math.round((refEnergy / referenceArea) * 10) / 10 : 0;
     
-    // 🔧 DEBUG: Track e_10 calculation for Reference system debugging
-    console.log(`[S01] e_10 calc: ref_j_32=${refEnergy} ÷ ref_h_15=${referenceArea} = ${e_10}`);
+
 
     // e_8 = ref_k_32 / ref_h_15 (Reference Annual Carbon)
     const e_8 =
@@ -634,8 +626,7 @@ window.TEUI.SectionModules.sect01 = (function () {
     const h_10 =
       targetArea > 0 ? Math.round((targetEnergy / targetArea) * 10) / 10 : 0;
     
-    // 🔧 DEBUG: Track h_10 calculation for fuel system debugging
-    console.log(`[S01] h_10 calc: j_32=${targetEnergy} ÷ h_15=${targetArea} = ${h_10}`);
+
 
     // h_8 = k_32 / h_15 (Target Annual Carbon)
     const h_8 =
@@ -689,7 +680,6 @@ window.TEUI.SectionModules.sect01 = (function () {
       window.TEUI?.formatNumber?.(e_6, "number-1dp") ?? e_6.toString();
 
     updateDisplayValue("e_10", e10Formatted);
-    console.log(`[S01] e_10 update: value=${e_10}, formatted=${e10Formatted}`);
     updateDisplayValue("e_8", e8Formatted);
     updateDisplayValue("e_6", e6Formatted);
 
@@ -735,8 +725,6 @@ window.TEUI.SectionModules.sect01 = (function () {
       }
     }
 
-    // 🔧 DEBUG: Track h_10 update call
-    // console.log(`[S01DB] 📞 About to call updateDisplayValue("h_10", "${h10Formatted}", "${calculatedTier}")`);
     updateDisplayValue("h_10", h10Formatted, calculatedTier);
     updateDisplayValue("h_8", h8Formatted);
     updateDisplayValue("h_6", h6Formatted);

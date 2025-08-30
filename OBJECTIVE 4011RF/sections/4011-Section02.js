@@ -548,6 +548,7 @@ window.TEUI.SectionModules.sect02 = (function () {
   /**
    * Retrieves a field's default value from the sectionRows definition.
    * This is the single source of truth for all default values.
+   * ✅ CRITICAL FIX: Returns numeric values without comma formatting for calculation stability
    * @param {string} fieldId The ID of the field (e.g., "d_12").
    * @returns {string|null} The default value or null if not found.
    */
@@ -556,7 +557,13 @@ window.TEUI.SectionModules.sect02 = (function () {
       if (row.cells) {
         for (const cell of Object.values(row.cells)) {
           if (cell.fieldId === fieldId && cell.value !== undefined) {
-            return cell.value;
+            let value = cell.value;
+            // ✅ CRITICAL FIX: Remove comma formatting from numeric fields for calculation stability
+            // This prevents floating-point corruption during state operations
+            if (fieldId === "h_15" && typeof value === "string") {
+              value = value.replace(/,/g, ""); // Remove commas: "1,427.20" → "1427.20"
+            }
+            return value;
           }
         }
       }
@@ -810,8 +817,7 @@ window.TEUI.SectionModules.sect02 = (function () {
   function storeReferenceResults() {
     if (!window.TEUI?.StateManager) return;
 
-    const h15_from_ref_state = ReferenceState.getValue("h_15");
-    console.log(`[S02DB] storeReferenceResults reading from ReferenceState: h_15 = "${h15_from_ref_state}"`);
+
     // Store Reference values for downstream consumption
     const referenceResults = {
       h_12: ReferenceState.getValue("h_12"), // 2020 reporting year
@@ -826,19 +832,7 @@ window.TEUI.SectionModules.sect02 = (function () {
       l_16: ReferenceState.getValue("l_16"), // Wood price
     };
 
-    // [S02DB] Targeted logging for critical Reference parameters
-    try {
-      console.log(
-        "[S02DB] storeReference: ref_h_12=",
-        referenceResults.h_12,
-        "ref_h_13=",
-        referenceResults.h_13,
-        "ref_h_15=",
-        referenceResults.h_15,
-      );
-    } catch (e) {
-      console.warn("[S02DB] storeReference logging failed", e);
-    }
+
 
     // Store with ref_ prefix for downstream sections
     Object.entries(referenceResults).forEach(([fieldId, value]) => {
@@ -1149,11 +1143,13 @@ window.TEUI.SectionModules.sect02 = (function () {
         // ✅ PATTERN A: Save to current state (Target or Reference) via ModeManager
         ModeManager.setValue("h_12", newYear, "user-modified");
 
-        // Recalculate after year change
-        calculateAll();
-
-        // Update DOM with new calculated values
-        ModeManager.updateCalculatedDisplayValues();
+        // ✅ CRITICAL FIX: Only store Reference result for h_12 - do NOT trigger full recalculation
+        // h_12 (reporting year) should NOT affect h_15 (area) or any S02 internal calculations
+        if (ModeManager.currentMode === "reference") {
+          // Only store the h_12 value for downstream sections (S04 needs ref_h_12 for emissions factors)
+          storeReferenceResults();
+        }
+        // No calculateAll() or updateCalculatedDisplayValues() needed - h_12 doesn't affect S02 calculations
       });
     }
 
@@ -1176,11 +1172,13 @@ window.TEUI.SectionModules.sect02 = (function () {
         // ✅ PATTERN A: Save to current state (Target or Reference) via ModeManager
         ModeManager.setValue("h_13", newServiceLife, "user-modified");
 
-        // Recalculate after service life change
-        calculateAll();
-
-        // Update DOM with new calculated values
-        ModeManager.updateCalculatedDisplayValues();
+        // ✅ CRITICAL FIX: Only store Reference result for h_13 - do NOT trigger full recalculation
+        // h_13 (service life) affects S01 calculations but NOT S02 internal calculations
+        if (ModeManager.currentMode === "reference") {
+          // Store the h_13 value for downstream sections (S01 needs ref_h_13 for lifetime carbon)
+          storeReferenceResults();
+        }
+        // No calculateAll() or updateCalculatedDisplayValues() needed - h_13 doesn't affect S02 calculations
       });
     }
 

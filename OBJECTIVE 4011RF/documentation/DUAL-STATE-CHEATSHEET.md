@@ -267,11 +267,17 @@ window.TEUI.StateManager.setValue(
 
 ### **📋 SECTION-BY-SECTION EXTERNAL DEPENDENCY AUDIT CHECKLIST**
 
-**Status as of August 29, 2024:**
+**Status as of August 29, 2025:**
 
 - [ ] **S01** - Consumer section (reads final values, minimal external dependencies)
-- [ ] **S02** - Climate data (may have minimal external dependencies)  
-- [ ] **S03** - Location/climate (may have minimal external dependencies)
+- [x] **S02** - ✅ **COMPLETED** - Pattern B contamination fixed, hardcoded defaults require careful analysis  
+- [ ] **S03** - ❌ **CRITICAL ISSUES** - Multiple architectural violations requiring systematic fixes:
+  - **i_21 capacitance slider non-functional in Reference mode** (event chain broken)
+  - **State mixing during Target mode changes** (current state anti-pattern)  
+  - **Suspected calculate-on-switch anti-pattern** (needs investigation)
+  - **Province/city auto-selection UX broken** (requires two-step user workaround)
+  - **Missing ref_d_12 listener** for complete external dependency pairs
+  - **Status**: See S03-REPAIRS.md for systematic debugging protocol
 - [x] **S04** - ✅ **COMPLETED** - Enhanced with missing Reference pairs (ref_h_15, ref_d_63, ref_d_14, ref_d_60)
 - [ ] **S05** - Pattern A consumer (needs audit for external dependencies)
 - [ ] **S06** - Renewable energy (needs audit for external dependencies)
@@ -446,6 +452,27 @@ ModeManager.updateCalculatedDisplayValues(); // Mode-aware DOM updates
     { fieldId: "h_15", value: "1,427.20", type: "editable" }
     // State object (correct):
     TargetState.setDefaults() { this.data = { /* h_15 comes from field definition */ }; }
+    ```
+
+11. **🔥 COMMA-FORMATTED DEFAULTS ANTI-PATTERN**: Critical calculation corruption from formatted field values
+    - **Symptoms**: e_10 spiking to 200,000+ before settling, UI jumping, ref_h_15 corruption
+    - **Root Cause**: `getFieldDefault()` returning comma-formatted strings from field definitions
+    
+    ```javascript
+    // ❌ CORRUPTION: Comma formatting causes floating-point errors
+    // Field definition: value: "1,427.20"
+    // getFieldDefault("h_15") returns "1,427.20" 
+    // During calculations: "1,427.20" → "2427.2" (corruption)
+    // Result: e_10 = ref_j_32 ÷ 2427.2 = 229,301+ (massive spike)
+    
+    // ✅ SOLUTION: Strip formatting in getFieldDefault()
+    function getFieldDefault(fieldId) {
+      // ... find field logic ...
+      if (fieldId === "h_15" && typeof value === "string") {
+        value = value.replace(/,/g, ""); // "1,427.20" → "1427.20"
+      }
+      return value;
+    }
     ```
 
 11. **🚨 MISSING TARGET DEFAULTS AUDIT**: Check for user input fields missing from TargetState.setDefaults()
