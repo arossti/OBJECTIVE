@@ -326,7 +326,6 @@ window.TEUI.SectionModules.sect13 = (function () {
       this.refreshUI();
       this.updateConditionalUI();
       calculateAll();
-      ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
       this.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
     },
     getCurrentState: function () {
@@ -783,11 +782,15 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /** [Cooling Calc] Calculate days of active cooling required */
-  function calculateDaysActiveCooling(currentFreeCoolingLimit /* h_124 */) {
+  function calculateDaysActiveCooling(currentFreeCoolingLimit /* h_124 */, isReferenceCalculation = false) {
     // Keep signature for now
     const coolingLoad = coolingState.coolingLoad; // Annual kWh load (m_129)
     // Get cooling days from m_19, default to 120
-    const coolingDays = window.TEUI.parseNumeric(getFieldValue("m_19")) || 120;
+    const coolingDays = window.TEUI.parseNumeric(
+      isReferenceCalculation 
+        ? getGlobalNumericValue("ref_m_19") 
+        : getGlobalNumericValue("m_19")
+    ) || 120; // ✅ FIX: Mode-aware cross-section dependency
     const freeCoolingLimit = currentFreeCoolingLimit; // Annual kWh free cooling (h_124)
     let calculatedDays = 0;
     let dailyCoolingLoad = 0;
@@ -851,7 +854,7 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /** [Cooling Calc] Update internal state from external sources */
-  function updateCoolingInputs() {
+  function updateCoolingInputs(isReferenceCalculation = false) {
     const parseNum =
       window.TEUI?.parseNumeric ||
       function (v) {
@@ -885,10 +888,22 @@ window.TEUI.SectionModules.sect13 = (function () {
       coolingState.coolingSetTemp = parseNum(getValue("h_24")) || 24; // Fallback to h_24 or default 24
     }
 
-    coolingState.coolingDegreeDays = parseNum(getValue("d_21")) || 196;
-    coolingState.buildingVolume = parseNum(getValue("d_105")) || 8000;
-    coolingState.buildingArea = parseNum(getValue("h_15")) || 1427.2;
-    coolingState.coolingLoad = getNumericValue("l_128") || 0; // Read mitigated cooling load from S14 - Note: May cause dependency loop issues if S14 reads S13 outputs
+    coolingState.coolingDegreeDays = parseNum(
+      isReferenceCalculation 
+        ? getGlobalNumericValue("ref_d_21") 
+        : getGlobalNumericValue("d_21")
+    ) || 196; // ✅ FIX: Mode-aware cross-section dependency
+    coolingState.buildingVolume = parseNum(
+      isReferenceCalculation 
+        ? getGlobalNumericValue("ref_d_105") 
+        : getGlobalNumericValue("d_105")
+    ) || 8000; // ✅ FIX: Mode-aware cross-section dependency
+    coolingState.buildingArea = parseNum(
+      isReferenceCalculation 
+        ? getGlobalNumericValue("ref_h_15") 
+        : getGlobalNumericValue("h_15")
+    ) || 1427.2; // ✅ FIX: Mode-aware cross-section dependency
+    coolingState.coolingLoad = getGlobalNumericValue("l_128") || 0; // ✅ FIX: Cross-section dependency from S14
     coolingState.ventilationMethod = TargetState.getValue("g_118") || "Constant"; // ✅ FIX: Section-specific field
 
     // Calculate the intermediate A50 temperature needed for atmospheric calcs
@@ -1974,7 +1989,6 @@ window.TEUI.SectionModules.sect13 = (function () {
 
         // ✅ PATTERN 2: Run dual-engine calculations for proper Target/Reference state handling
         calculateAll();
-      ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
         ModeManager.updateCalculatedDisplayValues(); // ✅ CRITICAL: Update DOM after calculations
         if (
           window.TEUI &&
@@ -2027,8 +2041,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       // Helper function for external dependency changes - DUAL-STATE PATTERN COMPLIANT
       const calculateAndRefresh = () => {
         calculateAll();
-      ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
-        ModeManager.updateCalculatedDisplayValues();
+        ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
       };
 
       // Add listeners for climate/gain/loss data changes from other sections
@@ -2183,19 +2196,19 @@ window.TEUI.SectionModules.sect13 = (function () {
         // ADDED: Explicitly trigger calculateAll after user modifies AFUE
         if (fieldId === "j_115") {
           // console.log("[S13 DEBUG] j_115 changed by user, explicitly calling calculateAll().")
-          calculateAll();
-      ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations // Keep this trigger for AFUE changes
+          calculateAll(); // Keep this trigger for AFUE changes
+          ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
         }
         // ADDED: Explicitly trigger calculateAll after user modifies l_118 (ACH)
         if (fieldId === "l_118") {
           // console.log("[S13 DEBUG l_118] l_118 changed by user, explicitly calling S13.calculateAll().")
           calculateAll();
-      ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
+          ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
         }
         // ADDED: Explicitly trigger calculateAll after user modifies d_119 (Per Person Vent)
         if (fieldId === "d_119") {
           calculateAll();
-      ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
+          ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
         }
       }
     } else {
@@ -2282,6 +2295,9 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     // ✅ CRITICAL FIX: Set up dropdown event handlers (like S09, S07, S02)
     setupDropdownEventHandlers();
+    
+    // ✅ CRITICAL FIX: Set up slider event handlers (missing - causing broken sliders)
+    setupSliderEventHandlers();
 
     // --- ADDED: Explicitly update DOM display for editable defaults AFTER initial calculations ---
     if (window.TEUI?.StateManager && window.TEUI?.formatNumber) {
@@ -2322,6 +2338,49 @@ window.TEUI.SectionModules.sect13 = (function () {
     }, 100); // Short delay might be needed
 
     console.log("S13: Pattern A initialization complete.");
+  }
+
+  /**
+   * Set up slider event handlers for dual-state sections
+   * ✅ CRITICAL FIX: This was missing in S13, causing slider changes to not be saved to state
+   */
+  function setupSliderEventHandlers() {
+    const sectionElement = document.getElementById("mechanicalLoads");
+    if (!sectionElement) return;
+
+    // Set up event handlers for all sliders/range inputs in this section
+    const sliders = sectionElement.querySelectorAll('input[type="range"], input[data-field-id]');
+    sliders.forEach((slider) => {
+      const fieldId = slider.getAttribute("data-field-id");
+      if (!fieldId) return;
+
+      // Remove any existing handlers to avoid duplicates
+      slider.removeEventListener("input", handleSliderChange);
+      slider.removeEventListener("change", handleSliderChange);
+
+      // Add the event listeners
+      slider.addEventListener("input", handleSliderChange);
+      slider.addEventListener("change", handleSliderChange);
+    });
+
+    console.log(`[S13] Set up slider event handlers for ${sliders.length} sliders`);
+
+    function handleSliderChange(event) {
+      const fieldId = event.target.getAttribute("data-field-id");
+      if (!fieldId) return;
+
+      const value = event.target.value;
+      console.log(`[S13] Slider ${fieldId} changed to: ${value}`);
+
+      // Store via ModeManager (dual-state aware)
+      if (ModeManager && typeof ModeManager.setValue === "function") {
+        ModeManager.setValue(fieldId, value, "user-modified");
+        
+        // Trigger recalculations
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
+      }
+    }
   }
 
   /**
@@ -2737,7 +2796,9 @@ window.TEUI.SectionModules.sect13 = (function () {
    */
   function calculateVentilationRates(isReferenceCalculation = false) {
     // Use helper defined in this module
-    const ratePerPerson = getNumericValue("d_119");
+    const ratePerPerson = isReferenceCalculation 
+      ? ReferenceState.getValue("d_119") || 0
+      : TargetState.getValue("d_119") || 0; // ✅ FIX: Mode-aware section-specific field
     // console.log(`[S13 CalcVentRates] Read d_119 as: ${ratePerPerson}`); // Log value read
     const cfm = ratePerPerson * 2.11888;
     const m3hr = ratePerPerson * 3.6;
@@ -3358,8 +3419,7 @@ window.TEUI.SectionModules.sect13 = (function () {
   function calculateTargetModelHeatingSystem() {
     // 🔧 CRITICAL FIX: Read fuel type from global StateManager (user changes update this immediately)
     // Direct StateManager access for Target mode to ensure clean values
-    const systemType =
-      window.TEUI.StateManager?.getValue("d_113") || "Heatpump";
+    const systemType = TargetState.getValue("d_113") || "Heatpump"; // ✅ FIX: Read from Target state
     const tedTarget =
       window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("d_127")) ||
       0;
@@ -3445,8 +3505,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     heatingDemand_d114,
   ) {
     const afue =
-      window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("j_115")) ||
-      1;
+      window.TEUI.parseNumeric(TargetState.getValue("j_115")) || 1; // ✅ FIX: Read from Target state
 
     console.log(`[S13] TGT FUEL: ${systemType} system`);
 
