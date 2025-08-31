@@ -37,16 +37,16 @@ window.TEUI.SectionModules.sect13 = (function () {
       }
     },
     setDefaults: function () {
-      // S13-specific Target defaults - MUST match sectionRows values
+      // ✅ FIX: Read defaults from field definitions (single source of truth)
       this.state = {
-        d_113: "Heatpump", // Primary heating system (dropdown)
-        f_113: "12.5", // HSPF coefficient (slider)
-        d_116: "Cooling", // Cooling system (dropdown) - FIXED: was "AC"
-        f_117: "18.0", // SEER coefficient (slider)
-        d_118: "HRV", // Ventilation system (dropdown)
-        f_118: "0.85", // Heat recovery efficiency (slider)
-        d_119: "No", // Free cooling (dropdown)
-        f_119: "0.75", // Free cooling efficiency (slider)
+        d_113: getFieldDefault("d_113") || "Heatpump", // Primary heating system
+        f_113: getFieldDefault("f_113") || "12.5", // HSPF coefficient  
+        d_116: getFieldDefault("d_116") || "Cooling", // Cooling system
+        f_117: getFieldDefault("f_117") || "18.0", // SEER coefficient
+        d_118: getFieldDefault("d_118") || "HRV", // Ventilation system
+        f_118: getFieldDefault("f_118") || "0.85", // Heat recovery efficiency
+        d_119: getFieldDefault("d_119") || "No", // Free cooling
+        f_119: getFieldDefault("f_119") || "0.75", // Free cooling efficiency
         // Add other section-specific user-editable fields as needed
       };
     },
@@ -140,6 +140,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       if (ModeManager.currentMode === "reference") {
         ModeManager.refreshUI();
         calculateAll();
+        ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
       }
     },
     saveState: function () {
@@ -172,7 +173,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         ) {
           console.log(`[S13] Reference ${fieldId} → ${value}`);
           calculateAll(); // Runs both models - efficient and keeps both current
-          ModeManager.updateCalculatedDisplayValues();
+          ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
         }
       }
     },
@@ -325,6 +326,8 @@ window.TEUI.SectionModules.sect13 = (function () {
       this.refreshUI();
       this.updateConditionalUI();
       calculateAll();
+      ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
+      this.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
     },
     getCurrentState: function () {
       return this.currentMode === "target" ? TargetState : ReferenceState;
@@ -523,6 +526,25 @@ window.TEUI.SectionModules.sect13 = (function () {
     const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
     // Use the global parseNumeric if available
     return window.TEUI?.parseNumeric?.(rawValue) || 0;
+  }
+
+  /**
+   * Get field default value from sectionRows definitions (single source of truth)
+   * @param {string} fieldId
+   * @returns {string | null} Default value from field definition
+   */
+  function getFieldDefault(fieldId) {
+    // Search through sectionRows for the field definition
+    for (const [rowKey, row] of Object.entries(sectionRows)) {
+      if (row.cells) {
+        for (const [cellKey, cell] of Object.entries(row.cells)) {
+          if (cell.fieldId === fieldId && cell.value !== undefined) {
+            return cell.value;
+          }
+        }
+      }
+    }
+    return null; // Field not found
   }
 
   /**
@@ -1944,6 +1966,7 @@ window.TEUI.SectionModules.sect13 = (function () {
 
         // ✅ PATTERN 2: Run dual-engine calculations for proper Target/Reference state handling
         calculateAll();
+      ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
         ModeManager.updateCalculatedDisplayValues(); // ✅ CRITICAL: Update DOM after calculations
         if (
           window.TEUI &&
@@ -1996,6 +2019,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       // Helper function for external dependency changes - DUAL-STATE PATTERN COMPLIANT
       const calculateAndRefresh = () => {
         calculateAll();
+      ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
         ModeManager.updateCalculatedDisplayValues();
       };
 
@@ -2147,16 +2171,19 @@ window.TEUI.SectionModules.sect13 = (function () {
         // ADDED: Explicitly trigger calculateAll after user modifies AFUE
         if (fieldId === "j_115") {
           // console.log("[S13 DEBUG] j_115 changed by user, explicitly calling calculateAll().")
-          calculateAll(); // Keep this trigger for AFUE changes
+          calculateAll();
+      ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations // Keep this trigger for AFUE changes
         }
         // ADDED: Explicitly trigger calculateAll after user modifies l_118 (ACH)
         if (fieldId === "l_118") {
           // console.log("[S13 DEBUG l_118] l_118 changed by user, explicitly calling S13.calculateAll().")
           calculateAll();
+      ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
         }
         // ADDED: Explicitly trigger calculateAll after user modifies d_119 (Per Person Vent)
         if (fieldId === "d_119") {
           calculateAll();
+      ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
         }
       }
     } else {
@@ -2386,24 +2413,28 @@ window.TEUI.SectionModules.sect13 = (function () {
         `[S13DEBUG] Reference HDD changed: ref_d_20=${newValue} → triggering Reference calculations`,
       );
       calculateAll();
+      ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
     });
     sm.addListener("ref_d_21", (newValue) => {
       console.log(
         `[S13DEBUG] Reference CDD changed: ref_d_21=${newValue} → triggering Reference calculations`,
       );
       calculateAll();
+      ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
     });
     sm.addListener("ref_d_22", (newValue) => {
       console.log(
         `[S13DEBUG] Reference GF HDD changed: ref_d_22=${newValue} → triggering Reference calculations`,
       );
       calculateAll();
+      ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
     });
     sm.addListener("ref_h_22", (newValue) => {
       console.log(
         `[S13DEBUG] Reference GF CDD changed: ref_h_22=${newValue} → triggering Reference calculations`,
       );
       calculateAll();
+      ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
     });
   }
 
