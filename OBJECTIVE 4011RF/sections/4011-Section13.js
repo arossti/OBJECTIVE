@@ -2655,7 +2655,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       copcool_to_use = 0;
     }
 
-    const area_h15 = window.TEUI.parseNumeric(getFieldValue("h_15")) || 0;
+    const area_h15 = window.TEUI.parseNumeric(getGlobalNumericValue("h_15")) || 0; // ✅ FIX: Cross-section dependency
     const intensity_f117 = area_h15 > 0 ? coolingLoad_d117 / area_h15 : 0;
     const ceer_j117 = 3.412 * copcool_to_use;
 
@@ -2736,9 +2736,9 @@ window.TEUI.SectionModules.sect13 = (function () {
     // console.log(`[S13 CalcVentRates] Read d_119 as: ${ratePerPerson_d119}`); // Log value read
     const volume = window.TEUI.parseNumeric(getFieldValue("d_105")) || 0;
     const ach = window.TEUI.parseNumeric(getFieldValue("l_118")) || 0;
-    const occupiedHours = window.TEUI.parseNumeric(getFieldValue("i_63")) || 0;
-    const totalHours = window.TEUI.parseNumeric(getFieldValue("j_63")) || 8760;
-    const occupants_d63 = window.TEUI.parseNumeric(getFieldValue("d_63")) || 0;
+    const occupiedHours = window.TEUI.parseNumeric(getGlobalNumericValue("i_63")) || 0; // ✅ FIX: Cross-section dependency
+    const totalHours = window.TEUI.parseNumeric(getGlobalNumericValue("j_63")) || 8760; // ✅ FIX: Cross-section dependency
+    const occupants_d63 = window.TEUI.parseNumeric(getGlobalNumericValue("d_63")) || 0; // ✅ FIX: Cross-section dependency
     let ventRateLs = 0;
 
     if (ventMethod === "Occupant Constant") {
@@ -2829,7 +2829,7 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     const ventilationRateLs_d120 =
       window.TEUI.parseNumeric(getFieldValue("d_120")) || 0;
-    const cdd_d21 = window.TEUI.parseNumeric(getFieldValue("d_21")) || 0;
+    const cdd_d21 = window.TEUI.parseNumeric(getGlobalNumericValue("d_21")) || 0; // ✅ FIX: Cross-section dependency
     const occupiedHours_i63 =
       window.TEUI.parseNumeric(getFieldValue("i_63")) || 0;
     const totalHours_j63 =
