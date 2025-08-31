@@ -1079,18 +1079,32 @@ window.TEUI.SectionModules.sect02 = (function () {
   }
 
   /**
-   * Set up Major Occupancy dropdown event handler
+   * Set up Major Occupancy dropdown event handler using event delegation
    */
   function setupMajorOccupancyDropdown() {
-    const dropdown = document.querySelector(
-      'select[data-dropdown-id="dd_d_12"], select[data-field-id="d_12"]',
-    );
-    if (dropdown) {
-      // Remove existing listener to prevent duplicates
-      dropdown.removeEventListener("change", handleMajorOccupancyChange);
+    // Use event delegation on the section container to avoid conflicts
+    const sectionElement = document.getElementById("buildingInfo");
+    if (sectionElement) {
+      // Remove any existing delegated listener
+      sectionElement.removeEventListener("change", handleSectionDropdownChange);
+      
+      // Add delegated event listener
+      sectionElement.addEventListener("change", handleSectionDropdownChange);
+      console.log(`🔍 [S02DB] Delegated event listener attached to buildingInfo section`);
+    } else {
+      console.error(`🚨 [S02DB] buildingInfo section NOT FOUND`);
+    }
+  }
 
-      // Add new listener
-      dropdown.addEventListener("change", handleMajorOccupancyChange);
+  /**
+   * Handle dropdown changes via event delegation
+   */
+  function handleSectionDropdownChange(e) {
+    if (e.target.tagName !== 'SELECT') return;
+    
+    const fieldId = e.target.getAttribute("data-field-id");
+    if (fieldId === "d_12") {
+      handleMajorOccupancyChange(e);
     }
   }
 

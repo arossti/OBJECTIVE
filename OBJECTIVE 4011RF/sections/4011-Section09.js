@@ -2177,7 +2177,7 @@ window.TEUI.SectionModules.sect09 = (function () {
       ModeManager.updateCalculatedDisplayValues();
     });
     sm.addListener("ref_d_12", () => {
-      console.log(`🔍 [S09DB] ref_d_12 listener triggered - S02 Reference occupancy changed`);
+      // S02 Reference occupancy changed - recalculate affected values
       calculateReferenceModel();
       ModeManager.updateCalculatedDisplayValues();
     });
