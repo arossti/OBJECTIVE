@@ -2044,43 +2044,51 @@ window.TEUI.SectionModules.sect13 = (function () {
         ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
       };
 
-      // Add listeners for climate/gain/loss data changes from other sections
+      // ✅ DUAL-STATE-CHEATSHEET Phase 2.5: Complete Target/Reference listener pairs
       console.log("[Section13] 🔗 Attaching CRITICAL upstream listeners...");
-      sm.addListener("d_20", calculateAndRefresh); // HDD
-      sm.addListener("d_21", calculateAndRefresh); // CDD
-      sm.addListener("d_23", calculateAndRefresh); // Coldest Day Temp
-      sm.addListener("d_24", calculateAndRefresh); // Hottest Day Temp
-      sm.addListener("h_23", calculateAndRefresh); // Heating Setpoint
-      sm.addListener("h_24", calculateAndRefresh); // Cooling Setpoint
-      sm.addListener("i_104", () => {
-        console.log(
-          "[Section13] 📡 🔥 i_104 (TRANSMISSION LOSS) listener triggered - S11 thermal bridges changed!",
-        );
-        calculateAndRefresh();
-      }); // Total Trans Loss
-      sm.addListener("k_104", calculateAndRefresh); // Total Ground Loss
-      sm.addListener("i_71", () => {
-        console.log(
-          "[Section13] 📡 🔥 i_71 (OCCUPANT GAINS) listener triggered - S10 gains factor changed!",
-        );
-        calculateAndRefresh();
-      }); // Total Occ Gains
-      sm.addListener("i_79", calculateAndRefresh); // Total App Gains
-      sm.addListener("d_127", () => {
-        console.log(
-          "[Section13] 📡 🔥 d_127 (TED) listener triggered - S14 energy demand changed!",
-        );
-        // ✅ PATTERN 2: Run dual-engine calculations for proper Target/Reference state handling
-        calculateAndRefresh();
-      }); // TED (from S14, for d_114)
-      // Listener for m_129 (CED Mitigated) from S14 to update S13 coolingState
+      
+      // Climate dependencies (S03) - Target/Reference pairs
+      sm.addListener("d_20", calculateAndRefresh); // HDD Target
+      sm.addListener("ref_d_20", calculateAndRefresh); // HDD Reference
+      sm.addListener("d_21", calculateAndRefresh); // CDD Target  
+      sm.addListener("ref_d_21", calculateAndRefresh); // CDD Reference
+      sm.addListener("d_23", calculateAndRefresh); // Coldest Day Target
+      sm.addListener("ref_d_23", calculateAndRefresh); // Coldest Day Reference
+      sm.addListener("d_24", calculateAndRefresh); // Hottest Day Target
+      sm.addListener("ref_d_24", calculateAndRefresh); // Hottest Day Reference
+      sm.addListener("h_23", calculateAndRefresh); // Heating Setpoint Target
+      sm.addListener("ref_h_23", calculateAndRefresh); // Heating Setpoint Reference
+      sm.addListener("h_24", calculateAndRefresh); // Cooling Setpoint Target
+      sm.addListener("ref_h_24", calculateAndRefresh); // Cooling Setpoint Reference
+      // Building dependencies (S11/S12) - Target/Reference pairs
+      sm.addListener("i_104", calculateAndRefresh); // Transmission Loss Target
+      sm.addListener("ref_i_104", calculateAndRefresh); // Transmission Loss Reference
+      sm.addListener("k_104", calculateAndRefresh); // Ground Loss Target
+      sm.addListener("ref_k_104", calculateAndRefresh); // Ground Loss Reference
+      
+      // Internal gains dependencies (S09/S10) - Target/Reference pairs  
+      sm.addListener("i_71", calculateAndRefresh); // Occupant Gains Target
+      sm.addListener("ref_i_71", calculateAndRefresh); // Occupant Gains Reference
+      sm.addListener("i_79", calculateAndRefresh); // Appliance Gains Target
+      sm.addListener("ref_i_79", calculateAndRefresh); // Appliance Gains Reference
+      // Energy demand dependencies (S14) - Target/Reference pairs
+      sm.addListener("d_127", calculateAndRefresh); // TED Target
+      sm.addListener("ref_d_127", calculateAndRefresh); // TED Reference
+      // ✅ DUAL-STATE-CHEATSHEET Phase 2.5: External Dependency Listener Pairs
+      // Target listener for m_129 (CED Mitigated) from S14
       sm.addListener("m_129", () => {
         coolingState.coolingLoad =
-          window.TEUI.parseNumeric(getGlobalNumericValue("m_129")) || 0; // ✅ FIX: External dependency listener reads Target value
-        calculateCoolingSystem(); // Maybe recalculate cooling system loads?
-        // Re-calculate days active cooling AFTER load is updated
-        calculateDaysActiveCooling(coolingState.freeCoolingLimit, false); // ✅ FIX: Pass isReferenceCalculation parameter
+          window.TEUI.parseNumeric(getGlobalNumericValue("m_129")) || 0;
+        calculateCoolingSystem(false); // Target mode
+        calculateDaysActiveCooling(coolingState.freeCoolingLimit, false);
         setCalculatedValue("m_124", coolingState.daysActiveCooling, "integer");
+      });
+      
+      // Reference listener for ref_m_129 (CED Mitigated) from S14
+      sm.addListener("ref_m_129", () => {
+        // Reference external dependency - trigger full recalculation
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
       });
       // *** MOVED: Listener for d_113 to handle ghosting (Correct location) ***
       sm.addListener("d_113", handleHeatingSystemChangeForGhosting);
