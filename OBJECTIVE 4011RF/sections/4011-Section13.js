@@ -2447,7 +2447,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       window.TEUI.parseNumeric(
         isReferenceCalculation
           ? getSectionValue("f_113", true)
-          : getFieldValue("f_113"),
+          : TargetState.getValue("f_113"),  // ✅ FIX: Target reads Target state
       ) || 0;
     const systemType = isReferenceCalculation
       ? getSectionValue("d_113", true) // Reference reads Reference state
@@ -2502,7 +2502,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       ) || 1; // Read current AFUE
     // console.log(`[S13 DEBUG] calculateHeatingFuelImpact using AFUE (j_115) = ${afue}`); // LOG AFUE value used
     const heatingDemand_d114 =
-      window.TEUI.parseNumeric(getFieldValue("d_114")) || 0;
+      window.TEUI.parseNumeric(getGlobalNumericValue("d_114")) || 0; // ✅ FIX: Calculated field
 
     let fuelImpact = 0,
       oilLitres = 0,
@@ -2607,9 +2607,9 @@ window.TEUI.SectionModules.sect13 = (function () {
       ? getSectionValue("d_113", true) // Reference reads Reference state
       : TargetState.getValue("d_113"); // Target reads Target state
     const coolingDemand_m129 =
-      window.TEUI.parseNumeric(getFieldValue("m_129")) || 0;
+      window.TEUI.parseNumeric(getGlobalNumericValue("m_129")) || 0; // ✅ FIX: Cross-section dependency
     const copcool_hp_j113 =
-      window.TEUI.parseNumeric(getFieldValue("j_113")) || 0;
+      window.TEUI.parseNumeric(getGlobalNumericValue("j_113")) || 0; // ✅ FIX: Calculated field
     const copcool_dedicated_h116 = 2.7; // Default value for dedicated
 
     let copcool_to_use = 0;
@@ -2726,7 +2726,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     // console.log(`[S13 CalcVentRates] Calculated f_119: ${cfm}, h_119: ${m3hr}`); // Log calculated values
 
     // Now calculate d_120 (Volumetric Rate) as it depends on d_119 and g_118
-    const ventMethod = getFieldValue("g_118"); // This was likely causing issues, use getNumericValue/parseNum if needed
+    const ventMethod = TargetState.getValue("g_118") || "Constant"; // ✅ FIX: Read from Target state
     const ratePerPerson_d119 =
       window.TEUI.parseNumeric(
         isReferenceCalculation
@@ -2734,8 +2734,8 @@ window.TEUI.SectionModules.sect13 = (function () {
           : TargetState.getValue("d_119"),  // ✅ FIX: Target reads Target state
       ) || 0;
     // console.log(`[S13 CalcVentRates] Read d_119 as: ${ratePerPerson_d119}`); // Log value read
-    const volume = window.TEUI.parseNumeric(getFieldValue("d_105")) || 0;
-    const ach = window.TEUI.parseNumeric(getFieldValue("l_118")) || 0;
+    const volume = window.TEUI.parseNumeric(getGlobalNumericValue("d_105")) || 0; // ✅ FIX: Cross-section dependency
+    const ach = window.TEUI.parseNumeric(TargetState.getValue("l_118")) || 0; // ✅ FIX: Section-specific field
     const occupiedHours = window.TEUI.parseNumeric(getGlobalNumericValue("i_63")) || 0; // ✅ FIX: Cross-section dependency
     const totalHours = window.TEUI.parseNumeric(getGlobalNumericValue("j_63")) || 8760; // ✅ FIX: Cross-section dependency
     const occupants_d63 = window.TEUI.parseNumeric(getGlobalNumericValue("d_63")) || 0; // ✅ FIX: Cross-section dependency
@@ -2793,13 +2793,13 @@ window.TEUI.SectionModules.sect13 = (function () {
    * Calculate ventilation energy exchange during heating season
    */
   function calculateVentilationEnergy(isReferenceCalculation = false) {
-    const ventRate = window.TEUI.parseNumeric(getFieldValue("d_120")) || 0;
+    const ventRate = window.TEUI.parseNumeric(getGlobalNumericValue("d_120")) || 0; // ✅ FIX: Calculated field
     const hdd = getGlobalNumericValue("d_20");
     const efficiency =
       (window.TEUI.parseNumeric(
         isReferenceCalculation
           ? getSectionValue("d_118", true)
-          : getFieldValue("d_118"),
+          : TargetState.getValue("d_118"),  // ✅ FIX: Target reads Target state
       ) || 0) / 100;
     const heatingVentEnergy = (1.21 * ventRate * hdd * 24) / 1000;
     const recoveredEnergy = heatingVentEnergy * efficiency;
@@ -2828,27 +2828,27 @@ window.TEUI.SectionModules.sect13 = (function () {
     // runIntegratedCoolingCalculations();
 
     const ventilationRateLs_d120 =
-      window.TEUI.parseNumeric(getFieldValue("d_120")) || 0;
+      window.TEUI.parseNumeric(getGlobalNumericValue("d_120")) || 0; // ✅ FIX: Calculated field
     const cdd_d21 = window.TEUI.parseNumeric(getGlobalNumericValue("d_21")) || 0; // ✅ FIX: Cross-section dependency
     const occupiedHours_i63 =
-      window.TEUI.parseNumeric(getFieldValue("i_63")) || 0;
+      window.TEUI.parseNumeric(getGlobalNumericValue("i_63")) || 0; // ✅ FIX: Cross-section dependency
     const totalHours_j63 =
-      window.TEUI.parseNumeric(getFieldValue("j_63")) || 8760;
+      window.TEUI.parseNumeric(getGlobalNumericValue("j_63")) || 8760; // ✅ FIX: Cross-section dependency
     const occupancyFactor =
       totalHours_j63 > 0 ? occupiedHours_i63 / totalHours_j63 : 0;
     const latentLoadFactor_i122 = coolingState.latentLoadFactor;
-    const summerBoostRawValue = getFieldValue("l_119");
+    const summerBoostRawValue = TargetState.getValue("l_119") || "None"; // ✅ FIX: Section-specific field
     const summerBoostFactor =
       summerBoostRawValue === "None" || summerBoostRawValue === ""
         ? 1.0
         : window.TEUI.parseNumeric(summerBoostRawValue) || 1.0;
-    const coolingSystem_d116 = getFieldValue("d_116");
+    const coolingSystem_d116 = TargetState.getValue("d_116") || "Cooling"; // ✅ FIX: Section-specific field
     const baseConstant = 1.21;
     const sre_d118 =
       window.TEUI.parseNumeric(
         isReferenceCalculation
           ? getSectionValue("d_118", true)
-          : getFieldValue("d_118"),
+          : TargetState.getValue("d_118"),  // ✅ FIX: Target reads Target state
       ) / 100 || 0;
 
     // Logging removed
@@ -2922,10 +2922,10 @@ window.TEUI.SectionModules.sect13 = (function () {
     let finalFreeCoolingLimit = 0;
     let potentialLimit = 0;
     let setbackFactor = 1.0;
-    const ventilationMethod = getFieldValue("g_118") || "Constant";
-    const setbackValueStr = getFieldValue("k_120");
+    const ventilationMethod = TargetState.getValue("g_118") || "Constant"; // ✅ FIX: Section-specific field
+    const setbackValueStr = TargetState.getValue("k_120") || "None"; // ✅ FIX: Section-specific field
     const ventRateM3hr_h120 =
-      window.TEUI.parseNumeric(getFieldValue("h_120")) || 0; // Get h_120 value used in limit calc
+      window.TEUI.parseNumeric(getGlobalNumericValue("h_120")) || 0; // ✅ FIX: Calculated field
 
     // Logging removed
     // console.warn(`[S13 Debug FreeCool Inputs] Vent Method(g118): ${ventilationMethod}, Setback Factor(k120 str): ${setbackValueStr}, Vent Rate(h120): ${ventRateM3hr_h120.toFixed(2)}`);
@@ -2971,7 +2971,7 @@ window.TEUI.SectionModules.sect13 = (function () {
 
         // Calculate D124 (% Free Cooling Capacity)
         const coolingLoadUnmitigated =
-          window.TEUI.parseNumeric(getFieldValue("d_129")) || 0;
+          window.TEUI.parseNumeric(getGlobalNumericValue("d_129")) || 0; // ✅ FIX: Cross-section dependency
         let percentFreeCooling = 0;
         if (coolingLoadUnmitigated > 0) {
           percentFreeCooling = finalFreeCoolingLimit / coolingLoadUnmitigated;
@@ -3157,9 +3157,9 @@ window.TEUI.SectionModules.sect13 = (function () {
    */
   function calculateMitigatedCED(isReferenceCalculation = false) {
     // Use global parser directly
-    const d129 = window.TEUI.parseNumeric(getFieldValue("d_129")) || 0;
-    const h124 = window.TEUI.parseNumeric(getFieldValue("h_124")) || 0;
-    const d123 = window.TEUI.parseNumeric(getFieldValue("d_123")) || 0;
+    const d129 = window.TEUI.parseNumeric(getGlobalNumericValue("d_129")) || 0; // ✅ FIX: Cross-section dependency
+    const h124 = window.TEUI.parseNumeric(getGlobalNumericValue("h_124")) || 0; // ✅ FIX: Calculated field
+    const d123 = window.TEUI.parseNumeric(getGlobalNumericValue("d_123")) || 0; // ✅ FIX: Calculated field
 
     // Logging removed
     // console.warn(`[S13 Debug MitigatedCED Inputs] Unmitigated(d129): ${d129.toFixed(2)}, FreeCooling(h124): ${h124.toFixed(2)}, VentRecovery(d123): ${d123.toFixed(2)}`);
