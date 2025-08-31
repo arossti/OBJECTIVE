@@ -3667,6 +3667,9 @@ window.TEUI.SectionModules.sect13 = (function () {
     initializeEventHandlers: initializeEventHandlers,
     onSectionRendered: onSectionRendered,
 
+    // ✅ CRITICAL FIX: Export ModeManager for FieldManager dual-state routing
+    ModeManager: ModeManager,
+
     // Section-specific utility functions - OPTIONAL
     calculateAll: calculateAll,
     calculateCoolingSystem: calculateCoolingSystem,
