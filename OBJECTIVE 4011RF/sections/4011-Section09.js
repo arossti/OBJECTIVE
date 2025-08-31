@@ -2378,7 +2378,11 @@ window.TEUI.SectionModules.sect09 = (function () {
     // 4. Sync UI to current state
     ModeManager.refreshUI();
 
-    // 5. Register with state manager and integrator
+    // 5. ✅ SURGICAL FIX: Calculate and publish initial Reference values
+    calculateAll();
+    ModeManager.updateCalculatedDisplayValues();
+
+    // 6. Register with state manager and integrator
     registerWithStateManager();
     registerWithSectionIntegrator();
 

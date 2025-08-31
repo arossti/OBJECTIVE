@@ -6,6 +6,7 @@
  * ================================================================================
  * 
  * 🏆 COMPLIANCE SUMMARY: ✅ 100% DUAL-STATE-CHEATSHEET COMPLIANT
+ * 🚨 LOG ERRORS TO RESOLVE: S15 missing ref_i_104, ref_g_101, ref_d_101 (S12 timing issue)
  * 
  * ✅ PHASE 1 - Pattern B Contamination: CLEAN
  *    - No target_ prefixes found ✅

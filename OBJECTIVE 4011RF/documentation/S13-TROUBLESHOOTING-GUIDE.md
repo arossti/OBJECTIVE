@@ -149,10 +149,55 @@ Line 5025: [S13] TGT HEATING: Oil, HSPF=12.5 (Target working)
 
 ---
 
-## **🔧 RECOMMENDED MICRO-FIX APPROACH**
+## **🔍 DUAL-STATE-CHEATSHEET 6-PHASE AUDIT (December 2024)**
 
-**Next agent should ONLY focus on:**
-- Target mode fuel type changes (d_113)  
-- Correct f_115/h_115 propagation to S04
-- Excel h_10 compliance
-- IGNORE Reference mode completely
+### **PHASE 1: Pattern B Contamination - ✅ CLEAN**
+- No `target_` prefixes found ✅
+- Proper `ref_` prefix usage for listeners ✅
+
+### **PHASE 2: ComponentBridge Contamination - ✅ CLEAN**  
+- No ComponentBridge usage found ✅
+
+### **PHASE 3: DOM Update Pattern - ⚠️ NEEDS REVIEW**
+- `calculateAll()` calls may be missing `updateCalculatedDisplayValues()` ⚠️
+
+### **PHASE 4: switchMode Anti-pattern - ✅ CLEAN**
+- `switchMode()` function exists and appears display-only ✅
+
+### **PHASE 5: Duplicate Defaults - ❌ VIOLATIONS FOUND**
+- **TargetState.setDefaults()**: Hardcoded defaults in state object ❌
+- **ReferenceState.setDefaults()**: Hardcoded defaults in state object ❌
+- **CRITICAL**: Field definitions should be single source of truth ❌
+
+### **PHASE 6: Mode-Aware State Reading - 🚨 MASSIVE VIOLATIONS**
+- **41+ instances of `getFieldValue()` contamination** 🚨
+- **Lines 2464-2471**: `getFieldValue("d_127")`, `getFieldValue("j_115")` ❌
+- **Lines 2627-2710**: Multiple `getFieldValue()` calls in calculations ❌
+- **CRITICAL**: No mode-aware reading - Target/Reference calculations share same inputs ❌
+
+## **🚨 ROOT CAUSE CONFIRMED: S13 IS THE CONTAMINATION SOURCE**
+
+**Evidence**: S13 uses `getFieldValue()` extensively in both Target and Reference calculations, causing:
+1. **Reference calculations read Target values** when Target was last updated
+2. **Target calculations read Reference values** when Reference was last updated  
+3. **No state isolation** between calculation engines
+4. **Direct StateManager contamination** through shared helper functions
+
+## **🔧 RECOMMENDED SURGICAL FIX APPROACH**
+
+**Next agent should apply DUAL-STATE-CHEATSHEET Phase 6 fixes:**
+
+### **Priority 1: Eliminate getFieldValue() Contamination**
+- Replace `getFieldValue("j_115")` with mode-aware reading
+- Replace `getFieldValue("d_113")` with proper state object access
+- Replace `getFieldValue("d_127")` with explicit Target/Reference reading
+
+### **Priority 2: Add calculateTargetModel() Mode Isolation**
+- Apply same pattern as S04/S15: set mode to "target" before calculations
+- Ensure Target calculations only read Target values
+
+### **Priority 3: Fix Duplicate Defaults**  
+- Move hardcoded defaults to field definitions
+- Use `getFieldDefault()` pattern from compliant sections
+
+**FOCUS**: Fix the **3-4 critical `getFieldValue()` calls** in heating calculations first - this is likely the exact contamination source for the d_12 issue.
