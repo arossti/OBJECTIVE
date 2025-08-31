@@ -1691,6 +1691,10 @@ window.TEUI.SectionModules.sect15 = (function () {
    * This is the existing calculation logic
    */
   function calculateTargetModel() {
+    // Store current mode and switch to target for calculations
+    const originalMode = ModeManager.currentMode;
+    ModeManager.currentMode = "target";
+
     try {
       // Perform target calculations using existing calculateValues function
       calculateValues();
@@ -1700,6 +1704,9 @@ window.TEUI.SectionModules.sect15 = (function () {
       // Reference, Target, and Actual values rather than pass/fail indicators
     } catch (error) {
       console.error("[Section15] Error in Target Model calculations:", error);
+    } finally {
+      // CRITICAL: Restore original mode
+      ModeManager.currentMode = originalMode;
     }
   }
 

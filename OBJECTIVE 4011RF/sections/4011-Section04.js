@@ -1563,18 +1563,27 @@ window.TEUI.SectionModules.sect04 = (function () {
    * Calculate Target model (standard calculations)
    */
   function calculateTargetModel() {
-    // Calculate each Excel row in sequence for Target
-    calculateRow27(); // Electricity
-    calculateRow28(); // Gas
-    calculateRow29(); // Propane
-    calculateRow30(); // Oil
-    calculateRow31(); // Wood
-    calculateRow32(); // Subtotals
-    calculateRow33(); // Total Net Energy
-    calculateRow34(); // Annual Percapita Energy
-    calculateRow35(); // Primary Energy
+    // Store current mode and switch to target for calculations
+    const originalMode = ModeManager.currentMode;
+    ModeManager.currentMode = "target";
 
-    // console.log("[S04] Target model calculations complete");
+    try {
+      // Calculate each Excel row in sequence for Target
+      calculateRow27(); // Electricity
+      calculateRow28(); // Gas
+      calculateRow29(); // Propane
+      calculateRow30(); // Oil
+      calculateRow31(); // Wood
+      calculateRow32(); // Subtotals
+      calculateRow33(); // Total Net Energy
+      calculateRow34(); // Annual Percapita Energy
+      calculateRow35(); // Primary Energy
+
+      // console.log("[S04] Target model calculations complete");
+    } finally {
+      // CRITICAL: Restore original mode
+      ModeManager.currentMode = originalMode;
+    }
   }
 
   /**
@@ -1585,18 +1594,20 @@ window.TEUI.SectionModules.sect04 = (function () {
     const originalMode = ModeManager.currentMode;
     ModeManager.currentMode = "reference";
 
-    // CRITICAL: Override calculation storage to use Reference prefixes
-
-    const originalSetCalculatedValue = setCalculatedValue;
-    // eslint-disable-next-line no-func-assign
-    setCalculatedValue = function (fieldId, rawValue, formatType) {
-      setReferenceCalculatedValue(fieldId, rawValue, formatType);
-    };
-
     try {
       // Calculate each Excel row in sequence for Reference
       // Note: For S04, Reference mostly mirrors Target since it's utility bill data
       // The main differences are in h_27-h_31 values from S15 reference calculations
+      // CRITICAL: Use a local reference setter to avoid global contamination
+      const setRefCalculatedValue = function (fieldId, rawValue, formatType) {
+        setReferenceCalculatedValue(fieldId, rawValue, formatType);
+      };
+
+      // Override setCalculatedValue temporarily for this scope only
+      const originalSetCalculatedValue = setCalculatedValue;
+      // eslint-disable-next-line no-func-assign
+      setCalculatedValue = setRefCalculatedValue;
+
       calculateRow27(); // Electricity (uses ref_d_136 from S15)
       calculateRow28(); // Gas
       calculateRow29(); // Propane
@@ -1606,6 +1617,10 @@ window.TEUI.SectionModules.sect04 = (function () {
       calculateRow33(); // Total Net Energy
       calculateRow34(); // Annual Percapita Energy
       calculateRow35(); // Primary Energy
+
+      // CRITICAL: Restore original function immediately
+      // eslint-disable-next-line no-func-assign
+      setCalculatedValue = originalSetCalculatedValue;
 
       console.log("[S04] Reference model calculations complete");
       try {
@@ -1620,9 +1635,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         console.warn("[S04DB] storeReference: read-back failed", e);
       }
     } finally {
-      // CRITICAL: Restore original functions
-      // eslint-disable-next-line no-func-assign
-      setCalculatedValue = originalSetCalculatedValue;
+      // CRITICAL: Restore original mode
       ModeManager.currentMode = originalMode;
     }
   }
