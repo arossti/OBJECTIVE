@@ -2076,11 +2076,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       // Listener for m_129 (CED Mitigated) from S14 to update S13 coolingState
       sm.addListener("m_129", () => {
         coolingState.coolingLoad =
-          window.TEUI.parseNumeric(
-        isReferenceCalculation 
-          ? getGlobalNumericValue("ref_m_129") 
-          : getGlobalNumericValue("m_129")
-      ) || 0; // ✅ FIX: Mode-aware cross-section dependency
+          window.TEUI.parseNumeric(getGlobalNumericValue("m_129")) || 0; // ✅ FIX: External dependency listener reads Target value
         calculateCoolingSystem(); // Maybe recalculate cooling system loads?
         // Re-calculate days active cooling AFTER load is updated
         calculateDaysActiveCooling(coolingState.freeCoolingLimit, false); // ✅ FIX: Pass isReferenceCalculation parameter
