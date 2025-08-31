@@ -725,6 +725,8 @@ window.TEUI.SectionModules.sect01 = (function () {
       }
     }
 
+    // 🔍 CONTAMINATION TRACE: Log h_10 updates to track contamination source
+    console.log(`🔍 [S01DB] UPDATING h_10: ${h10Formatted} (from j_32=${targetEnergy}, area=${targetArea})`);
     updateDisplayValue("h_10", h10Formatted, calculatedTier);
     updateDisplayValue("h_8", h8Formatted);
     updateDisplayValue("h_6", h6Formatted);

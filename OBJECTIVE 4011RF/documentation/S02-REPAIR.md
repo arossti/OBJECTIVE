@@ -6,6 +6,23 @@ When changing `d_12` (Major Occupancy) in **Reference mode** from "A-Assembly" t
 - **Expected**: Only `e_10` (Reference TEUI) should change
 - **Actual**: Both `e_10` AND `h_10` (Target TEUI) change, indicating state mixing contamination
 
+## 🔍 CRITICAL FINDINGS (December 2024)
+
+### ✅ FIXES COMPLETED:
+1. **S02 Dropdown Events**: Fixed event delegation - dropdown changes now fire correctly
+2. **S04 Mode Isolation**: Added `calculateTargetModel()` mode isolation (matches S02/S03 pattern)
+3. **S15 Mode Isolation**: Added `calculateTargetModel()` mode isolation (matches S02/S03 pattern)
+4. **Contamination Source Identified**: Target energy `j_32` still contaminated despite fixes
+
+### 🚨 CONTAMINATION EVIDENCE (Final Test):
+- **Line 4839**: `d_12 dropdown change: B3-Detention Care & Treatment, mode=reference` ✅
+- **Line 4844**: `J32: 179526.53828704086` ❌ **Target energy contaminated** 
+- **Line 4942**: `UPDATING h_10: 125.8 (from j_32=179526.53828704086)` ❌ **S01 uses contaminated value**
+- **Expected**: `j_32` should remain at baseline (~133574), not increase to 179526
+
+### 🎯 ROOT CAUSE STATUS:
+**Target energy `j_32` contamination persists** despite S04/S15 mode isolation fixes. The contamination is **deeper in the dependency chain** than initially diagnosed.
+
 ## 📊 EVIDENCE FROM LOGS (Line 5269-5371)
 
 ### ✅ What's Working:
@@ -134,3 +151,31 @@ When changing `d_12` (Major Occupancy) in **Reference mode** from "A-Assembly" t
 4. **Is there a timing issue** between StateManager updates and DOM updates?
 
 This plan focuses on **systematic investigation** rather than random fixes, targeting the most likely contamination sources based on the evidence.
+
+## 🧹 CLEANUP REQUIRED WHEN FIXED
+
+**CRITICAL**: Remove ALL debugging logging when contamination is resolved:
+
+### S02 Logging to Remove:
+- `🔍 [S02DB] d_12 dropdown change` logging in `handleMajorOccupancyChange()`
+- `🔍 [S02DB] d_12 setValue` logging in `ModeManager.setValue()`
+- `🔍 [S02DB] Target/Reference d_12 published` logging
+- `🔍 [S02DB] storeReferenceResults` logging
+- `🔍 [S02DB] Delegated event listener` setup logging
+
+### S01 Logging to Remove:
+- `🔍 [S01DB] UPDATING h_10` logging in `updateTEUIDisplay()`
+- `🔍 [S01DB] updateTEUIDisplay START` logging
+- `🔍 [S01DB] upstream snapshot` logging
+
+### S09 Logging to Remove:
+- S02 Reference occupancy listener logging (cleaned already)
+
+**Restore clean, production-ready console output once contamination is eliminated.**
+
+## 📋 NEXT SESSION PRIORITIES
+
+1. **Deep audit S04/S15 calculation chains** - mode isolation fixes didn't eliminate contamination
+2. **Investigate shared calculation functions** - may be reading wrong state despite mode setting
+3. **Check for timing issues** - Reference calculations may be affecting Target calculations through shared resources
+4. **Consider dependency graph analysis** - contamination may be through indirect dependency paths
