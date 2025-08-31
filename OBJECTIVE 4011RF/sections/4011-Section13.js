@@ -719,7 +719,7 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /** [Cooling Calc] Calculate free cooling capacity limit (Potential Annual Sensible kWh) */
-  function calculateFreeCoolingLimit() {
+  function calculateFreeCoolingLimit(isReferenceCalculation = false) {
     // Add recursion protection
     if (window.TEUI.sect13.calculatingFreeCooling) {
       return coolingState.freeCoolingLimit || 0; // Return cached value if already calculating
@@ -912,10 +912,10 @@ window.TEUI.SectionModules.sect13 = (function () {
 
   /** [Cooling Calc] Orchestrates the internal cooling-related calculations */
   function runIntegratedCoolingCalculations() {
-    updateCoolingInputs();
+    updateCoolingInputs(false); // ✅ FIX: Pass isReferenceCalculation parameter (Target mode)
 
     // Ensure atmospheric & humidity are calculated BEFORE factors/limits that depend on them
-    calculateAtmosphericValues();
+    calculateAtmosphericValues(false); // ✅ FIX: Pass isReferenceCalculation parameter (Target mode)
     calculateHumidityRatios();
 
     // Now calculate factors/limits that use the results
@@ -2083,7 +2083,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       ) || 0; // ✅ FIX: Mode-aware cross-section dependency
         calculateCoolingSystem(); // Maybe recalculate cooling system loads?
         // Re-calculate days active cooling AFTER load is updated
-        calculateDaysActiveCooling(coolingState.freeCoolingLimit);
+        calculateDaysActiveCooling(coolingState.freeCoolingLimit, false); // ✅ FIX: Pass isReferenceCalculation parameter
         setCalculatedValue("m_124", coolingState.daysActiveCooling, "integer");
       });
       // *** MOVED: Listener for d_113 to handle ghosting (Correct location) ***
@@ -3045,7 +3045,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       // REMOVED: Call moved to calculateAll
       // runIntegratedCoolingCalculations();
 
-      potentialLimit = calculateFreeCoolingLimit(); // Calculated Sensible Potential (kWh/yr)
+      potentialLimit = calculateFreeCoolingLimit(isReferenceCalculation); // ✅ FIX: Pass mode parameter
 
       if (setbackValueStr) {
         // const parsedFactor = window.TEUI.parseNumeric(setbackValueStr); // OLD - assumed decimal
