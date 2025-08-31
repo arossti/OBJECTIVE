@@ -664,7 +664,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     const outdoorRH = coolingState.coolingSeasonMeanRH;
     const t_indoor = coolingState.coolingSetTemp;
     const indoorRH_percent =
-      window.TEUI.parseNumeric(getFieldValue("d_59")) || 45;
+      window.TEUI.parseNumeric(getGlobalNumericValue("d_59")) || 45; // ✅ FIX: Cross-section dependency
     const indoorRH = indoorRH_percent / 100;
 
     coolingState.pSatAvg =
@@ -729,7 +729,7 @@ window.TEUI.SectionModules.sect13 = (function () {
 
       // 1. Get necessary values
       const ventFlowRateM3hr =
-        window.TEUI.parseNumeric(getFieldValue("h_120")) || 0;
+        window.TEUI.parseNumeric(getGlobalNumericValue("h_120")) || 0; // ✅ FIX: Calculated field
       const ventFlowRateM3s = ventFlowRateM3hr / 3600;
       const massFlowRateKgS = ventFlowRateM3s * coolingState.airMass; // kg/s
 
@@ -737,7 +737,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       const T_indoor = coolingState.coolingSetTemp; // °C
       const T_outdoor_night = coolingState.nightTimeTemp; // °C
       const coolingDays =
-        window.TEUI.parseNumeric(getFieldValue("m_19")) || 120;
+        window.TEUI.parseNumeric(getGlobalNumericValue("m_19")) || 120; // ✅ FIX: Cross-section dependency
 
       // 2. Calculate Temperature Difference
       const tempDiff = T_outdoor_night - T_indoor; // °C or K difference
@@ -881,7 +881,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     coolingState.buildingVolume = parseNum(getValue("d_105")) || 8000;
     coolingState.buildingArea = parseNum(getValue("h_15")) || 1427.2;
     coolingState.coolingLoad = getNumericValue("l_128") || 0; // Read mitigated cooling load from S14 - Note: May cause dependency loop issues if S14 reads S13 outputs
-    coolingState.ventilationMethod = getFieldValue("g_118") || "Constant"; // Default to Constant
+    coolingState.ventilationMethod = TargetState.getValue("g_118") || "Constant"; // ✅ FIX: Section-specific field
 
     // Calculate the intermediate A50 temperature needed for atmospheric calcs
     calculateA50Temp();
@@ -960,7 +960,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     if (!config) return;
 
     const currentValue =
-      window.TEUI?.parseNumeric?.(getFieldValue(fieldId)) || 0;
+      window.TEUI?.parseNumeric?.(getGlobalNumericValue(fieldId)) || 0; // ✅ FIX: Generic field access
 
     const referenceValue =
       window.TEUI?.StateManager?.getTCellValue?.(fieldId) ||
@@ -2055,7 +2055,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       // Listener for m_129 (CED Mitigated) from S14 to update S13 coolingState
       sm.addListener("m_129", () => {
         coolingState.coolingLoad =
-          window.TEUI.parseNumeric(getFieldValue("m_129")) || 0;
+          window.TEUI.parseNumeric(getGlobalNumericValue("m_129")) || 0; // ✅ FIX: Cross-section dependency
         calculateCoolingSystem(); // Maybe recalculate cooling system loads?
         // Re-calculate days active cooling AFTER load is updated
         calculateDaysActiveCooling(coolingState.freeCoolingLimit);
