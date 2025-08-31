@@ -2277,7 +2277,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     // Set initial ghosting state after calculations might have populated values
     setTimeout(() => {
       // Use timeout to ensure initial state is settled
-      const initialHeatingSystem = getFieldValue("d_113") || "Heatpump"; // Get current value or default
+      const initialHeatingSystem = TargetState.getValue("d_113") || "Heatpump"; // ✅ FIX: Read from Target state, not UI mode
       // console.log(`[S13 Ghosting] Setting initial ghosting based on system: ${initialHeatingSystem}`);
       handleHeatingSystemChangeForGhosting(initialHeatingSystem);
     }, 100); // Short delay might be needed
@@ -2462,12 +2462,12 @@ window.TEUI.SectionModules.sect13 = (function () {
       ? window.TEUI.parseNumeric(
           window.TEUI.StateManager?.getValue("ref_d_127"),
         ) || 0
-      : window.TEUI.parseNumeric(getFieldValue("d_127")) || 0;
+      : window.TEUI.parseNumeric(TargetState.getValue("d_127")) || 0;  // ✅ FIX: Target reads Target state
     const afue =
       window.TEUI.parseNumeric(
         isReferenceCalculation
-          ? getSectionValue("j_115", true)
-          : getFieldValue("j_115"),
+          ? getSectionValue("j_115", true)     // Reference reads Reference state
+          : TargetState.getValue("j_115"),     // ✅ FIX: Target reads Target state (not UI mode)
       ) || 1; // Read current AFUE
     // console.log(`[S13 DEBUG] calculateHeatingFuelImpact using AFUE (j_115) = ${afue}`); // LOG AFUE value used
     const heatingDemand_d114 =
@@ -2571,7 +2571,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     // ✅ DUAL-ENGINE: For Target calculations, use StateManager (authoritative source)
     const coolingSystemType = isReferenceCalculation
       ? getSectionValue("d_116", true)
-      : getFieldValue("d_116");
+      : TargetState.getValue("d_116");  // ✅ FIX: Target reads Target state
     const heatingSystemType = isReferenceCalculation
       ? getSectionValue("d_113", true) // Reference reads Reference state
       : TargetState.getValue("d_113"); // Target reads Target state
@@ -2700,7 +2700,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       window.TEUI.parseNumeric(
         isReferenceCalculation
           ? getSectionValue("d_119", true)
-          : getFieldValue("d_119"),
+          : TargetState.getValue("d_119"),  // ✅ FIX: Target reads Target state
       ) || 0;
     // console.log(`[S13 CalcVentRates] Read d_119 as: ${ratePerPerson_d119}`); // Log value read
     const volume = window.TEUI.parseNumeric(getFieldValue("d_105")) || 0;
@@ -2743,7 +2743,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       window.TEUI.parseNumeric(
         isReferenceCalculation
           ? getSectionValue("d_118", true)
-          : getFieldValue("d_118"),
+          : TargetState.getValue("d_118"),  // ✅ FIX: Target reads Target state
       ) || 0;
     // Commented out - m_118 is now handled by reference indicator system
     // setCalculatedValue('m_118', sre_d118 / 100, 'percent-0dp');
