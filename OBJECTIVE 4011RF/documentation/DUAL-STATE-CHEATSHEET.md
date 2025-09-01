@@ -530,6 +530,69 @@ ModeManager.updateCalculatedDisplayValues(); // Mode-aware DOM updates
 13. **INITIALIZATION ORDER**: `ModeManager.initialize()` MUST be called before any calculations
     - Set defaults → Load state → Store defaults to StateManager → Calculate
 
+### **Phase 7: Direct DOM Manipulation Detection (ARCHITECTURAL VIOLATION SCAN)**
+
+14. **🚨 CRITICAL: SCAN FOR DIRECT DOM EVENT HANDLERS**
+    - **Anti-Pattern**: Direct `addEventListener` calls that bypass StateManager architecture
+    - **Detection Pattern**: `grep -r "addEventListener.*change\|addEventListener.*input" sections/`
+    - **Critical Violations**:
+      ```javascript
+      // ❌ ARCHITECTURAL VIOLATION: Direct DOM event handlers
+      dropdown.addEventListener("change", handleDropdownChange);
+      slider.addEventListener("input", handleSliderChange);
+      slider.addEventListener("change", handleSliderChange);
+      
+      function handleSliderChange(event) {
+        ModeManager.setValue(fieldId, value, "user-modified");  // BYPASSES STATEMANAGER!
+        calculateAll();  // BROAD TRIGGER!
+      }
+      ```
+    - **✅ CORRECT ARCHITECTURE**: StateManager listeners (proven in ARCHIVE)
+      ```javascript
+      // ✅ ARCHIVED WORKING PATTERN: StateManager listeners
+      sm.addListener("f_113", calculateCOPValues);  // Specific function
+      sm.addListener("d_113", () => {
+        calculateHeatingSystem();  // Specific function, not calculateAll()
+      });
+      ```
+
+15. **🚨 SCAN FOR DIRECT DOM MANIPULATION IN CALCULATIONS**
+    - **Detection Pattern**: `grep -r "element\.textContent\|\.innerHTML\|\.value.*=" sections/`
+    - **Critical Violations**: 
+      ```javascript
+      // ❌ WRONG: Direct DOM manipulation
+      element.textContent = value;
+      element.value = newValue;
+      
+      // ✅ CORRECT: StateManager single source of truth
+      setCalculatedValue(fieldId, value);  // Updates StateManager + DOM
+      ```
+
+16. **🚨 SCAN FOR BYPASSED FIELDMANAGER ROUTING**
+    - **Detection Pattern**: `grep -r "setupSliderEventHandlers\|setupDropdownEventHandlers" sections/`
+    - **Critical Issue**: Custom event handlers that bypass FieldManager's dual-state routing
+    - **✅ CORRECT**: FieldManager handles ALL user input routing through ModeManager
+    - **❌ WRONG**: Section-specific event handlers that duplicate FieldManager functionality
+
+17. **🚨 MANDATORY ARCHIVE COMPARISON FOR EVENT HANDLING**
+    - **Compare With**: `ARCHIVE/4011GS/OBJECTIVE-4011GS-2025.06.21-SOLSTICE-BASELINE/sections/`
+    - **Focus**: How does ARCHIVED version handle dropdown/slider events?
+    - **Key Pattern**: ARCHIVED uses StateManager listeners, NOT direct DOM handlers
+    - **Reversion Required**: Remove any direct DOM handlers and restore StateManager listener pattern
+
+18. **🚨 TIMING RACE CONDITION SCAN**
+    - **Detection**: Multiple `calculateAll()` calls in rapid succession
+    - **Log Pattern**: Look for calculation storms, double-triggering
+    - **Root Cause**: Direct DOM handlers creating parallel event systems
+    - **Fix**: Single StateManager listener per field, specific calculation functions (not broad `calculateAll()`)
+
+### **Phase 7 Mandatory Fixes:**
+1. **Remove ALL direct DOM event handlers** (`addEventListener` in sections)
+2. **Restore StateManager listener pattern** from ARCHIVE
+3. **Remove custom `setupSliderEventHandlers()` and `setupDropdownEventHandlers()` functions**
+4. **Verify FieldManager handles ALL user input routing**
+5. **Test for timing race condition elimination**
+
 ### **Phase 7: Pattern 2 Compliance**
 
 14. **External Dependencies**: ALL calculations must read explicit Target or Reference upstream values
