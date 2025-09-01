@@ -811,135 +811,105 @@ window.TEUI.SectionModules.sect04 = (function () {
    * Row 27: T.3.1 Total Electricity Use
    * Excel: D27 (actual user input), H27 (target calculated from S15 d_136)
    */
-  function calculateRow27() {
+  function calculateRow27(isReferenceCalculation, setFunc) {
     // H27: Target vs Reference electricity from S15
-    let targetElectricity;
-    if (ModeManager.currentMode === "reference") {
-      // ✅ PHASE 6 FIX: Strict Reference mode - only read ref_ values from S15
-      targetElectricity = getGlobalNumericValue("ref_d_136") || 0;
-    } else {
-      // Target mode: read from S15's Target calculations
-      targetElectricity = getGlobalNumericValue("d_136") || 0;
-    }
+    const electricitySourceField = isReferenceCalculation ? "ref_d_136" : "d_136";
+    const electricityValue = getGlobalNumericValue(electricitySourceField) || 0;
 
-    // ✅ FIX: Use mode-aware reading for user inputs
-    // F27: Convert actual to ekWh (D27 already in kWh) - MODE AWARE
+    // F27: Convert actual to ekWh (D27 already in kWh)
     const actualElectricity = ModeManager.getValue("d_27") || 0;
 
-    // G27: Emissions from actual (D27 * L27 / 1000)
-    const emissionFactor = getElectricityEmissionFactor(
-      ModeManager.currentMode === "reference",
-    );
+    // G27 & K27: Emissions calculations
+    const emissionFactor = getElectricityEmissionFactor(isReferenceCalculation);
     const actualEmissions = (actualElectricity * emissionFactor) / 1000;
-
-    // K27: Emissions from target (H27 * L27 / 1000)
-    const targetEmissions = (targetElectricity * emissionFactor) / 1000;
-
-    // Store calculated values
-    setCalculatedValue("h_27", targetElectricity);
-
-    // ✅ FIX: Use calculateF27() for proper renewable offset (F27 = D27 - D43 - I43)
-    calculateF27(); // This applies the Excel formula with renewable offsets for Actual
-
-    setCalculatedValue("g_27", actualEmissions);
-
-    // ✅ FIX: Use calculateJ27() for proper renewable offset (J27 = H27 - D43 - I43)
-    calculateJ27(); // This applies the Excel formula with renewable offsets
-
-    setCalculatedValue("k_27", targetEmissions);
-    setCalculatedValue("l_27", emissionFactor, "integer"); // Emission factor as integer
+    const targetEmissions = (electricityValue * emissionFactor) / 1000;
+    
+    setFunc("h_27", electricityValue);
+    setFunc("f_27", calculateF27(isReferenceCalculation, setFunc)); 
+    setFunc("g_27", actualEmissions);
+    setFunc("j_27", calculateJ27(isReferenceCalculation, setFunc));
+    setFunc("k_27", targetEmissions);
+    setFunc("l_27", emissionFactor, "integer");
   }
 
   /**
    * Row 28: T.3.2 Total Fossil Gas Use
    * Excel: D28 (actual), H28 (target calculated)
    */
-  function calculateRow28() {
-    // ✅ FIX: Use Excel-compliant calculations for gas row
-
+  function calculateRow28(isReferenceCalculation, setFunc) {
     // Call individual calculation functions (Excel-compliant)
-    calculateF28(); // F28: Actual gas to ekWh
-    calculateG28(); // G28: Actual emissions
-    calculateH28(); // H28: Target gas volume (Excel formula with S07/S13)
-    calculateJ28(); // J28: Target gas to ekWh
-    calculateK28(); // K28: Target emissions
+    setFunc("f_28", calculateF28(isReferenceCalculation, setFunc)); 
+    setFunc("g_28", calculateG28(isReferenceCalculation, setFunc)); 
+    setFunc("h_28", calculateH28(isReferenceCalculation, setFunc));
+    setFunc("j_28", calculateJ28(isReferenceCalculation, setFunc));
+    setFunc("k_28", calculateK28(isReferenceCalculation, setFunc));
 
     // Set emission factor
-    setCalculatedValue("l_28", 1921, "integer"); // Gas emission factor
+    setFunc("l_28", 1921, "integer"); 
   }
 
   /**
    * Row 29: T.3.3 Total Propane Use
    */
-  function calculateRow29() {
-    // ✅ FIX: Use mode-aware reading for user inputs
+  function calculateRow29(isReferenceCalculation, setFunc) {
     const actualPropane = ModeManager.getValue("d_29") || 0;
-
-    // ✅ Target propane mirrors actual input (user-controlled resource)
     const targetPropane = actualPropane;
 
-    // F29: Convert to ekWh (D29 * 14.019)
     const actualPropane_ekWh = actualPropane * 14.019;
     const actualEmissions = (actualPropane * 2970) / 1000;
 
     const targetPropane_ekWh = targetPropane * 14.019;
     const targetEmissions = (targetPropane * 2970) / 1000;
 
-    setCalculatedValue("h_29", targetPropane);
-    setCalculatedValue("f_29", actualPropane_ekWh);
-    setCalculatedValue("g_29", actualEmissions);
-    setCalculatedValue("j_29", targetPropane_ekWh);
-    setCalculatedValue("k_29", targetEmissions);
-    setCalculatedValue("l_29", 2970, "integer"); // Propane emission factor
+    setFunc("h_29", targetPropane);
+    setFunc("f_29", actualPropane_ekWh);
+    setFunc("g_29", actualEmissions);
+    setFunc("j_29", targetPropane_ekWh);
+    setFunc("k_29", targetEmissions);
+    setFunc("l_29", 2970, "integer");
   }
 
   /**
    * Row 30: T.3.4 Total Oil Use
    */
-  function calculateRow30() {
-    // ✅ FIX: Use Excel-compliant calculations for oil row
-
+  function calculateRow30(isReferenceCalculation, setFunc) {
     // Call individual calculation functions (Excel-compliant)
-    calculateF30(); // F30: Actual oil to ekWh
-    calculateG30(); // G30: Actual emissions
-    calculateH30(); // H30: Target oil volume (Excel formula with S07/S13)
-    calculateJ30(); // J30: Target oil to ekWh
-    calculateK30(); // K30: Target emissions
+    setFunc("f_30", calculateF30(isReferenceCalculation, setFunc)); 
+    setFunc("g_30", calculateG30(isReferenceCalculation, setFunc)); 
+    setFunc("h_30", calculateH30(isReferenceCalculation, setFunc));
+    setFunc("j_30", calculateJ30(isReferenceCalculation, setFunc));
+    setFunc("k_30", calculateK30(isReferenceCalculation, setFunc));
 
     // Set emission factor
-    setCalculatedValue("l_30", 2753, "integer"); // Oil emission factor
+    setFunc("l_30", 2753, "integer");
   }
 
   /**
    * Row 31: T.3.5 Total Wood Use
    */
-  function calculateRow31() {
-    // ✅ FIX: Use mode-aware reading for user inputs
+  function calculateRow31(isReferenceCalculation, setFunc) {
     const actualWood = ModeManager.getValue("d_31") || 0;
-
-    // ✅ Target wood mirrors actual input (user-controlled resource)
     const targetWood = actualWood;
 
-    // F31: Convert to ekWh (D31 * 1000)
     const actualWood_ekWh = actualWood * 1000;
-    const actualEmissions = actualWood * 150; // kgCO2e/m3
+    const actualEmissions = actualWood * 150; 
 
     const targetWood_ekWh = targetWood * 1000;
     const targetEmissions = targetWood * 150;
 
-    setCalculatedValue("h_31", targetWood);
-    setCalculatedValue("f_31", actualWood_ekWh);
-    setCalculatedValue("g_31", actualEmissions);
-    setCalculatedValue("j_31", targetWood_ekWh);
-    setCalculatedValue("k_31", targetEmissions);
-    setCalculatedValue("l_31", 150, "integer"); // Wood emission factor
+    setFunc("h_31", targetWood);
+    setFunc("f_31", actualWood_ekWh);
+    setFunc("g_31", actualEmissions);
+    setFunc("j_31", targetWood_ekWh);
+    setFunc("k_31", targetEmissions);
+    setFunc("l_31", 150, "integer");
   }
 
   /**
    * Row 32: E.1.1 Operational GHG & Energy Subtotals
    * Excel: SUM(F27:F31), SUM(G27:G31), SUM(J27:J31), SUM(K27:K31)
    */
-  function calculateRow32() {
+  function calculateRow32(isReferenceCalculation, setFunc) {
     // ✅ DEBUG: Log individual values before summing
     const f_27 = ModeManager.getValue("f_27") || 0;
     const f_28 = ModeManager.getValue("f_28") || 0;
@@ -966,7 +936,7 @@ window.TEUI.SectionModules.sect04 = (function () {
     const k_31 = ModeManager.getValue("k_31") || 0;
 
     // Calculate subtotals with forestry offset (Excel: =SUM(G27:G31)-(D60*1000), =SUM(K27:K31)-(D60*1000))
-    const d_60 = getGlobalNumericValue("d_60") || 0; // ✅ Forestry offset from S08
+    const d_60 = getGlobalNumericValue(isReferenceCalculation ? "ref_d_60" : "d_60") || 0; // ✅ Forestry offset from S08
     const actualEnergySum = f_27 + f_28 + f_29 + f_30 + f_31;
     const actualEmissionsSum = g_27 + g_28 + g_29 + g_30 + g_31 - d_60 * 1000; // ✅ Include forestry offset
     const targetEnergySum = j_27 + j_28 + j_29 + j_30 + j_31;
@@ -977,17 +947,17 @@ window.TEUI.SectionModules.sect04 = (function () {
     );
 
     // ✅ CRITICAL: Store subtotals for downstream consumption
-    setCalculatedValue("f_32", actualEnergySum);
-    setCalculatedValue("g_32", actualEmissionsSum);
-    setCalculatedValue("j_32", targetEnergySum);
-    setCalculatedValue("k_32", targetEmissionsSum);
+    setFunc("f_32", actualEnergySum);
+    setFunc("g_32", actualEmissionsSum);
+    setFunc("j_32", targetEnergySum);
+    setFunc("k_32", targetEmissionsSum);
   }
 
   /**
    * Row 33: T.3.6 Total Net Energy
    * Excel: d_33 = (SUM(F27:F31)-D43-I43)/277.7777, h_33 = (SUM(J27:J31)-I43-D43)/277.7777
    */
-  function calculateRow33() {
+  function calculateRow33(isReferenceCalculation, setFunc) {
     // Get energy values
     const f_27 = ModeManager.getValue("f_27") || 0;
     const f_28 = ModeManager.getValue("f_28") || 0;
@@ -1001,8 +971,8 @@ window.TEUI.SectionModules.sect04 = (function () {
     const j_30 = ModeManager.getValue("j_30") || 0;
     const j_31 = ModeManager.getValue("j_31") || 0;
 
-    const d_43 = getGlobalNumericValue("d_43"); // Onsite renewables
-    const i_43 = getGlobalNumericValue("i_43"); // Offsite REC
+    const d_43 = getGlobalNumericValue(isReferenceCalculation ? "ref_d_43" : "d_43"); // Onsite renewables
+    const i_43 = getGlobalNumericValue(isReferenceCalculation ? "ref_i_43" : "i_43"); // Offsite REC
 
     // d_33: Actual Total Net Energy in GJ/yr
     const d_33 = (f_27 + f_28 + f_29 + f_30 + f_31 - d_43 - i_43) / 277.7777;
@@ -1010,54 +980,43 @@ window.TEUI.SectionModules.sect04 = (function () {
     // h_33: Target Total Net Energy in GJ/yr
     const h_33 = (j_27 + j_28 + j_29 + j_30 + j_31 - i_43 - d_43) / 277.7777;
 
-    setCalculatedValue("d_33", d_33);
-    setCalculatedValue("h_33", h_33);
+    setFunc("d_33", d_33);
+    setFunc("h_33", h_33);
   }
 
   /**
    * Row 34: T.3.7 Annual Percapita Energy
    * Excel: Per-person energy calculations based on occupancy
    */
-  function calculateRow34() {
+  function calculateRow34(isReferenceCalculation, setFunc) {
     const f_32 = ModeManager.getValue("f_32") || 0; // Actual energy total
     const d_33 = ModeManager.getValue("d_33") || 0; // Actual GJ
     const j_32 = ModeManager.getValue("j_32") || 0; // Target energy total
     const h_33 = ModeManager.getValue("h_33") || 0; // Target GJ
-    // ✅ PHASE 6 FIX: Occupancy from S09 - use mode-aware reading
-    const d_63 =
-      ModeManager.currentMode === "reference"
-        ? getGlobalNumericValue("ref_d_63") || 1 // Reference mode: only ref_ values
-        : getGlobalNumericValue("d_63") || 1; // Target mode: only unprefixed values
+    
+    const d_63 = getGlobalNumericValue(isReferenceCalculation ? "ref_d_63" : "d_63") || 1;
 
     const d_34 = f_32 / d_63; // Actual energy per person
     const f_34 = d_33 / d_63; // Actual GJ per person
     const h_34 = j_32 / d_63; // Target energy per person
     const j_34 = h_33 / d_63; // Target GJ per person
 
-    setCalculatedValue("d_34", d_34);
-    setCalculatedValue("f_34", f_34);
-    setCalculatedValue("h_34", h_34);
-    setCalculatedValue("j_34", j_34);
+    setFunc("d_34", d_34);
+    setFunc("f_34", f_34);
+    setFunc("h_34", h_34);
+    setFunc("j_34", j_34);
   }
 
   /**
    * Row 35: T.3.8 Primary Energy
    * Excel: d_35 = IF(D14="Targeted Use", J27*H35, F27*H35), f_35 = D35/H15
    */
-  function calculateRow35() {
-    // ✅ PHASE 6 FIX: Building status from S02 - use mode-aware reading
-    const d_14 =
-      ModeManager.currentMode === "reference"
-        ? getGlobalNumericValue("ref_d_14") || "Utility Bills" // Reference mode: only ref_ values
-        : getGlobalNumericValue("d_14") || "Utility Bills"; // Target mode: only unprefixed values
+  function calculateRow35(isReferenceCalculation, setFunc) {
+    const d_14 = getGlobalNumericValue(isReferenceCalculation ? "ref_d_14" : "d_14") || "Utility Bills";
     const j_27 = ModeManager.getValue("j_27") || 0;
     const f_27 = ModeManager.getValue("f_27") || 0;
     const h_35 = ModeManager.getValue("h_35") || 1.0; // PER Factor
-    // ✅ PHASE 6 FIX: Conditioned area from S02 - use mode-aware reading
-    const h_15 =
-      ModeManager.currentMode === "reference"
-        ? getGlobalNumericValue("ref_h_15") || 1 // Reference mode: only ref_ values
-        : getGlobalNumericValue("h_15") || 1; // Target mode: only unprefixed values
+    const h_15 = getGlobalNumericValue(isReferenceCalculation ? "ref_h_15" : "h_15") || 1;
 
     // d_35: Primary Energy - conditional based on building status
     const d_35 = d_14 === "Targeted Use" ? j_27 * h_35 : f_27 * h_35;
@@ -1065,8 +1024,8 @@ window.TEUI.SectionModules.sect04 = (function () {
     // f_35: Primary Energy Intensity (kWh/m²/yr)
     const f_35 = d_35 / h_15;
 
-    setCalculatedValue("d_35", d_35);
-    setCalculatedValue("f_35", f_35);
+    setFunc("d_35", d_35);
+    setFunc("f_35", f_35);
   }
 
   //==========================================================================
@@ -1079,7 +1038,7 @@ window.TEUI.SectionModules.sect04 = (function () {
    */
 
   // F-column calculations (actual energy to ekWh)
-  function calculateF27() {
+  function calculateF27(isReferenceCalculation, setFunc) {
     // ✅ PHASE 6 FIX: No fallback needed - d_27 is local user input
     const d_27 = ModeManager.getValue("d_27") || 0;
 
@@ -1090,99 +1049,99 @@ window.TEUI.SectionModules.sect04 = (function () {
 
     const result = d_27 - d_43 - i_43; // NET actual electricity consumption after renewable offsets
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("f_27", result);
+    setFunc("f_27", result);
     return result;
   }
 
-  function calculateF28() {
+  function calculateF28(isReferenceCalculation, setFunc) {
     // ✅ PHASE 6 FIX: No fallback needed - d_28 is local user input
     const d_28 = ModeManager.getValue("d_28") || 0;
     const result = d_28 * 0.0373 * 277.7778; // Gas m³ to ekWh
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("f_28", result);
+    setFunc("f_28", result);
     return result;
   }
 
-  function calculateF29() {
+  function calculateF29(isReferenceCalculation, setFunc) {
     // ✅ PHASE 6 FIX: No fallback needed - d_29 is local user input
     const d_29 = ModeManager.getValue("d_29") || 0;
     const result = d_29 * 14.019; // Propane kg to ekWh
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("f_29", result);
+    setFunc("f_29", result);
     return result;
   }
 
-  function calculateF30() {
+  function calculateF30(isReferenceCalculation, setFunc) {
     // ✅ PHASE 6 FIX: No fallback needed - d_30 is local user input
     const d_30 = ModeManager.getValue("d_30") || 0;
     const result = d_30 * 36.72 * 0.2777778; // Oil L to ekWh
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("f_30", result);
+    setFunc("f_30", result);
     return result;
   }
 
-  function calculateF31() {
+  function calculateF31(isReferenceCalculation, setFunc) {
     // ✅ PHASE 6 FIX: No fallback needed - d_31 is local user input
     const d_31 = ModeManager.getValue("d_31") || 0;
     const result = d_31 * 1000; // Wood m³ to ekWh
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("f_31", result);
+    setFunc("f_31", result);
     return result;
   }
 
   // G-column calculations (actual emissions)
-  function calculateG27() {
+  function calculateG27(isReferenceCalculation, setFunc) {
     const f_27 = ModeManager.getValue("f_27") || 0;
     const l_27 = getElectricityEmissionFactor(
-      ModeManager.currentMode === "reference",
+      isReferenceCalculation,
     );
     const result = (f_27 * l_27) / 1000; // Convert gCO2e to kgCO2e
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("g_27", result);
+    setFunc("g_27", result);
     return result;
   }
 
-  function calculateG28() {
+  function calculateG28(isReferenceCalculation, setFunc) {
     // ✅ PHASE 6 FIX: No fallback needed - d_28 is local user input
     const d_28 = ModeManager.getValue("d_28") || 0;
     const result = (d_28 * 1921) / 1000; // Gas emissions
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("g_28", result);
+    setFunc("g_28", result);
     return result;
   }
 
-  function calculateG29() {
+  function calculateG29(isReferenceCalculation, setFunc) {
     // ✅ PHASE 6 FIX: No fallback needed - d_29 is local user input
     const d_29 = ModeManager.getValue("d_29") || 0;
     const result = (d_29 * 2970) / 1000; // Propane emissions
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("g_29", result);
+    setFunc("g_29", result);
     return result;
   }
 
-  function calculateG30() {
+  function calculateG30(isReferenceCalculation, setFunc) {
     // ✅ PHASE 6 FIX: No fallback needed - d_30 is local user input
     const d_30 = ModeManager.getValue("d_30") || 0;
     const result = (d_30 * 2753) / 1000; // Oil emissions
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("g_30", result);
+    setFunc("g_30", result);
     return result;
   }
 
-  function calculateG31() {
+  function calculateG31(isReferenceCalculation, setFunc) {
     // ✅ PHASE 6 FIX: No fallback needed - d_31 is local user input
     const d_31 = ModeManager.getValue("d_31") || 0;
     const result = d_31 * 150; // Wood emissions (already in kgCO2e/m³)
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("g_31", result);
+    setFunc("g_31", result);
     return result;
   }
 
   // H-column calculations (target energy)
-  function calculateH27() {
+  function calculateH27(isReferenceCalculation, setFunc) {
     // Read from S15's calculated electricity value
     let result;
-    if (ModeManager.currentMode === "reference") {
+    if (isReferenceCalculation) {
       // ✅ PHASE 6 FIX: Strict Reference mode - only read ref_ values from S15
       result = getGlobalNumericValue("ref_d_136") || 0;
     } else {
@@ -1193,11 +1152,11 @@ window.TEUI.SectionModules.sect04 = (function () {
     // console.log(`[S04] 🔗 H27 calc: ${result} from S15 d_136 [mode=${ModeManager.currentMode}]`);
 
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("h_27", result);
+    setFunc("h_27", result);
     return result;
   }
 
-  function calculateH28() {
+  function calculateH28(isReferenceCalculation, setFunc) {
     // Excel: =IF(AND($D$113="Gas", $D$51="Gas"), E51+H115, IF($D$51="Gas", E51, IF($D$113="Gas", H115, 0)))
     // D113 = space heating fuel type (S13)
     // D51 = water heating fuel type (S07)
@@ -1208,7 +1167,7 @@ window.TEUI.SectionModules.sect04 = (function () {
     let spaceHeatingFuel;
     let waterHeatingFuel;
 
-    if (ModeManager.currentMode === "reference") {
+    if (isReferenceCalculation) {
       // ✅ PHASE 6 FIX: Strict Reference mode - only read ref_ values from S07/S13
       spaceHeatingFuel =
         window.TEUI?.StateManager?.getValue("ref_d_113") || "Heatpump";
@@ -1225,7 +1184,7 @@ window.TEUI.SectionModules.sect04 = (function () {
     let waterGasVolume = 0;
     let spaceGasVolume = 0;
 
-    if (ModeManager.currentMode === "reference") {
+    if (isReferenceCalculation) {
       // ✅ PHASE 6 FIX: Strict Reference mode - only read ref_ values from S07/S13
       waterGasVolume = getGlobalNumericValue("ref_e_51") || 0;
       spaceGasVolume = getGlobalNumericValue("ref_h_115") || 0;
@@ -1259,19 +1218,19 @@ window.TEUI.SectionModules.sect04 = (function () {
     //   Final H28 result: ${result}`);
 
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("h_28", result);
+    setFunc("h_28", result);
     return result;
   }
 
-  function calculateH29() {
+  function calculateH29(isReferenceCalculation, setFunc) {
     // ✅ PHASE 6 FIX: Target propane mirrors actual (user-controlled) - no fallback needed
     const result = ModeManager.getValue("d_29") || 0;
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("h_29", result);
+    setFunc("h_29", result);
     return result;
   }
 
-  function calculateH30() {
+  function calculateH30(isReferenceCalculation, setFunc) {
     // Excel: =IF(AND($D$113="Oil", $D$51="Oil"), $K$54+$F$115, IF($D$51="Oil", K54, IF($D$113="Oil", F115, 0)))
     // D113 = space heating fuel type (S13)
     // D51 = water heating fuel type (S07)
@@ -1282,7 +1241,7 @@ window.TEUI.SectionModules.sect04 = (function () {
     let spaceHeatingFuel;
     let waterHeatingFuel;
 
-    if (ModeManager.currentMode === "reference") {
+    if (isReferenceCalculation) {
       // ✅ PHASE 6 FIX: Strict Reference mode - only read ref_ values from S07/S13
       spaceHeatingFuel =
         window.TEUI?.StateManager?.getValue("ref_d_113") || "Heatpump";
@@ -1299,7 +1258,7 @@ window.TEUI.SectionModules.sect04 = (function () {
     let waterOilVolume = 0;
     let spaceOilVolume = 0;
 
-    if (ModeManager.currentMode === "reference") {
+    if (isReferenceCalculation) {
       // ✅ PHASE 6 FIX: Strict Reference mode - only read ref_ values from S07/S13
       waterOilVolume = getGlobalNumericValue("ref_k_54") || 0;
       spaceOilVolume = getGlobalNumericValue("ref_f_115") || 0;
@@ -1333,21 +1292,21 @@ window.TEUI.SectionModules.sect04 = (function () {
     //   Final H30 result: ${result}`);
 
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("h_30", result);
+    setFunc("h_30", result);
     return result;
   }
 
-  function calculateH31() {
+  function calculateH31(isReferenceCalculation, setFunc) {
     // ✅ PHASE 6 FIX: Target wood mirrors actual (user-controlled) - no fallback needed
     const result = ModeManager.getValue("d_31") || 0;
 
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("h_31", result);
+    setFunc("h_31", result);
     return result;
   }
 
   // J-column calculations (target energy to ekWh)
-  function calculateJ27() {
+  function calculateJ27(isReferenceCalculation, setFunc) {
     // 🔧 FIX: Use mode-aware access to prevent stale values
     const h_27 =
       ModeManager.currentMode === "reference"
@@ -1370,102 +1329,102 @@ window.TEUI.SectionModules.sect04 = (function () {
     // console.log(`[S04] 🔗 J27 calc: ${result} = h_27(${h_27}) - d_43(${d_43}) - i_43(${i_43}) [mode=${ModeManager.currentMode}]`);
 
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("j_27", result);
+    setFunc("j_27", result);
     return result;
   }
 
-  function calculateJ28() {
+  function calculateJ28(isReferenceCalculation, setFunc) {
     const h_28 = ModeManager.getValue("h_28") || 0;
     const result = h_28 * 0.0373 * 277.7778; // Gas m³ to ekWh
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("j_28", result);
+    setFunc("j_28", result);
     return result;
   }
 
-  function calculateJ29() {
+  function calculateJ29(isReferenceCalculation, setFunc) {
     const h_29 = ModeManager.getValue("h_29") || 0;
     const result = h_29 * 14.019; // Propane kg to ekWh
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("j_29", result);
+    setFunc("j_29", result);
     return result;
   }
 
-  function calculateJ30() {
+  function calculateJ30(isReferenceCalculation, setFunc) {
     const h_30 = ModeManager.getValue("h_30") || 0;
     const result = h_30 * 36.72 * 0.2777778; // Oil L to ekWh
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("j_30", result);
+    setFunc("j_30", result);
     return result;
   }
 
-  function calculateJ31() {
+  function calculateJ31(isReferenceCalculation, setFunc) {
     const h_31 = ModeManager.getValue("h_31") || 0;
     const result = h_31 * 1000; // Wood m³ to ekWh
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("j_31", result);
+    setFunc("j_31", result);
     return result;
   }
 
   // K-column calculations (target emissions)
-  function calculateK27() {
+  function calculateK27(isReferenceCalculation, setFunc) {
     const j_27 = ModeManager.getValue("j_27") || 0;
     const l_27 =
       getGlobalNumericValue("l_27") ||
-      getElectricityEmissionFactor(ModeManager.currentMode === "reference"); // Dynamic electricity emission factor
+      getElectricityEmissionFactor(isReferenceCalculation); // Dynamic electricity emission factor
     const result = (j_27 * l_27) / 1000; // Excel: =J27*L27/1000
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("k_27", result);
+    setFunc("k_27", result);
     return result;
   }
 
-  function calculateK28() {
+  function calculateK28(isReferenceCalculation, setFunc) {
     const h_28 = ModeManager.getValue("h_28") || 0;
     const l_28 = getGlobalNumericValue("l_28") || 1921; // Dynamic gas emission factor
     const result = (h_28 * l_28) / 1000; // Excel: =H28*L28/1000
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("k_28", result);
+    setFunc("k_28", result);
     return result;
   }
 
-  function calculateK29() {
+  function calculateK29(isReferenceCalculation, setFunc) {
     const h_29 = ModeManager.getValue("h_29") || 0;
     const result = (h_29 * 2970) / 1000; // Propane target emissions
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("k_29", result);
+    setFunc("k_29", result);
     return result;
   }
 
-  function calculateK30() {
+  function calculateK30(isReferenceCalculation, setFunc) {
     const h_30 = ModeManager.getValue("h_30") || 0;
     const l_30 = getGlobalNumericValue("l_30") || 2753; // Dynamic oil emission factor
     const result = (h_30 * l_30) / 1000; // Excel: =H30*L30/1000
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("k_30", result);
+    setFunc("k_30", result);
     return result;
   }
 
-  function calculateK31() {
+  function calculateK31(isReferenceCalculation, setFunc) {
     const h_31 = ModeManager.getValue("h_31") || 0;
     const result = h_31 * 150; // Wood target emissions
 
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("k_31", result);
+    setFunc("k_31", result);
 
     return result;
   }
 
   // L-column calculation (emission factor)
-  function calculateL27() {
+  function calculateL27(isReferenceCalculation, setFunc) {
     const result = getElectricityEmissionFactor(
-      ModeManager.currentMode === "reference",
+      isReferenceCalculation,
     );
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("l_27", result, "integer");
+    setFunc("l_27", result, "integer");
     return result;
   }
 
   // Subtotal calculations (F32, G32, J32, K32)
-  function calculateF32() {
+  function calculateF32(isReferenceCalculation, setFunc) {
     const f_27 = ModeManager.getValue("f_27") || 0;
     const f_28 = ModeManager.getValue("f_28") || 0;
     const f_29 = ModeManager.getValue("f_29") || 0;
@@ -1473,11 +1432,11 @@ window.TEUI.SectionModules.sect04 = (function () {
     const f_31 = ModeManager.getValue("f_31") || 0;
     const result = f_27 + f_28 + f_29 + f_30 + f_31;
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("f_32", result);
+    setFunc("f_32", result);
     return result;
   }
 
-  function calculateG32() {
+  function calculateG32(isReferenceCalculation, setFunc) {
     const g_27 = ModeManager.getValue("g_27") || 0;
     const g_28 = ModeManager.getValue("g_28") || 0;
     const g_29 = ModeManager.getValue("g_29") || 0;
@@ -1489,11 +1448,11 @@ window.TEUI.SectionModules.sect04 = (function () {
     const result = g_27 + g_28 + g_29 + g_30 + g_31 - d_60 * 1000;
 
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("g_32", result);
+    setFunc("g_32", result);
     return result;
   }
 
-  function calculateJ32() {
+  function calculateJ32(isReferenceCalculation, setFunc) {
     const j_27 = ModeManager.getValue("j_27") || 0;
     const j_28 = ModeManager.getValue("j_28") || 0;
     const j_29 = ModeManager.getValue("j_29") || 0;
@@ -1504,11 +1463,11 @@ window.TEUI.SectionModules.sect04 = (function () {
     // console.log(`[S04] 🔗 J32 calc: ${result} = j_27(${j_27}) + j_28(${j_28}) + j_29(${j_29}) + j_30(${j_30}) + j_31(${j_31}) [mode=${ModeManager.currentMode}]`);
 
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("j_32", result);
+    setFunc("j_32", result);
     return result;
   }
 
-  function calculateK32() {
+  function calculateK32(isReferenceCalculation, setFunc) {
     const k_27 = ModeManager.getValue("k_27") || 0;
     const k_28 = ModeManager.getValue("k_28") || 0;
     const k_29 = ModeManager.getValue("k_29") || 0;
@@ -1518,7 +1477,7 @@ window.TEUI.SectionModules.sect04 = (function () {
     // =SUM(K27:K31)-(D60*1000) - Excel formula for wood emissions offset
     const result = k_27 + k_28 + k_29 + k_30 + k_31 - d_60 * 1000;
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("k_32", result);
+    setFunc("k_32", result);
     return result;
   }
 
@@ -1563,81 +1522,34 @@ window.TEUI.SectionModules.sect04 = (function () {
    * Calculate Target model (standard calculations)
    */
   function calculateTargetModel() {
-    // Store current mode and switch to target for calculations
-    const originalMode = ModeManager.currentMode;
-    ModeManager.currentMode = "target";
-
-    try {
-      // Calculate each Excel row in sequence for Target
-      calculateRow27(); // Electricity
-      calculateRow28(); // Gas
-      calculateRow29(); // Propane
-      calculateRow30(); // Oil
-      calculateRow31(); // Wood
-      calculateRow32(); // Subtotals
-      calculateRow33(); // Total Net Energy
-      calculateRow34(); // Annual Percapita Energy
-      calculateRow35(); // Primary Energy
-
-      // console.log("[S04] Target model calculations complete");
-    } finally {
-      // CRITICAL: Restore original mode
-      ModeManager.currentMode = originalMode;
-    }
+    runCalculations(false); // Run with isReferenceCalculation = false
   }
 
   /**
    * Calculate Reference model (for building code comparison)
    */
   function calculateReferenceModel() {
-    // Store current mode and switch to reference for calculations
-    const originalMode = ModeManager.currentMode;
-    ModeManager.currentMode = "reference";
+    runCalculations(true); // Run with isReferenceCalculation = true
+  }
 
-    try {
-      // Calculate each Excel row in sequence for Reference
-      // Note: For S04, Reference mostly mirrors Target since it's utility bill data
-      // The main differences are in h_27-h_31 values from S15 reference calculations
-      // CRITICAL: Use a local reference setter to avoid global contamination
-      const setRefCalculatedValue = function (fieldId, rawValue, formatType) {
-        setReferenceCalculatedValue(fieldId, rawValue, formatType);
-      };
+  /**
+   * Shared calculation logic for both Target and Reference models.
+   * @param {boolean} isReferenceCalculation - Flag to determine which state to use.
+   */
+  function runCalculations(isReferenceCalculation) {
+    // Determine which state-setting function to use based on the context
+    const setFunc = isReferenceCalculation ? setReferenceCalculatedValue : setCalculatedValue;
 
-      // Override setCalculatedValue temporarily for this scope only
-      const originalSetCalculatedValue = setCalculatedValue;
-      // eslint-disable-next-line no-func-assign
-      setCalculatedValue = setRefCalculatedValue;
-
-      calculateRow27(); // Electricity (uses ref_d_136 from S15)
-      calculateRow28(); // Gas
-      calculateRow29(); // Propane
-      calculateRow30(); // Oil
-      calculateRow31(); // Wood
-      calculateRow32(); // Subtotals
-      calculateRow33(); // Total Net Energy
-      calculateRow34(); // Annual Percapita Energy
-      calculateRow35(); // Primary Energy
-
-      // CRITICAL: Restore original function immediately
-      // eslint-disable-next-line no-func-assign
-      setCalculatedValue = originalSetCalculatedValue;
-
-      console.log("[S04] Reference model calculations complete");
-      try {
-        const refJ32 = window.TEUI?.StateManager?.getValue("ref_j_32");
-        const refK32 = window.TEUI?.StateManager?.getValue("ref_k_32");
-        const tgtJ32 = window.TEUI?.StateManager?.getValue("j_32");
-        const tgtK32 = window.TEUI?.StateManager?.getValue("k_32");
-        console.log(
-          `[S04DB] storeReference: ref_j_32=${refJ32}, ref_k_32=${refK32} | current target j_32=${tgtJ32}, k_32=${tgtK32}`,
-        );
-      } catch (e) {
-        console.warn("[S04DB] storeReference: read-back failed", e);
-      }
-    } finally {
-      // CRITICAL: Restore original mode
-      ModeManager.currentMode = originalMode;
-    }
+    // Calculate each Excel row in sequence, passing the context
+    calculateRow27(isReferenceCalculation, setFunc);
+    calculateRow28(isReferenceCalculation, setFunc);
+    calculateRow29(isReferenceCalculation, setFunc);
+    calculateRow30(isReferenceCalculation, setFunc);
+    calculateRow31(isReferenceCalculation, setFunc);
+    calculateRow32(isReferenceCalculation, setFunc);
+    calculateRow33(isReferenceCalculation, setFunc);
+    calculateRow34(isReferenceCalculation, setFunc);
+    calculateRow35(isReferenceCalculation, setFunc);
   }
 
   //==========================================================================
