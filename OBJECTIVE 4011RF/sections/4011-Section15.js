@@ -1936,15 +1936,7 @@ window.TEUI.SectionModules.sect15 = (function () {
             fieldId === "d_142"
           ) {
             format = "currency";
-          } else if (fieldId === "l_143" && value === "N/A") {
-            element.textContent = "N/A";
-            return; // Skip formatting for N/A
-          } else if (fieldId === "h_144" && value === "N/A") {
-            element.textContent = "N/A";
-            return;
-          } else if (fieldId === "l_144" && value === "N/A") {
-            element.textContent = "N/A";
-            return;
+
           } else if (
             fieldId === "d_144" ||
             fieldId === "h_144" ||
@@ -1972,6 +1964,35 @@ window.TEUI.SectionModules.sect15 = (function () {
   }
 
   /**
+   * Handle editable field blur events (for d_142 cost premium input)
+   */
+  function handleEditableBlur(event) {
+    const fieldElement = event.target;
+    const fieldId = fieldElement.getAttribute("data-field-id");
+    if (!fieldId) return;
+
+    let valueStr = fieldElement.textContent.trim();
+    let numValue = window.TEUI.parseNumeric(valueStr, NaN);
+
+    if (!isNaN(numValue)) {
+      // Store raw numeric value in StateManager
+      ModeManager.setValue(fieldId, numValue.toString(), "user-modified");
+      
+      // Format for display
+      const formattedValue = formatNumber(numValue, "currency");
+      fieldElement.textContent = formattedValue;
+    } else {
+      // Invalid input - revert to stored value or default
+      const storedValue = ModeManager.getValue(fieldId) || "30000.00";
+      fieldElement.textContent = formatNumber(parseFloat(storedValue), "currency");
+    }
+
+    // Trigger recalculations
+    calculateAll();
+    ModeManager.updateCalculatedDisplayValues();
+  }
+
+  /**
    * Initialize event handlers for this section
    * Sets up listeners for changes in dependency values from other sections.
    */
@@ -1983,6 +2004,32 @@ window.TEUI.SectionModules.sect15 = (function () {
       return;
     }
     const sm = window.TEUI.StateManager;
+
+    // Setup event handlers for editable fields
+    const editableFields = ["d_142"]; // Cost Premium of HP Equipment
+
+    editableFields.forEach((fieldId) => {
+      const field = document.querySelector(`[data-field-id="${fieldId}"]`);
+      if (field && field.hasAttribute("contenteditable") && !field.hasEditableListeners) {
+        // Prevent Enter key from creating newlines
+        field.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            e.stopPropagation();
+            field.blur();
+          }
+        });
+
+        // Handle blur event
+        field.addEventListener("blur", handleEditableBlur);
+
+        // Visual feedback for editing state
+        field.addEventListener("focus", () => field.classList.add("editing"));
+        field.addEventListener("focusout", () => field.classList.remove("editing"));
+
+        field.hasEditableListeners = true;
+      }
+    });
 
     // Helper function to create listeners that trigger calculateAll
     const addCalculationListener = (key) => {
