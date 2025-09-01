@@ -129,94 +129,37 @@ window.TEUI.SectionModules.sect14 = (function () {
       console.log(`S14: Switched to ${mode.toUpperCase()} mode`);
 
       this.refreshUI();
-      calculateAll();
-      // ✅ FIX: Update displayed calculated values based on new mode
+      // ✅ CORRECTED: Only refresh UI, don't re-run calculations.
       this.updateCalculatedDisplayValues();
     },
 
     // Update displayed calculated values based on current mode
     updateCalculatedDisplayValues: function () {
-      if (!window.TEUI?.StateManager) return;
-
-      console.log(
-        `[S14 DEBUG] 🔄 Updating calculated display values for ${this.currentMode} mode`,
-      );
-
-      // TEMPORARY DEBUG: Check if Reference values exist in StateManager
-      const sampleRefValues = {
-        ref_d_127: window.TEUI.StateManager.getValue("ref_d_127"),
-        ref_h_127: window.TEUI.StateManager.getValue("ref_h_127"),
-        ref_d_128: window.TEUI.StateManager.getValue("ref_d_128"),
-      };
-      console.log(
-        `[S14 DEBUG] Sample Reference values in StateManager:`,
-        sampleRefValues,
-      );
-
       const calculatedFields = [
-        "d_127",
-        "h_127",
-        "d_128",
-        "h_128", // TED/TEDI values
-        "d_129",
-        "h_129",
-        "m_129", // CED values
-        "d_130",
-        "h_130", // CEDI W/m2 values
-        "d_131",
-        "h_131", // TEL values
-        "d_132",
-        "h_132", // CEG values
-        "l_128", // CED Mitigated (calculated field)
+        "d_127", "h_127", "d_128", "h_128", "d_129", "h_129", 
+        "m_129", "d_130", "h_130", "d_131", "h_131", "d_132", "h_132"
       ];
 
       calculatedFields.forEach((fieldId) => {
-        let valueToDisplay;
-
-        if (this.currentMode === "reference") {
-          // In Reference mode, try to show ref_ values, fallback to regular values
-          valueToDisplay =
-            window.TEUI.StateManager.getValue(`ref_${fieldId}`) ||
-            window.TEUI.StateManager.getValue(fieldId);
-        } else {
-          // In Target mode, show regular values
-          valueToDisplay = window.TEUI.StateManager.getValue(fieldId);
-        }
-
-        if (valueToDisplay !== null && valueToDisplay !== undefined) {
-          const element = document.querySelector(
-            `[data-field-id="${fieldId}"]`,
-          );
-          if (element && !element.hasAttribute("contenteditable")) {
-            // Only update calculated fields, not user-editable ones
-            const numericValue = window.TEUI.parseNumeric(valueToDisplay);
-            if (!isNaN(numericValue)) {
-              // Use appropriate formatting for different field types
-              let formattedValue;
-              if (
-                fieldId.startsWith("h_") &&
-                (fieldId === "h_130" || fieldId === "d_130")
-              ) {
-                // W/m2 fields
-                formattedValue = window.TEUI.formatNumber(
-                  numericValue,
-                  "number-2dp",
-                );
-              } else {
-                formattedValue = window.TEUI.formatNumber(
-                  numericValue,
-                  "number-2dp",
-                );
-              }
-              element.textContent = formattedValue;
-            }
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+          let value;
+          // ✅ STRICT STATE ISOLATION: No fallbacks.
+          if (this.currentMode === "reference") {
+            value = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
+          } else {
+            value = window.TEUI.StateManager.getValue(fieldId);
           }
+          
+          // Use a neutral default if the value is not found in the correct state.
+          if (value === null || value === undefined) {
+            value = "0.00";
+          }
+
+          const numericValue = window.TEUI.parseNumeric(value, 0);
+          element.textContent = formatNumber(numericValue);
         }
       });
-
-      console.log(
-        `[Section14] Calculated display values updated for ${this.currentMode} mode`,
-      );
     },
     resetState: function () {
       console.log("S14: Resetting state and clearing localStorage.");
