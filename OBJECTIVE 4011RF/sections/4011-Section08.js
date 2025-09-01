@@ -21,13 +21,14 @@ window.TEUI.SectionModules.sect08 = (function () {
       this.setDefaults();
     },
     setDefaults: function () {
-      this.state = {
-        d_56: "50",
-        d_57: "550",
-        d_58: "100",
-        d_59: "45",
-        i_59: "45",
-      };
+      const defaults = {};
+      const fields = getFields();
+      for (const fieldId in fields) {
+        if (fields[fieldId].defaultValue) {
+            defaults[fieldId] = fields[fieldId].defaultValue;
+        }
+      }
+      this.state = defaults;
     },
     setValue: function (fieldId, value) {
       this.state[fieldId] = value;
@@ -43,13 +44,20 @@ window.TEUI.SectionModules.sect08 = (function () {
       this.setDefaults();
     },
     setDefaults: function () {
-      this.state = {
-        d_56: "150",
-        d_57: "1000",
-        d_58: "400",
-        d_59: "30",
-        i_59: "50",
-      };
+      const defaults = {};
+      const fields = getFields();
+      for (const fieldId in fields) {
+          if (fields[fieldId].defaultValue) {
+              defaults[fieldId] = fields[fieldId].defaultValue;
+          }
+      }
+      // Apply Reference-specific overrides
+      defaults['d_56'] = "150"; 
+      defaults['d_57'] = "1000";
+      defaults['d_58'] = "400";
+      defaults['d_59'] = "30";
+      defaults['i_59'] = "50";
+      this.state = defaults;
     },
     setValue: function (fieldId, value) {
       this.state[fieldId] = value;
@@ -73,8 +81,11 @@ window.TEUI.SectionModules.sect08 = (function () {
         return;
       this.currentMode = newMode;
       console.log(`S08: Switched to ${this.currentMode.toUpperCase()} mode.`);
+      
+      // ✅ CORRECTED: Only refresh UI, don't re-run calculations.
+      // Both engines should already have calculated values stored in StateManager.
       this.updateUIForMode();
-      calculateAll();
+      this.updateCalculatedDisplayValues(); // This will handle the DOM updates.
     },
     updateUIForMode: function () {
       const sectionElement = document.getElementById("indoorAirQuality");
@@ -104,6 +115,31 @@ window.TEUI.SectionModules.sect08 = (function () {
         }
       });
     },
+
+    updateCalculatedDisplayValues: function() {
+        const calculatedFields = [
+            "d_60", "k_56", "k_57", "k_58", "k_59", "m_56", "m_57", "m_58", "m_59", "n_56", "n_57", "n_58", "n_59"
+        ];
+
+        calculatedFields.forEach(fieldId => {
+            const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+            if (element) {
+                let value;
+                // For this section, Target and Reference values are calculated from different inputs
+                // but stored with the same fieldId in their respective state objects.
+                if (this.currentMode === 'reference') {
+                    value = ReferenceState.getValue(fieldId) || '0';
+                } else {
+                    value = TargetState.getValue(fieldId) || '0';
+                }
+
+                const formatType = getFieldFormat(fieldId);
+                const formattedValue = window.TEUI?.formatNumber?.(value, formatType) ?? value;
+                element.textContent = formattedValue;
+            }
+        });
+    },
+
     getCurrentState: function () {
       return this.currentMode === "target" ? TargetState : ReferenceState;
     },
@@ -112,6 +148,8 @@ window.TEUI.SectionModules.sect08 = (function () {
       // Bridge to global StateManager for backward compatibility
       if (this.currentMode === "target") {
         window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
+      } else if (this.currentMode === 'reference') {
+        window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "user-modified");
       }
     },
     getValue: function (fieldId) {
@@ -132,14 +170,14 @@ window.TEUI.SectionModules.sect08 = (function () {
 
   function setCalculatedValue(fieldId, rawValue) {
     const valueToStore = isFinite(rawValue) ? rawValue.toString() : "N/A";
-    ModeManager.setValue(fieldId, valueToStore);
-
-    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-    if (element && ModeManager.currentMode === "target") {
-      const formatType = getFieldFormat(fieldId);
-      const formattedValue =
-        window.TEUI?.formatNumber?.(rawValue, formatType) ?? valueToStore;
-      element.textContent = formattedValue;
+    
+    // The calculation functions will be run for both models, so we need to know
+    // which state to write to. We'll check the current UI mode for simplicity,
+    // assuming calculations are triggered appropriately.
+    if (ModeManager.currentMode === 'reference') {
+        ReferenceState.setValue(fieldId, valueToStore);
+    } else {
+        TargetState.setValue(fieldId, valueToStore);
     }
   }
 

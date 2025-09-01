@@ -330,11 +330,17 @@ window.TEUI.SectionModules.sect03 = (function () {
         if (element) {
           let valueToDisplay;
           if (this.currentMode === "reference") {
+            // Reference mode: Read ONLY ref_ prefixed values.
             valueToDisplay = window.TEUI.StateManager.getValue(
               `ref_${fieldId}`,
             );
           } else {
             valueToDisplay = window.TEUI.StateManager.getValue(fieldId);
+          }
+
+          // If a value isn't found in the correct state, use a safe default. NEVER fall back.
+          if (valueToDisplay === null || valueToDisplay === undefined) {
+            valueToDisplay = "0.00";
           }
 
           if (valueToDisplay !== null && valueToDisplay !== undefined) {
@@ -410,14 +416,10 @@ window.TEUI.SectionModules.sect03 = (function () {
     if (!window.TEUI?.StateManager) return "";
 
     if (ModeManager.currentMode === "reference") {
-      // Reference mode: Try ref_ prefixed first, then fallback to unprefixed
+      // Reference mode: Read ONLY ref_ prefixed values for perfect state isolation.
       const refValue = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
-      if (refValue !== null && refValue !== undefined) {
-        return refValue.toString();
-      }
-      // Fallback to unprefixed if ref_ version doesn't exist
-      const fallbackValue = window.TEUI.StateManager.getValue(fieldId);
-      return fallbackValue ? fallbackValue.toString() : "";
+      // If ref_ value doesn't exist, return empty or a safe default. NEVER fall back to the Target value.
+      return refValue ? refValue.toString() : "";
     } else {
       // Target mode: Read unprefixed values directly
       const targetValue = window.TEUI.StateManager.getValue(fieldId);
@@ -447,52 +449,9 @@ window.TEUI.SectionModules.sect03 = (function () {
     // Set raw value in ModeManager (automatically handles current mode)
     ModeManager.setValue(fieldId, rawValue, source);
 
-    // Also update DOM with formatting
-    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-    if (element) {
-      let formattedDisplay = rawValue; // Default to raw value if formatting fails
-      const numericValue = window.TEUI.parseNumeric(rawValue, NaN); // Use global parser
-
-      if (!isNaN(numericValue)) {
-        // Determine the correct format type based on field ID conventions
-        let formatType = "number-2dp"; // Default
-        if (["d_20", "d_21", "d_22", "h_22"].includes(fieldId)) {
-          formatType = "integer-nocomma";
-        } else if (["j_19", "l_22"].includes(fieldId)) {
-          formatType = "number-1dp"; // Climate Zone / Elevation
-        } else if (["d_23", "h_23", "d_24", "h_24", "l_24"].includes(fieldId)) {
-          formatType = "integer"; // Temperatures are whole numbers
-        } else if (["e_23", "i_23", "e_24", "i_24"].includes(fieldId)) {
-          formatType = "integer-nocomma"; // Fahrenheit temps
-        } else if (fieldId === "m_19") {
-          formatType = "integer"; // Cooling days
-        }
-        // Ensure the global formatter exists before calling
-        if (typeof window.TEUI?.formatNumber === "function") {
-          formattedDisplay = window.TEUI.formatNumber(numericValue, formatType);
-        } else {
-          console.error("Global window.TEUI.formatNumber is not available.");
-          // Fallback basic formatting if global doesn't exist
-          formattedDisplay = numericValue.toFixed(
-            formatType.includes("1dp")
-              ? 1
-              : formatType.includes("integer")
-                ? 0
-                : 2,
-          );
-        }
-      } else if (typeof rawValue === "string") {
-        // Keep original string if it wasn't numeric (e.g., "N/A", maybe future text values)
-        formattedDisplay = rawValue;
-      }
-
-      // Update DOM element
-      if (element.tagName === "SELECT" || element.tagName === "INPUT") {
-        element.value = formattedDisplay; // Use formatted value for display consistency in inputs too?
-      } else {
-        element.textContent = formattedDisplay;
-      }
-    }
+    // ❌ ANTI-PATTERN REMOVED: Direct DOM write from a calculation helper has been eliminated.
+    // The `ModeManager.updateCalculatedDisplayValues()` function is now solely responsible
+    // for reading from StateManager and updating the UI, ensuring a single source of truth.
   }
 
   //==========================================================================

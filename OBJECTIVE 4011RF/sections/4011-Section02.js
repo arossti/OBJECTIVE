@@ -592,16 +592,18 @@ window.TEUI.SectionModules.sect02 = (function () {
     let rawValue;
 
     if (ModeManager.currentMode === "reference") {
-      // Reference mode: Try ref_ prefixed first (for external dependencies), then fallback
+      // Reference mode: Read ONLY ref_ prefixed values for perfect state isolation
       rawValue = window.TEUI?.StateManager?.getValue(`ref_${fieldId}`);
-      if (rawValue === null || rawValue === undefined) {
-        rawValue = window.TEUI?.StateManager?.getValue(fieldId);
-      }
     } else {
       // Target mode: Read unprefixed (standard) values
       rawValue = window.TEUI?.StateManager?.getValue(fieldId);
     }
 
+    // If a value isn't found in the correct state, use the default. NEVER fall back to the other state.
+    if (rawValue === null || rawValue === undefined) {
+      rawValue = defaultValue;
+    }
+    
     return window.TEUI?.parseNumeric?.(rawValue, defaultValue) ?? defaultValue;
   }
 
@@ -613,14 +615,10 @@ window.TEUI.SectionModules.sect02 = (function () {
     if (!window.TEUI?.StateManager) return "";
 
     if (ModeManager.currentMode === "reference") {
-      // Reference mode: Try ref_ prefixed first, then fallback to unprefixed
+      // Reference mode: Read ONLY ref_ prefixed values for perfect state isolation.
       const refValue = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
-      if (refValue !== null && refValue !== undefined) {
-        return refValue.toString();
-      }
-      // Fallback to unprefixed if ref_ version doesn't exist
-      const fallbackValue = window.TEUI.StateManager.getValue(fieldId);
-      return fallbackValue ? fallbackValue.toString() : "";
+      // If ref_ value doesn't exist, return empty or a safe default. NEVER fall back to the Target value.
+      return refValue ? refValue.toString() : "";
     } else {
       // Target mode: Read unprefixed values directly
       const targetValue = window.TEUI.StateManager.getValue(fieldId);
@@ -657,22 +655,9 @@ window.TEUI.SectionModules.sect02 = (function () {
       }
     }
 
-    // Update DOM with formatted value.
-    // Special handling for 'N/A' values - don't try to format them.
-    const formattedValue =
-      value === "N/A"
-        ? "N/A"
-        : (window.TEUI?.formatNumber?.(value, "number-2dp-comma") ??
-          value.toString());
-
-    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-    if (element) {
-      if (element.tagName === "SELECT" || element.tagName === "INPUT") {
-        element.value = value;
-      } else {
-        element.textContent = formattedValue;
-      }
-    }
+    // ❌ ANTI-PATTERN REMOVED: Direct DOM write from a calculation helper has been eliminated.
+    // The `ModeManager.updateCalculatedDisplayValues()` function is now solely responsible
+    // for reading from StateManager and updating the UI, ensuring a single source of truth.
   }
 
   /**
@@ -1079,80 +1064,19 @@ window.TEUI.SectionModules.sect02 = (function () {
   }
 
   /**
-   * Set up Major Occupancy dropdown event handler using event delegation
-   */
-  function setupMajorOccupancyDropdown() {
-    // Use event delegation on the section container to avoid conflicts
-    const sectionElement = document.getElementById("buildingInfo");
-    if (sectionElement) {
-      // Remove any existing delegated listener
-      sectionElement.removeEventListener("change", handleSectionDropdownChange);
-      
-      // Add delegated event listener
-      sectionElement.addEventListener("change", handleSectionDropdownChange);
-      console.log(`🔍 [S02DB] Delegated event listener attached to buildingInfo section`);
-    } else {
-      console.error(`🚨 [S02DB] buildingInfo section NOT FOUND`);
-    }
-  }
-
-  /**
-   * Handle dropdown changes via event delegation
-   */
-  function handleSectionDropdownChange(e) {
-    if (e.target.tagName !== 'SELECT') return;
-    
-    const fieldId = e.target.getAttribute("data-field-id");
-    if (fieldId === "d_12") {
-      handleMajorOccupancyChange(e);
-    }
-  }
-
-  /**
-   * Set up Actual/Target Use dropdown event handler
-   */
-  function setupActualTargetDropdown() {
-    const dropdown = document.querySelector(
-      'select[data-dropdown-id="dd_d_14"], select[data-field-id="d_14"]',
-    );
-    if (dropdown) {
-      // Remove existing listener to prevent duplicates
-      dropdown.removeEventListener("change", handleActualTargetChange);
-
-      // Add new listener
-      dropdown.addEventListener("change", handleActualTargetChange);
-    }
-  }
-
-  /**
-   * Set up Building Code dropdown event handler
-   */
-  function setupBuildingCodeDropdown() {
-    const dropdown = document.querySelector(
-      'select[data-dropdown-id="dd_d_13"], select[data-field-id="d_13"]',
-    );
-    if (dropdown) {
-      // Remove existing listener to prevent duplicates
-      dropdown.removeEventListener("change", handleBuildingCodeChange);
-
-      // Add new listener
-      dropdown.addEventListener("change", handleBuildingCodeChange);
-    }
-  }
-
-  /**
    * Initialize event handlers for this section
    */
   function initializeEventHandlers() {
     // Register calculations with StateManager
     registerCalculations();
 
-    // Set up dropdown handlers
-    setupMajorOccupancyDropdown();
-    setupActualTargetDropdown();
-    setupBuildingCodeDropdown();
-    setupCarbonStandardDropdown();
-
+    // Set up dropdown handlers using event delegation on the section container
+    const sectionElement = document.getElementById("buildingInfo");
+    if (sectionElement) {
+        sectionElement.removeEventListener("change", handleSectionDropdownChange);
+        sectionElement.addEventListener("change", handleSectionDropdownChange);
+    }
+    
     // Set initial values on dropdown if not already set
     if (!window.TEUI.sect02.initialized) {
       const dropdown = document.querySelector(
@@ -1260,6 +1184,31 @@ window.TEUI.SectionModules.sect02 = (function () {
 
       // Add listener for occupancy changes (d_12) to update critical flag
       window.TEUI.StateManager.addListener("d_12", updateCriticalOccupancyFlag);
+    }
+  }
+
+  /**
+   * Handle dropdown changes via event delegation
+   */
+  function handleSectionDropdownChange(e) {
+    if (e.target.tagName !== 'SELECT') return;
+    
+    const fieldId = e.target.getAttribute("data-field-id");
+    if (!fieldId) return;
+
+    switch (fieldId) {
+        case "d_12":
+            handleMajorOccupancyChange(e);
+            break;
+        case "d_13":
+            handleBuildingCodeChange(e);
+            break;
+        case "d_14":
+            handleActualTargetChange(e);
+            break;
+        case "d_15":
+            handleCarbonStandardChange(e);
+            break;
     }
   }
 
@@ -2025,11 +1974,19 @@ window.TEUI.SectionModules.sect02 = (function () {
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
           // Read the correct value from StateManager based on mode
-          const value =
-            this.currentMode === "reference"
-              ? window.TEUI.StateManager.getValue(`ref_${fieldId}`) ||
-                window.TEUI.StateManager.getValue(fieldId)
-              : window.TEUI.StateManager.getValue(fieldId);
+          let value;
+          if (this.currentMode === "reference") {
+            // Reference mode: Read ONLY ref_ prefixed values.
+            value = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
+          } else {
+            // Target mode: Read unprefixed values.
+            value = window.TEUI.StateManager.getValue(fieldId);
+          }
+
+          // If a value isn't found in the correct state, use a safe default. NEVER fall back.
+          if (value === null || value === undefined) {
+            value = "0.00"; 
+          }
 
           if (value !== null && value !== undefined) {
             // Format numeric fields appropriately

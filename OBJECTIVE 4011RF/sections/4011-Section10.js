@@ -263,61 +263,28 @@ window.TEUI.SectionModules.sect10 = (function () {
       // All calculated fields that need mode-aware display updates
       const calculatedFields = [
         // Gain factors (rows 73-78)
-        "m_73",
-        "m_74",
-        "m_75",
-        "m_76",
-        "m_77",
-        "m_78",
+        "m_73", "m_74", "m_75", "m_76", "m_77", "m_78",
         // Heating gains (rows 73-78, subtotal 79)
-        "i_73",
-        "i_74",
-        "i_75",
-        "i_76",
-        "i_77",
-        "i_78",
-        "i_79",
+        "i_73", "i_74", "i_75", "i_76", "i_77", "i_78", "i_79",
         // Cooling gains (rows 73-78, subtotal 79)
-        "k_73",
-        "k_74",
-        "k_75",
-        "k_76",
-        "k_77",
-        "k_78",
-        "k_79",
+        "k_73", "k_74", "k_75", "k_76", "k_77", "k_78", "k_79",
         // Percentages (rows 73-78, subtotal 79)
-        "j_73",
-        "j_74",
-        "j_75",
-        "j_76",
-        "j_77",
-        "j_78",
-        "j_79",
-        "l_73",
-        "l_74",
-        "l_75",
-        "l_76",
-        "l_77",
-        "l_78",
-        "l_79",
+        "j_73", "j_74", "j_75", "j_76", "j_77", "j_78", "j_79",
+        "l_73", "l_74", "l_75", "l_76", "l_77", "l_78", "l_79",
         // Costs (rows 73-78)
-        "p_73",
-        "p_74",
-        "p_75",
-        "p_76",
-        "p_77",
-        "p_78",
+        "p_73", "p_74", "p_75", "p_76", "p_77", "p_78",
         // Utilization factors (rows 80-82)
-        "e_80",
-        "e_81",
-        "e_82",
+        "e_80", "e_81", "e_82", "g_80", "g_81", "i_80", "i_81", "i_82"
       ];
 
       calculatedFields.forEach((fieldId) => {
-        const valueToDisplay =
-          this.currentMode === "reference"
-            ? window.TEUI.StateManager.getValue(`ref_${fieldId}`)
-            : window.TEUI.StateManager.getValue(fieldId);
+        let valueToDisplay;
+        // ✅ STRICT MODE ISOLATION: Read from local state objects, not global StateManager
+        if (this.currentMode === "reference") {
+            valueToDisplay = ReferenceState.getValue(fieldId);
+        } else {
+            valueToDisplay = TargetState.getValue(fieldId);
+        }
 
         if (valueToDisplay !== null && valueToDisplay !== undefined) {
           const element = document.querySelector(
@@ -329,13 +296,13 @@ window.TEUI.SectionModules.sect10 = (function () {
             // Format based on field type
             let formattedValue;
             if (fieldId.startsWith("m_")) {
-              formattedValue = formatNumber(num, "number"); // Gain factors
+              formattedValue = window.TEUI.formatNumber(num, "number-2dp"); // Gain factors
             } else if (fieldId.startsWith("j_") || fieldId.startsWith("l_")) {
-              formattedValue = formatNumber(num, "percent"); // Percentages
+              formattedValue = window.TEUI.formatNumber(num, "percent-0dp"); // Percentages
             } else if (fieldId.startsWith("p_")) {
-              formattedValue = formatNumber(num, "currency"); // Costs
+              formattedValue = window.TEUI.formatNumber(num, "currency"); // Costs
             } else {
-              formattedValue = formatNumber(num, "number"); // Default
+              formattedValue = window.TEUI.formatNumber(num, "number-2dp-comma"); // Default
             }
 
             element.textContent = formattedValue;
@@ -385,6 +352,23 @@ window.TEUI.SectionModules.sect10 = (function () {
   }
 
   /**
+   * Sets calculated value in the correct state object (Target or Reference).
+   * This function NO LONGER touches the DOM.
+   */
+  function setCalculatedValue(fieldId, rawValue, isReferenceCalculation = false) {
+      const valueToStore = (rawValue !== null && rawValue !== undefined) ? String(rawValue) : "0";
+      
+      const state = isReferenceCalculation ? ReferenceState : TargetState;
+      state.setValue(fieldId, valueToStore);
+  
+      // Also publish to the global StateManager for downstream sections
+      if (window.TEUI?.StateManager) {
+          const key = isReferenceCalculation ? `ref_${fieldId}` : fieldId;
+          window.TEUI.StateManager.setValue(key, valueToStore, "calculated");
+      }
+  }
+
+  /**
    * Formats a number for display.
    * Handles specific formats like percentage (integer + %), currency.
    * @param {number} value - The number to format.
@@ -392,78 +376,39 @@ window.TEUI.SectionModules.sect10 = (function () {
    * @returns {string} The formatted number.
    */
   function formatNumber(value, format = "number") {
-    if (value === null || value === undefined || isNaN(value)) {
-      return format === "percent"
-        ? "0%"
-        : format === "currency"
-          ? "$0.00"
-          : "0.00";
-    }
-
-    const num = Number(value);
-
-    if (format === "percent") {
-      // Input is raw decimal (e.g., 0.152 for 15.20%), output with 2 decimal places + %
-      return (
-        (num * 100).toLocaleString(undefined, {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }) + "%"
-      );
-    } else if (format === "currency") {
-      return (
-        "$" +
-        num.toLocaleString("en-US", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })
-      );
-    } else {
-      // Default number format (kWh, Gain Factor, etc.)
-      return num.toLocaleString("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      });
-    }
-  }
-
-  /**
-   * Sets calculated value using simplified dual-state (ComponentBridge handles global sync)
-   * @param {string} fieldId
-   * @param {number} rawValue
-   * @param {string} [format='number']
-   */
-  function setCalculatedValue(fieldId, rawValue, format = "number") {
-    // NOTE: This function NO LONGER sets state. It only formats and updates the DOM.
-    // State is set within calculation functions via ModeManager.setValue()
-
-    // Handle N/A for non-finite numbers
-    if (!isFinite(rawValue) || rawValue === null || rawValue === undefined) {
-      ModeManager.setValue(fieldId, "N/A", "calculated");
-      const elementNA = document.querySelector(`[data-field-id="${fieldId}"]`);
-      if (elementNA) elementNA.textContent = "N/A";
-      return;
-    }
-
-    // Determine format if not specified
-    if (format === "number") {
-      if (/[jl]_[\d]{2,}/.test(fieldId) || /[jl]_79/.test(fieldId)) {
-        format = "percent";
-      } else if (fieldId.startsWith("p_")) {
-        format = "currency";
+      if (value === null || value === undefined || isNaN(value)) {
+          return format === "percent"
+              ? "0%"
+              : format === "currency"
+                  ? "$0.00"
+                  : "0.00";
       }
-      // default is 'number' (2 decimals)
-    }
 
-    const formattedValue = formatNumber(rawValue, format);
+      const num = Number(value);
 
-    // ✅ DUAL-STATE: State is now set by the calling calculation function
-    // using ModeManager.setValue(). This function only updates the DOM.
-    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-    if (element) {
-      element.textContent = formattedValue;
-      element.classList.toggle("negative-value", rawValue < 0);
-    }
+      if (format === "percent") {
+          // Input is raw decimal (e.g., 0.152 for 15.20%), output with 2 decimal places + %
+          return (
+              (num * 100).toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+              }) + "%"
+          );
+      } else if (format === "currency") {
+          return (
+              "$" +
+              num.toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+              })
+          );
+      } else {
+          // Default number format (kWh, Gain Factor, etc.)
+          return num.toLocaleString("en-US", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+          });
+      }
   }
 
   function handleFieldBlur(_event) {
@@ -1777,26 +1722,10 @@ window.TEUI.SectionModules.sect10 = (function () {
         getGlobalNumericValue("ref_l_12") * (coolingGains - heatingGains);
 
       // Store Reference results in StateManager with ref_ prefix
-      window.TEUI.StateManager.setValue(
-        `ref_m_${rowId}`,
-        gainFactor.toString(),
-        "calculated",
-      );
-      window.TEUI.StateManager.setValue(
-        `ref_i_${rowId}`,
-        heatingGains.toString(),
-        "calculated",
-      );
-      window.TEUI.StateManager.setValue(
-        `ref_k_${rowId}`,
-        coolingGains.toString(),
-        "calculated",
-      );
-      window.TEUI.StateManager.setValue(
-        `ref_p_${rowId}`,
-        cost.toString(),
-        "calculated",
-      );
+      setCalculatedValue(`m_${rowId}`, gainFactor, true);
+      setCalculatedValue(`i_${rowId}`, heatingGains, true);
+      setCalculatedValue(`k_${rowId}`, coolingGains, true);
+      setCalculatedValue(`p_${rowId}`, cost, true);
 
       // console.log(`[S10REF] Row${rowId}: Area=${area}, Climate=${climateZone}, GainFactor=${gainFactor}, Heat=${heatingGains.toFixed(2)}, Cool=${coolingGains.toFixed(2)}`);
     } catch (_error) {
@@ -1805,10 +1734,10 @@ window.TEUI.SectionModules.sect10 = (function () {
         _error,
       );
       // Set error values
-      window.TEUI.StateManager.setValue(`ref_m_${rowId}`, "0", "calculated");
-      window.TEUI.StateManager.setValue(`ref_i_${rowId}`, "0", "calculated");
-      window.TEUI.StateManager.setValue(`ref_k_${rowId}`, "0", "calculated");
-      window.TEUI.StateManager.setValue(`ref_p_${rowId}`, "0", "calculated");
+      setCalculatedValue(`m_${rowId}`, 0, true);
+      setCalculatedValue(`i_${rowId}`, 0, true);
+      setCalculatedValue(`k_${rowId}`, 0, true);
+      setCalculatedValue(`p_${rowId}`, 0, true);
     }
   }
 
@@ -1860,26 +1789,10 @@ window.TEUI.SectionModules.sect10 = (function () {
       ].reduce((sum, val) => sum + val, 0);
 
       // Store Reference subtotals in StateManager
-      window.TEUI.StateManager.setValue(
-        "ref_i_79",
-        heatingGains.toString(),
-        "calculated",
-      );
-      window.TEUI.StateManager.setValue(
-        "ref_k_79",
-        coolingGains.toString(),
-        "calculated",
-      );
-      window.TEUI.StateManager.setValue(
-        "ref_j_79",
-        heatingGains > 0 ? "1" : "0",
-        "calculated",
-      );
-      window.TEUI.StateManager.setValue(
-        "ref_l_79",
-        coolingGains > 0 ? "1" : "0",
-        "calculated",
-      );
+      setCalculatedValue("i_79", heatingGains, true);
+      setCalculatedValue("k_79", coolingGains, true);
+      setCalculatedValue("j_79", heatingGains > 0 ? "1" : "0", true);
+      setCalculatedValue("l_79", coolingGains > 0 ? "1" : "0", true);
 
       // console.log(`[S10REF] Subtotals: Heat=${heatingGains.toFixed(2)}, Cool=${coolingGains.toFixed(2)}`);
     } catch (_error) {
@@ -1905,29 +1818,13 @@ window.TEUI.SectionModules.sect10 = (function () {
       const utilizationE82 = 50.0; // Default or specific Reference logic
 
       // Store Reference utilization factors in StateManager
-      window.TEUI.StateManager.setValue(
-        "ref_e_80",
-        utilizationE80.toString(),
-        "calculated",
-      );
-      window.TEUI.StateManager.setValue(
-        "ref_e_81",
-        utilizationE81.toString(),
-        "calculated",
-      );
+      setCalculatedValue("e_80", utilizationE80, true);
+      setCalculatedValue("e_81", utilizationE81, true);
 
       // ✅ CRITICAL: Publish ref_i_80 for S15 (same value as ref_e_80 for Excel compliance)
-      window.TEUI.StateManager.setValue(
-        "ref_i_80",
-        utilizationE80.toString(),
-        "calculated",
-      );
+      setCalculatedValue("i_80", utilizationE80, true);
       // console.log(`[S10] 🔗 Published ref_i_80=${utilizationE80} for S15 (Reference utilization)`);
-      window.TEUI.StateManager.setValue(
-        "ref_e_82",
-        utilizationE82.toString(),
-        "calculated",
-      );
+      setCalculatedValue("e_82", utilizationE82, true);
 
       // console.log(`[S10REF] Utilization: E80=${utilizationE80.toFixed(2)} (ref_i_71=${internalGains} + ref_i_79=${subtotalHeating}), E81=${utilizationE81.toFixed(2)}, E82=${utilizationE82.toFixed(2)}`);
     } catch (_error) {
@@ -2000,9 +1897,9 @@ window.TEUI.SectionModules.sect10 = (function () {
       const cost = costPerUnit * (coolingGains - heatingGains);
 
       // Set state using ModeManager before updating DOM via setCalculatedValue
-      ModeManager.setValue(`i_${rowId}`, heatingGains.toString(), "calculated");
-      ModeManager.setValue(`k_${rowId}`, coolingGains.toString(), "calculated");
-      ModeManager.setValue(`p_${rowId}`, cost.toString(), "calculated");
+      setCalculatedValue(`i_${rowId}`, heatingGains);
+      setCalculatedValue(`k_${rowId}`, coolingGains);
+      setCalculatedValue(`p_${rowId}`, cost);
 
       // Update the DOM
       setCalculatedValue(`i_${rowId}`, heatingGains);
@@ -2191,12 +2088,8 @@ window.TEUI.SectionModules.sect10 = (function () {
       // console.log(`[S10] 🔗 Final i_80 calc: ${usableGains} = totalGains(${totalGains}) × utilizationFactor(${utilizationFactor}) [mode=${ModeManager.currentMode}]`);
 
       // Set state via ModeManager
-      ModeManager.setValue("g_80", utilizationFactor.toString(), "calculated");
-      ModeManager.setValue("i_80", usableGains.toString(), "calculated");
-
-      // Update DOM
-      setCalculatedValue("g_80", utilizationFactor, "percent");
-      setCalculatedValue("i_80", usableGains, "number");
+      setCalculatedValue("g_80", utilizationFactor);
+      setCalculatedValue("i_80", usableGains);
 
       //=====================================================================
       // PART 2: Calculate PHPP method as reference in row 81 (always)
@@ -2230,12 +2123,8 @@ window.TEUI.SectionModules.sect10 = (function () {
       const phReferenceGains = totalGains * phUtilizationFactor;
 
       // Set state and update DOM for reference row 81
-      ModeManager.setValue(
-        "g_81",
-        phUtilizationFactor.toString(),
-        "calculated",
-      );
-      ModeManager.setValue("i_81", phReferenceGains.toString(), "calculated");
+      setCalculatedValue("g_81", phUtilizationFactor);
+      setCalculatedValue("i_81", phReferenceGains);
       setCalculatedValue("g_81", phUtilizationFactor, "percent");
       setCalculatedValue("i_81", phReferenceGains, "number");
 
@@ -2243,15 +2132,15 @@ window.TEUI.SectionModules.sect10 = (function () {
       // PART 3: Calculate unusable gains based on selected method (row 80)
       //=====================================================================
       const unusedGains = totalGains - usableGains;
-      ModeManager.setValue("i_82", unusedGains.toString(), "calculated");
+      setCalculatedValue("i_82", unusedGains);
       setCalculatedValue("i_82", unusedGains, "number");
     } catch (_error) {
       // Set error values or defaults
       setCalculatedValue("e_80", 0);
-      setCalculatedValue("g_80", 0, "percent");
+      setCalculatedValue("g_80", 0);
       setCalculatedValue("i_80", 0);
       setCalculatedValue("e_81", 0);
-      setCalculatedValue("g_81", 0, "percent");
+      setCalculatedValue("g_81", 0);
       setCalculatedValue("i_81", 0);
       setCalculatedValue("i_82", 0);
     }

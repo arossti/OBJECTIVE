@@ -616,44 +616,29 @@ window.TEUI.SectionModules.sect09 = (function () {
    * Set calculated value in both ModeManager (internal state) and StateManager (Target mode backward compatibility)
    */
   function setCalculatedValue(fieldId, rawValue, formatType = "number") {
-    // Enhanced formatting for kWh fields
-    if (
-      formatType === "number" &&
-      (fieldId.startsWith("h_") ||
-        fieldId.startsWith("i_") ||
-        fieldId.startsWith("k_"))
-    ) {
-      if (fieldId !== "i_63") {
-        formatType = "number-2dp-comma";
-      }
+    const valueToStore = String(rawValue);
+
+    if (ModeManager.currentMode === "reference") {
+      ReferenceState.setValue(fieldId, valueToStore);
+    } else {
+      TargetState.setValue(fieldId, valueToStore);
     }
 
-    // Store in ModeManager (internal state)
-    if (ModeManager && typeof ModeManager.setValue === "function") {
-      ModeManager.setValue(fieldId, String(rawValue), "calculated");
-    }
-
-    // Bridge to StateManager for backward compatibility (Target mode only)
-    if (
-      ModeManager.currentMode === "target" &&
-      window.TEUI?.StateManager?.setValue
-    ) {
-      window.TEUI.StateManager.setValue(
-        fieldId,
-        String(rawValue),
-        "calculated",
-      );
-    }
-
-    // Format and update DOM
-    const formattedValue = window.TEUI.formatNumber(rawValue, formatType);
-    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-    if (element) {
-      if (element.tagName === "SELECT" || element.tagName === "INPUT") {
-        element.value = formattedValue;
-      } else {
-        element.textContent = formattedValue;
-      }
+    // Bridge to StateManager for backward compatibility
+    if (window.TEUI?.StateManager?.setValue) {
+        if (ModeManager.currentMode === "target") {
+            window.TEUI.StateManager.setValue(
+                fieldId,
+                valueToStore,
+                "calculated",
+            );
+        } else if (ModeManager.currentMode === "reference") {
+            window.TEUI.StateManager.setValue(
+                `ref_${fieldId}`,
+                valueToStore,
+                "calculated",
+            );
+        }
     }
   }
   //==========================================================================

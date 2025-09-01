@@ -652,17 +652,11 @@ window.TEUI.SectionModules.sect07 = (function () {
     let occupants;
     if (isReferenceCalculation) {
       const refValue = window.TEUI?.StateManager?.getValue("ref_d_63");
-      const targetFallback = window.TEUI?.StateManager?.getValue("d_63");
       if (refValue !== null && refValue !== undefined) {
         occupants = parseFloat(refValue) || 0;
-      } else if (targetFallback !== null && targetFallback !== undefined) {
-        console.warn(
-          `[S07] 🚨 FALLBACK USED: ref_d_63 missing, using d_63="${targetFallback}" for Reference calculation`,
-        );
-        occupants = parseFloat(targetFallback) || 0;
       } else {
         console.warn(
-          `[S07] 🚨 FALLBACK USED: Both ref_d_63 and d_63 missing, using default 0`,
+          `[S07] 🚨 CRITICAL: ref_d_63 missing, using default 0 for Reference calculation`,
         );
         occupants = 0;
       }
@@ -747,17 +741,11 @@ window.TEUI.SectionModules.sect07 = (function () {
     let systemType;
     if (isReferenceCalculation) {
       const refValue = window.TEUI?.StateManager?.getValue("ref_d_51");
-      const targetFallback = window.TEUI?.StateManager?.getValue("d_51");
       if (refValue) {
         systemType = refValue;
-      } else if (targetFallback) {
-        console.warn(
-          `[S07] 🚨 FALLBACK USED: ref_d_51 missing, using d_51="${targetFallback}" for Reference calculation`,
-        );
-        systemType = targetFallback;
       } else {
         console.warn(
-          `[S07] 🚨 FALLBACK USED: Both ref_d_51 and d_51 missing, using default "Heatpump"`,
+          `[S07] 🚨 CRITICAL: ref_d_51 missing, using default "Heatpump" for Reference calculation`,
         );
         systemType = "Heatpump";
       }
@@ -803,17 +791,11 @@ window.TEUI.SectionModules.sect07 = (function () {
     let systemType;
     if (isReferenceCalculation) {
       const refValue = window.TEUI?.StateManager?.getValue("ref_d_51");
-      const targetFallback = window.TEUI?.StateManager?.getValue("d_51");
       if (refValue) {
         systemType = refValue;
-      } else if (targetFallback) {
-        console.warn(
-          `[S07] 🚨 FALLBACK USED: ref_d_51 missing, using d_51="${targetFallback}" for Reference calculation`,
-        );
-        systemType = targetFallback;
       } else {
         console.warn(
-          `[S07] 🚨 FALLBACK USED: Both ref_d_51 and d_51 missing, using default "Heatpump"`,
+          `[S07] 🚨 CRITICAL: ref_d_51 missing, using default "Heatpump" for Reference calculation`,
         );
         systemType = "Heatpump";
       }
@@ -867,14 +849,10 @@ window.TEUI.SectionModules.sect07 = (function () {
 
     // ✅ PATTERN A: External dependencies - read from upstream sections with mode awareness
     const oilEmissionsFactor = isReferenceCalculation
-      ? window.TEUI?.StateManager?.getValue("ref_l_30") ||
-        window.TEUI?.StateManager?.getValue("l_30") ||
-        2753
+      ? window.TEUI?.StateManager?.getValue("ref_l_30") || 2753
       : window.TEUI?.StateManager?.getValue("l_30") || 2753;
     const gasEmissionsFactor = isReferenceCalculation
-      ? window.TEUI?.StateManager?.getValue("ref_l_28") ||
-        window.TEUI?.StateManager?.getValue("l_28") ||
-        1921
+      ? window.TEUI?.StateManager?.getValue("ref_l_28") || 1921
       : window.TEUI?.StateManager?.getValue("l_28") || 1921;
 
     const dhwEmissions =

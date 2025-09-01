@@ -271,11 +271,19 @@ window.TEUI.SectionModules.sect05 = (function () {
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
           // Read the correct value from StateManager based on mode
-          const value =
-            this.currentMode === "reference"
-              ? window.TEUI.StateManager.getValue(`ref_${fieldId}`) ||
-                window.TEUI.StateManager.getValue(fieldId)
-              : window.TEUI.StateManager.getValue(fieldId);
+          let value;
+          if (this.currentMode === "reference") {
+            // Reference mode: Read ONLY ref_ prefixed values.
+            value = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
+          } else {
+            // Target mode: Read unprefixed values.
+            value = window.TEUI.StateManager.getValue(fieldId);
+          }
+
+          // If a value isn't found in the correct state, use a safe default. NEVER fall back.
+          if (value === null || value === undefined) {
+            value = "0"; // Use a neutral default
+          }
 
           if (value !== null && value !== undefined) {
             // Use appropriate formatting - percentages and checkmarks don't need number formatting
