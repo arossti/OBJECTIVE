@@ -1975,8 +1975,9 @@ window.TEUI.SectionModules.sect15 = (function () {
     let numValue = window.TEUI.parseNumeric(valueStr, NaN);
 
     if (!isNaN(numValue)) {
-      // Store raw numeric value in StateManager
+      // Store in both local state and global StateManager to trigger dependencies
       ModeManager.setValue(fieldId, numValue.toString(), "user-modified");
+      window.TEUI.StateManager.setValue(fieldId, numValue.toString(), "user-modified");
       
       // Format for display
       const formattedValue = formatNumber(numValue, "currency");
