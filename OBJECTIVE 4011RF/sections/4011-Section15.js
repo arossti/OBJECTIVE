@@ -131,43 +131,37 @@ window.TEUI.SectionModules.sect15 = (function () {
   }
 
   /**
-   * Sets a calculated value in the StateManager and updates the corresponding DOM element.
-   * @param {string} fieldId - The ID of the field to update.
-   * @param {number} rawValue - The raw calculated numeric value.
-   * @param {string} [format='number'] - The format type for display.
+   * Sets a calculated value for the Target model.
+   * Updates the local TargetState and the global StateManager.
+   * @param {string} fieldId - The ID of the field.
+   * @param {number} rawValue - The raw numeric value.
    */
-  function setCalculatedValue(fieldId, rawValue, format = "number") {
-    const formattedValue = formatNumber(rawValue, format);
+  function setTargetValue(fieldId, rawValue) {
+    const valueToStore =
+      !isFinite(rawValue) || rawValue === null || rawValue === undefined
+        ? "N/A"
+        : rawValue.toString();
+    TargetState.setValue(fieldId, valueToStore);
+    if (window.TEUI?.StateManager) {
+      window.TEUI.StateManager.setValue(fieldId, valueToStore, "calculated");
+    }
+  }
 
-    // 🔧 REFERENCE MODE FIX: Check if we're in Reference mode and store values appropriately
-    if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
-      // During Reference mode, store with ref_ prefix to prevent contamination
+  /**
+   * Sets a calculated value for the Reference model.
+   * Updates the local ReferenceState and the global StateManager (with ref_ prefix).
+   * @param {string} fieldId - The ID of the field.
+   * @param {number} rawValue - The raw numeric value.
+   */
+  function setReferenceValue(fieldId, rawValue) {
+    const valueToStore =
+      !isFinite(rawValue) || rawValue === null || rawValue === undefined
+        ? "N/A"
+        : rawValue.toString();
+    ReferenceState.setValue(fieldId, valueToStore);
+    if (window.TEUI?.StateManager) {
       const refFieldId = `ref_${fieldId}`;
-      window.TEUI.StateManager?.setValue(
-        refFieldId,
-        rawValue.toString(),
-        "calculated",
-      );
-
-      // Don't update DOM during Reference mode to prevent visual contamination
-      console.log(
-        `🔧 S15: Reference mode - storing ${refFieldId} = ${rawValue} (no DOM update)`,
-      );
-    } else {
-      // Normal Target mode: store in application state and update DOM
-      window.TEUI.StateManager?.setValue(
-        fieldId,
-        rawValue.toString(),
-        "calculated",
-      );
-
-      // Update DOM with formatted value
-      const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-      if (element) {
-        element.textContent = formattedValue;
-        // Add/remove classes based on value if needed (e.g., for negatives)
-        element.classList.toggle("negative-value", rawValue < 0);
-      }
+      window.TEUI.StateManager.setValue(refFieldId, valueToStore, "calculated");
     }
   }
 
@@ -208,7 +202,9 @@ window.TEUI.SectionModules.sect15 = (function () {
 
     // Get value with fallback to DOM
     getValue: function (fieldId) {
-      return this.data[fieldId] || getNumericValue(fieldId) || 0;
+      // ✅ CORRECTED: Remove fallback to global getNumericValue to prevent state contamination.
+      // State objects should only ever access their own internal data.
+      return this.data[fieldId];
     },
 
     // Set value and optionally save state
@@ -259,7 +255,8 @@ window.TEUI.SectionModules.sect15 = (function () {
 
     // Get value with fallback to DOM
     getValue: function (fieldId) {
-      return this.data[fieldId] || getNumericValue(fieldId) || 0;
+      // ✅ CORRECTED: Remove fallback to global getNumericValue to prevent state contamination.
+      return this.data[fieldId];
     },
 
     // Set value and optionally save state
@@ -301,15 +298,9 @@ window.TEUI.SectionModules.sect15 = (function () {
       }
 
       this.currentMode = mode;
-      // console.log(`S15: Switched to ${mode.toUpperCase()} mode`);
-
-      // Refresh UI for new mode
+      
+      // ✅ CORRECTED: Only refresh UI, don't re-run calculations.
       this.refreshUI();
-
-      // Trigger calculations for the new mode
-      calculateAll();
-
-      // ✅ FIX: Update displayed calculated values based on new mode (AFTER calculations)
       this.updateCalculatedDisplayValues();
     },
 
@@ -343,135 +334,37 @@ window.TEUI.SectionModules.sect15 = (function () {
 
     // Update calculated field displays based on current mode
     updateCalculatedDisplayValues: function () {
-      if (!window.TEUI?.StateManager) return;
-
-      console.log(
-        `[S15 DEBUG] 🔄 Updating calculated display values for ${this.currentMode} mode`,
-      );
-
-      // TEMPORARY DEBUG: Check if Reference values exist in StateManager like S14 does
-      const sampleRefValues = {
-        ref_d_135: window.TEUI.StateManager.getValue("ref_d_135"),
-        ref_h_135: window.TEUI.StateManager.getValue("ref_h_135"),
-        ref_d_136: window.TEUI.StateManager.getValue("ref_d_136"),
-      };
-      console.log(
-        `[S15 DEBUG] Sample Reference values in StateManager:`,
-        sampleRefValues,
-      );
-
       const calculatedFields = [
-        "d_135",
-        "h_135",
-        "d_136",
-        "h_136",
-        "d_137",
-        "h_137",
-        "d_138",
-        "h_138",
-        "d_139",
-        "h_139",
-        "d_140",
-        "h_140",
-        "h_142",
-        "d_143",
-        "h_143",
-        "l_143",
-        "d_144",
-        "h_144",
-        "l_144",
-        "d_145",
+        "d_135", "h_135", "d_136", "h_136", "d_137", "h_137", "d_138", "h_138",
+        "d_139", "h_139", "d_140", "h_140", "l_137", "l_138", "l_139", "d_141", 
+        "h_141", "l_141", "h_142", "d_143", "h_143", "l_143", "d_144", "h_144", 
+        "l_144", "d_145"
       ];
 
+      const currentState = this.getCurrentState();
+
       calculatedFields.forEach((fieldId) => {
-        let valueToDisplay;
-
-        if (this.currentMode === "reference") {
-          // In Reference mode, try to show ref_ values, fallback to regular values
-          valueToDisplay =
-            window.TEUI.StateManager.getValue(`ref_${fieldId}`) ||
-            window.TEUI.StateManager.getValue(fieldId);
-        } else {
-          // In Target mode, show regular values
-          valueToDisplay = window.TEUI.StateManager.getValue(fieldId);
-        }
-
-        // Debug key fields to verify Reference/Target switching
-        if (
-          (fieldId === "d_135" || fieldId === "h_135") &&
-          this.currentMode === "reference"
-        ) {
-          const refValue = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
-          const targetValue = window.TEUI.StateManager.getValue(fieldId);
-          console.log(
-            `[S15] ${fieldId}: REF=${refValue} vs TGT=${targetValue} (showing REF)`,
-          );
-        }
-
-        if (valueToDisplay !== null && valueToDisplay !== undefined) {
-          const element = document.querySelector(
-            `[data-field-id="${fieldId}"]`,
-          );
-          if (element && !element.hasAttribute("contenteditable")) {
-            // Only update calculated fields, not user-editable ones
-            const numericValue = window.TEUI.parseNumeric(valueToDisplay);
-            if (!isNaN(numericValue)) {
-              // Use appropriate formatting for different field types
-              let formattedValue;
-              if (
-                fieldId === "d_141" ||
-                fieldId === "h_141" ||
-                fieldId === "l_141" ||
-                fieldId === "d_142"
-              ) {
-                // Currency fields
-                formattedValue = window.TEUI.formatNumber(
-                  numericValue,
-                  "currency-2dp",
-                );
-              } else if (
-                fieldId === "d_144" ||
-                fieldId === "h_144" ||
-                fieldId === "l_144" ||
-                fieldId === "d_145"
-              ) {
-                // Percentage fields
-                formattedValue = window.TEUI.formatNumber(
-                  numericValue,
-                  "percent-0dp",
-                );
-              } else if (
-                fieldId === "l_137" ||
-                fieldId === "l_138" ||
-                fieldId === "l_139"
-              ) {
-                // BTU fields
-                formattedValue = window.TEUI.formatNumber(
-                  numericValue,
-                  "integer",
-                );
-              } else if (fieldId === "h_138" || fieldId === "h_139") {
-                // Tons fields
-                formattedValue = window.TEUI.formatNumber(
-                  numericValue,
-                  "number-2dp",
-                );
-              } else {
-                // Default number format
-                formattedValue = window.TEUI.formatNumber(
-                  numericValue,
-                  "number-2dp",
-                );
+          const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+          if (element) {
+              const rawValue = currentState.getValue(fieldId);
+              
+              if (rawValue === 'N/A' || rawValue === null || rawValue === undefined) {
+                  element.textContent = 'N/A';
+                  return;
               }
-              element.textContent = formattedValue;
-            }
-          }
-        }
-      });
 
-      console.log(
-        `[Section15] Calculated display values updated for ${this.currentMode} mode`,
-      );
+              const num = window.TEUI.parseNumeric(rawValue, 0);
+              let format = 'number'; // Default format
+              if (["d_141", "h_141", "l_141", "d_142"].includes(fieldId)) format = 'currency';
+              else if (["d_144", "h_144", "l_144", "d_145"].includes(fieldId)) format = 'percent';
+              else if (["l_137", "l_138", "l_139"].includes(fieldId)) format = 'btu';
+              else if (["h_138", "h_139"].includes(fieldId)) format = 'tons';
+              else if (fieldId === "h_142") format = 'number';
+              
+              element.textContent = formatNumber(num, format);
+              element.classList.toggle("negative-value", num < 0);
+          }
+      });
     },
 
     // Reset current mode's state to defaults
@@ -488,6 +381,16 @@ window.TEUI.SectionModules.sect15 = (function () {
       this.updateCalculatedDisplayValues();
 
       console.log(`S15: ${this.currentMode} state reset to defaults`);
+
+      // ✅ DUAL-STATE: Also publish to global StateManager for downstream sections
+      if (window.TEUI?.StateManager) {
+        const globalFieldId =
+          this.currentMode === "reference" ? `ref_${fieldId}` : fieldId;
+        // Ensure value is a string for StateManager
+        const valueStr =
+          value !== null && value !== undefined ? value.toString() : "";
+        window.TEUI.StateManager.setValue(globalFieldId, valueStr, "calculated");
+      }
     },
 
     // Get current value based on active mode
@@ -502,6 +405,10 @@ window.TEUI.SectionModules.sect15 = (function () {
       const currentState =
         this.currentMode === "target" ? TargetState : ReferenceState;
       currentState.setValue(fieldId, value, source);
+    },
+
+    getCurrentState: function () {
+      return this.currentMode === "target" ? TargetState : ReferenceState;
     },
   };
 
@@ -1374,9 +1281,8 @@ window.TEUI.SectionModules.sect15 = (function () {
 
     // Dependencies for d_145: =1-(K32/REFERENCE!K32)
     // Requires k_32 (Target Net Emissions) and a reference emission value (REFERENCE!K32)
-    // Assuming REFERENCE!K32 needs to be defined/retrieved, maybe from section 4 or 5? Using a placeholder.
     sm.registerDependency("k_32", "d_145");
-    // Placeholder: sm.registerDependency('reference_k_32', 'd_145');
+    sm.registerDependency("ref_k_32", "d_145"); // Reference emissions from S04
   }
 
   /**
@@ -1397,6 +1303,8 @@ window.TEUI.SectionModules.sect15 = (function () {
    */
   function calculateReferenceModel() {
     try {
+
+
       // 🎯 Enhanced helper function to get Reference values with comprehensive parseFloat
       const getRefValue = (fieldId) => {
         const refFieldId = `ref_${fieldId}`;
@@ -1404,33 +1312,27 @@ window.TEUI.SectionModules.sect15 = (function () {
 
         // ✅ CRITICAL CONTAMINATION FIX: No fallbacks to Target values (Phase 6 compliance)
         // Reference calculations must ONLY read ref_ prefixed values for perfect state isolation
-        const finalValue = refValue || 0; // No fallback contamination
+        
+        // Return null if truly missing, so we can handle N/A properly
+        if (refValue === null || refValue === undefined) {
+          return null;
+        }
 
         // ✅ CRITICAL: Convert strings to numbers for math (prevents concatenation)
-        return parseFloat(finalValue) || 0;
-      };
-
-      // Helper function to set Reference values only if changed (Section 07 Gold Standard)
-      const setRefValueIfChanged = (fieldId, newValue) => {
-        const currentValue = window.TEUI?.StateManager?.getValue(fieldId);
-        const newValueStr = newValue.toString();
-        if (currentValue !== newValueStr) {
-          window.TEUI.StateManager.setValue(fieldId, newValueStr, "calculated");
-          return true;
-        }
-        return false;
+        return parseFloat(refValue) || 0;
       };
 
       // ✅ Get Reference values from upstream sections and convert to numbers
-      const area = parseFloat(getRefValue("h_15")) || 1; // Use 1 as fallback to avoid division by zero
+      const area = getRefValue("h_15");
+      if (area === null || area <= 0) {
+        console.warn("[S15 REF DEBUG] Critical: ref_h_15 (area) missing or zero - cannot calculate Reference model");
+        return; // Exit early if we can't calculate without area
+      }
+      
       const elecPrice =
         window.TEUI?.parseNumeric?.(
           window.TEUI?.StateManager?.getValue(`ref_l_12`),
-        ) ||
-        window.TEUI?.parseNumeric?.(
-          window.TEUI?.StateManager?.getValue("l_12"),
-        ) ||
-        0;
+        ) || 0;
       const gasPrice = parseFloat(getRefValue("l_13")) || 0;
       const propanePrice = parseFloat(getRefValue("l_14")) || 0;
       const oilPrice = parseFloat(getRefValue("l_16")) || 0;
@@ -1452,7 +1354,8 @@ window.TEUI.SectionModules.sect15 = (function () {
       // );
 
       // ✅ Get other Reference dependencies with parseFloat conversion
-      const m43 = parseFloat(getRefValue("m_43")) || 0;
+      const m43 = getRefValue("m_43");
+      const m43_final = m43 !== null ? m43 : 0; // Use 0 if ref_m_43 is missing
       const k51 = parseFloat(getRefValue("k_51")) || 0;
       const h70 = parseFloat(getRefValue("h_70")) || 0; // ✅ CORRECT: Read PLE subtotal (h_70) as per Excel formula
       const i104 = ref_i104; // Use Reference values for Reference calculations
@@ -1507,8 +1410,11 @@ window.TEUI.SectionModules.sect15 = (function () {
       const d31 = parseFloat(getRefValue("d_31")) || 0; // Total Wood Use (m3/yr)
       const d30_litres = parseFloat(getRefValue("d_30")) || 0; // Total Oil Use (litres/yr)
       const hpCostPremium = parseFloat(getRefValue("d_142")) || 0; // Heat pump cost premium
-      const refTEUI_e10 = parseFloat(getRefValue("e_10")) || 0; // Reference TEUI (Sec 1)
-      const targetTEUI_h10 = parseFloat(getRefValue("h_10")) || 0; // Target TEUI (Sec 1)
+      // Read S01 dashboard values directly (S01 is state-agnostic)
+      const refTEUI_e10 = window.TEUI?.parseNumeric(window.TEUI?.StateManager?.getValue("e_10")) || 0; // Reference TEUI (Sec 1)
+      const targetTEUI_h10 = window.TEUI?.parseNumeric(window.TEUI?.StateManager?.getValue("h_10")) || 0; // Target TEUI (Sec 1) 
+      const actualTEUI_k10 = window.TEUI?.parseNumeric(window.TEUI?.StateManager?.getValue("k_10")) || 0; // Actual TEUI from Sec 1
+      const reportingMode_d14 = window.TEUI?.StateManager?.getValue("d_14") || "Targeted Use"; // Reporting Mode
 
       // console.log(
       //   `✅ S15 Reference Model: Additional fuel variables declared for cost calculations`,
@@ -1525,58 +1431,58 @@ window.TEUI.SectionModules.sect15 = (function () {
 
       // d_135: TEU Targeted Electricity (Reference)
       let ref_teuTargetTotal =
-        m43 + k51 + h70 + d117_effective + i104 + m121 - i80;
+        m43_final + k51 + h70 + d117_effective + i104 + m121 - i80;
 
       // console.log(`[S15] 🔗 REF d_135 calc: ${ref_teuTargetTotal} = m43(${m43}) + k51(${k51}) + h70(${h70}) + d117(${d117_effective}) + i104(${i104}) + m121(${m121}) - i80(${i80})`);
 
-      setRefValueIfChanged("ref_d_135", ref_teuTargetTotal);
+      setReferenceValue("d_135", ref_teuTargetTotal);
 
       // h_135: TEUI (Reference)
       let ref_teui_h135 = area > 0 ? ref_teuTargetTotal / area : 0;
-      setRefValueIfChanged("ref_h_135", ref_teui_h135);
+      setReferenceValue("h_135", ref_teui_h135);
 
       // d_136: TEU Targeted Electricity if HP/Gas/Oil Bldg (Reference)
       let ref_teuTargetedElecHPGasOil;
       if (primaryHeating === "Electricity") {
         ref_teuTargetedElecHPGasOil = ref_teuTargetTotal;
       } else if (primaryHeating === "Heatpump") {
-        ref_teuTargetedElecHPGasOil = k51 + d117_effective + d114 + m43 + h70;
+        ref_teuTargetedElecHPGasOil = k51 + d117_effective + d114 + m43_final + h70;
       } else {
-        ref_teuTargetedElecHPGasOil = k51 + d117_effective + m43 + h70;
+        ref_teuTargetedElecHPGasOil = k51 + d117_effective + m43_final + h70;
       }
 
       // 🔍 KEY: Log S15 Reference calculation for S04 debugging
       // console.log(`[S15] 🔗 REF d_136 calc: ${ref_teuTargetedElecHPGasOil} (heating=${primaryHeating}, h70=${h70} PLE subtotal, i80=${i80} from S10)`);
 
-      setRefValueIfChanged("ref_d_136", ref_teuTargetedElecHPGasOil);
+      setReferenceValue("d_136", ref_teuTargetedElecHPGasOil);
 
       // h_136: TEUI (HP/Gas/Oil) (Reference)
       let ref_teui_h136 = area > 0 ? ref_teuTargetedElecHPGasOil / area : 0;
-      setRefValueIfChanged("ref_h_136", ref_teui_h136);
+      setReferenceValue("h_136", ref_teui_h136);
 
       // Calculate all other Reference values using the same pattern...
 
       // d_137: Peak Heating Load (Reference)
       let ref_peakHeatingLoad_d137 =
         ((g101 * d101 + d102 * g102) * (h23 - d23)) / 1000;
-      setRefValueIfChanged("ref_d_137", ref_peakHeatingLoad_d137);
+      setReferenceValue("d_137", ref_peakHeatingLoad_d137);
 
       // l_137: Peak Heating BTU (Reference)
       let ref_peakHeatingBTU_l137 = ref_peakHeatingLoad_d137 * 3412.14245;
-      setRefValueIfChanged("ref_l_137", ref_peakHeatingBTU_l137);
+      setReferenceValue("l_137", ref_peakHeatingBTU_l137);
 
       // d_138: Peak Cooling Load (Reference)
       let ref_peakCoolingLoad_d138 =
         ((g101 * d101 + d102 * g102) * (d24 - h24)) / 1000;
-      setRefValueIfChanged("ref_d_138", ref_peakCoolingLoad_d138);
+      setReferenceValue("d_138", ref_peakCoolingLoad_d138);
 
       // h_138: Peak Cooling Tons (Reference)
       let ref_peakCoolingTons_h138 = ref_peakCoolingLoad_d138 * 0.2843451361;
-      setRefValueIfChanged("ref_h_138", ref_peakCoolingTons_h138);
+      setReferenceValue("h_138", ref_peakCoolingTons_h138);
 
       // l_138: Peak Cooling BTU (Reference)
       let ref_peakCoolingBTU_l138 = ref_peakCoolingLoad_d138 * 3412.14245;
-      setRefValueIfChanged("ref_l_138", ref_peakCoolingBTU_l138);
+      setReferenceValue("l_138", ref_peakCoolingBTU_l138);
 
       // d_139: Peak Cooling Load with Gains (Reference)
       let ref_enclosureCoolLoad = (g101 * d101 + d102 * g102) * (d24 - h24);
@@ -1588,35 +1494,35 @@ window.TEUI.SectionModules.sect15 = (function () {
         ref_peakCoolingLoadGains_d139 +=
           ref_solarVentOccGains / (m19_days * 24);
       }
-      setRefValueIfChanged("ref_d_139", ref_peakCoolingLoadGains_d139);
+      setReferenceValue("d_139", ref_peakCoolingLoadGains_d139);
 
       // h_139: Peak Cooling Tons with Gains (Reference)
       let ref_peakCoolingTonsGains_h139 =
         ref_peakCoolingLoadGains_d139 * 0.2843451361;
-      setRefValueIfChanged("ref_h_139", ref_peakCoolingTonsGains_h139);
+      setReferenceValue("h_139", ref_peakCoolingTonsGains_h139);
 
       // l_139: Peak Cooling BTU with Gains (Reference)
       let ref_peakCoolingBTUGains_l139 =
         ref_peakCoolingLoadGains_d139 * 3412.14245;
-      setRefValueIfChanged("ref_l_139", ref_peakCoolingBTUGains_l139);
+      setReferenceValue("l_139", ref_peakCoolingBTUGains_l139);
 
       // d_140: Max Heating Intensity (Reference)
       let ref_maxHeatingIntensity_d140 =
         area > 0 ? (ref_peakHeatingLoad_d137 * 1000) / area : 0;
-      setRefValueIfChanged("ref_d_140", ref_maxHeatingIntensity_d140);
+      setReferenceValue("d_140", ref_maxHeatingIntensity_d140);
 
       // h_140: Max Cooling Intensity (Reference)
       let ref_maxCoolingIntensity_h140 =
         area > 0 ? (ref_peakCoolingLoad_d138 * 1000) / area : 0;
-      setRefValueIfChanged("ref_h_140", ref_maxCoolingIntensity_h140);
+      setReferenceValue("h_140", ref_maxCoolingIntensity_h140);
 
       // d_141: Annual Cost of Electricity (Reference)
       let ref_annualCostElecPre_d141 = ref_teuTargetTotal * elecPrice;
-      setRefValueIfChanged("ref_d_141", ref_annualCostElecPre_d141);
+      setReferenceValue("d_141", ref_annualCostElecPre_d141);
 
       // h_141: Annual Cost of Electricity Post HP (Reference)
       let ref_annualCostElecPost_h141 = ref_teuTargetedElecHPGasOil * elecPrice;
-      setRefValueIfChanged("ref_h_141", ref_annualCostElecPost_h141);
+      setReferenceValue("h_141", ref_annualCostElecPost_h141);
 
       // l_141: Other Energy Cost (Reference)
       let ref_otherEnergyCost_l141 =
@@ -1624,7 +1530,7 @@ window.TEUI.SectionModules.sect15 = (function () {
         propanePrice * d29 +
         woodPrice * d31 +
         oilPrice * d30_litres;
-      setRefValueIfChanged("ref_l_141", ref_otherEnergyCost_l141);
+      setReferenceValue("l_141", ref_otherEnergyCost_l141);
 
       // h_142: ROI (Reference)
       let ref_roi_h142 = 0;
@@ -1633,49 +1539,41 @@ window.TEUI.SectionModules.sect15 = (function () {
       if (primaryHeating === "Heatpump" && ref_costSavings > 0) {
         ref_roi_h142 = hpCostPremium / ref_costSavings;
       }
-      setRefValueIfChanged("ref_h_142", ref_roi_h142);
+      setReferenceValue("h_142", ref_roi_h142);
 
       // CRITICAL: Store Reference TEUI values for Section 01 consumption
       // These are the final Reference values that Section 01 needs for e_10 calculation
-      setRefValueIfChanged("ref_d_143", refTEUI_e10); // Reference TEUI
-      setRefValueIfChanged("ref_h_143", targetTEUI_h10); // Target TEUI
-
-      // ✅ FINAL REFERENCE TEUI CALCULATION TRACKER - Use Section 01's specialized display system
-      // console.log(`🔍 S15 REFERENCE ENGINE: Final TEUI calculation = ${ref_teui_h136}`);
-      // console.log(`🔍 S15 REFERENCE ENGINE: Setting e_10 = ${ref_teui_h136} (changes with Reference location)`);
-      // console.log(`🔍 S15 REFERENCE ENGINE: ** REFERENCE e_10 SHOULD CHANGE WHEN REFERENCE MODE LOCATION CHANGES **`);
-
-      // Store in StateManager but let Section 01 handle the display
-      window.TEUI.StateManager?.setValue(
-        "e_10",
-        ref_teui_h136.toString(),
-        "calculated",
-      );
-      window.TEUI.StateManager?.setValue(
-        "ref_e_10",
-        ref_teui_h136.toString(),
-        "calculated",
-      );
-
-      // Trigger Section 01's specialized display update if available
-      if (window.TEUI?.SectionModules?.sect01?.updateDisplayValue) {
-        const formattedValue =
-          window.TEUI?.formatNumber?.(ref_teui_h136, "number-1dp") ??
-          ref_teui_h136.toString();
-        window.TEUI.SectionModules.sect01.updateDisplayValue(
-          "e_10",
-          formattedValue,
-        );
-      }
-
+      setReferenceValue("d_143", refTEUI_e10); // Reference TEUI
+      setReferenceValue("h_143", targetTEUI_h10); // Target TEUI
+      
       // Calculate Reference percentage reductions
       let ref_teuiReduction_d144 =
         refTEUI_e10 > 0 ? 1 - targetTEUI_h10 / refTEUI_e10 : 0;
-      setRefValueIfChanged("ref_d_144", ref_teuiReduction_d144);
+      setReferenceValue("d_144", ref_teuiReduction_d144);
+
+      // Reference mode utility bill handling
+      let ref_actualTEUI_l143 =
+        reportingMode_d14 === "Utility Bills" ? actualTEUI_k10 : NaN;
+      setReferenceValue("l_143", ref_actualTEUI_l143);
+
+      // Reference h_144: Target vs Actual comparison
+      let ref_targetVsActual_h144 = NaN;
+      if (!isNaN(ref_actualTEUI_l143)) {
+        ref_targetVsActual_h144 =
+          ref_actualTEUI_l143 > 0 ? targetTEUI_h10 / ref_actualTEUI_l143 : 0;
+      }
+      setReferenceValue("h_144", ref_targetVsActual_h144);
+
+      // Reference l_144: Actual vs Target comparison  
+      let ref_actualVsTarget_l144 = NaN;
+      if (reportingMode_d14 === "Utility Bills" && targetTEUI_h10 > 0) {
+        ref_actualVsTarget_l144 = ref_actualTEUI_l143 / targetTEUI_h10;
+      }
+      setReferenceValue("l_144", ref_actualVsTarget_l144);
 
       // GHG Reduction using Reference emissions from Section 04
       let ref_ghgReduction_d145 = ref_k32 > 0 ? 1 - ref_k32 / ref_k32 : 0; // This will be 0 for Reference vs Reference
-      setRefValueIfChanged("ref_d_145", ref_ghgReduction_d145);
+      setReferenceValue("d_145", ref_ghgReduction_d145);
 
       // Debug logging (reduced frequency)
       // Reference calculations completed successfully
@@ -1722,6 +1620,8 @@ window.TEUI.SectionModules.sect15 = (function () {
         return;
       }
       const sm = window.TEUI.StateManager;
+
+
 
       // --- Get Input Values ---
       const area = getNumericValue("h_15");
@@ -1803,7 +1703,7 @@ window.TEUI.SectionModules.sect15 = (function () {
       const reportingMode_d14 = sm.getValue("d_14"); // "Utility Bills" or "Targeted Use"
 
       const targetEmissions_k32 = getNumericValue("k_32"); // Target Net Emissions kgCO2/yr
-      const referenceEmissions_REF_k32 = getNumericValue("reference_k_32") || 0; // Placeholder
+      const referenceEmissions_REF_k32 = getNumericValue("ref_k_32") || 0; // Reference emissions from S04
 
       const coolingType_d116 = sm.getValue("d_116"); // Get cooling type for d117 logic
 
@@ -1819,11 +1719,11 @@ window.TEUI.SectionModules.sect15 = (function () {
 
       // console.log(`[S15] 🔗 TAR d_135 calc: ${teuTargetTotal} = m43(${m43}) + k51(${k51}) + h70(${h70}) + d117(${d117_effective}) + i104(${i104}) + m121(${m121}) - i80(${i80})`);
 
-      setCalculatedValue("d_135", teuTargetTotal);
+      setTargetValue("d_135", teuTargetTotal);
 
       // h_135: =D135/H15
       let teui_h135 = area > 0 ? teuTargetTotal / area : 0;
-      setCalculatedValue("h_135", teui_h135);
+      setTargetValue("h_135", teui_h135);
 
       // d_136: Calculation using d117_effective logic
       let teuTargetedElecHPGasOil;
@@ -1839,11 +1739,11 @@ window.TEUI.SectionModules.sect15 = (function () {
       // 🔍 KEY: Log S15 Target calculation for comparison
       // console.log(`[S15] 🔗 TAR d_136 calc: ${teuTargetedElecHPGasOil} (heating=${primaryHeating}, h70=${h70} PLE subtotal, i80=${i80} from S10)`);
 
-      setCalculatedValue("d_136", teuTargetedElecHPGasOil);
+      setTargetValue("d_136", teuTargetedElecHPGasOil);
 
       // h_136: =D136/H15
       let teui_h136 = area > 0 ? teuTargetedElecHPGasOil / area : 0;
-      setCalculatedValue("h_136", teui_h136);
+      setTargetValue("h_136", teui_h136);
 
       // ✅ FINAL TARGET TEUI CALCULATION TRACKER - Use Section 01's specialized display system
       // console.log(`🔍 S15 TARGET ENGINE: Final TEUI calculation = ${teui_h136}`);
@@ -1884,24 +1784,24 @@ window.TEUI.SectionModules.sect15 = (function () {
       // d_137: =(G101*D101+D102*G102)*(H23-D23)/1000
       let peakHeatingLoad_d137 =
         ((g101 * d101 + d102 * g102) * (h23 - d23)) / 1000;
-      setCalculatedValue("d_137", peakHeatingLoad_d137);
+      setTargetValue("d_137", peakHeatingLoad_d137);
 
       // l_137: =D137*3412.14245
       let peakHeatingBTU_l137 = peakHeatingLoad_d137 * 3412.14245;
-      setCalculatedValue("l_137", peakHeatingBTU_l137, "btu");
+      setTargetValue("l_137", peakHeatingBTU_l137);
 
       // d_138: =(G101*D101+D102*G102)*(D24-H24)/1000
       let peakCoolingLoad_d138 =
         ((g101 * d101 + d102 * g102) * (d24 - h24)) / 1000;
-      setCalculatedValue("d_138", peakCoolingLoad_d138);
+      setTargetValue("d_138", peakCoolingLoad_d138);
 
       // h_138: =D138*0.2843451361
       let peakCoolingTons_h138 = peakCoolingLoad_d138 * 0.2843451361;
-      setCalculatedValue("h_138", peakCoolingTons_h138, "tons");
+      setTargetValue("h_138", peakCoolingTons_h138);
 
       // l_138: =D138*3412.14245
       let peakCoolingBTU_l138 = peakCoolingLoad_d138 * 3412.14245;
-      setCalculatedValue("l_138", peakCoolingBTU_l138, "btu");
+      setTargetValue("l_138", peakCoolingBTU_l138);
 
       // d_139: =((G101*D101+D102*G102)*(D24-H24)+(D65+D66+D67)*H15)/1000+((K79+D122+K64-H124)/(M19*24))
       let enclosureCoolLoad = (g101 * d101 + d102 * g102) * (d24 - h24);
@@ -1913,25 +1813,25 @@ window.TEUI.SectionModules.sect15 = (function () {
         // Convert annual kWh gains to average kW during cooling days
         peakCoolingLoadGains_d139 += solarVentOccGains / (m19_days * 24);
       }
-      setCalculatedValue("d_139", peakCoolingLoadGains_d139);
+      setTargetValue("d_139", peakCoolingLoadGains_d139);
 
       // h_139: =D139*0.2843451361
       let peakCoolingTonsGains_h139 = peakCoolingLoadGains_d139 * 0.2843451361;
-      setCalculatedValue("h_139", peakCoolingTonsGains_h139, "tons");
+      setTargetValue("h_139", peakCoolingTonsGains_h139);
 
       // l_139: =D139*3412.14245
       let peakCoolingBTUGains_l139 = peakCoolingLoadGains_d139 * 3412.14245;
-      setCalculatedValue("l_139", peakCoolingBTUGains_l139, "btu");
+      setTargetValue("l_139", peakCoolingBTUGains_l139);
 
       // d_140: =D137*1000/H15
       let maxHeatingIntensity_d140 =
         area > 0 ? (peakHeatingLoad_d137 * 1000) / area : 0;
-      setCalculatedValue("d_140", maxHeatingIntensity_d140);
+      setTargetValue("d_140", maxHeatingIntensity_d140);
 
       // h_140: =D138/H15*1000
       let maxCoolingIntensity_h140 =
         area > 0 ? (peakCoolingLoad_d138 * 1000) / area : 0;
-      setCalculatedValue("h_140", maxCoolingIntensity_h140);
+      setTargetValue("h_140", maxCoolingIntensity_h140);
 
       // d_141: =D135*L12
       const d135_value = parseFloat(getNumericValue("d_135")) || teuTargetTotal; // Read stored d_135 value
@@ -1939,11 +1839,11 @@ window.TEUI.SectionModules.sect15 = (function () {
       // console.log(
       //   `[S15 DEBUG] 🧮 D141 calculation: ${d135_value} kWh/m²/yr × $${elecPrice}/kWh = $${annualCostElecPre_d141.toFixed(2)}`,
       // );
-      setCalculatedValue("d_141", annualCostElecPre_d141, "currency");
+      setTargetValue("d_141", annualCostElecPre_d141);
 
       // h_141: =D136*L12
       let annualCostElecPost_h141 = teuTargetedElecHPGasOil * elecPrice; // Using d_136 value
-      setCalculatedValue("h_141", annualCostElecPost_h141, "currency");
+      setTargetValue("h_141", annualCostElecPost_h141);
 
       // l_141: =(L13*D28)+(D29*L14)+(L15*D31)
       let otherEnergyCost_l141 =
@@ -1951,7 +1851,7 @@ window.TEUI.SectionModules.sect15 = (function () {
         propanePrice * d29 +
         woodPrice * d31 +
         oilPrice * d30_litres;
-      setCalculatedValue("l_141", otherEnergyCost_l141, "currency");
+      setTargetValue("l_141", otherEnergyCost_l141);
 
       // h_142: =IF(D113="Heatpump",D142/(D141-H141), 0)
       let roi_h142 = 0;
@@ -1959,52 +1859,38 @@ window.TEUI.SectionModules.sect15 = (function () {
       if (primaryHeating === "Heatpump" && costSavings > 0) {
         roi_h142 = hpCostPremium / costSavings;
       }
-      setCalculatedValue("h_142", roi_h142);
+      setTargetValue("h_142", roi_h142);
 
       // d_143: =E10 (Reference TEUI)
-      setCalculatedValue("d_143", refTEUI_e10);
+      setTargetValue("d_143", refTEUI_e10);
 
       // h_143: =H10 (Target TEUI)
-      setCalculatedValue("h_143", targetTEUI_h10);
+      setTargetValue("h_143", targetTEUI_h10);
 
       // l_143: =IF(D14="Targeted Use", "N/A", K10)
       let actualTEUI_l143 =
         reportingMode_d14 === "Utility Bills" ? actualTEUI_k10 : NaN; // Use NaN to represent N/A
-      if (!isNaN(actualTEUI_l143)) {
-        setCalculatedValue("l_143", actualTEUI_l143);
-      } else {
-        sm?.setValue("l_143", "N/A", "calculated");
-        const element = document.querySelector(`[data-field-id="l_143"]`);
-        if (element) element.textContent = "N/A";
-      }
+      setTargetValue("l_143", actualTEUI_l143);
 
       // d_144: =1-(H143/D143)
       let teuiReduction_d144 =
         refTEUI_e10 > 0 ? 1 - targetTEUI_h10 / refTEUI_e10 : 0;
-      setCalculatedValue("d_144", teuiReduction_d144, "percent");
+      setTargetValue("d_144", teuiReduction_d144);
 
       // h_144: =IF(L143="N/A", "N/A", IF(L143=0, 0, H143/L143))
       let targetVsActual_h144 = NaN;
       if (!isNaN(actualTEUI_l143)) {
         targetVsActual_h144 =
           actualTEUI_l143 > 0 ? targetTEUI_h10 / actualTEUI_l143 : 0;
-        setCalculatedValue("h_144", targetVsActual_h144, "percent");
-      } else {
-        sm?.setValue("h_144", "N/A", "calculated");
-        const element = document.querySelector(`[data-field-id="h_144"]`);
-        if (element) element.textContent = "N/A";
       }
+      setTargetValue("h_144", targetVsActual_h144);
 
       // l_144: =IF(D14="Targeted Use", "N/A", L143/H143)
       let actualVsTarget_l144 = NaN;
       if (reportingMode_d14 === "Utility Bills" && targetTEUI_h10 > 0) {
         actualVsTarget_l144 = actualTEUI_l143 / targetTEUI_h10;
-        setCalculatedValue("l_144", actualVsTarget_l144, "percent");
-      } else {
-        sm?.setValue("l_144", "N/A", "calculated");
-        const element = document.querySelector(`[data-field-id="l_144"]`);
-        if (element) element.textContent = "N/A";
       }
+      setTargetValue("l_144", actualVsTarget_l144);
 
       // d_145: =1-(K32/REFERENCE!K32)
       let ghgReduction_d145 =
@@ -2017,7 +1903,7 @@ window.TEUI.SectionModules.sect15 = (function () {
       } else if (referenceEmissions_REF_k32 === 0 && targetEmissions_k32 >= 0) {
         ghgReduction_d145 = 0; // No reduction if baseline and target are zero or positive
       }
-      setCalculatedValue("d_145", ghgReduction_d145, "percent");
+      setTargetValue("d_145", ghgReduction_d145);
     } catch (error) {
       console.error("Error in TEUI Summary calculations:", error);
     }
@@ -2249,6 +2135,7 @@ window.TEUI.SectionModules.sect15 = (function () {
 
     // Initial calculation on render
     calculateAll();
+    ModeManager.updateCalculatedDisplayValues();
   }
 
   /**

@@ -515,6 +515,9 @@ window.TEUI.SectionModules.sect06 = (function () {
       );
       window.TEUI.StateManager.setValue("d_43", d_43_result, "calculated");
     }
+    
+    // 🚨 TODO: Ensure S06 publishes m_43 (exterior/site loads) to StateManager for downstream sections
+    // Currently m_43 is only stored in local state, but S15 needs both m_43 and ref_m_43 for calculations
   }
 
   /**
