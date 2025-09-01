@@ -1,7 +1,7 @@
 /**
- * 4011-Section13.js - PREVIOUS RF REFACTOR FILE, WORKS BETTER THAN AUG31 REFACTOR!! WHY?
+ * 4011-Section13.js
  * Mechanical Loads (Section 13) module for TEUI Calculator 4.011
- * HSPF needs to work in both states (see Aug 31 refactor)
+ *
  * This section integrates with 4011-Cooling.js for complex cooling calculations
  * and requires SectionIntegrator and StateManager connections to function properly.
  */
@@ -21,13 +21,6 @@ window.TEUI.sect13.freeCalculationInProgress = false;
 // Section 13: Mechanical Loads Module
 window.TEUI.SectionModules.sect13 = (function () {
   //==========================================================================
-  // REFERENCE VALUE PERSISTENCE PATTERN (S11 Pattern)
-  //==========================================================================
-
-  // ✅ PHASE 5: Module-level storage to prevent race conditions
-  let lastReferenceResults = {};
-
-  //==========================================================================
   // DUAL-STATE ARCHITECTURE (Self-Contained State Module)
   //==========================================================================
 
@@ -44,16 +37,16 @@ window.TEUI.SectionModules.sect13 = (function () {
       }
     },
     setDefaults: function () {
-      // S13-specific Target defaults - MUST match sectionRows values
+      // ✅ FIX: Read defaults from field definitions (single source of truth)
       this.state = {
-        d_113: "Heatpump", // Primary heating system (dropdown)
-        f_113: "12.5", // HSPF coefficient (slider)
-        d_116: "Cooling", // Cooling system (dropdown) - FIXED: was "AC"
-        f_117: "18.0", // SEER coefficient (slider)
-        d_118: "HRV", // Ventilation system (dropdown)
-        f_118: "0.85", // Heat recovery efficiency (slider)
-        d_119: "No", // Free cooling (dropdown)
-        f_119: "0.75", // Free cooling efficiency (slider)
+        d_113: getFieldDefault("d_113") || "Heatpump", // Primary heating system
+        f_113: getFieldDefault("f_113") || "12.5", // HSPF coefficient  
+        d_116: getFieldDefault("d_116") || "Cooling", // Cooling system
+        f_117: getFieldDefault("f_117") || "18.0", // SEER coefficient
+        d_118: getFieldDefault("d_118") || "HRV", // Ventilation system
+        f_118: getFieldDefault("f_118") || "0.85", // Heat recovery efficiency
+        d_119: getFieldDefault("d_119") || "No", // Free cooling
+        f_119: getFieldDefault("f_119") || "0.75", // Free cooling efficiency
         // Add other section-specific user-editable fields as needed
       };
     },
@@ -147,6 +140,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       if (ModeManager.currentMode === "reference") {
         ModeManager.refreshUI();
         calculateAll();
+        ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
       }
     },
     saveState: function () {
@@ -179,7 +173,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         ) {
           console.log(`[S13] Reference ${fieldId} → ${value}`);
           calculateAll(); // Runs both models - efficient and keeps both current
-          ModeManager.updateCalculatedDisplayValues();
+          ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
         }
       }
     },
@@ -228,41 +222,51 @@ window.TEUI.SectionModules.sect13 = (function () {
       );
 
       const calculatedFields = [
-        // ✅ COMPREHENSIVE: All calculated fields in S13 for complete DOM updates
-        "h_113",
         "j_113",
-        "j_114", // COP values
+        "k_113",
+        "l_113", // Heating system results
+        "j_114",
+        "k_114",
+        "l_114", // Cooling system results
+        "j_116",
+        "k_116",
+        "l_116", // Ventilation results
+        "j_124",
+        "k_124",
+        "l_124", // Free cooling results
+        "j_129",
+        "k_129",
+        "l_129", // Mitigated CED results
+        "h_113",
+        "h_114",
+        "h_116",
+        "h_124",
+        "h_129", // Load calculations
         "d_114",
-        "l_113", // Heating system demand and sink
         "d_115",
         "f_115",
         "h_115",
         "l_115",
         "m_115",
-        "f_114", // Heating fuel impact and emissions
-        "j_116",
-        "l_116",
-        "l_114", // Cooling system COP and sinks
+        "f_114", // Heating system & fuel impact
         "d_117",
         "f_117",
         "j_117",
         "m_116",
-        "m_117", // Cooling system loads and intensity
+        "m_117", // Cooling system results
         "f_119",
-        "h_119", // Per-person ventilation rates
+        "h_119",
         "d_120",
         "f_120",
-        "h_120", // Volumetric ventilation rates
+        "h_120", // Ventilation rates
         "d_121",
         "i_121",
-        "m_121", // Heating season ventilation energy
+        "m_121", // Ventilation energy
         "i_122",
         "d_122",
-        "d_123", // Cooling season ventilation energy
+        "d_123", // Cooling ventilation
         "d_124",
-        "h_124",
-        "m_124", // Free cooling capacity and metrics
-        "m_129", // ✅ ADDED: Mitigated CED result
+        "m_124", // Free cooling metrics
       ];
 
       calculatedFields.forEach((fieldId) => {
@@ -322,6 +326,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       this.refreshUI();
       this.updateConditionalUI();
       calculateAll();
+      this.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
     },
     getCurrentState: function () {
       return this.currentMode === "target" ? TargetState : ReferenceState;
@@ -523,6 +528,25 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /**
+   * Get field default value from sectionRows definitions (single source of truth)
+   * @param {string} fieldId
+   * @returns {string | null} Default value from field definition
+   */
+  function getFieldDefault(fieldId) {
+    // Search through sectionRows for the field definition
+    for (const [rowKey, row] of Object.entries(sectionRows)) {
+      if (row.cells) {
+        for (const [cellKey, cell] of Object.entries(row.cells)) {
+          if (cell.fieldId === fieldId && cell.value !== undefined) {
+            return cell.value;
+          }
+        }
+      }
+    }
+    return null; // Field not found
+  }
+
+  /**
    * Helper to get field value, preferring StateManager but falling back to DOM.
    * @param {string} fieldId
    * @returns {string | null} Value as string or null if not found.
@@ -634,12 +658,16 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /** [Cooling Calc] Calculate atmospheric values */
-  function calculateAtmosphericValues() {
+  function calculateAtmosphericValues(isReferenceCalculation = false) {
     const t_outdoor = coolingState.A50_temp;
     const outdoorRH = coolingState.coolingSeasonMeanRH;
     const t_indoor = coolingState.coolingSetTemp;
     const indoorRH_percent =
-      window.TEUI.parseNumeric(getFieldValue("d_59")) || 45;
+      window.TEUI.parseNumeric(
+        isReferenceCalculation 
+          ? getGlobalNumericValue("ref_d_59") 
+          : getGlobalNumericValue("d_59")
+      ) || 45; // ✅ FIX: Mode-aware cross-section dependency
     const indoorRH = indoorRH_percent / 100;
 
     coolingState.pSatAvg =
@@ -691,7 +719,7 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /** [Cooling Calc] Calculate free cooling capacity limit (Potential Annual Sensible kWh) */
-  function calculateFreeCoolingLimit() {
+  function calculateFreeCoolingLimit(isReferenceCalculation = false) {
     // Add recursion protection
     if (window.TEUI.sect13.calculatingFreeCooling) {
       return coolingState.freeCoolingLimit || 0; // Return cached value if already calculating
@@ -704,7 +732,7 @@ window.TEUI.SectionModules.sect13 = (function () {
 
       // 1. Get necessary values
       const ventFlowRateM3hr =
-        window.TEUI.parseNumeric(getFieldValue("h_120")) || 0;
+        window.TEUI.parseNumeric(getGlobalNumericValue("h_120")) || 0; // ✅ FIX: Calculated field
       const ventFlowRateM3s = ventFlowRateM3hr / 3600;
       const massFlowRateKgS = ventFlowRateM3s * coolingState.airMass; // kg/s
 
@@ -712,7 +740,11 @@ window.TEUI.SectionModules.sect13 = (function () {
       const T_indoor = coolingState.coolingSetTemp; // °C
       const T_outdoor_night = coolingState.nightTimeTemp; // °C
       const coolingDays =
-        window.TEUI.parseNumeric(getFieldValue("m_19")) || 120;
+        window.TEUI.parseNumeric(
+          isReferenceCalculation 
+            ? getGlobalNumericValue("ref_m_19") 
+            : getGlobalNumericValue("m_19")
+        ) || 120; // ✅ FIX: Mode-aware cross-section dependency
 
       // 2. Calculate Temperature Difference
       const tempDiff = T_outdoor_night - T_indoor; // °C or K difference
@@ -750,11 +782,15 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /** [Cooling Calc] Calculate days of active cooling required */
-  function calculateDaysActiveCooling(currentFreeCoolingLimit /* h_124 */) {
+  function calculateDaysActiveCooling(currentFreeCoolingLimit /* h_124 */, isReferenceCalculation = false) {
     // Keep signature for now
     const coolingLoad = coolingState.coolingLoad; // Annual kWh load (m_129)
     // Get cooling days from m_19, default to 120
-    const coolingDays = window.TEUI.parseNumeric(getFieldValue("m_19")) || 120;
+    const coolingDays = window.TEUI.parseNumeric(
+      isReferenceCalculation 
+        ? getGlobalNumericValue("ref_m_19") 
+        : getGlobalNumericValue("m_19")
+    ) || 120; // ✅ FIX: Mode-aware cross-section dependency
     const freeCoolingLimit = currentFreeCoolingLimit; // Annual kWh free cooling (h_124)
     let calculatedDays = 0;
     let dailyCoolingLoad = 0;
@@ -818,7 +854,7 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /** [Cooling Calc] Update internal state from external sources */
-  function updateCoolingInputs() {
+  function updateCoolingInputs(isReferenceCalculation = false) {
     const parseNum =
       window.TEUI?.parseNumeric ||
       function (v) {
@@ -852,11 +888,23 @@ window.TEUI.SectionModules.sect13 = (function () {
       coolingState.coolingSetTemp = parseNum(getValue("h_24")) || 24; // Fallback to h_24 or default 24
     }
 
-    coolingState.coolingDegreeDays = parseNum(getValue("d_21")) || 196;
-    coolingState.buildingVolume = parseNum(getValue("d_105")) || 8000;
-    coolingState.buildingArea = parseNum(getValue("h_15")) || 1427.2;
-    coolingState.coolingLoad = getNumericValue("l_128") || 0; // Read mitigated cooling load from S14 - Note: May cause dependency loop issues if S14 reads S13 outputs
-    coolingState.ventilationMethod = getFieldValue("g_118") || "Constant"; // Default to Constant
+    coolingState.coolingDegreeDays = parseNum(
+      isReferenceCalculation 
+        ? getGlobalNumericValue("ref_d_21") 
+        : getGlobalNumericValue("d_21")
+    ) || 196; // ✅ FIX: Mode-aware cross-section dependency
+    coolingState.buildingVolume = parseNum(
+      isReferenceCalculation 
+        ? getGlobalNumericValue("ref_d_105") 
+        : getGlobalNumericValue("d_105")
+    ) || 8000; // ✅ FIX: Mode-aware cross-section dependency
+    coolingState.buildingArea = parseNum(
+      isReferenceCalculation 
+        ? getGlobalNumericValue("ref_h_15") 
+        : getGlobalNumericValue("h_15")
+    ) || 1427.2; // ✅ FIX: Mode-aware cross-section dependency
+    coolingState.coolingLoad = getGlobalNumericValue("l_128") || 0; // ✅ FIX: Cross-section dependency from S14
+    coolingState.ventilationMethod = TargetState.getValue("g_118") || "Constant"; // ✅ FIX: Section-specific field
 
     // Calculate the intermediate A50 temperature needed for atmospheric calcs
     calculateA50Temp();
@@ -864,10 +912,10 @@ window.TEUI.SectionModules.sect13 = (function () {
 
   /** [Cooling Calc] Orchestrates the internal cooling-related calculations */
   function runIntegratedCoolingCalculations() {
-    updateCoolingInputs();
+    updateCoolingInputs(false); // ✅ FIX: Pass isReferenceCalculation parameter (Target mode)
 
     // Ensure atmospheric & humidity are calculated BEFORE factors/limits that depend on them
-    calculateAtmosphericValues();
+    calculateAtmosphericValues(false); // ✅ FIX: Pass isReferenceCalculation parameter (Target mode)
     calculateHumidityRatios();
 
     // Now calculate factors/limits that use the results
@@ -935,7 +983,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     if (!config) return;
 
     const currentValue =
-      window.TEUI?.parseNumeric?.(getFieldValue(fieldId)) || 0;
+      window.TEUI?.parseNumeric?.(getGlobalNumericValue(fieldId)) || 0; // ✅ FIX: Generic field access
 
     const referenceValue =
       window.TEUI?.StateManager?.getTCellValue?.(fieldId) ||
@@ -1935,9 +1983,23 @@ window.TEUI.SectionModules.sect13 = (function () {
       const sm = window.TEUI.StateManager; // Alias for brevity
       console.log("[Section13] 🔗 Attaching StateManager listeners...");
 
-      // ✅ REMOVED: StateManager listener for d_113 - dropdown handler already covers this
-      // Dropdown changes are now handled exclusively by handleDropdownChange()
-      // to prevent dual-listener contamination
+      // Listener for d_113 (Heating System) changes - Target mode
+      sm.addListener("d_113", (newValue, oldValue) => {
+        console.log(`[S13] Target d_113 → ${newValue}`);
+
+        // ✅ PATTERN 2: Run dual-engine calculations for proper Target/Reference state handling
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues(); // ✅ CRITICAL: Update DOM after calculations
+        if (
+          window.TEUI &&
+          window.TEUI.StateManager &&
+          typeof window.TEUI.StateManager.updateTEUICalculations === "function"
+        ) {
+          window.TEUI.StateManager.updateTEUICalculations(
+            "S13_d113_fuel_switch",
+          );
+        }
+      });
 
       // ✅ Reference mode d_113 changes are now handled by ReferenceState.setValue()
       // When user changes dropdowns in Reference mode, ReferenceState.setValue() triggers
@@ -1979,48 +2041,57 @@ window.TEUI.SectionModules.sect13 = (function () {
       // Helper function for external dependency changes - DUAL-STATE PATTERN COMPLIANT
       const calculateAndRefresh = () => {
         calculateAll();
-        ModeManager.updateCalculatedDisplayValues();
+        ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
       };
 
-      // Add listeners for climate/gain/loss data changes from other sections
+      // ✅ DUAL-STATE-CHEATSHEET Phase 2.5: Complete Target/Reference listener pairs
       console.log("[Section13] 🔗 Attaching CRITICAL upstream listeners...");
-      sm.addListener("d_20", calculateAndRefresh); // HDD
-      sm.addListener("d_21", calculateAndRefresh); // CDD
-      sm.addListener("d_23", calculateAndRefresh); // Coldest Day Temp
-      sm.addListener("d_24", calculateAndRefresh); // Hottest Day Temp
-      sm.addListener("h_23", calculateAndRefresh); // Heating Setpoint
-      sm.addListener("h_24", calculateAndRefresh); // Cooling Setpoint
-      sm.addListener("i_104", () => {
-        console.log(
-          "[Section13] 📡 🔥 i_104 (TRANSMISSION LOSS) listener triggered - S11 thermal bridges changed!",
-        );
-        calculateAndRefresh();
-      }); // Total Trans Loss
-      sm.addListener("k_104", calculateAndRefresh); // Total Ground Loss
-      sm.addListener("i_71", () => {
-        console.log(
-          "[Section13] 📡 🔥 i_71 (OCCUPANT GAINS) listener triggered - S10 gains factor changed!",
-        );
-        calculateAndRefresh();
-      }); // Total Occ Gains
-      sm.addListener("i_79", calculateAndRefresh); // Total App Gains
-      sm.addListener("d_127", () => {
-        console.log(
-          "[Section13] 📡 🔥 d_127 (TED) listener triggered - S14 energy demand changed!",
-        );
-        // ✅ PATTERN 2: Run dual-engine calculations for proper Target/Reference state handling
-        calculateAndRefresh();
-      }); // TED (from S14, for d_114)
-      // Listener for m_129 (CED Mitigated) from S14 to update S13 coolingState
+      
+      // Climate dependencies (S03) - Target/Reference pairs
+      sm.addListener("d_20", calculateAndRefresh); // HDD Target
+      sm.addListener("ref_d_20", calculateAndRefresh); // HDD Reference
+      sm.addListener("d_21", calculateAndRefresh); // CDD Target  
+      sm.addListener("ref_d_21", calculateAndRefresh); // CDD Reference
+      sm.addListener("d_23", calculateAndRefresh); // Coldest Day Target
+      sm.addListener("ref_d_23", calculateAndRefresh); // Coldest Day Reference
+      sm.addListener("d_24", calculateAndRefresh); // Hottest Day Target
+      sm.addListener("ref_d_24", calculateAndRefresh); // Hottest Day Reference
+      sm.addListener("h_23", calculateAndRefresh); // Heating Setpoint Target
+      sm.addListener("ref_h_23", calculateAndRefresh); // Heating Setpoint Reference
+      sm.addListener("h_24", calculateAndRefresh); // Cooling Setpoint Target
+      sm.addListener("ref_h_24", calculateAndRefresh); // Cooling Setpoint Reference
+      // Building dependencies (S11/S12) - Target/Reference pairs
+      sm.addListener("i_104", calculateAndRefresh); // Transmission Loss Target
+      sm.addListener("ref_i_104", calculateAndRefresh); // Transmission Loss Reference
+      sm.addListener("k_104", calculateAndRefresh); // Ground Loss Target
+      sm.addListener("ref_k_104", calculateAndRefresh); // Ground Loss Reference
+      
+      // Internal gains dependencies (S09/S10) - Target/Reference pairs  
+      sm.addListener("i_71", calculateAndRefresh); // Occupant Gains Target
+      sm.addListener("ref_i_71", calculateAndRefresh); // Occupant Gains Reference
+      sm.addListener("i_79", calculateAndRefresh); // Appliance Gains Target
+      sm.addListener("ref_i_79", calculateAndRefresh); // Appliance Gains Reference
+      // Energy demand dependencies (S14) - Target/Reference pairs
+      sm.addListener("d_127", calculateAndRefresh); // TED Target
+      sm.addListener("ref_d_127", calculateAndRefresh); // TED Reference
+      // ✅ DUAL-STATE-CHEATSHEET Phase 2.5: External Dependency Listener Pairs
+      // Target listener for m_129 (CED Mitigated) from S14
       sm.addListener("m_129", () => {
         coolingState.coolingLoad =
-          window.TEUI.parseNumeric(getFieldValue("m_129")) || 0;
-        calculateCoolingSystem(); // Maybe recalculate cooling system loads?
-        // Re-calculate days active cooling AFTER load is updated
-        calculateDaysActiveCooling(coolingState.freeCoolingLimit);
+          window.TEUI.parseNumeric(getGlobalNumericValue("m_129")) || 0;
+        calculateCoolingSystem(false); // Target mode
+        calculateDaysActiveCooling(coolingState.freeCoolingLimit, false);
         setCalculatedValue("m_124", coolingState.daysActiveCooling, "integer");
       });
-      // ✅ REMOVED: d_113 ghosting listener - handled by dropdown change now
+      
+      // Reference listener for ref_m_129 (CED Mitigated) from S14
+      sm.addListener("ref_m_129", () => {
+        // Reference external dependency - trigger full recalculation
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
+      });
+      // *** MOVED: Listener for d_113 to handle ghosting (Correct location) ***
+      sm.addListener("d_113", handleHeatingSystemChangeForGhosting);
       console.log("[Section13] ✅ ALL LISTENERS ATTACHED SUCCESSFULLY");
     } else {
       console.error(
@@ -2130,15 +2201,18 @@ window.TEUI.SectionModules.sect13 = (function () {
         if (fieldId === "j_115") {
           // console.log("[S13 DEBUG] j_115 changed by user, explicitly calling calculateAll().")
           calculateAll(); // Keep this trigger for AFUE changes
+          ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
         }
         // ADDED: Explicitly trigger calculateAll after user modifies l_118 (ACH)
         if (fieldId === "l_118") {
           // console.log("[S13 DEBUG l_118] l_118 changed by user, explicitly calling S13.calculateAll().")
           calculateAll();
+          ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
         }
         // ADDED: Explicitly trigger calculateAll after user modifies d_119 (Per Person Vent)
         if (fieldId === "d_119") {
           calculateAll();
+          ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
         }
       }
     } else {
@@ -2225,6 +2299,9 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     // ✅ CRITICAL FIX: Set up dropdown event handlers (like S09, S07, S02)
     setupDropdownEventHandlers();
+    
+    // ✅ CRITICAL FIX: Set up slider event handlers (missing - causing broken sliders)
+    setupSliderEventHandlers();
 
     // --- ADDED: Explicitly update DOM display for editable defaults AFTER initial calculations ---
     if (window.TEUI?.StateManager && window.TEUI?.formatNumber) {
@@ -2259,12 +2336,55 @@ window.TEUI.SectionModules.sect13 = (function () {
     // Set initial ghosting state after calculations might have populated values
     setTimeout(() => {
       // Use timeout to ensure initial state is settled
-      const initialHeatingSystem = getFieldValue("d_113") || "Heatpump"; // Get current value or default
+      const initialHeatingSystem = TargetState.getValue("d_113") || "Heatpump"; // ✅ FIX: Read from Target state, not UI mode
       // console.log(`[S13 Ghosting] Setting initial ghosting based on system: ${initialHeatingSystem}`);
       handleHeatingSystemChangeForGhosting(initialHeatingSystem);
     }, 100); // Short delay might be needed
 
     console.log("S13: Pattern A initialization complete.");
+  }
+
+  /**
+   * Set up slider event handlers for dual-state sections
+   * ✅ CRITICAL FIX: This was missing in S13, causing slider changes to not be saved to state
+   */
+  function setupSliderEventHandlers() {
+    const sectionElement = document.getElementById("mechanicalLoads");
+    if (!sectionElement) return;
+
+    // Set up event handlers for all sliders/range inputs in this section
+    const sliders = sectionElement.querySelectorAll('input[type="range"], input[data-field-id]');
+    sliders.forEach((slider) => {
+      const fieldId = slider.getAttribute("data-field-id");
+      if (!fieldId) return;
+
+      // Remove any existing handlers to avoid duplicates
+      slider.removeEventListener("input", handleSliderChange);
+      slider.removeEventListener("change", handleSliderChange);
+
+      // Add the event listeners
+      slider.addEventListener("input", handleSliderChange);
+      slider.addEventListener("change", handleSliderChange);
+    });
+
+    console.log(`[S13] Set up slider event handlers for ${sliders.length} sliders`);
+
+    function handleSliderChange(event) {
+      const fieldId = event.target.getAttribute("data-field-id");
+      if (!fieldId) return;
+
+      const value = event.target.value;
+      console.log(`[S13] Slider ${fieldId} changed to: ${value}`);
+
+      // Store via ModeManager (dual-state aware)
+      if (ModeManager && typeof ModeManager.setValue === "function") {
+        ModeManager.setValue(fieldId, value, "user-modified");
+        
+        // Trigger recalculations
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
+      }
+    }
   }
 
   /**
@@ -2368,24 +2488,28 @@ window.TEUI.SectionModules.sect13 = (function () {
         `[S13DEBUG] Reference HDD changed: ref_d_20=${newValue} → triggering Reference calculations`,
       );
       calculateAll();
+      ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
     });
     sm.addListener("ref_d_21", (newValue) => {
       console.log(
         `[S13DEBUG] Reference CDD changed: ref_d_21=${newValue} → triggering Reference calculations`,
       );
       calculateAll();
+      ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
     });
     sm.addListener("ref_d_22", (newValue) => {
       console.log(
         `[S13DEBUG] Reference GF HDD changed: ref_d_22=${newValue} → triggering Reference calculations`,
       );
       calculateAll();
+      ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
     });
     sm.addListener("ref_h_22", (newValue) => {
       console.log(
         `[S13DEBUG] Reference GF CDD changed: ref_h_22=${newValue} → triggering Reference calculations`,
       );
       calculateAll();
+      ModeManager.updateCalculatedDisplayValues(); // ✅ FIX: DOM update after calculations
     });
   }
 
@@ -2393,13 +2517,16 @@ window.TEUI.SectionModules.sect13 = (function () {
    * Calculate COPh and COPc values based on heating system and HSPF
    */
   function calculateCOPValues(isReferenceCalculation = false) {
-    // ✅ DUAL-ENGINE: Read from the appropriate state based on the calculation mode.
+    // ✅ DUAL-ENGINE: For Target calculations, use StateManager (authoritative source)
     const hspf =
       window.TEUI.parseNumeric(
-        getSectionValue("f_113", isReferenceCalculation),
+        isReferenceCalculation
+          ? getSectionValue("f_113", true)
+          : TargetState.getValue("f_113"),  // ✅ FIX: Target reads Target state
       ) || 0;
-    const systemType = getSectionValue("d_113", isReferenceCalculation);
-
+    const systemType = isReferenceCalculation
+      ? getSectionValue("d_113", true) // Reference reads Reference state
+      : TargetState.getValue("d_113"); // Target reads Target state
     let copheat = 1;
     if (systemType === "Heatpump" && hspf > 0) {
       copheat = hspf / 3.412;
@@ -2407,7 +2534,18 @@ window.TEUI.SectionModules.sect13 = (function () {
     let copcool = Math.max(1, copheat - 1);
     const ceer = 3.412 * copcool;
 
-    // Return calculated values for the calculation chain. DOM updates are handled by the orchestrator.
+    // Only update DOM for Target calculations (like S11 pattern)
+    if (!isReferenceCalculation) {
+      setCalculatedValue("h_113", copheat, "number-2dp");
+      setCalculatedValue("j_113", copcool, "number-1dp");
+      setCalculatedValue("j_114", ceer, "number-1dp");
+      // ✅ PATTERN 2: No recursive calls - let the dual-engine handle heating system calculations
+    } else {
+      // ✅ PATTERN 2: Reference calculations handled by dual-engine architecture
+      // No individual function calls needed - calculateAll handles both engines
+    }
+
+    // Return calculated values for Reference engine storage
     return {
       h_113: copheat,
       j_113: copcool,
@@ -2416,92 +2554,124 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /**
-   * ✅ UNIFIED: Calculate heating system with explicit data flow (S12 pattern)
-   * This function consolidates heating demand, fuel impact, and emissions
-   * @param {boolean} isReferenceCalculation - Calculation mode flag
-   * @param {Object} copResults - Results from COP calculations
-   * @param {number} tedValue - Total Energy Demand value
-   * @returns {Object} Complete heating system results
+   * Calculate heating fuel impact for gas and oil systems
    */
-  function calculateHeatingSystem(
-    isReferenceCalculation = false,
-    copResults = {},
-    tedValue = 0,
-  ) {
-    const systemType = getSectionValue("d_113", isReferenceCalculation);
+  // ❌ REMOVED: Legacy function causing state contamination
+  function calculateHeatingFuelImpact_DISABLED(isReferenceCalculation = false) {
+    // console.log("[S13 DEBUG] Entering calculateHeatingFuelImpact"); // LOG ENTRY
+
+    // ✅ PATTERN A: Read values from proper state objects
+    const systemType = isReferenceCalculation
+      ? getSectionValue("d_113", true) // Reference reads Reference state
+      : TargetState.getValue("d_113"); // Target reads Target state (defaults)
+    const tedTarget = isReferenceCalculation
+      ? window.TEUI.parseNumeric(
+          window.TEUI.StateManager?.getValue("ref_d_127"),
+        ) || 0
+      : window.TEUI.parseNumeric(TargetState.getValue("d_127")) || 0;  // ✅ FIX: Target reads Target state
     const afue =
       window.TEUI.parseNumeric(
-        getSectionValue("j_115", isReferenceCalculation),
-      ) || 1;
+        isReferenceCalculation
+          ? getSectionValue("j_115", true)     // Reference reads Reference state
+          : TargetState.getValue("j_115"),     // ✅ FIX: Target reads Target state (not UI mode)
+      ) || 1; // Read current AFUE
+    // console.log(`[S13 DEBUG] calculateHeatingFuelImpact using AFUE (j_115) = ${afue}`); // LOG AFUE value used
+    const heatingDemand_d114 =
+      window.TEUI.parseNumeric(
+        isReferenceCalculation 
+          ? getGlobalNumericValue("ref_d_114") 
+          : getGlobalNumericValue("d_114")
+      ) || 0; // ✅ FIX: Mode-aware cross-section dependency
 
-    const copHeat = copResults.h_113 || 1;
+    let fuelImpact = 0,
+      oilLitres = 0,
+      gasM3 = 0,
+      exhaust = 0;
 
-    console.log(
-      `[S13] ${isReferenceCalculation ? "REF" : "TGT"} HEATING: system=${systemType}, ted=${tedValue}, afue=${afue}, cop=${copHeat}`,
-    );
-
-    let heatingDemand_d114 = 0;
-    let heatingSink_l113 = 0;
-    let fuelImpact_d115 = 0;
-    let oilLitres_f115 = 0;
-    let gasM3_h115 = 0;
-    let exhaust_l115 = 0;
-    let emissions_f114 = 0;
-
-    // Calculate heating demand and sink
-    if (systemType === "Heatpump") {
-      if (copHeat > 0) {
-        heatingDemand_d114 = tedValue / copHeat;
-        heatingSink_l113 = heatingDemand_d114 * (copHeat - 1);
-      } else {
-        heatingDemand_d114 = tedValue;
-        heatingSink_l113 = 0;
-      }
-    } else {
-      heatingDemand_d114 = tedValue;
-      heatingSink_l113 = 0;
-    }
-
-    // Calculate fuel impact for gas and oil systems
     if ((systemType === "Gas" || systemType === "Oil") && afue > 0) {
-      fuelImpact_d115 = tedValue / afue;
-      exhaust_l115 = fuelImpact_d115 - heatingDemand_d114;
+      fuelImpact = tedTarget / afue; // d_115 = d_127 / j_115
+      // Match Excel L115: =IF(D113="Gas", D115-D114, IF(D113="Oil", D115-D114, 0))
+      exhaust = fuelImpact - heatingDemand_d114;
 
       if (systemType === "Gas") {
-        gasM3_h115 = fuelImpact_d115 / 10.36;
+        gasM3 = fuelImpact / 10.36;
       } else {
-        oilLitres_f115 = fuelImpact_d115 / 10.2;
+        // systemType === 'Oil'
+        oilLitres = fuelImpact / 10.2;
       }
+    } // If not Gas or Oil, exhaust remains 0
+
+    // Only update DOM for Target calculations
+    if (!isReferenceCalculation) {
+      setCalculatedValue("d_115", fuelImpact, "number-2dp-comma");
+      setCalculatedValue("f_115", oilLitres, "number-2dp-comma");
+      setCalculatedValue("h_115", gasM3, "number-2dp-comma");
+      setCalculatedValue("l_115", exhaust, "number-2dp-comma");
+      const m115_percent = afue > 0 ? 1 / afue : 0;
+      setCalculatedValue("m_115", m115_percent, "percent-0dp");
+
+      // Calculate space heating emissions
+      calculateSpaceHeatingEmissions(isReferenceCalculation);
     }
 
-    // Calculate space heating emissions
-    if (systemType === "Oil") {
-      const oilEmissionsFactor = isReferenceCalculation
-        ? getGlobalNumericValue("ref_l_30") ||
-          getGlobalNumericValue("l_30") ||
-          2753
-        : getGlobalNumericValue("l_30") || 2753;
-      emissions_f114 = (oilLitres_f115 * oilEmissionsFactor) / 1000;
-    } else if (systemType === "Gas") {
-      const gasEmissionsFactor = isReferenceCalculation
-        ? getGlobalNumericValue("ref_l_28") ||
-          getGlobalNumericValue("l_28") ||
-          1921
-        : getGlobalNumericValue("l_28") || 1921;
-      emissions_f114 = (gasM3_h115 * gasEmissionsFactor) / 1000;
-    }
-
-    // Return all results for the calculation chain
+    // Return calculated values for Reference engine storage
     return {
-      d_114: heatingDemand_d114,
-      l_113: heatingSink_l113,
-      d_115: fuelImpact_d115,
-      f_115: oilLitres_f115,
-      h_115: gasM3_h115,
-      l_115: exhaust_l115,
+      d_115: fuelImpact,
+      f_115: oilLitres,
+      h_115: gasM3,
+      l_115: exhaust,
       m_115: afue > 0 ? 1 / afue : 0,
-      f_114: emissions_f114,
     };
+  }
+
+  /**
+   * NEW: Calculate Space Heating Emissions
+   * Formula: =IF(D113="Oil", F115*L30, IF(D113="Gas", H115*L28, 0))
+   * Where:
+   * - D113 is the Heating System type (Oil, Gas, Heatpump, Electricity)
+   * - F115 is the Oil volume (litres)
+   * - L30 is the emissions factor for oil (kgCO2e/litre)
+   * - H115 is the Gas volume (m³)
+   * - L28 is the emissions factor for gas (kgCO2e/m³)
+   */
+  function calculateSpaceHeatingEmissions(isReferenceCalculation = false) {
+    // ✅ PATTERN A: Read values from proper state objects
+    const systemType = isReferenceCalculation
+      ? getSectionValue("d_113", true) // Reference reads Reference state
+      : TargetState.getValue("d_113"); // Target reads Target state
+    const oilVolume = isReferenceCalculation
+      ? getGlobalNumericValue("ref_f_115")
+      : getGlobalNumericValue("f_115");
+
+    const gasVolume = isReferenceCalculation
+      ? getGlobalNumericValue("ref_h_115")
+      : getGlobalNumericValue("h_115");
+
+    // ✅ CRITICAL FIX: Mode-aware emissions factors from S04 (gCO2e), divided by 1000 to get kgCO2e
+    // Reference calculations must use Reference emissions factors, Target uses Target factors
+    const oilEmissionsFactor = isReferenceCalculation
+      ? getGlobalNumericValue("ref_l_30") ||
+        getGlobalNumericValue("l_30") ||
+        2753
+      : getGlobalNumericValue("l_30") || 2753;
+    const gasEmissionsFactor = isReferenceCalculation
+      ? getGlobalNumericValue("ref_l_28") ||
+        getGlobalNumericValue("l_28") ||
+        1921
+      : getGlobalNumericValue("l_28") || 1921;
+
+    let emissions = 0;
+
+    if (systemType === "Oil") {
+      emissions = (oilVolume * oilEmissionsFactor) / 1000; // Need to divide by 1000 to get kgCO2e/yr
+    } else if (systemType === "Gas") {
+      emissions = (gasVolume * gasEmissionsFactor) / 1000; // Need to divide by 1000 to get kgCO2e/yr
+    }
+    // For Electric and Heatpump, we leave emissions at 0 (handled by electricity emissions elsewhere)
+
+    setCalculatedValue("f_114", emissions, "number-2dp-comma");
+
+    return emissions;
   }
 
   /**
@@ -2511,14 +2681,18 @@ window.TEUI.SectionModules.sect13 = (function () {
     // ✅ DUAL-ENGINE: For Target calculations, use StateManager (authoritative source)
     const coolingSystemType = isReferenceCalculation
       ? getSectionValue("d_116", true)
-      : getFieldValue("d_116");
+      : TargetState.getValue("d_116");  // ✅ FIX: Target reads Target state
     const heatingSystemType = isReferenceCalculation
       ? getSectionValue("d_113", true) // Reference reads Reference state
       : TargetState.getValue("d_113"); // Target reads Target state
     const coolingDemand_m129 =
-      window.TEUI.parseNumeric(getFieldValue("m_129")) || 0;
+      window.TEUI.parseNumeric(
+        isReferenceCalculation 
+          ? getGlobalNumericValue("ref_m_129") 
+          : getGlobalNumericValue("m_129")
+      ) || 0; // ✅ FIX: Mode-aware cross-section dependency
     const copcool_hp_j113 =
-      window.TEUI.parseNumeric(getFieldValue("j_113")) || 0;
+      window.TEUI.parseNumeric(getGlobalNumericValue("j_113")) || 0; // ✅ FIX: Calculated field
     const copcool_dedicated_h116 = 2.7; // Default value for dedicated
 
     let copcool_to_use = 0;
@@ -2564,7 +2738,11 @@ window.TEUI.SectionModules.sect13 = (function () {
       copcool_to_use = 0;
     }
 
-    const area_h15 = window.TEUI.parseNumeric(getFieldValue("h_15")) || 0;
+    const area_h15 = window.TEUI.parseNumeric(
+      isReferenceCalculation 
+        ? getGlobalNumericValue("ref_h_15") 
+        : getGlobalNumericValue("h_15")
+    ) || 0; // ✅ FIX: Mode-aware cross-section dependency
     const intensity_f117 = area_h15 > 0 ? coolingLoad_d117 / area_h15 : 0;
     const ceer_j117 = 3.412 * copcool_to_use;
 
@@ -2622,7 +2800,9 @@ window.TEUI.SectionModules.sect13 = (function () {
    */
   function calculateVentilationRates(isReferenceCalculation = false) {
     // Use helper defined in this module
-    const ratePerPerson = getNumericValue("d_119");
+    const ratePerPerson = isReferenceCalculation 
+      ? ReferenceState.getValue("d_119") || 0
+      : TargetState.getValue("d_119") || 0; // ✅ FIX: Mode-aware section-specific field
     // console.log(`[S13 CalcVentRates] Read d_119 as: ${ratePerPerson}`); // Log value read
     const cfm = ratePerPerson * 2.11888;
     const m3hr = ratePerPerson * 3.6;
@@ -2635,19 +2815,35 @@ window.TEUI.SectionModules.sect13 = (function () {
     // console.log(`[S13 CalcVentRates] Calculated f_119: ${cfm}, h_119: ${m3hr}`); // Log calculated values
 
     // Now calculate d_120 (Volumetric Rate) as it depends on d_119 and g_118
-    const ventMethod = getFieldValue("g_118"); // This was likely causing issues, use getNumericValue/parseNum if needed
+    const ventMethod = TargetState.getValue("g_118") || "Constant"; // ✅ FIX: Read from Target state
     const ratePerPerson_d119 =
       window.TEUI.parseNumeric(
         isReferenceCalculation
           ? getSectionValue("d_119", true)
-          : getFieldValue("d_119"),
+          : TargetState.getValue("d_119"),  // ✅ FIX: Target reads Target state
       ) || 0;
     // console.log(`[S13 CalcVentRates] Read d_119 as: ${ratePerPerson_d119}`); // Log value read
-    const volume = window.TEUI.parseNumeric(getFieldValue("d_105")) || 0;
-    const ach = window.TEUI.parseNumeric(getFieldValue("l_118")) || 0;
-    const occupiedHours = window.TEUI.parseNumeric(getFieldValue("i_63")) || 0;
-    const totalHours = window.TEUI.parseNumeric(getFieldValue("j_63")) || 8760;
-    const occupants_d63 = window.TEUI.parseNumeric(getFieldValue("d_63")) || 0;
+    const volume = window.TEUI.parseNumeric(
+      isReferenceCalculation 
+        ? getGlobalNumericValue("ref_d_105") 
+        : getGlobalNumericValue("d_105")
+    ) || 0; // ✅ FIX: Mode-aware cross-section dependency
+    const ach = window.TEUI.parseNumeric(TargetState.getValue("l_118")) || 0; // ✅ FIX: Section-specific field
+    const occupiedHours = window.TEUI.parseNumeric(
+      isReferenceCalculation 
+        ? getGlobalNumericValue("ref_i_63") 
+        : getGlobalNumericValue("i_63")
+    ) || 0; // ✅ FIX: Mode-aware cross-section dependency
+    const totalHours = window.TEUI.parseNumeric(
+      isReferenceCalculation 
+        ? getGlobalNumericValue("ref_j_63") 
+        : getGlobalNumericValue("j_63")
+    ) || 8760; // ✅ FIX: Mode-aware cross-section dependency
+    const occupants_d63 = window.TEUI.parseNumeric(
+      isReferenceCalculation 
+        ? getGlobalNumericValue("ref_d_63") 
+        : getGlobalNumericValue("d_63")
+    ) || 0; // ✅ FIX: Mode-aware cross-section dependency
     let ventRateLs = 0;
 
     if (ventMethod === "Occupant Constant") {
@@ -2683,7 +2879,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       window.TEUI.parseNumeric(
         isReferenceCalculation
           ? getSectionValue("d_118", true)
-          : getFieldValue("d_118"),
+          : TargetState.getValue("d_118"),  // ✅ FIX: Target reads Target state
       ) || 0;
     // Commented out - m_118 is now handled by reference indicator system
     // setCalculatedValue('m_118', sre_d118 / 100, 'percent-0dp');
@@ -2702,13 +2898,13 @@ window.TEUI.SectionModules.sect13 = (function () {
    * Calculate ventilation energy exchange during heating season
    */
   function calculateVentilationEnergy(isReferenceCalculation = false) {
-    const ventRate = window.TEUI.parseNumeric(getFieldValue("d_120")) || 0;
+    const ventRate = window.TEUI.parseNumeric(getGlobalNumericValue("d_120")) || 0; // ✅ FIX: Calculated field
     const hdd = getGlobalNumericValue("d_20");
     const efficiency =
       (window.TEUI.parseNumeric(
         isReferenceCalculation
           ? getSectionValue("d_118", true)
-          : getFieldValue("d_118"),
+          : TargetState.getValue("d_118"),  // ✅ FIX: Target reads Target state
       ) || 0) / 100;
     const heatingVentEnergy = (1.21 * ventRate * hdd * 24) / 1000;
     const recoveredEnergy = heatingVentEnergy * efficiency;
@@ -2737,27 +2933,37 @@ window.TEUI.SectionModules.sect13 = (function () {
     // runIntegratedCoolingCalculations();
 
     const ventilationRateLs_d120 =
-      window.TEUI.parseNumeric(getFieldValue("d_120")) || 0;
-    const cdd_d21 = window.TEUI.parseNumeric(getFieldValue("d_21")) || 0;
-    const occupiedHours_i63 =
-      window.TEUI.parseNumeric(getFieldValue("i_63")) || 0;
-    const totalHours_j63 =
-      window.TEUI.parseNumeric(getFieldValue("j_63")) || 8760;
+      window.TEUI.parseNumeric(getGlobalNumericValue("d_120")) || 0; // ✅ FIX: Calculated field
+    const cdd_d21 = window.TEUI.parseNumeric(
+      isReferenceCalculation 
+        ? getGlobalNumericValue("ref_d_21") 
+        : getGlobalNumericValue("d_21")
+    ) || 0; // ✅ FIX: Mode-aware cross-section dependency
+    const occupiedHours_i63 = window.TEUI.parseNumeric(
+      isReferenceCalculation 
+        ? getGlobalNumericValue("ref_i_63") 
+        : getGlobalNumericValue("i_63")
+    ) || 0; // ✅ FIX: Mode-aware cross-section dependency
+    const totalHours_j63 = window.TEUI.parseNumeric(
+      isReferenceCalculation 
+        ? getGlobalNumericValue("ref_j_63") 
+        : getGlobalNumericValue("j_63")
+    ) || 8760; // ✅ FIX: Mode-aware cross-section dependency
     const occupancyFactor =
       totalHours_j63 > 0 ? occupiedHours_i63 / totalHours_j63 : 0;
     const latentLoadFactor_i122 = coolingState.latentLoadFactor;
-    const summerBoostRawValue = getFieldValue("l_119");
+    const summerBoostRawValue = TargetState.getValue("l_119") || "None"; // ✅ FIX: Section-specific field
     const summerBoostFactor =
       summerBoostRawValue === "None" || summerBoostRawValue === ""
         ? 1.0
         : window.TEUI.parseNumeric(summerBoostRawValue) || 1.0;
-    const coolingSystem_d116 = getFieldValue("d_116");
+    const coolingSystem_d116 = TargetState.getValue("d_116") || "Cooling"; // ✅ FIX: Section-specific field
     const baseConstant = 1.21;
     const sre_d118 =
       window.TEUI.parseNumeric(
         isReferenceCalculation
           ? getSectionValue("d_118", true)
-          : getFieldValue("d_118"),
+          : TargetState.getValue("d_118"),  // ✅ FIX: Target reads Target state
       ) / 100 || 0;
 
     // Logging removed
@@ -2831,10 +3037,10 @@ window.TEUI.SectionModules.sect13 = (function () {
     let finalFreeCoolingLimit = 0;
     let potentialLimit = 0;
     let setbackFactor = 1.0;
-    const ventilationMethod = getFieldValue("g_118") || "Constant";
-    const setbackValueStr = getFieldValue("k_120");
+    const ventilationMethod = TargetState.getValue("g_118") || "Constant"; // ✅ FIX: Section-specific field
+    const setbackValueStr = TargetState.getValue("k_120") || "None"; // ✅ FIX: Section-specific field
     const ventRateM3hr_h120 =
-      window.TEUI.parseNumeric(getFieldValue("h_120")) || 0; // Get h_120 value used in limit calc
+      window.TEUI.parseNumeric(getGlobalNumericValue("h_120")) || 0; // ✅ FIX: Calculated field
 
     // Logging removed
     // console.warn(`[S13 Debug FreeCool Inputs] Vent Method(g118): ${ventilationMethod}, Setback Factor(k120 str): ${setbackValueStr}, Vent Rate(h120): ${ventRateM3hr_h120.toFixed(2)}`);
@@ -2843,7 +3049,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       // REMOVED: Call moved to calculateAll
       // runIntegratedCoolingCalculations();
 
-      potentialLimit = calculateFreeCoolingLimit(); // Calculated Sensible Potential (kWh/yr)
+      potentialLimit = calculateFreeCoolingLimit(isReferenceCalculation); // ✅ FIX: Pass mode parameter
 
       if (setbackValueStr) {
         // const parsedFactor = window.TEUI.parseNumeric(setbackValueStr); // OLD - assumed decimal
@@ -2879,8 +3085,11 @@ window.TEUI.SectionModules.sect13 = (function () {
         setCalculatedValue("h_124", finalFreeCoolingLimit, "number-2dp-comma");
 
         // Calculate D124 (% Free Cooling Capacity)
-        const coolingLoadUnmitigated =
-          window.TEUI.parseNumeric(getFieldValue("d_129")) || 0;
+        const coolingLoadUnmitigated = window.TEUI.parseNumeric(
+          isReferenceCalculation 
+            ? getGlobalNumericValue("ref_d_129") 
+            : getGlobalNumericValue("d_129")
+        ) || 0; // ✅ FIX: Mode-aware cross-section dependency
         let percentFreeCooling = 0;
         if (coolingLoadUnmitigated > 0) {
           percentFreeCooling = finalFreeCoolingLimit / coolingLoadUnmitigated;
@@ -2904,17 +3113,10 @@ window.TEUI.SectionModules.sect13 = (function () {
 
   /**
    * Calculate all values for this section
-   * ✅ INCLUDES S11 PERSISTENCE PATTERN: Prevents Reference value race conditions
    */
   function calculateAll() {
     console.log(
       "[Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...",
-    );
-
-    // 🚨 CAPTURE MODE AT START: Prevent race conditions from mode changes during calculation
-    const modeAtCalculationStart = ModeManager.currentMode;
-    console.log(
-      `[Section13] 🎯 Mode captured at calculation start: ${modeAtCalculationStart}`,
     );
 
     // ✅ DUAL-ENGINE: Always run both engines in parallel
@@ -2927,37 +3129,6 @@ window.TEUI.SectionModules.sect13 = (function () {
       calculateTargetModel(); // Reads TargetState → stores unprefixed
       console.log("[Section13] ✅ Target Model complete");
 
-      // ✅ PHASE 5: S11 PERSISTENCE PATTERN - Re-write Reference results to prevent race conditions
-      // ✅ TIMING FIX: Use captured mode instead of current mode to prevent race conditions
-      if (
-        Object.keys(lastReferenceResults).length > 0 &&
-        window.TEUI?.StateManager
-      ) {
-        const shouldRewrite = modeAtCalculationStart === "reference";
-
-        if (shouldRewrite) {
-          console.log(
-            "[Section13] 🔄 Re-writing Reference results to prevent race conditions...",
-          );
-          Object.entries(lastReferenceResults).forEach(([fieldId, value]) => {
-            if (value !== null && value !== undefined) {
-              window.TEUI.StateManager.setValue(
-                `ref_${fieldId}`,
-                value.toString(),
-                "calculated-persistent",
-              );
-            }
-          });
-          console.log(
-            `[Section13] ✅ Re-wrote ${Object.keys(lastReferenceResults).length} Reference values`,
-          );
-        } else {
-          console.log(
-            `[Section13] ⏭️ Skipping Reference value re-write - triggered in ${modeAtCalculationStart} mode`,
-          );
-        }
-      }
-
       console.log("[Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE");
     } catch (error) {
       console.error("[Section13] ❌ ERROR in calculateAll:", error);
@@ -2966,43 +3137,35 @@ window.TEUI.SectionModules.sect13 = (function () {
 
   /**
    * REFERENCE MODEL ENGINE: Calculate all Column E values using Reference state
-   * ✅ EXPLICIT DATA FLOW: Use unified functions with explicit parameter passing
+   * Stores results with ref_ prefix to keep separate from Target values
+   * SIMPLIFIED: Uses separate functions + helpers pattern like S14/S15
    */
   function calculateReferenceModel() {
     console.log("[Section13] Running Reference Model calculations...");
     try {
-      // Helper function to get Reference values with proper fallback
+      // Helper function to get Reference values with proper fallback (S14/S15 pattern)
       const getRefValue = (fieldId) => {
         const refFieldId = `ref_${fieldId}`;
         return (
           window.TEUI?.StateManager?.getValue(refFieldId) ||
           window.TEUI?.StateManager?.getReferenceValue(fieldId) ||
-          0 // ✅ FIX: Never read Target values in Reference calculations
+          getNumericValue(fieldId)
         );
       };
 
-      // 🚨 DEBUG: Track what system type the Reference model is using
-      const refSystemType = ReferenceState.getValue("d_113");
-      console.log(
-        `[S13 CONTAMINATION DEBUG] calculateReferenceModel: Using system type = ${refSystemType}`,
-      );
-
-      // Get external dependency values for Reference
-      const tedValueRef = window.TEUI.parseNumeric(getRefValue("d_127")) || 0;
-
-      // ✅ EXPLICIT DATA FLOW: Use same unified functions as Target, but with Reference flag
-      const copResults = calculateCOPValues(true);
-      const heatingResults = calculateHeatingSystem(
-        true,
-        copResults,
-        tedValueRef,
-      );
-      const ventilationRatesResults = calculateVentilationRates(true);
-      const ventilationEnergyResults = calculateVentilationEnergy(true);
-      const coolingVentilationResults = calculateCoolingVentilation(true);
-      const freeCoolingResults = { h_124: calculateFreeCooling(true) };
-      const coolingResults = calculateCoolingSystem(true);
-      const mitigatedResults = calculateMitigatedCED(true);
+      // ✅ SIMPLIFIED: Calculate using Reference-specific functions
+      const copResults = calculateReferenceModelCOPValues(getRefValue);
+      const heatingResults = calculateReferenceModelHeatingSystem(getRefValue);
+      const ventilationRatesResults =
+        calculateReferenceModelVentilationRates(getRefValue);
+      const ventilationEnergyResults =
+        calculateReferenceModelVentilationEnergy(getRefValue);
+      const coolingVentilationResults =
+        calculateReferenceModelCoolingVentilation(getRefValue);
+      const freeCoolingResults =
+        calculateReferenceModelFreeCooling(getRefValue);
+      const coolingResults = calculateReferenceModelCoolingSystem(getRefValue);
+      const mitigatedResults = calculateReferenceModelMitigatedCED(getRefValue);
 
       // Store Reference Model results with ref_ prefix for downstream sections
       storeReferenceResults(
@@ -3013,7 +3176,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         ventilationRatesResults,
         ventilationEnergyResults,
         coolingVentilationResults,
-        freeCoolingResults,
+        { h_124: freeCoolingResults }, // freeCooling returns single value, wrap as object
       );
 
       console.log("[Section13] Reference Model calculations complete");
@@ -3027,7 +3190,7 @@ window.TEUI.SectionModules.sect13 = (function () {
 
   /**
    * TARGET MODEL ENGINE: Calculate all Column H values using Application state
-   * ✅ EXPLICIT DATA FLOW: Pass results between calculation steps
+   * SIMPLIFIED: Clean Target calculations without boolean parameters
    */
   function calculateTargetModel() {
     console.log("[Section13] Running Target Model calculations...");
@@ -3035,34 +3198,15 @@ window.TEUI.SectionModules.sect13 = (function () {
       // Run cooling physics *first* to update coolingState centrally
       runIntegratedCoolingCalculations();
 
-      // Get external dependency values
-      const tedValue = window.TEUI.parseNumeric(getFieldValue("d_127")) || 0;
-
-      // ✅ EXPLICIT DATA FLOW: Chain calculations with parameter passing
-      const copResults = calculateCOPValues(false);
-      const heatingResults = calculateHeatingSystem(
-        false,
-        copResults,
-        tedValue,
-      );
-      const ventilationRatesResults = calculateVentilationRates(false);
-      const ventilationEnergyResults = calculateVentilationEnergy(false);
-      const coolingVentilationResults = calculateCoolingVentilation(false);
-      const freeCoolingResults = { h_124: calculateFreeCooling(false) };
-      const coolingResults = calculateCoolingSystem(false);
-      const mitigatedResults = calculateMitigatedCED(false);
-
-      // Update DOM with Target calculation results
-      updateTargetModelDOMValues(
-        copResults,
-        heatingResults,
-        coolingResults,
-        ventilationRatesResults,
-        ventilationEnergyResults,
-        coolingVentilationResults,
-        freeCoolingResults,
-        mitigatedResults,
-      );
+      // ✅ SIMPLIFIED: Run Target calculations using clean functions
+      calculateTargetModelCOPValues();
+      calculateTargetModelHeatingSystem(); // Calls fuel calculations
+      calculateTargetModelVentilationRates();
+      calculateTargetModelVentilationEnergy();
+      calculateTargetModelCoolingVentilation();
+      calculateTargetModelFreeCooling(); // Sets h_124
+      calculateTargetModelCoolingSystem(); // Depends on m_129 which depends on h_124
+      calculateTargetModelMitigatedCED(); // Recalculate m_129 based on updated h_124/d_123
 
       // Update reference indicators after calculations
       updateAllReferenceIndicators();
@@ -3073,138 +3217,7 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /**
-   * ✅ UPDATE DOM: Update DOM elements with Target calculation results
-   */
-  function updateTargetModelDOMValues(
-    copResults,
-    heatingResults,
-    coolingResults,
-    ventilationRatesResults,
-    ventilationEnergyResults,
-    coolingVentilationResults,
-    freeCoolingResults,
-    mitigatedResults,
-  ) {
-    // COP Values
-    if (copResults.h_113 !== undefined)
-      setCalculatedValue("h_113", copResults.h_113, "number-2dp");
-    if (copResults.j_113 !== undefined)
-      setCalculatedValue("j_113", copResults.j_113, "number-1dp");
-    if (copResults.j_114 !== undefined)
-      setCalculatedValue("j_114", copResults.j_114, "number-1dp");
-
-    // Heating System Results
-    if (heatingResults.d_114 !== undefined)
-      setCalculatedValue("d_114", heatingResults.d_114, "number-2dp-comma");
-    if (heatingResults.l_113 !== undefined)
-      setCalculatedValue("l_113", heatingResults.l_113, "number-2dp-comma");
-    if (heatingResults.d_115 !== undefined)
-      setCalculatedValue("d_115", heatingResults.d_115, "number-2dp-comma");
-    if (heatingResults.f_115 !== undefined)
-      setCalculatedValue("f_115", heatingResults.f_115, "number-2dp-comma");
-    if (heatingResults.h_115 !== undefined)
-      setCalculatedValue("h_115", heatingResults.h_115, "number-2dp-comma");
-    if (heatingResults.l_115 !== undefined)
-      setCalculatedValue("l_115", heatingResults.l_115, "number-2dp-comma");
-    if (heatingResults.m_115 !== undefined)
-      setCalculatedValue("m_115", heatingResults.m_115, "percent-0dp");
-    if (heatingResults.f_114 !== undefined)
-      setCalculatedValue("f_114", heatingResults.f_114, "number-2dp-comma");
-
-    // Cooling System Results
-    if (coolingResults.j_116 !== undefined)
-      setCalculatedValue("j_116", coolingResults.j_116, "number-1dp");
-    if (coolingResults.l_116 !== undefined)
-      setCalculatedValue("l_116", coolingResults.l_116, "number-2dp-comma");
-    if (coolingResults.l_114 !== undefined)
-      setCalculatedValue("l_114", coolingResults.l_114, "number-2dp-comma");
-    if (coolingResults.d_117 !== undefined)
-      setCalculatedValue("d_117", coolingResults.d_117, "number-2dp-comma");
-    if (coolingResults.f_117 !== undefined)
-      setCalculatedValue("f_117", coolingResults.f_117, "number-2dp");
-    if (coolingResults.j_117 !== undefined)
-      setCalculatedValue("j_117", coolingResults.j_117, "number-1dp");
-    if (coolingResults.m_116 !== undefined)
-      setCalculatedValue("m_116", coolingResults.m_116, "percent-0dp");
-    if (coolingResults.m_117 !== undefined)
-      setCalculatedValue("m_117", coolingResults.m_117, "percent-0dp");
-
-    // Ventilation Rates Results
-    if (ventilationRatesResults.f_119 !== undefined)
-      setCalculatedValue("f_119", ventilationRatesResults.f_119, "number-2dp");
-    if (ventilationRatesResults.h_119 !== undefined)
-      setCalculatedValue("h_119", ventilationRatesResults.h_119, "number-2dp");
-    if (ventilationRatesResults.d_120 !== undefined)
-      setCalculatedValue(
-        "d_120",
-        ventilationRatesResults.d_120,
-        "number-2dp-comma",
-      );
-    if (ventilationRatesResults.f_120 !== undefined)
-      setCalculatedValue(
-        "f_120",
-        ventilationRatesResults.f_120,
-        "number-2dp-comma",
-      );
-    if (ventilationRatesResults.h_120 !== undefined)
-      setCalculatedValue(
-        "h_120",
-        ventilationRatesResults.h_120,
-        "number-2dp-comma",
-      );
-
-    // Ventilation Energy Results
-    if (ventilationEnergyResults.d_121 !== undefined)
-      setCalculatedValue(
-        "d_121",
-        ventilationEnergyResults.d_121,
-        "number-2dp-comma",
-      );
-    if (ventilationEnergyResults.i_121 !== undefined)
-      setCalculatedValue(
-        "i_121",
-        ventilationEnergyResults.i_121,
-        "number-2dp-comma",
-      );
-    if (ventilationEnergyResults.m_121 !== undefined)
-      setCalculatedValue(
-        "m_121",
-        ventilationEnergyResults.m_121,
-        "number-2dp-comma",
-      );
-
-    // Cooling Ventilation Results
-    if (coolingVentilationResults.i_122 !== undefined)
-      setCalculatedValue(
-        "i_122",
-        coolingVentilationResults.i_122,
-        "percent-0dp",
-      );
-    if (coolingVentilationResults.d_122 !== undefined)
-      setCalculatedValue(
-        "d_122",
-        coolingVentilationResults.d_122,
-        "number-2dp-comma",
-      );
-    if (coolingVentilationResults.d_123 !== undefined)
-      setCalculatedValue(
-        "d_123",
-        coolingVentilationResults.d_123,
-        "number-2dp-comma",
-      );
-
-    // Free Cooling Results
-    if (freeCoolingResults.h_124 !== undefined)
-      setCalculatedValue("h_124", freeCoolingResults.h_124, "number-2dp-comma");
-
-    // Mitigated CED Results
-    if (mitigatedResults.m_129 !== undefined)
-      setCalculatedValue("m_129", mitigatedResults.m_129, "number-2dp-comma");
-  }
-
-  /**
    * Store Reference Model calculation results with ref_ prefix for downstream sections (S14, S15, S04, S01)
-   * ✅ INCLUDES S11 PERSISTENCE PATTERN: Store in module-level cache
    */
   function storeReferenceResults(
     copResults,
@@ -3230,40 +3243,22 @@ window.TEUI.SectionModules.sect13 = (function () {
       ...freeCoolingResults,
     };
 
-    // 🚨 DEBUG: Track what Reference values we're about to store
-    console.log(
-      `[S13 CONTAMINATION DEBUG] storeReferenceResults called during ${ModeManager.currentMode} mode`,
-    );
-    console.log(
-      `[S13 CONTAMINATION DEBUG] Reference heating system: ${ReferenceState.getValue("d_113")}`,
-    );
-    console.log(
-      `[S13 CONTAMINATION DEBUG] Target heating system: ${TargetState.getValue("d_113")}`,
-    );
-    console.log(
-      `[S13 CONTAMINATION DEBUG] Reference h_115 (gas volume): ${allResults.h_115}`,
-    );
-    console.log(
-      `[S13 CONTAMINATION DEBUG] Reference f_115 (oil volume): ${allResults.f_115}`,
-    );
-
-    // ✅ PHASE 5: Store Reference results in module-level cache for persistence pattern
-    lastReferenceResults = { ...allResults };
-
     // Store Reference results with ref_ prefix for downstream consumption
     Object.entries(allResults).forEach(([fieldId, value]) => {
       if (value !== null && value !== undefined) {
-        // 🚨 DEBUG: Track what we're writing to StateManager
-        if (fieldId === "h_115" || fieldId === "f_115") {
-          console.log(
-            `[S13 CONTAMINATION DEBUG] Writing ref_${fieldId} = ${value}`,
-          );
-        }
         window.TEUI.StateManager.setValue(
           `ref_${fieldId}`,
           value.toString(),
           "calculated",
         );
+        // TEMPORARY DEBUG: Log key Reference values being stored
+        if (
+          ["d_114", "d_115", "f_114", "h_115", "f_115", "l_115"].includes(
+            fieldId,
+          )
+        ) {
+          // Store reference value (debug logging removed)
+        }
       }
     });
 
@@ -3280,9 +3275,21 @@ window.TEUI.SectionModules.sect13 = (function () {
    */
   function calculateMitigatedCED(isReferenceCalculation = false) {
     // Use global parser directly
-    const d129 = window.TEUI.parseNumeric(getFieldValue("d_129")) || 0;
-    const h124 = window.TEUI.parseNumeric(getFieldValue("h_124")) || 0;
-    const d123 = window.TEUI.parseNumeric(getFieldValue("d_123")) || 0;
+    const d129 = window.TEUI.parseNumeric(
+      isReferenceCalculation 
+        ? getGlobalNumericValue("ref_d_129") 
+        : getGlobalNumericValue("d_129")
+    ) || 0; // ✅ FIX: Mode-aware cross-section dependency
+    const h124 = window.TEUI.parseNumeric(
+      isReferenceCalculation 
+        ? getGlobalNumericValue("ref_h_124") 
+        : getGlobalNumericValue("h_124")
+    ) || 0; // ✅ FIX: Mode-aware calculated field
+    const d123 = window.TEUI.parseNumeric(
+      isReferenceCalculation 
+        ? getGlobalNumericValue("ref_d_123") 
+        : getGlobalNumericValue("d_123")
+    ) || 0; // ✅ FIX: Mode-aware calculated field
 
     // Logging removed
     // console.warn(`[S13 Debug MitigatedCED Inputs] Unmitigated(d129): ${d129.toFixed(2)}, FreeCooling(h124): ${h124.toFixed(2)}, VentRecovery(d123): ${d123.toFixed(2)}`);
@@ -3409,6 +3416,243 @@ window.TEUI.SectionModules.sect13 = (function () {
   // SIMPLIFIED TARGET MODEL FUNCTIONS (Pattern 2 - Clean Target Functions)
   //==========================================================================
 
+  /**
+   * TARGET MODEL: Calculate heating system values using Target inputs
+   * SIMPLIFIED: Dedicated Target function with DOM updates
+   */
+  function calculateTargetModelHeatingSystem() {
+    // 🔧 CRITICAL FIX: Read fuel type from global StateManager (user changes update this immediately)
+    // Direct StateManager access for Target mode to ensure clean values
+    const systemType = TargetState.getValue("d_113") || "Heatpump"; // ✅ FIX: Read from Target state
+    const tedTarget =
+      window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("d_127")) ||
+      0;
+
+    // ✅ EFFICIENCY FIX: Use correct efficiency type based on system
+    let efficiency, efficiencyType;
+    if (systemType === "Heatpump") {
+      efficiency =
+        window.TEUI.parseNumeric(TargetState.getValue("f_113")) || 3.5;
+      efficiencyType = "HSPF";
+    } else if (systemType === "Electric") {
+      efficiency = 1.0; // 100% efficiency for electric systems
+      efficiencyType = "EFFICIENCY";
+    } else {
+      // Gas and Oil systems use AFUE
+      efficiency =
+        window.TEUI.parseNumeric(TargetState.getValue("j_115")) || 0.9;
+      efficiencyType = "AFUE";
+    }
+
+    console.log(
+      `[S13] TGT HEATING: ${systemType}, ${efficiencyType}=${efficiency}`,
+    );
+
+    let heatingDemand_d114 = 0;
+    let heatingSink_l113 = 0;
+    let isHeatpump = systemType === "Heatpump";
+
+    // Apply dynamic styling for Target calculations
+    setFieldDisabled("f_113", !isHeatpump);
+    setFieldDisabled("h_113", !isHeatpump);
+    setFieldDisabled("j_113", !isHeatpump);
+    setFieldDisabled("l_113", !isHeatpump);
+
+    if (isHeatpump) {
+      const local_copheat = efficiency > 0 ? efficiency / 3.412 : 1;
+      const local_copcool = Math.max(1, local_copheat - 1);
+      const local_ceer = 3.412 * local_copcool;
+
+      // Update DOM for Target calculations
+      setCalculatedValue("h_113", local_copheat, "number-2dp");
+      setCalculatedValue("j_113", local_copcool, "number-1dp");
+      setCalculatedValue("j_114", local_ceer, "number-1dp");
+
+      if (local_copheat > 0) {
+        heatingDemand_d114 = tedTarget / local_copheat;
+        heatingSink_l113 = heatingDemand_d114 * (local_copheat - 1);
+      } else {
+        heatingDemand_d114 = tedTarget;
+        heatingSink_l113 = 0;
+      }
+    } else {
+      heatingDemand_d114 = tedTarget;
+      heatingSink_l113 = 0;
+
+      // Force COP values for non-heatpump systems
+      setCalculatedValue("h_113", 1.0, "number-2dp");
+      setCalculatedValue("j_113", 0.0, "number-1dp");
+      setCalculatedValue("j_114", 0.0, "number-1dp");
+    }
+
+    // Update DOM for Target calculations
+    setCalculatedValue("d_114", heatingDemand_d114, "number-2dp-comma");
+    setCalculatedValue("l_113", heatingSink_l113, "number-2dp-comma");
+
+    // Calculate fuel impact for Target
+    calculateTargetModelHeatingFuelImpact(
+      systemType,
+      tedTarget,
+      heatingDemand_d114,
+    );
+
+    // Continue with cooling calculations
+    calculateTargetModelCoolingSystem();
+  }
+
+  /**
+   * TARGET MODEL: Calculate heating fuel impact with DOM updates
+   */
+  function calculateTargetModelHeatingFuelImpact(
+    systemType,
+    tedTarget,
+    heatingDemand_d114,
+  ) {
+    const afue =
+      window.TEUI.parseNumeric(TargetState.getValue("j_115")) || 1; // ✅ FIX: Read from Target state
+
+    console.log(`[S13] TGT FUEL: ${systemType} system`);
+
+    let fuelImpact = 0,
+      oilLitres = 0,
+      gasM3 = 0,
+      exhaust = 0;
+
+    if ((systemType === "Gas" || systemType === "Oil") && afue > 0) {
+      fuelImpact = tedTarget / afue;
+      exhaust = fuelImpact - heatingDemand_d114;
+
+      if (systemType === "Gas") {
+        gasM3 = fuelImpact / 10.36;
+      } else {
+        oilLitres = fuelImpact / 10.2;
+      }
+    }
+
+    // Update DOM for Target calculations
+    setCalculatedValue("d_115", fuelImpact, "number-2dp-comma");
+    setCalculatedValue("f_115", oilLitres, "number-2dp-comma");
+    setCalculatedValue("h_115", gasM3, "number-2dp-comma");
+    setCalculatedValue("l_115", exhaust, "number-2dp-comma");
+
+    // ✅ S13→S04→S01 dependency flow: Values stored via setCalculatedValue trigger StateManager listeners
+    console.log(
+      `[S13] FUEL STORED: ${systemType} → Gas=${gasM3}m³, Oil=${oilLitres}L`,
+    );
+    const m115_percent = afue > 0 ? 1 / afue : 0;
+    setCalculatedValue("m_115", m115_percent, "percent-0dp");
+
+    // Calculate space heating emissions
+    calculateSpaceHeatingEmissions(false); // Target calculation
+  }
+
+  /**
+   * REFERENCE MODEL: Calculate COP values using Reference inputs
+   */
+  function calculateReferenceModelCOPValues(getRefValue) {
+    const hspf =
+      window.TEUI.parseNumeric(ReferenceState.getValue("f_113")) || 0;
+    const systemType = ReferenceState.getValue("d_113");
+
+    let copheat = 1;
+    if (systemType === "Heatpump" && hspf > 0) {
+      copheat = hspf / 3.412;
+    }
+    let copcool = Math.max(1, copheat - 1);
+    const ceer = 3.412 * copcool;
+
+    return {
+      h_113: copheat,
+      j_113: copcool,
+      j_114: ceer,
+    };
+  }
+
+  /**
+   * REFERENCE MODEL: Calculate ventilation rates using Reference inputs
+   */
+  function calculateReferenceModelVentilationRates(getRefValue) {
+    const ratePerPerson =
+      window.TEUI.parseNumeric(ReferenceState.getValue("d_119")) || 0;
+    const cfm = ratePerPerson * 2.11888;
+    const m3hr = ratePerPerson * 3.6;
+
+    return {
+      f_119: cfm,
+      h_119: m3hr,
+      d_120: 3333, // Simplified - would need full calculation
+      f_120: cfm,
+      h_120: 12000, // Simplified
+    };
+  }
+
+  /**
+   * REFERENCE MODEL: Calculate ventilation energy using Reference inputs
+   */
+  function calculateReferenceModelVentilationEnergy(getRefValue) {
+    const ventRate = 3333; // Simplified
+    const hdd = getRefValue("d_20");
+    const efficiency =
+      (window.TEUI.parseNumeric(ReferenceState.getValue("d_118")) || 0) / 100;
+
+    const heatingVentEnergy = (1.21 * ventRate * hdd * 24) / 1000;
+    const recoveredEnergy = heatingVentEnergy * efficiency;
+    const netHeatLoss = heatingVentEnergy - recoveredEnergy;
+
+    return {
+      d_121: heatingVentEnergy,
+      i_121: recoveredEnergy,
+      m_121: netHeatLoss,
+    };
+  }
+
+  /**
+   * REFERENCE MODEL: Calculate mitigated CED using Reference inputs
+   */
+  function calculateReferenceModelMitigatedCED(getRefValue) {
+    const d129 = getRefValue("d_129"); // Get from upstream calculations
+    const h124 = 37000; // Simplified
+    const d123 = 27000; // Simplified
+
+    const m129 = Math.max(0, d129 - h124 - d123);
+
+    return {
+      m_129: m129,
+    };
+  }
+
+  // TEMPORARY: Keep these for now with boolean pattern
+  function calculateTargetModelCOPValues() {
+    calculateCOPValues(false);
+  }
+  function calculateTargetModelVentilationRates() {
+    calculateVentilationRates(false);
+  }
+  function calculateTargetModelVentilationEnergy() {
+    calculateVentilationEnergy(false);
+  }
+  function calculateReferenceModelCoolingVentilation(getRefValue) {
+    return calculateCoolingVentilation(true);
+  }
+  function calculateTargetModelCoolingVentilation() {
+    calculateCoolingVentilation(false);
+  }
+  function calculateReferenceModelFreeCooling(getRefValue) {
+    return calculateFreeCooling(true);
+  }
+  function calculateTargetModelFreeCooling() {
+    calculateFreeCooling(false);
+  }
+  function calculateReferenceModelCoolingSystem(getRefValue) {
+    return calculateCoolingSystem(true);
+  }
+  function calculateTargetModelCoolingSystem() {
+    calculateCoolingSystem(false);
+  }
+  function calculateTargetModelMitigatedCED() {
+    calculateMitigatedCED(false);
+  }
+
   //==========================================================================
   // PUBLIC API
   //==========================================================================
@@ -3423,6 +3667,9 @@ window.TEUI.SectionModules.sect13 = (function () {
     initializeEventHandlers: initializeEventHandlers,
     onSectionRendered: onSectionRendered,
 
+    // ✅ CRITICAL FIX: Export ModeManager for FieldManager dual-state routing
+    ModeManager: ModeManager,
+
     // Section-specific utility functions - OPTIONAL
     calculateAll: calculateAll,
     calculateCoolingSystem: calculateCoolingSystem,
@@ -3433,7 +3680,6 @@ window.TEUI.SectionModules.sect13 = (function () {
     // *** END ADDED ***
 
     // Removed getNumericValue from public API
-    ModeManager: ModeManager, // ✅ CRITICAL FIX: Enable FieldManager integration
   };
 })();
 
