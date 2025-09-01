@@ -1268,6 +1268,63 @@ window.TEUI.SectionModules.sect03 = (function () {
       return;
     }
 
+    // Field mapping with meaningful names and units
+    const fieldMapping = {
+      // Basic Information
+      'Location': { name: 'Location', unit: '', category: 'Basic' },
+      'Elev ASL (m)': { name: 'Elevation Above Sea Level', unit: 'm', category: 'Basic' },
+      
+      // Temperature Data
+      'January_2_5': { name: 'January Design Temperature (2.5%)', unit: '°C', category: 'Temperature' },
+      'January_1': { name: 'January Design Temperature (1%)', unit: '°C', category: 'Temperature' },
+      'July_2_5_Tdb': { name: 'July Dry Bulb Temperature (2.5%)', unit: '°C', category: 'Temperature' },
+      'July_2_5_Twb': { name: 'July Wet Bulb Temperature (2.5%)', unit: '°C', category: 'Temperature' },
+      'Future_July_2_5_Tdb': { name: 'Future July Dry Bulb (2021-2050)', unit: '°C', category: 'Temperature' },
+      'Future_July_2_5_Twb': { name: 'Future July Wet Bulb (2021-2050)', unit: '°C', category: 'Temperature' },
+      
+      // Degree Days
+      'HDD18': { name: 'Heating Degree Days (Base 18°C)', unit: '°C·days', category: 'Degree Days' },
+      'HDD15': { name: 'Heating Degree Days (Base 15°C)', unit: '°C·days', category: 'Degree Days' },
+      'HDD18_2021_2050': { name: 'Future HDD (2021-2050)', unit: '°C·days', category: 'Degree Days' },
+      'CDD24': { name: 'Cooling Degree Days (Base 24°C)', unit: '°C·days', category: 'Degree Days' },
+      'CDD24_2021_2050': { name: 'Future CDD (2021-2050)', unit: '°C·days', category: 'Degree Days' },
+      
+      // Extreme Temperature
+      'Over_30Tdb_2021_2050': { name: 'Days Over 30°C (2021-2050)', unit: 'days', category: 'Extreme' },
+      'Extreme_Hot_Tdb_1991_2020': { name: 'Extreme Maximum Temperature', unit: '°C', category: 'Extreme' },
+      
+      // Precipitation
+      'Rain_15_min_mm': { name: '15-Minute Rainfall', unit: 'mm', category: 'Precipitation' },
+      'Rain_15_min_mm_New': { name: '15-Minute Rainfall (Updated)', unit: 'mm', category: 'Precipitation' },
+      'Rain_1_day_1/50mm': { name: 'One Day Rainfall (1-in-50 year)', unit: 'mm', category: 'Precipitation' },
+      'Rain_1_day_1/50mm_New': { name: 'One Day Rainfall (Updated)', unit: 'mm', category: 'Precipitation' },
+      'Rain_Annual_mm': { name: 'Annual Rainfall', unit: 'mm', category: 'Precipitation' },
+      'Rain_Annual_mm_New': { name: 'Annual Rainfall (Updated)', unit: 'mm', category: 'Precipitation' },
+      'Moisture_Index_New': { name: 'Moisture Index', unit: '', category: 'Precipitation' },
+      'Precip_Annual_mm': { name: 'Annual Total Precipitation', unit: 'mm', category: 'Precipitation' },
+      'Precip_Annual_mm_New': { name: 'Annual Precipitation (Updated)', unit: 'mm', category: 'Precipitation' },
+      
+      // Wind & Snow
+      'Driving_Rain_Wind_Pa_1/5': { name: 'Driving Rain Wind Pressure (1-in-5)', unit: 'Pa', category: 'Wind' },
+      'Driving_Rain_Wind_Pa_1/5_New': { name: 'Driving Rain Wind (Updated)', unit: 'Pa', category: 'Wind' },
+      'Snow_kPa_1/50_Ss': { name: 'Snow Load (1-in-50) Ss', unit: 'kPa', category: 'Snow' },
+      'Snow_kPa_1/50_Sr': { name: 'Snow Load (1-in-50) Sr', unit: 'kPa', category: 'Snow' },
+      'Snow_kPa_1/1000_Ss': { name: 'Snow Load (1-in-1000) Ss', unit: 'kPa', category: 'Snow' },
+      'Snow_kPa_1/1000_Sr': { name: 'Snow Load (1-in-1000) Sr', unit: 'kPa', category: 'Snow' },
+      'Wind_Hourly_kPa_1/10': { name: 'Hourly Wind Pressure (1-in-10)', unit: 'kPa', category: 'Wind' },
+      'Wind_Hourly_kPa_1/10_New': { name: 'Hourly Wind (Updated)', unit: 'kPa', category: 'Wind' },
+      'Wind_Hourly_kPa_1/50': { name: 'Hourly Wind Pressure (1-in-50)', unit: 'kPa', category: 'Wind' },
+      'Wind_Hourly_kPa_1/50_New': { name: 'Hourly Wind (1-in-50 Updated)', unit: 'kPa', category: 'Wind' },
+      'Wind_Hourly_kPa_1/500_New': { name: 'Hourly Wind (1-in-500)', unit: 'kPa', category: 'Wind' },
+      
+      // Seasonal Averages
+      'Winter_Tdb_Avg': { name: 'Winter Average Temperature', unit: '°C', category: 'Seasonal' },
+      'Winter_Windspeed_Avg': { name: 'Winter Average Wind Speed', unit: 'm/s', category: 'Seasonal' },
+      'Summer_Tdb_Avg': { name: 'Summer Average Temperature', unit: '°C', category: 'Seasonal' },
+      'Summer_Twb_Avg': { name: 'Summer Average Wet Bulb', unit: '°C', category: 'Seasonal' },
+      'Summer_RH_1500_LST': { name: 'Summer RH at 15:00', unit: '%', category: 'Seasonal' }
+    };
+
     // Set modal title and content
     const modalTitle = document.getElementById("weatherDataModalLabel");
     const modalContent = document.getElementById("weatherDataContent");
@@ -1277,14 +1334,41 @@ window.TEUI.SectionModules.sect03 = (function () {
     }
 
     if (modalContent) {
-      // Format the climate data nicely
-      let formattedData = "";
+      // Group data by category
+      const categorizedData = {};
       Object.entries(cityData).forEach(([key, value]) => {
-        formattedData += `<div style="display: flex; padding: 8px 0; border-bottom: 1px solid #eee;">
-          <div style="flex: 1; font-weight: 500;">${key}</div>
-          <div style="flex: 1; text-align: right;">${value}</div>
-        </div>`;
+        const mapping = fieldMapping[key];
+        if (mapping) {
+          if (!categorizedData[mapping.category]) {
+            categorizedData[mapping.category] = [];
+          }
+          categorizedData[mapping.category].push({ key, value, mapping });
+        }
       });
+
+      // Format the climate data with categories
+      let formattedData = "";
+      const categoryOrder = ['Basic', 'Temperature', 'Degree Days', 'Extreme', 'Precipitation', 'Wind', 'Snow', 'Seasonal'];
+      
+      categoryOrder.forEach(category => {
+        if (categorizedData[category] && categorizedData[category].length > 0) {
+          formattedData += `<div style="margin-top: 16px; margin-bottom: 8px; font-weight: bold; color: #0066cc; border-bottom: 2px solid #0066cc;">${category}</div>`;
+          
+          categorizedData[category].forEach(({ key, value, mapping }) => {
+            // Skip null values or 666 markers
+            if (value === null || value === 666) {
+              return;
+            }
+            
+            const displayValue = mapping.unit ? `${value} ${mapping.unit}` : value;
+            formattedData += `<div style="display: flex; padding: 6px 0; border-bottom: 1px solid #f0f0f0;">
+              <div style="flex: 1.5; font-weight: 400; color: #333;">${mapping.name}</div>
+              <div style="flex: 1; text-align: right; color: #666;">${displayValue}</div>
+            </div>`;
+          });
+        }
+      });
+      
       modalContent.innerHTML = formattedData;
     }
 
