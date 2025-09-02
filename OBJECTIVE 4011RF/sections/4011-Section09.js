@@ -2354,16 +2354,32 @@ window.TEUI.SectionModules.sect09 = (function () {
     // 1. Initialize Pattern A dual-state system
     ModeManager.initialize();
 
-    // 2. Inject header controls
+    // 2. ✅ CRITICAL FIX: Immediately publish essential Reference values for downstream sections
+    // This prevents S07 from getting "ref_d_63 missing" errors during initialization
+    if (window.TEUI?.StateManager?.setValue) {
+      window.TEUI.StateManager.setValue(
+        "ref_d_63",
+        ReferenceState.getValue("d_63") || "126",
+        "default"
+      );
+      window.TEUI.StateManager.setValue(
+        "ref_d_64", 
+        ReferenceState.getValue("d_64") || "Normal",
+        "default"
+      );
+      console.log(`[S09] 🔗 Published initial ref_d_63=${ReferenceState.getValue("d_63")} for S07`);
+    }
+
+    // 3. Inject header controls
     injectHeaderControls();
 
-    // 3. Initialize event handlers
+    // 4. Initialize event handlers
     initializeEventHandlers();
 
-    // 4. Sync UI to current state
+    // 5. Sync UI to current state
     ModeManager.refreshUI();
 
-    // 5. ✅ SURGICAL FIX: Calculate and publish initial Reference values
+    // 6. ✅ SURGICAL FIX: Calculate and publish initial Reference values
     calculateAll();
     ModeManager.updateCalculatedDisplayValues();
 

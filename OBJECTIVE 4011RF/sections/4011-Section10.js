@@ -166,15 +166,29 @@ window.TEUI.SectionModules.sect10 = (function () {
       return this.getCurrentState().getValue(fieldId);
     },
     setValue: function (fieldId, value, source = "user") {
+      // 🔍 ENHANCED DEBUG: Track ModeManager.setValue calls
+      if (["d_73", "d_74", "d_75", "d_76", "d_77", "d_78", "d_80"].includes(fieldId)) {
+        console.log(`[S10 MODEMANAGER DEBUG] setValue: ${fieldId}=${value} in ${this.currentMode} mode, source=${source}`);
+      }
+      
       this.getCurrentState().setValue(fieldId, value, source);
 
       // BRIDGE: Sync changes to global StateManager for downstream sections
       if (this.currentMode === "target") {
         window.TEUI.StateManager.setValue(fieldId, value, source);
+        
+        // 🔍 ENHANCED DEBUG: Track Target StateManager writes
+        if (["d_73", "d_74", "d_75", "d_76", "d_77", "d_78", "d_80"].includes(fieldId)) {
+          console.log(`[S10 MODEMANAGER DEBUG] Target StateManager write: ${fieldId}=${value}`);
+        }
       } else if (this.currentMode === "reference") {
         // 🔧 FIX: Bridge Reference values with ref_ prefix for downstream consumption
         window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, source);
-        // console.log(`[S10] 🔗 Published ref_${fieldId}=${value} to StateManager for S15`);
+        
+        // 🔍 ENHANCED DEBUG: Track Reference StateManager writes
+        if (["d_73", "d_74", "d_75", "d_76", "d_77", "d_78", "d_80"].includes(fieldId)) {
+          console.log(`[S10 MODEMANAGER DEBUG] Reference StateManager write: ref_${fieldId}=${value}`);
+        }
       }
     },
     refreshUI: function () {
@@ -354,39 +368,46 @@ window.TEUI.SectionModules.sect10 = (function () {
   }
 
   /**
-   * Sets calculated value in the correct state object (Target or Reference).
-   * This function NO LONGER touches the DOM.
+   * Sets calculated value using S02's proven mode-aware pattern.
+   * ✅ ELIMINATES STATE MIXING: Uses current UI mode to determine storage destination.
    */
-  function setCalculatedValue(fieldId, rawValue, isReferenceCalculation = false) {
-      const valueToStore = (rawValue !== null && rawValue !== undefined) ? String(rawValue) : "0";
-      
-      const state = isReferenceCalculation ? ReferenceState : TargetState;
-      const stateType = isReferenceCalculation ? "Reference" : "Target";
-      
-      // ✅ MODE-AWARE DOM ISOLATION: Only update state if calculation matches current UI mode
-      const shouldUpdateState = (isReferenceCalculation && ModeManager.currentMode === "reference") ||
-                               (!isReferenceCalculation && ModeManager.currentMode === "target");
-      
-      // 🔍 DEBUG: Track state writes for key fields
-      if (["i_79", "k_79", "i_80"].includes(fieldId)) {
-        console.log(`[S10 DEBUG] setCalculatedValue: ${fieldId}=${valueToStore} → ${stateType}State (isRef=${isReferenceCalculation}) shouldUpdate=${shouldUpdateState}`);
+  function setFieldValue(fieldId, value, fieldType = "calculated") {
+    const valueToStore = (value !== null && value !== undefined) ? String(value) : "0";
+    
+    // 🔍 ENHANCED DEBUG: Track which input types cause contamination
+    if (["d_73", "d_74", "d_75", "d_76", "d_77", "d_78"].includes(fieldId)) {
+      console.log(`[S10 AREA DEBUG] setFieldValue: ${fieldId}=${valueToStore} in ${ModeManager.currentMode} mode`);
+    }
+    if (fieldId === "d_80") {
+      console.log(`[S10 DROPDOWN DEBUG] setFieldValue: ${fieldId}=${valueToStore} in ${ModeManager.currentMode} mode`);
+    }
+    
+    // ✅ S02 PATTERN: Use current UI mode to determine which state to update
+    const currentState = ModeManager.currentMode === "target" ? TargetState : ReferenceState;
+    currentState.setValue(fieldId, valueToStore, fieldType);
+
+    // ✅ S02 PATTERN: Mode-aware StateManager publication
+    if (ModeManager.currentMode === "target") {
+      // Target mode: Store unprefixed for downstream consumption
+      if (window.TEUI?.StateManager) {
+        window.TEUI.StateManager.setValue(fieldId, valueToStore, fieldType);
+        
+        // 🔍 ENHANCED DEBUG: Track StateManager publications
+        if (["d_73", "d_74", "d_75", "d_76", "d_77", "d_78", "d_80"].includes(fieldId)) {
+          console.log(`[S10 PUBLICATION DEBUG] Target published: ${fieldId}=${valueToStore}`);
+        }
       }
-      
-      // Always update the internal state object (for calculations)
-      state.setValue(fieldId, valueToStore);
-  
-      // ✅ CRITICAL FIX: Only publish to StateManager if calculation matches UI mode
-      if (window.TEUI?.StateManager && shouldUpdateState) {
-          const key = isReferenceCalculation ? `ref_${fieldId}` : fieldId;
-          window.TEUI.StateManager.setValue(key, valueToStore, "calculated");
-          
-          // 🔍 DEBUG: Track StateManager writes for key fields
-          if (["i_79", "k_79", "i_80"].includes(fieldId)) {
-            console.log(`[S10 DEBUG] ✅ PUBLISHED: ${key}=${valueToStore} (${stateType} calc in ${ModeManager.currentMode} mode)`);
-          }
-      } else if (["i_79", "k_79", "i_80"].includes(fieldId)) {
-        console.log(`[S10 DEBUG] ❌ BLOCKED: ${fieldId} (${stateType} calc in ${ModeManager.currentMode} mode - mode mismatch)`);
+    } else {
+      // Reference mode: Store with ref_ prefix for downstream consumption
+      if (window.TEUI?.StateManager) {
+        window.TEUI.StateManager.setValue(`ref_${fieldId}`, valueToStore, fieldType);
+        
+        // 🔍 ENHANCED DEBUG: Track StateManager publications
+        if (["d_73", "d_74", "d_75", "d_76", "d_77", "d_78", "d_80"].includes(fieldId)) {
+          console.log(`[S10 PUBLICATION DEBUG] Reference published: ref_${fieldId}=${valueToStore}`);
+        }
       }
+    }
   }
 
   /**
@@ -485,11 +506,17 @@ window.TEUI.SectionModules.sect10 = (function () {
     }
     fieldElement.textContent = displayValue; // Update DOM display
 
+    // 🔍 ENHANCED DEBUG: Track area input event path
+    if (["d_73", "d_74", "d_75", "d_76", "d_77", "d_78"].includes(currentFieldId)) {
+      console.log(`[S10 AREA EVENT] handleFieldBlur: ${currentFieldId}=${rawValueToStore} in ${ModeManager.currentMode} mode`);
+    }
+
     // ✅ DUAL-STATE: Store value using the ModeManager facade.
     ModeManager.setValue(currentFieldId, rawValueToStore, "user-modified");
 
     // Trigger recalculation using the standardized calculateAll function
     if (typeof calculateAll === "function") {
+      console.log(`[S10 CALC TRIGGER] calculateAll() triggered by ${currentFieldId} in ${ModeManager.currentMode} mode`);
       calculateAll();
       // ✅ CRITICAL FIX: Update UI after calculations (like dropdown handler)
       ModeManager.updateCalculatedDisplayValues();
@@ -1647,25 +1674,30 @@ window.TEUI.SectionModules.sect10 = (function () {
 
   /**
    * TARGET MODEL ENGINE: Calculate all values using Application state
-   * This is the existing calculation logic, refactored
+   * ✅ S02 PATTERN: Temporarily switch mode for consistent storage routing
    */
   function calculateTargetModel() {
+    const originalMode = ModeManager.currentMode;
+    ModeManager.currentMode = "target"; // ✅ Temporarily set mode
+    
     try {
       // Calculate individual orientation rows
       orientationConfig.forEach((rowId) => {
-        calculateOrientationGains(rowId.toString(), false); // false = Target calculation
+        calculateOrientationGains(rowId.toString());
       });
 
       // Calculate subtotals
-      calculateSubtotals(false); // false = Target calculation
+      calculateSubtotals();
 
       // Calculate utilization factors
-      calculateUtilizationFactors(false); // false = Target calculation
+      calculateUtilizationFactors();
 
       // Update reference indicators for all rows
       updateAllReferenceIndicators();
     } catch (_error) {
-      // Error in Target Model calculations was previously logged here
+      console.error("S10: Error in Target Model calculations:", _error);
+    } finally {
+      ModeManager.currentMode = originalMode; // ✅ Restore original mode
     }
 
     // Target Model calculations completed
@@ -1673,9 +1705,12 @@ window.TEUI.SectionModules.sect10 = (function () {
 
   /**
    * REFERENCE MODEL ENGINE: Calculate all values using Reference state
-   * Parallel calculation engine for Reference model
+   * ✅ S02 PATTERN: Temporarily switch mode for consistent storage routing
    */
   function calculateReferenceModel() {
+    const originalMode = ModeManager.currentMode;
+    ModeManager.currentMode = "reference"; // ✅ Temporarily set mode
+    
     try {
       // Calculate individual orientation rows with Reference inputs
       orientationConfig.forEach((rowId) => {
@@ -1695,6 +1730,8 @@ window.TEUI.SectionModules.sect10 = (function () {
       updateAllReferenceIndicators();
     } catch (_error) {
       console.error("S10: Error in Reference Model calculations:", _error);
+    } finally {
+      ModeManager.currentMode = originalMode; // ✅ Restore original mode
     }
 
     // Reference Model calculations completed
@@ -1750,10 +1787,10 @@ window.TEUI.SectionModules.sect10 = (function () {
         getGlobalNumericValue("ref_l_12") * (coolingGains - heatingGains);
 
       // Store Reference results in StateManager with ref_ prefix
-      setCalculatedValue(`m_${rowId}`, gainFactor, true);
-      setCalculatedValue(`i_${rowId}`, heatingGains, true);
-      setCalculatedValue(`k_${rowId}`, coolingGains, true);
-      setCalculatedValue(`p_${rowId}`, cost, true);
+      setFieldValue(`m_${rowId}`, gainFactor);
+      setFieldValue(`i_${rowId}`, heatingGains);
+      setFieldValue(`k_${rowId}`, coolingGains);
+      setFieldValue(`p_${rowId}`, cost);
 
       // console.log(`[S10REF] Row${rowId}: Area=${area}, Climate=${climateZone}, GainFactor=${gainFactor}, Heat=${heatingGains.toFixed(2)}, Cool=${coolingGains.toFixed(2)}`);
     } catch (_error) {
@@ -1762,10 +1799,10 @@ window.TEUI.SectionModules.sect10 = (function () {
         _error,
       );
       // Set error values
-      setCalculatedValue(`m_${rowId}`, 0, true);
-      setCalculatedValue(`i_${rowId}`, 0, true);
-      setCalculatedValue(`k_${rowId}`, 0, true);
-      setCalculatedValue(`p_${rowId}`, 0, true);
+      setFieldValue(`m_${rowId}`, 0);
+      setFieldValue(`i_${rowId}`, 0);
+      setFieldValue(`k_${rowId}`, 0);
+      setFieldValue(`p_${rowId}`, 0);
     }
   }
 
@@ -1817,10 +1854,10 @@ window.TEUI.SectionModules.sect10 = (function () {
       ].reduce((sum, val) => sum + val, 0);
 
       // Store Reference subtotals in StateManager
-      setCalculatedValue("i_79", heatingGains, true);
-      setCalculatedValue("k_79", coolingGains, true);
-      setCalculatedValue("j_79", heatingGains > 0 ? "1" : "0", true);
-      setCalculatedValue("l_79", coolingGains > 0 ? "1" : "0", true);
+      setFieldValue("i_79", heatingGains);
+      setFieldValue("k_79", coolingGains);
+      setFieldValue("j_79", heatingGains > 0 ? "1" : "0");
+      setFieldValue("l_79", coolingGains > 0 ? "1" : "0");
 
       // console.log(`[S10REF] Subtotals: Heat=${heatingGains.toFixed(2)}, Cool=${coolingGains.toFixed(2)}`);
     } catch (_error) {
@@ -1846,13 +1883,13 @@ window.TEUI.SectionModules.sect10 = (function () {
       const utilizationE82 = 50.0; // Default or specific Reference logic
 
       // Store Reference utilization factors in StateManager
-      setCalculatedValue("e_80", utilizationE80, true);
-      setCalculatedValue("e_81", utilizationE81, true);
+      setFieldValue("e_80", utilizationE80);
+      setFieldValue("e_81", utilizationE81);
 
       // ✅ CRITICAL: Publish ref_i_80 for S15 (same value as ref_e_80 for Excel compliance)
-      setCalculatedValue("i_80", utilizationE80, true);
+      setFieldValue("i_80", utilizationE80);
       // console.log(`[S10] 🔗 Published ref_i_80=${utilizationE80} for S15 (Reference utilization)`);
-      setCalculatedValue("e_82", utilizationE82, true);
+      setFieldValue("e_82", utilizationE82);
 
       // console.log(`[S10REF] Utilization: E80=${utilizationE80.toFixed(2)} (ref_i_71=${internalGains} + ref_i_79=${subtotalHeating}), E81=${utilizationE81.toFixed(2)}, E82=${utilizationE82.toFixed(2)}`);
     } catch (_error) {
@@ -1896,7 +1933,7 @@ window.TEUI.SectionModules.sect10 = (function () {
       const gainFactor = calculateGainFactor(orientation, climateZone);
 
       // Always update the gain factor in the DOM (mode-aware via setCalculatedValue)
-      setCalculatedValue(`m_${rowId}`, gainFactor);
+      setFieldValue(`m_${rowId}`, gainFactor);
 
       // SHGC Normalization Factor
       const shgcNormalizationFactor = shgc / 0.5;
@@ -1925,16 +1962,16 @@ window.TEUI.SectionModules.sect10 = (function () {
       const cost = costPerUnit * (coolingGains - heatingGains);
 
       // Set state using ModeManager before updating DOM via setCalculatedValue
-      setCalculatedValue(`i_${rowId}`, heatingGains);
-      setCalculatedValue(`k_${rowId}`, coolingGains);
-      setCalculatedValue(`p_${rowId}`, cost);
+      setFieldValue(`i_${rowId}`, heatingGains);
+      setFieldValue(`k_${rowId}`, coolingGains);
+      setFieldValue(`p_${rowId}`, cost);
 
       // ✅ FIX: Remove duplicate DOM calls - state already set via ModeManager above
     } catch (_error) {
       // Set error values
-      setCalculatedValue(`i_${rowId}`, 0);
-      setCalculatedValue(`k_${rowId}`, 0);
-      setCalculatedValue(`p_${rowId}`, 0);
+      setFieldValue(`i_${rowId}`, 0);
+      setFieldValue(`k_${rowId}`, 0);
+      setFieldValue(`p_${rowId}`, 0);
     }
   }
 
@@ -2039,8 +2076,8 @@ window.TEUI.SectionModules.sect10 = (function () {
         if (lElement) lElement.classList.add("text-left-indicator");
       }
     } catch (_error) {
-      setCalculatedValue("i_79", 0);
-      setCalculatedValue("k_79", 0);
+      setFieldValue("i_79", 0);
+      setFieldValue("k_79", 0);
     }
   }
 
@@ -2062,8 +2099,8 @@ window.TEUI.SectionModules.sect10 = (function () {
       const totalGains = solarGains + internalGains;
 
       // ✅ FIX: setCalculatedValue only for state, not formatting
-      setCalculatedValue("e_80", totalGains);
-      setCalculatedValue("e_81", totalGains);
+      setFieldValue("e_80", totalGains);
+      setFieldValue("e_81", totalGains);
 
       //=====================================================================
       // PART 1: Calculate utilization factor based on selected method in row 80
@@ -2110,8 +2147,8 @@ window.TEUI.SectionModules.sect10 = (function () {
       // console.log(`[S10] 🔗 Final i_80 calc: ${usableGains} = totalGains(${totalGains}) × utilizationFactor(${utilizationFactor}) [mode=${ModeManager.currentMode}]`);
 
       // Set state via ModeManager
-      setCalculatedValue("g_80", utilizationFactor);
-      setCalculatedValue("i_80", usableGains);
+      setFieldValue("g_80", utilizationFactor);
+      setFieldValue("i_80", usableGains);
 
       //=====================================================================
       // PART 2: Calculate PHPP method as reference in row 81 (always)
@@ -2145,24 +2182,24 @@ window.TEUI.SectionModules.sect10 = (function () {
       const phReferenceGains = totalGains * phUtilizationFactor;
 
       // ✅ FIX: setCalculatedValue only for state, not formatting
-      setCalculatedValue("g_81", phUtilizationFactor);
-      setCalculatedValue("i_81", phReferenceGains);
+      setFieldValue("g_81", phUtilizationFactor);
+      setFieldValue("i_81", phReferenceGains);
 
       //=====================================================================
       // PART 3: Calculate unusable gains based on selected method (row 80)
       //=====================================================================
       const unusedGains = totalGains - usableGains;
       // ✅ FIX: setCalculatedValue only for state, not formatting  
-      setCalculatedValue("i_82", unusedGains);
+      setFieldValue("i_82", unusedGains);
     } catch (_error) {
       // Set error values or defaults
-      setCalculatedValue("e_80", 0);
-      setCalculatedValue("g_80", 0);
-      setCalculatedValue("i_80", 0);
-      setCalculatedValue("e_81", 0);
-      setCalculatedValue("g_81", 0);
-      setCalculatedValue("i_81", 0);
-      setCalculatedValue("i_82", 0);
+      setFieldValue("e_80", 0);
+      setFieldValue("g_80", 0);
+      setFieldValue("i_80", 0);
+      setFieldValue("e_81", 0);
+      setFieldValue("g_81", 0);
+      setFieldValue("i_81", 0);
+      setFieldValue("i_82", 0);
     }
   }
 
@@ -2250,7 +2287,17 @@ window.TEUI.SectionModules.sect10 = (function () {
         const fieldId = this.getAttribute("data-field-id");
         if (!fieldId) return;
 
+        // 🔍 ENHANCED DEBUG: Track dropdown event path
+        if (fieldId === "d_80") {
+          console.log(`[S10 DROPDOWN EVENT] dropdown change: ${fieldId}=${this.value} in ${ModeManager.currentMode} mode`);
+        }
+
         ModeManager.setValue(fieldId, this.value, "user-modified");
+        
+        if (fieldId === "d_80") {
+          console.log(`[S10 DROPDOWN CALC] calculateAll() triggered by ${fieldId} in ${ModeManager.currentMode} mode`);
+        }
+        
         calculateAll();
         ModeManager.updateCalculatedDisplayValues(); // ✅ CRITICAL: Update DOM after calculations
       });

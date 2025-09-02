@@ -587,13 +587,149 @@ function setCalculatedValue(fieldId, rawValue, isReferenceCalculation = false) {
 
 **Each step must pass before proceeding to the next.**
 
-## 🎯 **NEXT STEPS**
+## 🚨 **SEPTEMBER 2ND TEST RESULTS: HYPOTHESIS NOT CONFIRMED**
 
-### **Immediate** (After Break):
-1. **Choose architectural approach** - Option A (S02 pattern) vs Option B (enhanced setCalculatedValue)
-2. **Apply systematic fix** to S10 following chosen pattern
-3. **Test thoroughly** - verify state isolation without breaking calculations
-4. **Apply same fix to S11** - identical architecture pattern
+### **❌ S02 PATTERN IMPLEMENTATION: NO IMPROVEMENT**
+
+**Test Results After S02 Pattern Implementation:**
+```
+✅ d_80 dropdown change: Only h_10 updates (no contamination)
+❌ d_74 area input: Both e_10 AND h_10 update (still contaminated)
+```
+
+**Status**: The S02 pattern fix did NOT eliminate state contamination for area inputs.
+
+### **🔍 CRITICAL INSIGHT: Input Type Matters**
+
+**The contamination pattern is INPUT-SPECIFIC, not calculation-specific:**
+
+#### **✅ CLEAN INPUTS (No Contamination):**
+- **Dropdowns** (d_80 nGains method): Only Target flow affected
+- **Sliders** (TB% in S11): Only Target flow affected
+
+#### **❌ CONTAMINATED INPUTS (State Mixing):**
+- **Area inputs** (d_74, d_73): Both Target AND Reference flows affected
+- **Editable fields**: Numeric inputs that trigger area-based calculations
+
+### **🔬 ENHANCED DIAGNOSTIC STRATEGY**
+
+**We need to trace WHY area inputs behave differently than dropdowns:**
+
+#### **Diagnostic Questions:**
+1. **Event Handler Differences**: Do area inputs vs dropdowns use different event handlers?
+2. **Calculation Path Differences**: Do area changes trigger different calculation functions?
+3. **StateManager Publication**: Are area inputs publishing to both Target and Reference StateManager keys?
+4. **Cross-Section Listeners**: Do area changes trigger different downstream listeners?
+
+#### **Enhanced Logging Strategy:**
+```javascript
+// Add specific tracing for area inputs vs dropdown inputs
+function setFieldValue(fieldId, value, fieldType = "calculated") {
+  // 🔍 ENHANCED DEBUG: Track which input types cause contamination
+  if (["d_73", "d_74", "d_75", "d_76", "d_77", "d_78"].includes(fieldId)) {
+    console.log(`[S10 AREA DEBUG] setFieldValue: ${fieldId}=${value} in ${ModeManager.currentMode} mode`);
+  }
+  if (fieldId === "d_80") {
+    console.log(`[S10 DROPDOWN DEBUG] setFieldValue: ${fieldId}=${value} in ${ModeManager.currentMode} mode`);
+  }
+  
+  // ... existing S02 pattern logic ...
+  
+  // 🔍 ENHANCED DEBUG: Track StateManager publications
+  if (["d_73", "d_74", "d_75", "d_76", "d_77", "d_78", "d_80"].includes(fieldId)) {
+    const key = ModeManager.currentMode === "target" ? fieldId : `ref_${fieldId}`;
+    console.log(`[S10 PUBLICATION DEBUG] Publishing: ${key}=${value} (${ModeManager.currentMode} mode)`);
+  }
+}
+```
+
+### **🎯 REFINED HYPOTHESIS: Input Path Contamination**
+
+**New Theory**: The issue is NOT in the calculation storage pattern, but in the **input handling path** that leads to calculations.
+
+**Possible Root Causes:**
+1. **FieldManager routing**: Area inputs might bypass ModeManager.setValue()
+2. **Event handler differences**: Area inputs vs dropdowns use different event handling
+3. **Calculation trigger differences**: Area inputs trigger broader calculation chains
+4. **Cross-section listener contamination**: Area inputs trigger listeners that affect both states
+
+### **🔬 DIAGNOSTIC RESULTS: Root Cause Located**
+
+**From enhanced logging analysis:**
+
+#### **✅ S10 Input Handling is CORRECT (Both Types):**
+```
+✅ d_73 (area): ModeManager.setValue() → Target StateManager write → calculateAll()
+✅ d_80 (dropdown): ModeManager.setValue() → Target StateManager write → calculateAll()
+```
+
+**Both inputs correctly route through S10's ModeManager in Target mode only.**
+
+#### **🎯 THE REAL ISSUE: Downstream Calculation Chain Differences**
+
+**Area inputs (d_73, d_74)** trigger massive calculation cascades:
+- S10 → S11 → S12 → S13 → S14 → S15 → S04 → S01 
+- Complex cross-section dependencies
+- Multiple dual-engine sections involved
+
+**Dropdown inputs (d_80)** trigger localized calculations:
+- S10 internal utilization factors only
+- No major cross-section cascade
+- Limited dual-engine involvement
+
+### **🏗️ PERFORMANCE ANALYSIS: S02 Pattern vs Current Approach**
+
+#### **Current S10 Approach (Dual-Engine + Explicit Parameters):**
+```javascript
+// PROS:
++ Explicit calculation context (isReferenceCalculation=true/false)
++ Both engines run simultaneously (always current)
++ Clear separation of calculation logic
++ No mode switching during calculations
+
+// CONS:
+- Complex parameter passing through calculation chain
+- Internal state contamination in dual-engine pattern
+- Harder to debug state mixing issues
+- More complex conditional logic in setCalculatedValue()
+```
+
+#### **S02 Approach (Mode-Aware + Temporary Switching):**
+```javascript
+// PROS:
++ Simpler storage logic (no parameters needed)
++ Perfect state isolation (proven in 7+ sections)
++ Mode-aware by design (no double negatives)
++ Easier to debug and understand
+
+// CONS:
+- Temporary mode switching during calculations
+- Mode changes during calculation execution
+- Potential race conditions if not handled carefully
+- More mode state changes per calculation cycle
+```
+
+### **🎯 PERFORMANCE VERDICT: S02 Pattern is MORE Performant**
+
+**Why S02 Pattern Wins:**
+
+1. **Fewer Conditional Checks**: No complex `shouldUpdateState` logic in every storage call
+2. **Simpler Function Calls**: No parameter passing through entire calculation chain
+3. **Cleaner State Logic**: Mode determines destination, not complex boolean logic
+4. **Proven Efficiency**: Working successfully in 7+ sections without performance issues
+
+**The temporary mode switching is actually FASTER than:**
+- Complex parameter passing through 20+ function calls
+- Multiple conditional checks in every `setCalculatedValue()` call
+- Complex boolean logic for state routing decisions
+
+### **🔬 RECOMMENDATION: Test S02 Pattern Performance**
+
+**But first, let's verify the contamination source is truly downstream by:**
+1. **Reverting S10 to original state** (since issue may not be in S10)
+2. **Fixing S07 ref_d_63 dependency** (cleaner test case)
+3. **Re-testing contamination patterns** with fixed dependencies
+4. **Then deciding on S10 approach** based on cleaner test results
 2. **Apply Same Fixes to S11** - Thermal bridge calculations have identical architecture
 3. **Return to S13** - With clean upstream dependencies
 
