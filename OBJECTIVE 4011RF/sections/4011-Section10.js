@@ -363,22 +363,29 @@ window.TEUI.SectionModules.sect10 = (function () {
       const state = isReferenceCalculation ? ReferenceState : TargetState;
       const stateType = isReferenceCalculation ? "Reference" : "Target";
       
+      // ✅ MODE-AWARE DOM ISOLATION: Only update state if calculation matches current UI mode
+      const shouldUpdateState = (isReferenceCalculation && ModeManager.currentMode === "reference") ||
+                               (!isReferenceCalculation && ModeManager.currentMode === "target");
+      
       // 🔍 DEBUG: Track state writes for key fields
       if (["i_79", "k_79", "i_80"].includes(fieldId)) {
-        console.log(`[S10 DEBUG] setCalculatedValue: ${fieldId}=${valueToStore} → ${stateType}State (isRef=${isReferenceCalculation})`);
+        console.log(`[S10 DEBUG] setCalculatedValue: ${fieldId}=${valueToStore} → ${stateType}State (isRef=${isReferenceCalculation}) shouldUpdate=${shouldUpdateState}`);
       }
       
+      // Always update the internal state object (for calculations)
       state.setValue(fieldId, valueToStore);
   
-      // Also publish to the global StateManager for downstream sections
-      if (window.TEUI?.StateManager) {
+      // ✅ CRITICAL FIX: Only publish to StateManager if calculation matches UI mode
+      if (window.TEUI?.StateManager && shouldUpdateState) {
           const key = isReferenceCalculation ? `ref_${fieldId}` : fieldId;
           window.TEUI.StateManager.setValue(key, valueToStore, "calculated");
           
           // 🔍 DEBUG: Track StateManager writes for key fields
           if (["i_79", "k_79", "i_80"].includes(fieldId)) {
-            console.log(`[S10 DEBUG] Published to StateManager: ${key}=${valueToStore}`);
+            console.log(`[S10 DEBUG] Published to StateManager: ${key}=${valueToStore} (mode match)`);
           }
+      } else if (["i_79", "k_79", "i_80"].includes(fieldId)) {
+        console.log(`[S10 DEBUG] SKIPPED StateManager write for ${fieldId} (mode mismatch: calc=${stateType}, UI=${ModeManager.currentMode})`);
       }
   }
 
