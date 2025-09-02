@@ -1395,6 +1395,8 @@ window.TEUI.SectionModules.sect15 = (function () {
         console.warn(
           `[S15] Missing critical upstream Reference values: ${missingValues.join(", ")}`,
         );
+        // ✅ TIMING FIX: Use fallback values during initialization, values will be available later
+        console.log(`[S15] Using fallback values for missing upstream dependencies (initialization timing)`);
       }
 
       const d65 = parseFloat(getRefValue("d_65")) || 0;

@@ -1443,6 +1443,12 @@ window.TEUI.SectionModules.sect11 = (function () {
           if (window.TEUI?.SectionModules?.sect12?.calculateAll) {
             console.log(`[S11 DEBUG] Calling sect12.calculateAll() directly (robot fingers)`);
             window.TEUI.SectionModules.sect12.calculateAll();
+            
+            // ✅ CRITICAL FIX: Also trigger S12 UI update after robot fingers calculation
+            if (window.TEUI?.SectionModules?.sect12?.ModeManager?.updateCalculatedDisplayValues) {
+              console.log(`[S11 DEBUG] Calling S12 UI update after robot fingers`);
+              window.TEUI.SectionModules.sect12.ModeManager.updateCalculatedDisplayValues();
+            }
           } else {
             console.warn(`[S11 DEBUG] sect12.calculateAll() not available - robot fingers broken!`);
           }
