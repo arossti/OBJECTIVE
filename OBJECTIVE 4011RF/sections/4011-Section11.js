@@ -1439,8 +1439,12 @@ window.TEUI.SectionModules.sect11 = (function () {
           );
           // Note: StateManager listeners will handle full recalculation cascade
           // Stopgap robot fingers to ensure S12 updates immediately in both modes
+          console.log(`[S11 DEBUG] TB% slider changed to ${percentageValue}% - calling S12 robot fingers`);
           if (window.TEUI?.SectionModules?.sect12?.calculateAll) {
+            console.log(`[S11 DEBUG] Calling sect12.calculateAll() directly (robot fingers)`);
             window.TEUI.SectionModules.sect12.calculateAll();
+          } else {
+            console.warn(`[S11 DEBUG] sect12.calculateAll() not available - robot fingers broken!`);
           }
         });
 

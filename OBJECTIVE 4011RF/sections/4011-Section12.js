@@ -2088,10 +2088,10 @@ window.TEUI.SectionModules.sect12 = (function () {
   }
 
   function calculateAll() {
-    // console.log(`[S12DEBUG] calculateAll() triggered in ${ModeManager.currentMode} mode`);
+    console.log(`[S12 DEBUG] calculateAll() triggered - caller: ${new Error().stack.split('\n')[2]?.trim()}`);
+    console.log(`[S12 DEBUG] Current mode: ${ModeManager.currentMode}, will calculate both Target and Reference`);
 
     // ✅ DUAL-ENGINE: Always run BOTH engines as per DUAL-STATE-CHEATSHEET mandate
-    // console.log(`[S12DEBUG] Running dual-engine calculations...`);
     calculateReferenceModel(); // Reads ReferenceState → stores ref_ prefixed
     calculateTargetModel(); // Reads TargetState → stores unprefixed
 
@@ -2224,9 +2224,9 @@ window.TEUI.SectionModules.sect12 = (function () {
       }
     });
 
-    console.log(
-      "[Section12] Reference results stored with ref_ prefix for downstream sections",
-    );
+    console.log(`[S12 DEBUG] Publishing ${Object.keys(allResults).length} Reference values to StateManager for downstream sections`);
+    console.log(`[S12 DEBUG] Critical S15 values: ref_g_101=${allResults.g_101}, ref_d_101=${allResults.d_101}, ref_i_104=${allResults.i_104}`);
+    console.log("[Section12] Reference results stored with ref_ prefix for downstream sections");
   }
 
   /**
