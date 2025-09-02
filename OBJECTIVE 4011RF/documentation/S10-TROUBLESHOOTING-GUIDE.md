@@ -269,12 +269,61 @@ switchMode: function(mode) {
 
 ---
 
+---
+
+## 🎉 **SEPTEMBER 2ND BREAKTHROUGH: MODE-AWARE DOM ISOLATION**
+
+### **CRITICAL PROGRESS: Reference Mode State Isolation ACHIEVED**
+
+**Issue**: S10 area entry changes in Reference mode were causing state mixing - values flowing to both Target and Reference states.
+
+**Solution Implemented**: Mode-aware DOM isolation per troubleshooting guide lines 234-252.
+
+### **✅ FIXES IMPLEMENTED (Sept 2nd):**
+
+#### **1. Area Entry UI Update Fix:**
+```javascript
+// ✅ CRITICAL FIX: Update UI after calculations (like dropdown handler)  
+handleFieldBlur: calculateAll() + ModeManager.updateCalculatedDisplayValues();
+```
+**Result**: Reference mode area entry now immediately updates row calculations (i_73, k_73)
+
+#### **2. Mode-Aware StateManager Publishing:**
+```javascript
+// ✅ MODE-AWARE DOM ISOLATION: Only publish if calculation matches current UI mode
+const shouldUpdateState = (isReferenceCalculation && ModeManager.currentMode === "reference") ||
+                         (!isReferenceCalculation && ModeManager.currentMode === "target");
+
+if (window.TEUI?.StateManager && shouldUpdateState) {
+    const key = isReferenceCalculation ? `ref_${fieldId}` : fieldId;
+    window.TEUI.StateManager.setValue(key, valueToStore, "calculated");
+}
+```
+
+### **🎯 TEST RESULTS:**
+
+#### **✅ REFERENCE MODE: Perfect State Isolation**
+- **Area changes**: Only affect e_10 (Reference flow) ✅
+- **UI updates**: Immediate i_73, k_73 updates ✅  
+- **No contamination**: h_10 (Target) stays stable ✅
+
+#### **⚠️ TARGET MODE: Still Has State Mixing**
+- **Area changes**: Affect both h_10 AND e_10 ❌
+- **Root cause**: Target calculations still publish to both states
+
+### **📊 ARCHITECTURAL INSIGHT:**
+
+**S10's dual-engine pattern works correctly**, but **StateManager publication needs mode awareness**. The fix prevents **opposite-mode contamination** but **same-mode calculations still run both engines**.
+
+### **🔄 APPLICABLE TO S11:**
+**S11 likely has identical issues** - once S10 is fully resolved, the same fixes can be applied to S11 thermal bridge calculations.
+
 ## 🎯 **NEXT STEPS**
 
-### **Immediate** (Before Break):
-1. ✅ **Debug Logging Cleaned** - Temporary logging commented out
-2. ✅ **Troubleshooting Guide Updated** - Comprehensive audit plan documented
-3. **Ready for Commit** - Clean code ready for version control
+### **Immediate** (After Break):
+1. **Complete S10 Target Mode Isolation** - Prevent Target mode from publishing to Reference state
+2. **Apply Same Fixes to S11** - Thermal bridge calculations have identical architecture
+3. **Return to S13** - With clean upstream dependencies
 
 ### **After Break** (Priority Order):
 
