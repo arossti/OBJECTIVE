@@ -83,37 +83,37 @@ window.TEUI.SectionModules.sect11 = (function () {
   // PATTERN 1: Internal State Objects (Self-Contained + Persistent)
   const TargetState = {
     state: {},
-    listeners: {},
     initialize: function () {
+      this.setDefaults();
       const savedState = localStorage.getItem("S11_TARGET_STATE");
       if (savedState) {
-        this.state = JSON.parse(savedState);
-      } else {
-        this.setDefaults();
+        // Merge saved state over defaults, preserving any new default fields
+        this.state = { ...this.state, ...JSON.parse(savedState) };
       }
     },
     setDefaults: function () {
-      // These defaults MUST match the 'value' properties in the sectionRows definition
-      this.state = {
-        d_85: "1411.52",
-        f_85: "9.35", // Roof
-        d_86: "712.97",
-        f_86: "6.69", // Walls Above Grade
-        d_87: "0.00",
-        f_87: "9.52", // Floor Exposed
-        g_88: "0.900", // Doors U-value
-        g_89: "0.900", // Window Area North U-value
-        g_90: "0.900", // Window Area East U-value
-        g_91: "0.900", // Window Area South U-value
-        g_92: "0.900", // Window Area West U-value
-        g_93: "0.900", // Skylights U-value
-        d_94: "0.00",
-        f_94: "4.00", // Walls Below Grade
-        d_95: "1100.42",
-        f_95: "3.70", // Floor Slab
-        d_96: "29.70", // Interior Floors
-        d_97: "20", // Thermal Bridge Penalty %
-      };
+      // ✅ SINGLE SOURCE OF TRUTH: Read defaults from field definitions only
+      this.state = {};
+      const fields = getFields();
+      Object.keys(fields).forEach((fieldId) => {
+        const defaultValue = this.getFieldDefault(fieldId);
+        if (defaultValue !== null) {
+          this.state[fieldId] = defaultValue;
+        }
+      });
+    },
+    getFieldDefault: function (fieldId) {
+      const fields = getFields();
+      const field = fields[fieldId];
+      if (field && field.defaultValue) {
+        let value = field.defaultValue;
+        // ✅ CRITICAL: Strip comma formatting to prevent calculation corruption
+        if (typeof value === "string" && value.includes(",")) {
+          value = value.replace(/,/g, "");
+        }
+        return value;
+      }
+      return null;
     },
     saveState: function () {
       localStorage.setItem("S11_TARGET_STATE", JSON.stringify(this.state));
@@ -195,8 +195,8 @@ window.TEUI.SectionModules.sect11 = (function () {
       // Load new reference values (this updates RSI/U-values from ReferenceValues.js)
       this.setDefaults();
 
-      // Restore preserved area values
-      Object.assign(this.state, preservedAreas);
+      // Restore preserved area values - NO LONGER NEEDED as setDefaults now preserves them.
+      // Object.assign(this.state, preservedAreas);
       this.saveState();
 
       console.log(
@@ -246,11 +246,8 @@ window.TEUI.SectionModules.sect11 = (function () {
       console.log(`S11: Switched to ${mode.toUpperCase()} mode`);
 
       this.refreshUI();
-      calculateAll(); // Recalculate for the new mode
-      // Ensure displayed values reflect the selected mode
-      if (typeof this.updateCalculatedDisplayValues === "function") {
-        this.updateCalculatedDisplayValues();
-      }
+      // ✅ CORRECTED: Only refresh UI, don't re-run calculations.
+      this.updateCalculatedDisplayValues();
     },
     resetState: function () {
       console.log(
@@ -355,80 +352,47 @@ window.TEUI.SectionModules.sect11 = (function () {
     },
     // Update displayed calculated values based on current mode (Target vs Reference)
     updateCalculatedDisplayValues: function () {
-      if (!window.TEUI?.StateManager) return;
-      // ✅ EXPANDED: Include ALL calculated fields for complete mode-aware display
       const calculatedFields = [
-        // Component rows 85-96 (all calculated values)
-        "i_85",
-        "k_85",
-        "g_85",
-        "f_85",
-        "i_86",
-        "k_86",
-        "g_86",
-        "f_86",
-        "i_87",
-        "k_87",
-        "g_87",
-        "f_87",
-        "i_88",
-        "k_88",
-        "g_88",
-        "f_88",
-        "i_89",
-        "k_89",
-        "g_89",
-        "f_89",
-        "i_90",
-        "k_90",
-        "g_90",
-        "f_90",
-        "i_91",
-        "k_91",
-        "g_91",
-        "f_91",
-        "i_92",
-        "k_92",
-        "g_92",
-        "f_92",
-        "i_93",
-        "k_93",
-        "g_93",
-        "f_93",
-        "i_94",
-        "k_94",
-        "g_94",
-        "f_94",
-        "i_95",
-        "k_95",
-        "g_95",
-        "f_95",
-        "i_96",
-        "k_96",
-        "g_96",
-        "f_96",
-        // Totals and penalties
-        "i_97",
-        "k_97",
-        "d_98",
-        "i_98",
-        "k_98",
+        "d_88", "d_89", "d_90", "d_91", "d_92", "d_93", // ADDED: Window/Door areas
+        "e_85", "f_85", "g_85", "h_85", "i_85", "j_85", "k_85", "l_85", "m_85", "n_85",
+        "e_86", "f_86", "g_86", "h_86", "i_86", "j_86", "k_86", "l_86", "m_86", "n_86",
+        "e_87", "f_87", "g_87", "h_87", "i_87", "j_87", "k_87", "l_87", "m_87", "n_87",
+        "e_88", "f_88", "g_88", "h_88", "i_88", "j_88", "k_88", "l_88", "m_88", "n_88",
+        "e_89", "f_89", "g_89", "h_89", "i_89", "j_89", "k_89", "l_89", "m_89", "n_89",
+        "e_90", "f_90", "g_90", "h_90", "i_90", "j_90", "k_90", "l_90", "m_90", "n_90",
+        "e_91", "f_91", "g_91", "h_91", "i_91", "j_91", "k_91", "l_91", "m_91", "n_91",
+        "e_92", "f_92", "g_92", "h_92", "i_92", "j_92", "k_92", "l_92", "m_92", "n_92",
+        "e_93", "f_93", "g_93", "h_93", "i_93", "j_93", "k_93", "l_93", "m_93", "n_93",
+        "e_94", "f_94", "g_94", "h_94", "i_94", "j_94", "k_94", "l_94", "m_94", "n_94",
+        "e_95", "f_95", "g_95", "h_95", "i_95", "j_95", "k_95", "l_95", "m_95", "n_95",
+        "e_97", "i_97", "j_97", "k_97", "l_97", "m_97", "n_97",
+        "d_98", "e_98", "h_98", "i_98", "j_98", "k_98", "l_98", "n_98"
       ];
 
-      calculatedFields.forEach((fieldId) => {
-        const valueToDisplay =
-          this.currentMode === "reference"
-            ? window.TEUI.StateManager.getValue(`ref_${fieldId}`)
-            : window.TEUI.StateManager.getValue(fieldId);
+      const currentState = this.getCurrentState();
 
-        if (valueToDisplay !== null && valueToDisplay !== undefined) {
-          const element = document.querySelector(
-            `[data-field-id="${fieldId}"]`,
-          );
-          if (element) {
-            const num = window.TEUI.parseNumeric(valueToDisplay, 0);
-            element.textContent = formatNumber(num, "number");
-          }
+      calculatedFields.forEach((fieldId) => {
+        const rawValue = currentState.getValue(fieldId);
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        
+        if (element) {
+            if (fieldId.startsWith('n_')) {
+                element.textContent = rawValue; // Handle checkmarks as text
+                return;
+            }
+
+            if (rawValue === 'N/A' || rawValue === null || rawValue === undefined) {
+                element.textContent = 'N/A';
+                return;
+            }
+
+            const num = window.TEUI.parseNumeric(rawValue, 0);
+            let format = 'number';
+            if (fieldId.startsWith("g_")) format = 'W/m2';
+            else if (/[hjlmn]_[\\d]{2,}/.test(fieldId)) format = 'percent';
+
+            element.textContent = formatNumber(num, format);
+            element.classList.toggle("negative-value", num < 0);
         }
       });
     },
@@ -843,10 +807,22 @@ window.TEUI.SectionModules.sect11 = (function () {
     return window.TEUI.parseNumeric(rawValue) || 0;
   }
 
-  function getGlobalNumericValue(fieldId) {
-    // For values EXTERNAL to this section (from global StateManager)
-    const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
-    return window.TEUI.parseNumeric(rawValue) || 0;
+  function getGlobalNumericValue(fieldId, defaultValue = 0) {
+    let rawValue;
+    const stateManager = window.TEUI?.StateManager;
+    if (!stateManager) return defaultValue;
+
+    if (ModeManager.currentMode === "reference") {
+      rawValue = stateManager.getValue(`ref_${fieldId}`);
+    } else {
+      rawValue = stateManager.getValue(fieldId);
+    }
+
+    if (rawValue === null || rawValue === undefined) {
+      return defaultValue;
+    }
+
+    return window.TEUI.parseNumeric(rawValue, defaultValue);
   }
 
   function getFieldValue(fieldId) {
@@ -859,47 +835,20 @@ window.TEUI.SectionModules.sect11 = (function () {
   }
 
   /**
-   * Sets calculated value using simplified dual-state (ComponentBridge handles global sync)
+   * Sets a calculated value in the correct state object (Target or Reference) via ModeManager.
+   * This function NO LONGER touches the DOM.
    * @param {string} fieldId
    * @param {number} rawValue
-   * @param {string} [format='number']
    */
-  function setCalculatedValue(fieldId, rawValue, format = "number") {
+  function setCalculatedValue(fieldId, rawValue) {
     // Handle N/A for non-finite numbers
-    if (!isFinite(rawValue) || rawValue === null || rawValue === undefined) {
-      ModeManager.setValue(fieldId, "N/A", "calculated");
-      const elementNA = document.querySelector(`[data-field-id="${fieldId}"]`);
-      if (elementNA) elementNA.textContent = "N/A";
-      return;
-    }
-
-    // Determine format if not specified
-    if (format === "number") {
-      if (fieldId.startsWith("g_")) {
-        format = "W/m2";
-      } // U-Values are 3 decimals
-      else if (
-        /[hjl]_[\\d]{2,}/.test(fieldId) ||
-        fieldId === "h_98" ||
-        fieldId === "j_98" ||
-        fieldId === "l_98"
-      ) {
-        format = "percent";
-      }
-      // Default remains 'number' for others (i_, k_, e_)
-    }
-
-    const formattedValue = formatNumber(rawValue, format);
+    const valueToStore =
+      !isFinite(rawValue) || rawValue === null || rawValue === undefined
+        ? "N/A"
+        : rawValue.toString();
 
     // ✅ DUAL-STATE: Set state via ModeManager first
-    ModeManager.setValue(fieldId, rawValue.toString(), "calculated");
-
-    // Update DOM with formatted value
-    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-    if (element) {
-      element.textContent = formattedValue;
-      element.classList.toggle("negative-value", rawValue < 0);
-    }
+    ModeManager.setValue(fieldId, valueToStore, "calculated");
   }
 
   /**
@@ -1018,10 +967,7 @@ window.TEUI.SectionModules.sect11 = (function () {
         if (input === "rsi") {
           // Try to get reference RSI value
           const refFieldId = `f_${rowStr}`;
-          inputValue =
-            window.TEUI?.StateManager?.getReferenceValue(refFieldId) ||
-            baselineValues[rowNumber]?.value ||
-            getNumericValue(rsiFieldId);
+          inputValue = ReferenceState.getValue(refFieldId) || 0;
           rsiValue = inputValue;
           if (rsiValue <= 0) {
             uValue = Infinity;
@@ -1030,10 +976,7 @@ window.TEUI.SectionModules.sect11 = (function () {
           // input === 'uvalue'
           // Try to get reference U-value
           const refFieldId = `g_${rowStr}`;
-          inputValue =
-            window.TEUI?.StateManager?.getReferenceValue(refFieldId) ||
-            baselineValues[rowNumber]?.value ||
-            getNumericValue(uValueFieldId);
+          inputValue = ReferenceState.getValue(refFieldId) || 0;
           uValue = inputValue;
           if (uValue <= 0) {
             rsiValue = Infinity;
@@ -1076,43 +1019,18 @@ window.TEUI.SectionModules.sect11 = (function () {
       if (type === "air") {
         if (isReferenceCalculation) {
           // Reference calculations: read ref_ prefixed climate data
-          const ref_hdd = getGlobalNumericValue("ref_d_20");
-          const global_hdd = getGlobalNumericValue("d_20");
-          hdd = ref_hdd || global_hdd || 0;
-
-          const ref_cdd = getGlobalNumericValue("ref_d_21");
-          const global_cdd = getGlobalNumericValue("d_21");
-          heatgainMultiplier = (ref_cdd || global_cdd || 0) * 24;
-
-          // 🔍 S11 REFERENCE CONTAMINATION TRACKER
-          // console.log(`🔍 S11 REFERENCE: HDD=${hdd} (ref_d_20=${ref_hdd}, global_d_20=${global_hdd})`);
-          // console.log(`🔍 S11 REFERENCE: CDD=${heatgainMultiplier/24} (ref_d_21=${ref_cdd}, global_d_21=${global_cdd})`);
+          hdd = getGlobalNumericValue("ref_d_20", 0);
+          heatgainMultiplier = getGlobalNumericValue("ref_d_21", 0) * 24;
         } else {
           // ✅ FIXED: Target calculations read unprefixed climate data (Pattern A)
-          const hdd_value = getGlobalNumericValue("d_20") || 0;
-          hdd = hdd_value;
-
-          const cdd_value = getGlobalNumericValue("d_21") || 0;
-          heatgainMultiplier = cdd_value * 24;
-
-          // 🚨 S11 TARGET CONTAMINATION TRACKER
-          // console.log(`🚨 S11 TARGET: HDD=${hdd} (target_d_20=${target_hdd}, global_d_20=${global_hdd})`);
-          // console.log(`🚨 S11 TARGET: CDD=${heatgainMultiplier/24} (target_d_21=${target_cdd}, global_d_21=${global_cdd})`);
-          // if (!target_hdd && global_hdd) {
-          //   console.log(`🚨 S11 TARGET CONTAMINATION: Using contaminated global_d_20=${global_hdd} because target_d_20 is missing!`);
-          // }
-          // if (!target_cdd && global_cdd) {
-          //   console.log(`🚨 S11 TARGET CONTAMINATION: Using contaminated global_d_21=${global_cdd} because target_d_21 is missing!`);
-          // }
+          hdd = getGlobalNumericValue("d_20") || 0;
+          heatgainMultiplier = (getGlobalNumericValue("d_21") || 0) * 24;
         }
       } else {
         // ground
         if (isReferenceCalculation) {
           // Reference calculations: read ref_ prefixed climate data
-          hdd =
-            getGlobalNumericValue("ref_d_22") ||
-            getGlobalNumericValue("d_22") ||
-            0;
+          hdd = getGlobalNumericValue("ref_d_22", 0);
         } else {
           // ✅ FIXED: Target calculations read unprefixed climate data (Pattern A)
           hdd = getGlobalNumericValue("d_22") || 0;
@@ -1130,17 +1048,13 @@ window.TEUI.SectionModules.sect11 = (function () {
           // Reference calculations: read ref_ prefixed climate data
           heatgainMultiplier =
             capacitanceFactor_i21 *
-            (getGlobalNumericValue("ref_h_22") ||
-              getGlobalNumericValue("h_22") ||
-              0) *
+            (getGlobalNumericValue("ref_h_22", 0)) *
             24;
         } else {
           // Target calculations: read target_ prefixed climate data
           heatgainMultiplier =
             capacitanceFactor_i21 *
-            (getGlobalNumericValue("target_h_22") ||
-              getGlobalNumericValue("h_22") ||
-              0) *
+            (getGlobalNumericValue("h_22") || 0) *
             24;
         }
       }
@@ -1236,92 +1150,57 @@ window.TEUI.SectionModules.sect11 = (function () {
   function updateReferenceIndicators(rowId) {
     const baseline = baselineValues[rowId];
     if (!baseline) return;
-    const mFieldId = `m_${rowId}`,
-      nFieldId = `n_${rowId}`;
-    let referencePercent = 100,
-      isGood = true;
+
+    const mFieldId = `m_${rowId}`;
+    const nFieldId = `n_${rowId}`;
+
+    let referencePercent = 1.0; // Default to 100% (decimal format)
+    let isGood = true;
 
     try {
-      // ✅ REFERENCE MODE: Perfect Compliance (Always 100% and ✓)
       if (ModeManager.currentMode === "reference") {
-        referencePercent = 100; // Always 100% in reference mode
-        isGood = true; // Always pass in reference mode
+        // In reference mode, it's always 100% and passing.
+        referencePercent = 1.0;
+        isGood = true;
+      } else {
+        // In target mode, perform the comparison.
+        let valueSourceFieldId = null;
+        if (baseline.type === "rsi") valueSourceFieldId = `f_${rowId}`;
+        else if (baseline.type === "uvalue") valueSourceFieldId = `g_${rowId}`;
+        else if (baseline.type === "penalty") valueSourceFieldId = `d_${rowId}`;
 
-        setCalculatedValue(mFieldId, 1.0, "percent"); // 1.0 = 100%
-        const nElement = document.querySelector(
-          `[data-field-id="${nFieldId}"]`,
-        );
-        if (nElement) nElement.textContent = "✓";
-        setElementClass(nFieldId, true);
-        return;
-      }
+        if (!valueSourceFieldId) return;
 
-      // ✅ TARGET MODE: Performance Comparison (Dynamic reference values)
-      let valueSourceFieldId = null;
-      let referenceFieldId = null;
+        const currentValue = window.TEUI.parseNumeric(TargetState.getValue(valueSourceFieldId));
+        const referenceValue = window.TEUI.parseNumeric(ReferenceState.getValue(valueSourceFieldId));
 
-      if (baseline.type === "rsi") {
-        valueSourceFieldId = `f_${rowId}`;
-        referenceFieldId = `f_${rowId}`;
-      } else if (baseline.type === "uvalue") {
-        valueSourceFieldId = `g_${rowId}`;
-        referenceFieldId = `g_${rowId}`;
-      } else if (baseline.type === "penalty") {
-        valueSourceFieldId = `d_${rowId}`;
-        referenceFieldId = `d_${rowId}`;
-      }
-
-      if (!valueSourceFieldId) return;
-
-      // Get current (Target) value
-      const currentValue = getNumericValue(valueSourceFieldId);
-
-      // Get dynamic reference value from ReferenceState
-      const referenceValue = ReferenceState.getValue(referenceFieldId);
-      const referenceNumeric =
-        window.TEUI.parseNumeric(referenceValue) || baseline.value;
-
-      // Calculate percentage and pass/fail based on comparison type
-      if (baseline.type === "rsi") {
-        // RSI: Higher is better (current ÷ reference × 100%)
-        if (referenceNumeric > 0 && !isNaN(currentValue)) {
-          referencePercent = (currentValue / referenceNumeric) * 100;
-        }
-        isGood = currentValue >= referenceNumeric;
-      } else if (baseline.type === "uvalue") {
-        // U-value: Lower is better (reference ÷ current × 100%)
-        if (currentValue > 0 && !isNaN(currentValue)) {
-          referencePercent = (referenceNumeric / currentValue) * 100;
-        }
-        isGood = currentValue <= referenceNumeric;
-      } else if (baseline.type === "penalty") {
-        // Thermal Bridge Penalty: Lower is better (reference ÷ current × 100%)
-        const refPenalty = referenceNumeric / 100;
-        const currentPenalty = currentValue / 100;
-        isGood = currentPenalty <= refPenalty;
-        if (currentPenalty > 0) {
-          referencePercent = (refPenalty / currentPenalty) * 100;
+        if (baseline.type === "rsi") {
+            if (referenceValue > 0 && !isNaN(currentValue)) {
+                referencePercent = currentValue / referenceValue;
+            }
+            isGood = currentValue >= referenceValue;
+        } else if (baseline.type === "uvalue") {
+            if (currentValue > 0 && !isNaN(currentValue)) {
+                referencePercent = referenceValue / currentValue;
+            }
+            isGood = currentValue <= referenceValue;
+        } else if (baseline.type === "penalty") {
+            if (currentValue > 0) {
+                referencePercent = referenceValue / currentValue;
+            }
+            isGood = currentValue <= referenceValue;
         }
       }
 
-      // Update DOM with calculated values
-      setCalculatedValue(mFieldId, referencePercent / 100, "percent");
-      const nElement = document.querySelector(`[data-field-id="${nFieldId}"]`);
-      if (nElement) nElement.textContent = isGood ? "✓" : "✗";
-      setElementClass(nFieldId, isGood);
+      // Use ModeManager to set values in the correct state
+      ModeManager.setValue(mFieldId, referencePercent.toString());
+      ModeManager.setValue(nFieldId, isGood ? "✓" : "✗");
+      setElementClass(nFieldId, isGood); // Style update can be direct DOM manipulation
+
     } catch (error) {
-      console.error(
-        `Error updating reference indicators for row ${rowId}:`,
-        error,
-      );
-      const mElementErr = document.querySelector(
-        `[data-field-id="${mFieldId}"]`,
-      );
-      if (mElementErr) mElementErr.textContent = "Error";
-      const nElementErr = document.querySelector(
-        `[data-field-id="${nFieldId}"]`,
-      );
-      if (nElementErr) nElementErr.textContent = "?";
+      console.error(`Error updating indicators for row ${rowId}:`, error);
+      ModeManager.setValue(mFieldId, 'Error');
+      ModeManager.setValue(nFieldId, '?');
     }
   }
 
@@ -1334,174 +1213,13 @@ window.TEUI.SectionModules.sect11 = (function () {
    * Stores results with ref_ prefix to keep separate from Target values
    */
   function calculateReferenceModel() {
-    // console.log('[Section11] Running Reference Model calculations...'); // Comment out
-
-    let totals = { loss: 0, gain: 0, areaD: 0, airAreaD: 0, groundAreaD: 0 };
-    const componentResults = {};
-
-    componentConfig.forEach((config) => {
-      // Calculate using reference values
-      const result = calculateComponentRow(config.row, config, true); // true = isReferenceCalculation
-
-      const area = getNumericValue(`d_${config.row}`) || 0;
-      const heatloss = result ? result.heatloss : 0;
-      const heatgain = result ? result.heatgain : 0;
-
-      // Store for later use
-      componentResults[config.row] = { heatloss, heatgain };
-
-      totals.loss += heatloss;
-      totals.gain += heatgain;
-      if (config.row >= 85 && config.row <= 95) totals.areaD += area;
-      if (config.type === "air") totals.airAreaD += area;
-      else if (config.type === "ground") totals.groundAreaD += area;
-    });
-
-    // Calculate thermal bridge penalty using reference values
-    const penaltyResults = calculateThermalBridgePenalty(
-      totals.loss,
-      totals.gain,
-      true,
-    ); // true = isReferenceCalculation
-    const penaltyHeatlossI = penaltyResults ? penaltyResults.heatloss : 0;
-    const penaltyHeatgainK = penaltyResults ? penaltyResults.heatgain : 0;
-
-    // Store Reference Model results with ref_ prefix
-    if (window.TEUI?.StateManager) {
-      // Component totals
-      window.TEUI.StateManager.setValue(
-        "ref_d_98",
-        totals.areaD.toString(),
-        "calculated",
-      );
-      window.TEUI.StateManager.setValue(
-        "ref_i_98",
-        totals.loss.toString(),
-        "calculated",
-      );
-      window.TEUI.StateManager.setValue(
-        "ref_k_98",
-        totals.gain.toString(),
-        "calculated",
-      );
-
-      // Penalty values
-      console.log(
-        `[S11] Writing ref penalty: ref_i_97=${penaltyHeatlossI.toFixed(2)}, ref_k_97=${penaltyHeatgainK.toFixed(
-          2,
-        )}`,
-      );
-      window.TEUI.StateManager.setValue(
-        "ref_i_97",
-        penaltyHeatlossI.toString(),
-        "calculated",
-      );
-      window.TEUI.StateManager.setValue(
-        "ref_k_97",
-        penaltyHeatgainK.toString(),
-        "calculated",
-      );
-
-      // Store individual component reference values (calculated results)
-      Object.entries(componentResults).forEach(([row, results]) => {
-        const rowStr = row.toString();
-
-        window.TEUI.StateManager.setValue(
-          `ref_i_${rowStr}`,
-          results.heatloss.toString(),
-          "calculated",
-        );
-        window.TEUI.StateManager.setValue(
-          `ref_k_${rowStr}`,
-          results.heatgain.toString(),
-          "calculated",
-        );
-      });
-
-      // ✅ CRITICAL FIX: Store Reference input values for S12 consumption
-      // Store all Reference areas (d_85, d_86, etc.)
-      const areaFields = [
-        "d_85",
-        "d_86",
-        "d_87",
-        "d_88",
-        "d_89",
-        "d_90",
-        "d_91",
-        "d_92",
-        "d_93",
-        "d_94",
-        "d_95",
-        "d_96",
-      ];
-      areaFields.forEach((fieldId) => {
-        const value = ReferenceState.getValue(fieldId);
-        if (value !== null && value !== undefined) {
-          window.TEUI.StateManager.setValue(
-            `ref_${fieldId}`,
-            value.toString(),
-            "calculated",
-          );
-        }
-      });
-
-      // Store all Reference RSI values (f_85, f_86, etc.)
-      const rsiFields = ["f_85", "f_86", "f_87", "f_94", "f_95"];
-      rsiFields.forEach((fieldId) => {
-        const value = ReferenceState.getValue(fieldId);
-        if (value !== null && value !== undefined) {
-          window.TEUI.StateManager.setValue(
-            `ref_${fieldId}`,
-            value.toString(),
-            "calculated",
-          );
-        }
-      });
-
-      // Store all Reference U-values (g_85, g_86, etc.)
-      const uValueFields = [
-        "g_85",
-        "g_86",
-        "g_87",
-        "g_88",
-        "g_89",
-        "g_90",
-        "g_91",
-        "g_92",
-        "g_93",
-        "g_94",
-        "g_95",
-      ];
-      uValueFields.forEach((fieldId) => {
-        const value = ReferenceState.getValue(fieldId);
-        if (value !== null && value !== undefined) {
-          window.TEUI.StateManager.setValue(
-            `ref_${fieldId}`,
-            value.toString(),
-            "calculated",
-          );
-        }
-      });
-
-      // Store Reference thermal bridging penalty
-      const d97Value = ReferenceState.getValue("d_97");
-      if (d97Value !== null && d97Value !== undefined) {
-        window.TEUI.StateManager.setValue(
-          `ref_d_97`,
-          d97Value.toString(),
-          "calculated",
-        );
-      }
+    const originalMode = ModeManager.currentMode;
+    ModeManager.currentMode = "reference";
+    try {
+        runCalculations();
+    } finally {
+        ModeManager.currentMode = originalMode;
     }
-
-    // Store results at module level for later re-writing in calculateAll
-    lastReferenceResults = {
-      ...componentResults,
-      // Also store penalty values to prevent overwrites
-      penalty: { heatloss: penaltyHeatlossI, heatgain: penaltyHeatgainK },
-    };
-
-    // console.log('[Section11] Reference Model values stored'); // Comment out
   }
 
   /**
@@ -1509,12 +1227,24 @@ window.TEUI.SectionModules.sect11 = (function () {
    * This is the existing calculateAll logic, refactored
    */
   function calculateTargetModel() {
-    // console.log('[Section11] Running Target Model calculations...'); // Comment out
+    const originalMode = ModeManager.currentMode;
+    ModeManager.currentMode = "target";
+    try {
+        runCalculations();
+    } finally {
+        ModeManager.currentMode = originalMode;
+    }
+  }
 
+  /**
+   * SHARED CALCULATION LOGIC for both Target and Reference models.
+   * Reads from state based on the currently set ModeManager.currentMode.
+   */
+  function runCalculations() {
     let totals = { loss: 0, gain: 0, areaD: 0, airAreaD: 0, groundAreaD: 0 };
 
     componentConfig.forEach((config) => {
-      calculateComponentRow(config.row, config, false); // false = Target calculation
+      calculateComponentRow(config.row, config);
       const area = getNumericValue(`d_${config.row}`) || 0;
       totals.loss += getNumericValue(`i_${config.row}`) || 0;
       totals.gain += getNumericValue(`k_${config.row}`) || 0;
@@ -1523,110 +1253,42 @@ window.TEUI.SectionModules.sect11 = (function () {
       else if (config.type === "ground") totals.groundAreaD += area;
     });
 
-    calculateThermalBridgePenalty(totals.loss, totals.gain, false); // false = Target calculation
+    calculateThermalBridgePenalty(totals.loss, totals.gain);
     const penaltyHeatlossI = getNumericValue("i_97") || 0;
-    const penaltyHeatgainK = getNumericValue("k_97") || 0;
 
-    // Grand totals include component subtotals + penalty
-    // Corrected: i_98 should only be the sum of components 85-95
-    const grandTotalHeatlossI = totals.loss; // Removed + penaltyHeatlossI
-    // Corrected: k_98 should be SUM(K85:K95) and EXCLUDE k_97 (penaltyHeatgainK)
+    const grandTotalHeatlossI = totals.loss;
     const grandTotalHeatgainK = totals.gain;
 
-    // Set totals for Row 98
     setCalculatedValue("d_98", totals.areaD);
     setCalculatedValue("i_98", grandTotalHeatlossI);
     setCalculatedValue("k_98", grandTotalHeatgainK);
 
-    // Calculate Percentages and Update Reference Indicators
     const totalAreaAe = totals.airAreaD > 0 ? totals.airAreaD : 1;
     const totalAreaAg = totals.groundAreaD > 0 ? totals.groundAreaD : 1;
     const rowsToProcess = [...componentConfig, { row: 97 }];
-    const lossIndicatorClasses = ["loss-high", "loss-medium", "loss-low"];
-    const gainIndicatorClasses = ["gain-high", "gain-medium", "gain-low"]; // Define gain classes
 
     rowsToProcess.forEach((config) => {
       const rowStr = config.row.toString();
-      const hCellFieldId = `h_${rowStr}`; // Field ID for Column H
-      const jCellFieldId = `j_${rowStr}`; // Field ID for Column J
-
       if (config.row !== 97) {
-        // Area % only for components
         const area = getNumericValue(`d_${rowStr}`) || 0;
         const hValue =
           config.type === "air"
-            ? (area / totalAreaAe) * 100
+            ? (area / totalAreaAe)
             : config.type === "ground"
-              ? (area / totalAreaAg) * 100
+              ? (area / totalAreaAg)
               : 0;
-        setCalculatedValue(hCellFieldId, hValue / 100, "percent");
-
-        // Apply text color class to Column H based on type
-        const hElement = document.querySelector(
-          `[data-field-id="${hCellFieldId}"]`,
-        );
-        if (hElement) {
-          hElement.classList.remove("text-air-facing", "text-ground-facing");
-          if (config.type === "air") {
-            hElement.classList.add("text-air-facing");
-          } else if (config.type === "ground") {
-            hElement.classList.add("text-ground-facing");
-          }
-        }
+        setCalculatedValue(`h_${rowStr}`, hValue);
       }
       const heatloss = getNumericValue(`i_${rowStr}`) || 0;
       const heatingPercentDecimal =
-        grandTotalHeatlossI > 0 ? heatloss / grandTotalHeatlossI : 0; // Pass raw fraction
-      setCalculatedValue(jCellFieldId, heatingPercentDecimal, "percent");
-
-      // Apply Loss Indicator Class to Column J
-      let htgGainClass = "";
-      const absHtgPercent = Math.abs(heatingPercentDecimal * 100);
-      // Thresholds for loss contribution: Red >= 15%, Yellow >= 5%, Green < 5%
-      if (absHtgPercent >= 15) {
-        htgGainClass = "loss-high";
-      } // Red for high heat loss contribution
-      else if (absHtgPercent >= 5) {
-        htgGainClass = "loss-medium";
-      } // Yellow
-      else if (absHtgPercent >= 0) {
-        htgGainClass = "loss-low";
-      } // Green
-      setIndicatorClass(jCellFieldId, htgGainClass, gainIndicatorClasses);
+        grandTotalHeatlossI > 0 ? heatloss / grandTotalHeatlossI : 0;
+      setCalculatedValue(`j_${rowStr}`, heatingPercentDecimal);
 
       const heatgain = getNumericValue(`k_${rowStr}`) || 0;
       const coolingPercentDecimal =
-        Math.abs(totals.gain) > 1e-6 ? -heatgain / totals.gain : 0; // Pass raw fraction
-      const lCellFieldId = `l_${rowStr}`; // Field ID for Column L
-      setCalculatedValue(lCellFieldId, coolingPercentDecimal, "percent");
-
-      // Apply Gain Indicator Class to Column L
-      let coolGainClass = "";
-      // Thresholds for gain contribution: Red >= 15% (bad), Yellow >= 5%, Green < 5% (good)
-      const absCoolPercent = Math.abs(coolingPercentDecimal * 100);
-      if (absCoolPercent >= 15) {
-        coolGainClass = "gain-high";
-      } // Red for high heat gain contribution
-      else if (absCoolPercent >= 5) {
-        coolGainClass = "gain-medium";
-      } // Yellow
-      else if (absCoolPercent >= 0) {
-        coolGainClass = "gain-low";
-      } // Green
-      setIndicatorClass(lCellFieldId, coolGainClass, gainIndicatorClasses);
-
-      // --- Apply Left Alignment to J & L Columns ---
-      const jElement = document.querySelector(
-        `[data-field-id="${jCellFieldId}"]`,
-      );
-      if (jElement) jElement.classList.add("text-left-indicator");
-      const lElement = document.querySelector(
-        `[data-field-id="${lCellFieldId}"]`,
-      );
-      if (lElement) lElement.classList.add("text-left-indicator");
-      // --- End Left Alignment ---
-
-      // Update reference indicators for all rows
+        Math.abs(totals.gain) > 1e-6 ? -heatgain / totals.gain : 0;
+      setCalculatedValue(`l_${rowStr}`, coolingPercentDecimal);
+      
       updateReferenceIndicators(config.row);
     });
   }
@@ -1635,56 +1297,13 @@ window.TEUI.SectionModules.sect11 = (function () {
    * DUAL-ENGINE ORCHESTRATION
    * Replaces the original calculateAll function
    */
-  // Store reference results at module level for access in calculateAll
-  let lastReferenceResults = {};
-
   function calculateAll() {
-    console.log(
-      `%c[S11] calculateAll TRIGGERED. isReferenceMode: ${window.TEUI?.ReferenceToggle?.isReferenceMode?.()}`,
-      "color: #f0f; font-weight: bold;",
-    );
-
-    calculateReferenceModel();
+    // ✅ DUAL-ENGINE PATTERN: Always run BOTH Target and Reference calculations
     calculateTargetModel();
-
-    // ✅ FIX: Re-write Reference values after all calculations to prevent overwrites
-    // Re-store the component Reference values after potential downstream overwrites
-    if (window.TEUI?.StateManager && lastReferenceResults) {
-      Object.entries(lastReferenceResults).forEach(([key, results]) => {
-        if (key === "penalty") {
-          // Re-write thermal bridge penalty values
-          window.TEUI.StateManager.setValue(
-            "ref_i_97",
-            results.heatloss.toString(),
-            "calculated",
-          );
-          window.TEUI.StateManager.setValue(
-            "ref_k_97",
-            results.heatgain.toString(),
-            "calculated",
-          );
-        } else {
-          // Re-write component values
-          const rowStr = key.toString();
-          window.TEUI.StateManager.setValue(
-            `ref_i_${rowStr}`,
-            results.heatloss.toString(),
-            "calculated",
-          );
-          window.TEUI.StateManager.setValue(
-            `ref_k_${rowStr}`,
-            results.heatgain.toString(),
-            "calculated",
-          );
-        }
-      });
-    }
-
-    // Refresh displayed values according to current mode
-    if (typeof ModeManager.updateCalculatedDisplayValues === "function") {
-      ModeManager.updateCalculatedDisplayValues();
-    }
-    // console.warn("S11: Dual-engine calculations complete"); // This was already commented
+    calculateReferenceModel();
+    
+    // After all calculations are complete, update the UI based on the current mode.
+    ModeManager.updateCalculatedDisplayValues();
   }
 
   //==========================================================================
@@ -1820,8 +1439,18 @@ window.TEUI.SectionModules.sect11 = (function () {
           );
           // Note: StateManager listeners will handle full recalculation cascade
           // Stopgap robot fingers to ensure S12 updates immediately in both modes
+          console.log(`[S11 DEBUG] TB% slider changed to ${percentageValue}% - calling S12 robot fingers`);
           if (window.TEUI?.SectionModules?.sect12?.calculateAll) {
+            console.log(`[S11 DEBUG] Calling sect12.calculateAll() directly (robot fingers)`);
             window.TEUI.SectionModules.sect12.calculateAll();
+            
+            // ✅ CRITICAL FIX: Also trigger S12 UI update after robot fingers calculation
+            if (window.TEUI?.SectionModules?.sect12?.ModeManager?.updateCalculatedDisplayValues) {
+              console.log(`[S11 DEBUG] Calling S12 UI update after robot fingers`);
+              window.TEUI.SectionModules.sect12.ModeManager.updateCalculatedDisplayValues();
+            }
+          } else {
+            console.warn(`[S11 DEBUG] sect12.calculateAll() not available - robot fingers broken!`);
           }
         });
 

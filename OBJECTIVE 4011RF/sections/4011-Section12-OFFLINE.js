@@ -28,14 +28,27 @@ window.TEUI.SectionModules.sect12 = (function () {
       }
     },
     setDefaults: function () {
-      // S12-specific defaults - MUST match sectionRows values
-      this.state = {
-        d_103: "1.5", // Number of stories (dropdown)
-        g_103: "Normal", // Exposure (dropdown)
-        d_105: "8000.00", // Conditioned volume (editable)
-        d_108: "AL-1B", // ✅ FIXED: Use AL-1B method (was MEASURED) to get proper 93.6 TEUI
-        g_109: "1.50", // Measured value (conditional editable, N/A when not MEASURED)
-      };
+      // ✅ SINGLE SOURCE OF TRUTH: Read defaults from field definitions
+      this.state = {};
+      const fields = getFields();
+      Object.keys(fields).forEach(fieldId => {
+        const defaultValue = this.getFieldDefault(fieldId);
+        if (defaultValue !== null) {
+          this.state[fieldId] = defaultValue;
+        }
+      });
+    },
+    getFieldDefault: function(fieldId) {
+        const fields = getFields();
+        const field = fields[fieldId];
+        if (field && field.defaultValue) {
+            let value = field.defaultValue;
+            if (typeof value === 'string' && value.includes(',')) {
+                value = value.replace(/,/g, '');
+            }
+            return value;
+        }
+        return null;
     },
     saveState: function () {
       localStorage.setItem("S12_TARGET_STATE", JSON.stringify(this.state));
@@ -67,6 +80,16 @@ window.TEUI.SectionModules.sect12 = (function () {
       }
     },
     setDefaults: function () {
+      // ✅ SINGLE SOURCE OF TRUTH: Read defaults from field definitions
+      this.state = {};
+      const fields = getFields();
+      Object.keys(fields).forEach(fieldId => {
+        const defaultValue = this.getFieldDefault(fieldId);
+        if (defaultValue !== null) {
+          this.state[fieldId] = defaultValue;
+        }
+      });
+
       // ✅ DYNAMIC LOADING: Get current reference standard from dropdown d_13
       const currentStandard =
         window.TEUI?.StateManager?.getValue?.("d_13") || "OBC SB10 5.5-6 Z6";
@@ -85,6 +108,18 @@ window.TEUI.SectionModules.sect12 = (function () {
       console.log(
         `S12: Reference defaults loaded from standard: ${currentStandard}`,
       );
+    },
+    getFieldDefault: function(fieldId) {
+        const fields = getFields();
+        const field = fields[fieldId];
+        if (field && field.defaultValue) {
+            let value = field.defaultValue;
+            if (typeof value === 'string' && value.includes(',')) {
+                value = value.replace(/,/g, '');
+            }
+            return value;
+        }
+        return null;
     },
     // MANDATORY: Include onReferenceStandardChange for d_13 changes
     onReferenceStandardChange: function () {
@@ -189,13 +224,11 @@ window.TEUI.SectionModules.sect12 = (function () {
         let valueToDisplay;
 
         if (this.currentMode === "reference") {
-          // In Reference mode, try to show ref_ values, fallback to regular values
-          valueToDisplay =
-            window.TEUI.StateManager.getValue(`ref_${fieldId}`) ||
-            window.TEUI.StateManager.getValue(fieldId);
+          // In Reference mode, show Reference values only
+          valueToDisplay = ReferenceState.getValue(fieldId);
         } else {
-          // In Target mode, show regular values
-          valueToDisplay = window.TEUI.StateManager.getValue(fieldId);
+          // In Target mode, show Target values
+          valueToDisplay = TargetState.getValue(fieldId);
         }
 
         if (valueToDisplay !== null && valueToDisplay !== undefined) {
@@ -1061,133 +1094,20 @@ window.TEUI.SectionModules.sect12 = (function () {
   }
 
   /**
-   * Helper function to set a calculated field value in StateManager and update the DOM.
-   * Uses the global window.TEUI.formatNumber for formatting.
-   * @param {string} fieldId - The ID of the field to update.
-   * @param {*} rawValue - The raw, unformatted value to store in StateManager.
-   * @param {string} formatType - The format type for display (e.g., 'number', 'percent-auto', 'integer', 'raw', 'number-3dp').
+   * Sets calculated value in the correct state object (Target or Reference).
+   * This function NO LONGER touches the DOM.
    */
-  function setCalculatedValue(
-    fieldId,
-    rawValue,
-    formatType = "number",
-    isReferenceCalculation = false,
-  ) {
-    // Ensure rawValue is numeric for calculations where appropriate
-    const numericValue =
-      typeof rawValue === "string"
-        ? window.TEUI.parseNumeric(rawValue)
-        : rawValue;
-
-    // Determine the correct format type based on field ID conventions
-    let determinedFormatType;
-
-    // Determine format based on fieldId for precision matching Excel
-    if (fieldId === "g_101" || fieldId === "g_102" || fieldId === "g_104") {
-      determinedFormatType = "W/m2"; // Use W/m2 format for U-values (3dp) - matches Section 11
-    } else if (fieldId === "d_110") {
-      determinedFormatType = "number-3dp"; // ELA
-    } else if (fieldId === "g_110") {
-      determinedFormatType = "number-1dp"; // N-Factor
-    } else if (fieldId === "i_110") {
-      determinedFormatType = "integer"; // Zone number
-    } else if (fieldId === "d_107") {
-      determinedFormatType = "percent-2dp"; // WWR % with 2dp
-    } else if (
-      fieldId === "l_101" ||
-      fieldId === "l_102" ||
-      fieldId === "l_103"
-    ) {
-      determinedFormatType = "percent-2dp"; // Heatloss component %
-    } else if (
-      fieldId === "l_104" ||
-      fieldId === "l_107" ||
-      fieldId === "l_109" ||
-      fieldId === "l_110"
-    ) {
-      determinedFormatType = "percent-0dp"; // Total or reference % (no decimals)
-    } else if (
-      [
-        "d_101",
-        "d_102",
-        "d_106",
-        "i_101",
-        "i_102",
-        "i_103",
-        "i_104",
-        "k_101",
-        "k_102",
-        "k_103",
-        "k_104",
-      ].includes(fieldId)
-    ) {
-      determinedFormatType = "number-2dp-comma"; // Areas and kWh values with commas
-    } else {
-      // Default for other calculated numbers (rates, ratios, ACH50 etc.)
-      determinedFormatType = "number-2dp";
-    }
-
-    // Override if a specific format was passed and it's not the default 'number'
-    if (formatType !== "number") {
-      determinedFormatType = formatType;
-    }
-
-    // ✅ MODE-AWARE: Set value in appropriate state based on calculation context
-    const stateFieldId = isReferenceCalculation ? `ref_${fieldId}` : fieldId;
-
-    if (window.TEUI?.StateManager?.setValue) {
-      const currentStr = window.TEUI.StateManager.getValue(stateFieldId);
-      const currentNum = window.TEUI.parseNumeric(currentStr);
-      const newNum = Number.isFinite(numericValue) ? numericValue : 0;
-      const epsilon = 1e-9;
-      if (!(Math.abs((currentNum || 0) - newNum) < epsilon)) {
-        window.TEUI.StateManager.setValue(
-          stateFieldId,
-          String(newNum),
-          "calculated",
-        );
-      } else {
-        // No material change; skip DOM update
-        return;
+  function setCalculatedValue(fieldId, rawValue, isReferenceCalculation = false) {
+      const valueToStore = (rawValue !== null && rawValue !== undefined) ? String(rawValue) : "0";
+      
+      const state = isReferenceCalculation ? ReferenceState : TargetState;
+      state.setValue(fieldId, valueToStore);
+  
+      // Also publish to the global StateManager for downstream sections
+      if (window.TEUI?.StateManager) {
+          const key = isReferenceCalculation ? `ref_${fieldId}` : fieldId;
+          window.TEUI.StateManager.setValue(key, valueToStore, "calculated");
       }
-    } else {
-      console.error(
-        "StateManager not available to set value for",
-        stateFieldId,
-      );
-      return;
-    }
-
-    // For 'W/m2' format, use local formatNumber function
-    let formattedValue;
-    if (determinedFormatType === "W/m2") {
-      formattedValue = formatNumber(numericValue, "W/m2");
-    } else {
-      // For other formats, use the global formatter
-      formattedValue = window.TEUI.formatNumber(
-        numericValue,
-        determinedFormatType,
-      );
-    }
-
-    // ✅ MODE-AWARE DOM UPDATE: Reference calculations don't directly update DOM
-    if (!isReferenceCalculation) {
-      // Target calculations update DOM immediately
-      const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-      if (element) {
-        if (element.tagName === "SELECT" || element.tagName === "INPUT") {
-          element.value = formattedValue; // Update input/select value
-        } else {
-          element.textContent = formattedValue; // Update other element text content
-        }
-        element.classList.add("calculated-value");
-        element.classList.remove("user-input", "editable", "PendingValue");
-        element.removeAttribute("contenteditable");
-      } else {
-        console.warn("DOM element not found for calculated field:", fieldId);
-      }
-    }
-    // Reference calculations store values only; DOM updates handled by ModeManager.updateCalculatedDisplayValues()
   }
 
   function setElementClass(fieldId, className, removeClasses = []) {
@@ -2168,10 +2088,10 @@ window.TEUI.SectionModules.sect12 = (function () {
   }
 
   function calculateAll() {
-    // console.log(`[S12DEBUG] calculateAll() triggered in ${ModeManager.currentMode} mode`);
+    console.log(`[S12 DEBUG] calculateAll() triggered - caller: ${new Error().stack.split('\n')[2]?.trim()}`);
+    console.log(`[S12 DEBUG] Current mode: ${ModeManager.currentMode}, will calculate both Target and Reference`);
 
     // ✅ DUAL-ENGINE: Always run BOTH engines as per DUAL-STATE-CHEATSHEET mandate
-    // console.log(`[S12DEBUG] Running dual-engine calculations...`);
     calculateReferenceModel(); // Reads ReferenceState → stores ref_ prefixed
     calculateTargetModel(); // Reads TargetState → stores unprefixed
 
@@ -2304,9 +2224,9 @@ window.TEUI.SectionModules.sect12 = (function () {
       }
     });
 
-    console.log(
-      "[Section12] Reference results stored with ref_ prefix for downstream sections",
-    );
+    console.log(`[S12 DEBUG] Publishing ${Object.keys(allResults).length} Reference values to StateManager for downstream sections`);
+    console.log(`[S12 DEBUG] Critical S15 values: ref_g_101=${allResults.g_101}, ref_d_101=${allResults.d_101}, ref_i_104=${allResults.i_104}`);
+    console.log("[Section12] Reference results stored with ref_ prefix for downstream sections");
   }
 
   /**
