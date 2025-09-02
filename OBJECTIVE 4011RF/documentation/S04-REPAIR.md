@@ -11,6 +11,59 @@
 
 **State Mixing**: Both Target (`j_32`) and Reference (`ref_j_32`) values change when S10 area input changes in Target mode.
 
+## 🚨 **CRITICAL FUNCTION TO PRESERVE: Smart Grid Intensity Pattern**
+
+**⚠️ MUST NOT BREAK**: S04's sophisticated emissions factor system has been broken multiple times and is **critical for total emissions calculations** in S04, S01, and S15.
+
+### **🔧 Smart Grid Intensity Architecture (PRESERVE EXACTLY):**
+
+**1. Complete Ontario XLOOKUP Equivalent:**
+```javascript
+const GRID_INTENSITY_FACTORS = {
+  ON: { default: 51, 2015: 46, 2016: 40, 2017: 18, /* ... */ },
+  AB: { default: 650 }, // Year-independent
+  BC: { default: 12 },  // Year-independent
+  // ... other provinces
+};
+```
+
+**2. Mode-Aware Emission Factor Lookup:**
+```javascript
+function getElectricityEmissionFactor(isReferenceCalculation = false) {
+  if (isReferenceCalculation) {
+    provinceRaw = getGlobalStringValue("ref_d_19") || "ON";
+    year = getGlobalNumericValue("ref_h_12") || 2022;
+  } else {
+    provinceRaw = getGlobalStringValue("d_19") || "ON";
+    year = getGlobalNumericValue("h_12") || 2022;
+  }
+  return getElectricityFactor(province, year);
+}
+```
+
+**3. Critical Dual-State Listeners (MUST PRESERVE):**
+```javascript
+// Target mode listeners
+StateManager.addListener("d_19", () => calculateAll()); // Province → emission factors
+StateManager.addListener("h_12", () => calculateAll()); // Year → Ontario factors
+
+// Reference mode listeners  
+StateManager.addListener("ref_d_19", () => calculateReferenceModel()); // Ref province
+StateManager.addListener("ref_h_12", () => calculateReferenceModel()); // Ref year
+```
+
+**Key Behaviors:**
+- **Ontario + Year**: Updates based on S02 reporting year (2015-2041+ lookup table)
+- **Other Provinces**: Year-independent values (AB=650, BC=12, etc.)
+- **Perfect dual-state isolation**: Target and Reference use separate province/year values
+- **Real-time updates**: Responds immediately to S02/S03 changes
+
+**Why This is Critical:**
+- **S04 total emissions** (j_32, k_32) depend on accurate emission factors
+- **S01 dashboard** (h_10, e_10) displays these totals 
+- **S15 ratios** (d_145) compare Target vs Reference emissions
+- **Regulatory compliance**: Accurate emission factors essential for code compliance
+
 ---
 
 ## 🏗️ **ARCHITECTURE COMPLIANCE (README.md)**
