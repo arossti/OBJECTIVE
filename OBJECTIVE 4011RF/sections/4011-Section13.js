@@ -379,7 +379,12 @@ window.TEUI.SectionModules.sect13 = (function () {
         } else if (element.type === "range") {
           // Handle sliders/coefficient fields
           element.value = stateValue;
-          // Update associated text displays
+          // ✅ FIX: Update slider display value (like S11 pattern)
+          const displaySpan = element.parentElement.querySelector(".slider-value");
+          if (displaySpan) {
+            displaySpan.textContent = fieldId === "f_113" ? parseFloat(stateValue).toFixed(1) : stateValue;
+          }
+          // Also update nextElementSibling as fallback
           const textDisplay = element.nextElementSibling;
           if (textDisplay && textDisplay.matches("[data-field-id]")) {
             textDisplay.textContent = stateValue;
