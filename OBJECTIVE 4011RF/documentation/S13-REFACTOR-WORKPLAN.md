@@ -62,14 +62,55 @@ function setCalculatedValue(fieldId, rawValue, formatType, isReferenceCalculatio
 
 ## 📋 **IMPLEMENTATION PHASES** (Based on S13-FIXES.md Analysis)
 
-### **Phase 1A: Minimal UI Fixes (Priority 1)**
+### **Phase 1A: HSPF Slider Position Persistence Fix (Priority 1)**
 **Goal**: Fix ONLY the slider position state mixing issue
 
 **CRITICAL**: One tiny fix at a time to avoid recursion/calculation storms
 - **Issue**: HSPF slider position doesn't restore correctly when switching modes
 - **Test**: Target f_113=12.5, Reference f_113=7.1, switch back → should show 12.5
-- **Approach**: Fix slider position restoration in refreshUI() only
-- **No calculation changes**: Keep all calculation logic unchanged
+- **Status**: ✅ HSPF slider event handler working for S13 internal calculations
+- **Remaining**: Fix slider position persistence on mode switches
+
+**✅ PROVEN WORKING PATTERN (S10/S11):**
+
+```javascript
+// In refreshUI() function - S10/S11 proven pattern:
+fieldsToSync.forEach((fieldId) => {
+  const stateValue = currentState.getValue(fieldId); // Gets value from current mode's state
+  const element = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
+  
+  const slider = element.matches('input[type="range"]')
+    ? element
+    : element.querySelector('input[type="range"]');
+    
+  if (slider) {
+    const numericValue = window.TEUI.parseNumeric(stateValue, 0);
+    slider.value = numericValue; // ✅ CRITICAL: Updates slider position
+    
+    // Update display (nextElementSibling pattern)
+    const display = slider.nextElementSibling;
+    if (display) {
+      display.textContent = parseFloat(numericValue).toFixed(1); // For HSPF
+    }
+  }
+});
+```
+
+**Key Success Factors:**
+1. **Correct element targeting**: Use `element.matches('input[type="range"]')` pattern
+2. **State value reading**: `currentState.getValue(fieldId)` gets mode-specific value
+3. **Slider position update**: `slider.value = numericValue` restores position
+4. **Display update**: `nextElementSibling.textContent` updates visible value
+5. **Include f_113 in fieldsToSync**: Must be in the array for refreshUI() to process it
+
+**Current S13 Issue**: Likely f_113 not properly handled in refreshUI() slider targeting or fieldsToSync array.
+
+### **Phase 1A Implementation Plan (Sept 2nd):**
+1. **Check S13's fieldsToSync array**: Ensure f_113 is included
+2. **Verify element targeting**: Use S10's `element.matches('input[type="range"]')` pattern  
+3. **Apply S10's slider update pattern**: `slider.value = numericValue` + `nextElementSibling` display
+4. **Test slider persistence**: Target 12.5 → Reference 7.1 → back to Target should show 12.5
+5. **Minimal change only**: No calculation logic modifications
 
 ### **Phase 1B: Target Mode Validation**
 **Goal**: Ensure current S13 Target mode still matches baseline (h_10 = 93.6)
@@ -87,7 +128,16 @@ function setCalculatedValue(fieldId, rawValue, formatType, isReferenceCalculatio
 - **Comparison Standard**: S13-GS.js (Gold Standard from ARCHIVE)
 - **Known Issues**: 19 getFieldValue() violations causing state contamination
 
-### **Phase 2: Current State Anti-Pattern Elimination (Priority 2)**
+### **Phase 1C: Cross-Section Flow Validation (After Slider Fix)**
+**Goal**: Verify S13 → downstream section calculation flow
+
+**Test Sequence:**
+1. **Change HSPF slider in Target mode**: f_113 from 12.5 to 15.0
+2. **Expected S13 internal updates**: COP values change ✅ (confirmed working)
+3. **Expected cross-section flow**: h_115 → S04 → S15 → h_10 updates
+4. **If h_10 doesn't update**: Cross-section publishing issue (Phase 2 work)
+
+### **Phase 2: State Isolation Architecture (Major Work)**
 **Systematic fix of 19 getFieldValue() violations identified in S13-FIXES.md:**
 
 | **Function** | **Lines** | **Contamination** | **Fix Type** |
