@@ -346,7 +346,13 @@ window.TEUI.SectionModules.sect15 = (function () {
       calculatedFields.forEach((fieldId) => {
           const element = document.querySelector(`[data-field-id="${fieldId}"]`);
           if (element) {
-              const rawValue = currentState.getValue(fieldId);
+              let rawValue = currentState.getValue(fieldId);
+              
+              // ✅ SPECIAL CASE: d_145 is mode-agnostic (always Target vs Reference ratio)
+              // If not available in current state, read from Target state as fallback
+              if ((rawValue === 'N/A' || rawValue === null || rawValue === undefined) && fieldId === "d_145") {
+                rawValue = TargetState.getValue(fieldId); // Escape to Target state for ratio
+              }
               
               if (rawValue === 'N/A' || rawValue === null || rawValue === undefined) {
                   element.textContent = 'N/A';
@@ -1571,8 +1577,10 @@ window.TEUI.SectionModules.sect15 = (function () {
       }
       setReferenceValue("l_144", ref_actualVsTarget_l144);
 
-      // GHG Reduction using Reference emissions from Section 04
-      let ref_ghgReduction_d145 = ref_k32 > 0 ? 1 - ref_k32 / ref_k32 : 0; // This will be 0 for Reference vs Reference
+      // GHG Reduction: Always Target vs Reference (same in both UI modes)
+      // d_145 formula: 1 - (k_32 / ref_k_32) - compares Target vs Reference regardless of UI mode
+      const targetEmissions_k32_forRatio = getNumericValue("k_32") || 0; // Always read Target emissions
+      let ref_ghgReduction_d145 = ref_k32 > 0 ? 1 - targetEmissions_k32_forRatio / ref_k32 : 0;
       setReferenceValue("d_145", ref_ghgReduction_d145);
 
       // Debug logging (reduced frequency)
@@ -1892,7 +1900,7 @@ window.TEUI.SectionModules.sect15 = (function () {
       }
       setTargetValue("l_144", actualVsTarget_l144);
 
-      // d_145: =1-(K32/REFERENCE!K32)
+      // d_145: =1-(K32/REFERENCE!K32) - GHG Reduction from Reference
       let ghgReduction_d145 =
         referenceEmissions_REF_k32 > 0
           ? 1 - targetEmissions_k32 / referenceEmissions_REF_k32
@@ -1904,6 +1912,8 @@ window.TEUI.SectionModules.sect15 = (function () {
         ghgReduction_d145 = 0; // No reduction if baseline and target are zero or positive
       }
       setTargetValue("d_145", ghgReduction_d145);
+      // ✅ SPECIAL CASE: Also store in ReferenceState for mode-agnostic display
+      ReferenceState.setValue("d_145", ghgReduction_d145, "calculated");
     } catch (error) {
       console.error("Error in TEUI Summary calculations:", error);
     }
@@ -2036,6 +2046,7 @@ window.TEUI.SectionModules.sect15 = (function () {
     const addCalculationListener = (key) => {
       sm.addListener(key, () => {
         calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
       });
     };
 

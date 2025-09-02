@@ -186,6 +186,220 @@ The Pattern A refactoring initiative is substantially complete.
 - ✅ **Completed Sections**: S01, S02, S03, S05, S06, S07, S08, S09, S10, S11, S12, S13, S14, S15.
 - ✅ **S04 (Energy Summary)**: Has been completely rebuilt from scratch as a pure **Consumer Section**, resolving previous architectural issues. It now SHOULD correctly read upstream values from S13/S15.
 
+### **🏛️ CONSUMER SECTION ARCHITECTURE EXCEPTION**
+
+**CRITICAL NOTE**: Consumer sections (S01, S04, S14, S15) use **different architectural patterns** than standard calculation sections due to their unique integration role.
+
+**Consumer Section Characteristics:**
+- Read from 10+ upstream sections
+- Minimal internal calculations
+- Complex dual-state integration requirements
+- Must maintain perfect state isolation despite external dependencies
+
+**Consumer Section Types:**
+
+1. **Pure Display Consumer (S01)**: No calculations, displays pre-calculated values only
+2. **Integration Consumer (S04)**: Complex calculations combining multiple upstream sources
+3. **Summary Consumer (S14, S15)**: Hybrid sections with both consumer and calculation roles
+
+**✅ PROVEN PATTERN: Function Override Architecture (S04)**
+
+Consumer sections may use the **"Function Override Pattern"** for Reference calculations:
+
+```javascript
+function calculateReferenceModel() {
+  const originalSetCalculatedValue = setCalculatedValue;
+  // Override function temporarily for this scope
+  setCalculatedValue = setReferenceCalculatedValue;
+  
+  try {
+    // All calculations in this scope automatically use Reference setter
+    calculateRow27();
+    calculateRow28();
+    // ... etc
+  } finally {
+    // CRITICAL: Restore original function
+    setCalculatedValue = originalSetCalculatedValue;
+  }
+}
+```
+
+**Why This Pattern is Necessary for Consumer Sections:**
+- **Transparent Integration**: Existing calculation functions work without modification
+- **Listener Safe**: Works correctly when triggered by external `ref_` listeners
+- **Centralized State Routing**: One place controls where all calculations are stored
+- **Backward Compatible**: No need to modify individual calculation functions
+
+**⚠️ DO NOT apply standard dual-state patterns to consumer sections** - their architecture is intentionally different and optimized for their integration role.
+
+### **🚨 CRITICAL CONSUMER SECTION ISSUES TO MONITOR**
+
+**S14 Contamination Risk (Needs Fix):**
+```javascript
+// ❌ CONTAMINATION RISK in S14:
+const getRefValue = (fieldId) => {
+  const refValue = window.TEUI?.StateManager?.getValue(`ref_${fieldId}`);
+  const fallbackValue = window.TEUI?.StateManager?.getReferenceValue(fieldId);
+  const domValue = getNumericValue(fieldId);
+  return refValue || fallbackValue || domValue; // 🚨 May read Target values
+};
+
+// ✅ CORRECT PATTERN (like S15):
+const getRefValue = (fieldId) => {
+  const refValue = window.TEUI?.StateManager?.getValue(`ref_${fieldId}`);
+  if (refValue === null || refValue === undefined) {
+    return null; // Never fallback to Target values
+  }
+  return parseFloat(refValue) || 0;
+};
+```
+
+**Status:**
+- ✅ **S01**: Pure display consumer - no contamination risk
+- ✅ **S04**: Function override pattern - proven working architecture  
+- ⚠️ **S14**: Has fallback contamination risk - needs Phase 6 fix
+- ✅ **S15**: Already fixed - clean Reference reading pattern
+
+---
+
+## 🔍 **CALCULATION FLOW DEBUGGING GUIDE**
+
+### **🎯 CRITICAL INSIGHT: Calculations Are Not The Problem**
+
+**As dual-state architecture matures, issues shift from calculation logic to calculation flow:**
+- ✅ **Calculations themselves**: Almost always correct
+- 🚨 **Timing/refresh issues**: Primary source of bugs
+- 🚨 **Missing listeners**: Fields not updating when dependencies change
+- 🚨 **Calculation flow**: Wrong order or missing triggers
+
+### **📋 SYSTEMATIC DEBUGGING APPROACH**
+
+#### **Step 1: Identify the Calculation Chain**
+
+**Example: d_145 (Target vs Reference Emissions Ratio)**
+
+```javascript
+// d_145 calculation (in S15):
+const d_145 = (k_32 / ref_k_32) * 100; // Target emissions / Reference emissions * 100
+```
+
+**Dependencies Identified:**
+- `k_32` (Target total emissions from S04)
+- `ref_k_32` (Reference total emissions from S04)
+
+#### **Step 2: Trace Upstream Dependencies**
+
+**Follow the chain backwards:**
+```
+d_145 (S15) ← k_32 & ref_k_32 (S04) ← Multiple upstream sections
+                                    ← h_12 (S02 reporting year)
+                                    ← d_19 (S03 province) 
+                                    ← [emission factors change]
+```
+
+#### **Step 3: Identify Missing Listeners**
+
+**The Problem Pattern:**
+```javascript
+// ❌ MISSING: S15 doesn't listen to S02/S03 changes
+// When h_12 or d_19 changes:
+// 1. S04 recalculates k_32 and ref_k_32 ✅
+// 2. S15 d_145 should recalculate ❌ (no listener)
+```
+
+**The Solution:**
+```javascript
+// ✅ ADD: Direct dependency listeners in S15
+StateManager.addListener("k_32", () => {
+  calculateD145(); // Recalculate when Target emissions change
+  ModeManager.updateCalculatedDisplayValues();
+});
+
+StateManager.addListener("ref_k_32", () => {
+  calculateD145(); // Recalculate when Reference emissions change  
+  ModeManager.updateCalculatedDisplayValues();
+});
+```
+
+#### **Step 4: Smart Listener Placement**
+
+**Principle: Listen to Direct Dependencies, Not Root Causes**
+
+```javascript
+// ❌ WRONG: Listen to root causes
+StateManager.addListener("h_12", calculateD145); // Too upstream
+StateManager.addListener("d_19", calculateD145); // Too upstream
+
+// ✅ CORRECT: Listen to direct dependencies
+StateManager.addListener("k_32", calculateD145);     // Direct dependency
+StateManager.addListener("ref_k_32", calculateD145); // Direct dependency
+```
+
+**Why This is Better:**
+- **Cleaner separation**: S15 doesn't need to know about S02/S03 internal fields
+- **More robust**: Works even if upstream calculation chains change
+- **Better performance**: Fewer cross-section listeners
+
+### **🚨 SPECIAL CASE: Ratio Calculations in Dual-State**
+
+**The d_145 Pattern (Target/Reference Ratios):**
+
+```javascript
+// This calculation NEEDS both Target and Reference values
+const d_145 = (k_32 / ref_k_32) * 100;
+
+// In Reference mode, d_145 stays the same because:
+// - It's comparing Target vs Reference (the ratio itself)
+// - The calculation doesn't change based on UI mode
+// - It always needs BOTH k_32 AND ref_k_32
+```
+
+**Key Insight**: Ratio calculations are **mode-agnostic** but **dual-state dependent**.
+
+### **📋 DEBUGGING CHECKLIST FOR CALCULATION FLOW ISSUES**
+
+#### **When a field doesn't update:**
+
+1. **✅ Verify calculation logic** (usually correct)
+2. **🔍 Trace dependency chain** (what feeds this calculation?)
+3. **🔍 Check listeners exist** (does section listen to dependencies?)
+4. **🔍 Verify listener placement** (listening to direct vs indirect dependencies?)
+5. **🔍 Check DOM updates** (is `updateCalculatedDisplayValues()` called?)
+6. **🔍 Test calculation order** (are dependencies calculated before dependents?)
+
+#### **Common Patterns:**
+
+```javascript
+// ✅ CORRECT LISTENER PATTERN:
+function initializeEventHandlers() {
+  // Listen to direct dependencies only
+  StateManager.addListener("direct_dependency", () => {
+    calculateAffectedField();
+    ModeManager.updateCalculatedDisplayValues();
+  });
+}
+
+// ✅ CORRECT CALCULATION PATTERN:
+function calculateAffectedField() {
+  const dep1 = StateManager.getValue("direct_dependency_1");
+  const dep2 = StateManager.getValue("direct_dependency_2");
+  const result = someFormula(dep1, dep2);
+  setCalculatedValue("affected_field", result);
+}
+```
+
+### **🎯 PERFORMANCE PRINCIPLE: Minimal Cross-Section Coupling**
+
+**Good Architecture:**
+- Sections listen to **their direct dependencies**
+- Dependencies propagate through **StateManager events**
+- Each section **owns its calculation logic**
+
+**Bad Architecture:**
+- Sections listen to **upstream root causes**
+- Complex **cross-section knowledge** requirements
+- **Tight coupling** between unrelated sections
+
 ---
 
 ## 📋 Pattern A Implementation Checklist
