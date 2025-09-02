@@ -379,12 +379,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         } else if (element.type === "range") {
           // Handle sliders/coefficient fields
           element.value = stateValue;
-          // ✅ FIX: Update slider display value (like S11 pattern)
-          const displaySpan = element.parentElement.querySelector(".slider-value");
-          if (displaySpan) {
-            displaySpan.textContent = fieldId === "f_113" ? parseFloat(stateValue).toFixed(1) : stateValue;
-          }
-          // Also update nextElementSibling as fallback
+          // Update associated text displays
           const textDisplay = element.nextElementSibling;
           if (textDisplay && textDisplay.matches("[data-field-id]")) {
             textDisplay.textContent = stateValue;
@@ -1948,7 +1943,32 @@ window.TEUI.SectionModules.sect13 = (function () {
       // When user changes dropdowns in Reference mode, ReferenceState.setValue() triggers
       // calculateAll() and updateCalculatedDisplayValues() for d_113 changes
 
-      // Listener for f_113 (HSPF) changes
+      // ✅ FIX: Add direct HSPF slider handler (S11 proven pattern)
+      const f113Slider = document.querySelector('input[type="range"][data-field-id="f_113"]');
+      if (f113Slider && !f113Slider.hasSliderListener) {
+        // Direct slider event for immediate S13 calculations
+        f113Slider.addEventListener("input", function () {
+          const hspfValue = parseFloat(this.value);
+          if (isNaN(hspfValue)) return;
+
+          // Update display immediately
+          const displaySpan = this.parentElement.querySelector(".slider-value");
+          if (displaySpan) {
+            displaySpan.textContent = hspfValue.toFixed(1);
+          }
+
+          // ✅ DUAL-STATE: Update via ModeManager (handles state isolation)
+          ModeManager.setValue("f_113", hspfValue.toString(), "user-modified");
+          
+          // Trigger S13 calculations (this was working)
+          calculateAll();
+          ModeManager.updateCalculatedDisplayValues();
+        });
+
+        f113Slider.hasSliderListener = true;
+      }
+
+      // Keep original StateManager listener
       sm.addListener("f_113", calculateCOPValues);
 
       // Listener for d_116 (Cooling System) changes
