@@ -135,11 +135,13 @@ window.TEUI.SectionModules.sect10 = (function () {
         (mode !== "target" && mode !== "reference")
       )
         return;
+      const oldMode = this.currentMode;
       this.currentMode = mode;
-      console.log(`S10: Switched to ${mode.toUpperCase()} mode`);
+      console.log(`[S10 DEBUG] Mode switch: ${oldMode} → ${mode.toUpperCase()}`);
 
       // ✅ PATTERN A: UI toggle only switches display, values should already be calculated
       this.refreshUI();
+      console.log(`[S10 DEBUG] Calling updateCalculatedDisplayValues() for ${mode} mode`);
       this.updateCalculatedDisplayValues(); // ✅ ADD: Update calculated field displays for new mode
     },
     resetState: function () {
@@ -359,12 +361,24 @@ window.TEUI.SectionModules.sect10 = (function () {
       const valueToStore = (rawValue !== null && rawValue !== undefined) ? String(rawValue) : "0";
       
       const state = isReferenceCalculation ? ReferenceState : TargetState;
+      const stateType = isReferenceCalculation ? "Reference" : "Target";
+      
+      // 🔍 DEBUG: Track state writes for key fields
+      if (["i_79", "k_79", "i_80"].includes(fieldId)) {
+        console.log(`[S10 DEBUG] setCalculatedValue: ${fieldId}=${valueToStore} → ${stateType}State (isRef=${isReferenceCalculation})`);
+      }
+      
       state.setValue(fieldId, valueToStore);
   
       // Also publish to the global StateManager for downstream sections
       if (window.TEUI?.StateManager) {
           const key = isReferenceCalculation ? `ref_${fieldId}` : fieldId;
           window.TEUI.StateManager.setValue(key, valueToStore, "calculated");
+          
+          // 🔍 DEBUG: Track StateManager writes for key fields
+          if (["i_79", "k_79", "i_80"].includes(fieldId)) {
+            console.log(`[S10 DEBUG] Published to StateManager: ${key}=${valueToStore}`);
+          }
       }
   }
 

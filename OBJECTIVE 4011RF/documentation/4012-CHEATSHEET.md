@@ -402,6 +402,38 @@ function calculateAffectedField() {
 
 ---
 
+## 🚨 **CRITICAL RESTORATION REFERENCE**
+
+### **Pre-UNTANGLE Commit: `baa989f` (August 31, 2025)**
+
+**If significant cross-section dependency issues emerge, consider reverting to this commit:**
+
+```bash
+# Restore specific sections from pre-UNTANGLE state:
+git checkout baa989f -- "OBJECTIVE 4011RF/sections/4011-Section11.js"
+git checkout baa989f -- "OBJECTIVE 4011RF/sections/4011-Section12.js"
+```
+
+**Why This Commit is Critical:**
+- ✅ **S11-S12 robot fingers work perfectly** (TB% slider updates S12 UI immediately)
+- ✅ **Complete display update logic** (371 more lines of proven functionality)
+- ✅ **Zero cross-section warnings** (clean S15 upstream dependencies)
+- ✅ **Mature architecture** (working for months before UNTANGLE work)
+
+**UNTANGLE Work Lessons Learned:**
+- **Working functionality > theoretical purity** 
+- **Cross-section dependencies are fragile** and hard to restore once broken
+- **"Don't fix what isn't broken"** - mature sections should be preserved
+- **Robot fingers and display logic** were working patterns, not antipatterns
+
+**Use this reference when:**
+- Cross-section communication breaks
+- UI updates stop working after architectural changes
+- Missing upstream dependency warnings appear
+- Working sliders stop triggering downstream updates
+
+---
+
 ## 📋 Pattern A Implementation Checklist
 
 ### 1. The Three Core Objects
