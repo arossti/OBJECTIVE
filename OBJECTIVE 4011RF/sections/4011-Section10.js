@@ -484,6 +484,8 @@ window.TEUI.SectionModules.sect10 = (function () {
     // Trigger recalculation using the standardized calculateAll function
     if (typeof calculateAll === "function") {
       calculateAll();
+      // ✅ CRITICAL FIX: Update UI after calculations (like dropdown handler)
+      ModeManager.updateCalculatedDisplayValues();
     }
   }
 
