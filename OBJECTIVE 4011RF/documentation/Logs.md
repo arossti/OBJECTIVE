@@ -1,53 +1,3 @@
-4011-Section04.js:94 [S04] j_32 update: 0
-4011-Section04.js:451 [S04] 🔄 Updating calculated display values for target mode
-4011-Section04.js:459 [S04DB] displayContext mode=target j_32=0 ref_j_32=0 k_32=0 ref_k_32=0
-4011-Section04.js:540 [S04 DEBUG] Target mode - j_32: 0
-4011-Section04.js:540 [S04 DEBUG] Target mode - k_32: 0
-4011-Section04.js:540 [S04 DEBUG] Target mode - l_27: 51
-4011-Section04.js:575 [S04] Calculated display values updated for target mode
-4011-Section04.js:2596 [S04] k_54 listener fired - S07 oil
-4011-Section04.js:94 [S04] j_32 update: 0
-4011-Section04.js:451 [S04] 🔄 Updating calculated display values for target mode
-4011-Section04.js:459 [S04DB] displayContext mode=target j_32=0 ref_j_32=0 k_32=0 ref_k_32=0
-4011-Section04.js:540 [S04 DEBUG] Target mode - j_32: 0
-4011-Section04.js:540 [S04 DEBUG] Target mode - k_32: 0
-4011-Section04.js:540 [S04 DEBUG] Target mode - l_27: 51
-4011-Section04.js:575 [S04] Calculated display values updated for target mode
-4011-Section07.js:658 [S07] 🚨 CRITICAL: ref_d_63 missing, using default 0 for Reference calculation
-calculateWaterUse @ 4011-Section07.js:658Understand this warningAI
-4011-Section07.js:806 [S07] calculateEmissionsAndLosses: systemType="Heatpump" (REF)
-4011-Section07.js:841 [S07] ⚡ Non-fossil fuel: Heatpump → e_51=0, k_54=0 (both cleared)
-4011-Section08.js:633 [S08] S04 listeners setup complete
-4011-Section04.js:2538 [S04] S08 forestry offset changed: d_60
-4011-Section04.js:451 [S04] 🔄 Updating calculated display values for target mode
-4011-Section04.js:459 [S04DB] displayContext mode=target j_32=0 ref_j_32=0 k_32=0 ref_k_32=0
-4011-Section04.js:540 [S04 DEBUG] Target mode - j_32: 0
-4011-Section04.js:540 [S04 DEBUG] Target mode - k_32: 0
-4011-Section04.js:540 [S04 DEBUG] Target mode - l_27: 51
-4011-Section04.js:575 [S04] Calculated display values updated for target mode
-24011-Section09.js:2208 [S09] ✅ Pattern A dual-engine listeners registered (5 Target/Reference pairs)
-4011-Section09.js:311 S09: UI refreshed for target mode
-4011-Section04.js:2688 [S04] S09 total internal gains changed (Reference): ref_h_71
-4011-Section04.js:976 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1626 [S04] Reference model calculations complete
-4011-Section04.js:1632 [S04DB] storeReference: ref_j_32=0, ref_k_32=0 | current target j_32=0, k_32=0
-4011-Section04.js:451 [S04] 🔄 Updating calculated display values for target mode
-4011-Section04.js:459 [S04DB] displayContext mode=target j_32=0 ref_j_32=0 k_32=0 ref_k_32=0
-4011-Section04.js:540 [S04 DEBUG] Target mode - j_32: 0
-4011-Section04.js:540 [S04 DEBUG] Target mode - k_32: 0
-4011-Section04.js:540 [S04 DEBUG] Target mode - l_27: 51
-4011-Section04.js:575 [S04] Calculated display values updated for target mode
-4011-Section04.js:2696 [S04] S09 heating internal gains changed (Reference): ref_i_71
-4011-Section04.js:976 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1626 [S04] Reference model calculations complete
-4011-Section04.js:1632 [S04DB] storeReference: ref_j_32=0, ref_k_32=0 | current target j_32=0, k_32=0
-4011-Section04.js:451 [S04] 🔄 Updating calculated display values for target mode
-4011-Section04.js:459 [S04DB] displayContext mode=target j_32=0 ref_j_32=0 k_32=0 ref_k_32=0
-4011-Section04.js:540 [S04 DEBUG] Target mode - j_32: 0
-4011-Section04.js:540 [S04 DEBUG] Target mode - k_32: 0
-4011-Section04.js:540 [S04 DEBUG] Target mode - l_27: 51
-4011-Section04.js:575 [S04] Calculated display values updated for target mode
-4011-Section04.js:2704 [S04] S09 cooling internal gains changed (Reference): ref_k_71
 4011-Section04.js:976 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
 4011-Section04.js:1626 [S04] Reference model calculations complete
 4011-Section04.js:1632 [S04DB] storeReference: ref_j_32=0, ref_k_32=0 | current target j_32=0, k_32=0
@@ -82,8 +32,57 @@ calculateWaterUse @ 4011-Section07.js:658Understand this warningAI
 4011-Section07.js:806 [S07] calculateEmissionsAndLosses: systemType="Heatpump" (REF)
 4011-Section07.js:841 [S07] ⚡ Non-fossil fuel: Heatpump → e_51=0, k_54=0 (both cleared)
 24011-Section09.js:383 [S09] Updated calculated display values for target mode
+4011-Section04.js:2514 [S04] Occupancy changed (Reference): ref_d_63
+4011-Section04.js:1535 [S04] Starting dual-engine Excel-compliant calculations
+4011-Section04.js:976 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
+4011-Section04.js:94 [S04] j_32 update: 0
+4011-Section04.js:976 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
+4011-Section04.js:1626 [S04] Reference model calculations complete
+4011-Section04.js:1632 [S04DB] storeReference: ref_j_32=0, ref_k_32=0 | current target j_32=0, k_32=0
+4011-Section04.js:451 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:459 [S04DB] displayContext mode=target j_32=0 ref_j_32=0 k_32=0 ref_k_32=0
+4011-Section04.js:540 [S04 DEBUG] Target mode - j_32: 0
+4011-Section04.js:540 [S04 DEBUG] Target mode - k_32: 0
+4011-Section04.js:540 [S04 DEBUG] Target mode - l_27: 51
+4011-Section04.js:575 [S04] Calculated display values updated for target mode
+4011-Section04.js:1557 [S04] Dual-engine calculations completed successfully
+4011-Section04.js:451 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:459 [S04DB] displayContext mode=target j_32=0 ref_j_32=0 k_32=0 ref_k_32=0
+4011-Section04.js:540 [S04 DEBUG] Target mode - j_32: 0
+4011-Section04.js:540 [S04 DEBUG] Target mode - k_32: 0
+4011-Section04.js:540 [S04 DEBUG] Target mode - l_27: 51
+4011-Section04.js:575 [S04] Calculated display values updated for target mode
+4011-Section07.js:806 [S07] calculateEmissionsAndLosses: systemType="Heatpump" (TGT)
+4011-Section07.js:841 [S07] ⚡ Non-fossil fuel: Heatpump → e_51=0, k_54=0 (both cleared)
+4011-Section07.js:806 [S07] calculateEmissionsAndLosses: systemType="Heatpump" (REF)
+4011-Section07.js:841 [S07] ⚡ Non-fossil fuel: Heatpump → e_51=0, k_54=0 (both cleared)
+4011-Section09.js:2370 [S09] 🔗 Published initial ref_d_63=126 for S07
 4011-Section09.js:2208 [S09] ✅ Pattern A dual-engine listeners registered (5 Target/Reference pairs)
 4011-Section09.js:311 S09: UI refreshed for target mode
+4011-Section04.js:2514 [S04] Occupancy changed (Reference): ref_d_63
+4011-Section04.js:1535 [S04] Starting dual-engine Excel-compliant calculations
+4011-Section04.js:976 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
+4011-Section04.js:94 [S04] j_32 update: 0
+4011-Section04.js:976 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
+4011-Section04.js:1626 [S04] Reference model calculations complete
+4011-Section04.js:1632 [S04DB] storeReference: ref_j_32=0, ref_k_32=0 | current target j_32=0, k_32=0
+4011-Section04.js:451 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:459 [S04DB] displayContext mode=target j_32=0 ref_j_32=0 k_32=0 ref_k_32=0
+4011-Section04.js:540 [S04 DEBUG] Target mode - j_32: 0
+4011-Section04.js:540 [S04 DEBUG] Target mode - k_32: 0
+4011-Section04.js:540 [S04 DEBUG] Target mode - l_27: 51
+4011-Section04.js:575 [S04] Calculated display values updated for target mode
+4011-Section04.js:1557 [S04] Dual-engine calculations completed successfully
+4011-Section04.js:451 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:459 [S04DB] displayContext mode=target j_32=0 ref_j_32=0 k_32=0 ref_k_32=0
+4011-Section04.js:540 [S04 DEBUG] Target mode - j_32: 0
+4011-Section04.js:540 [S04 DEBUG] Target mode - k_32: 0
+4011-Section04.js:540 [S04 DEBUG] Target mode - l_27: 51
+4011-Section04.js:575 [S04] Calculated display values updated for target mode
+4011-Section07.js:806 [S07] calculateEmissionsAndLosses: systemType="Heatpump" (TGT)
+4011-Section07.js:841 [S07] ⚡ Non-fossil fuel: Heatpump → e_51=0, k_54=0 (both cleared)
+4011-Section07.js:806 [S07] calculateEmissionsAndLosses: systemType="Heatpump" (REF)
+4011-Section07.js:841 [S07] ⚡ Non-fossil fuel: Heatpump → e_51=0, k_54=0 (both cleared)
 24011-Section09.js:383 [S09] Updated calculated display values for target mode
 4011-Section10.js:2477 S10: Section rendered - initializing Self-Contained State Module.
 4011-Section10.js:2452 S10: Simplified global StateManager listeners added
@@ -420,6 +419,8 @@ index.html:1079 TEUI Calculator 4.011 initialization complete
 4011-Section01.js:574 🔍 [S01DB] updateTEUIDisplay START: e_10=341.2, h_10=93.0, useType=Utility Bills
 4011-Section01.js:729 🔍 [S01DB] UPDATING h_10: 0.0 (from j_32=0, area=1427.2)
 4011-Section01.js:1032 ✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10
+4011-Dependency.js:116 [DependencyGraph] Data loaded: 389 nodes, 663 links
+4011-Dependency.js:718 [DependencyGraph] Calculating node sizes...
 4011-Section15.js:1395 [S15] Missing critical upstream Reference values: ref_g_101, ref_i_104
 calculateReferenceModel @ 4011-Section15.js:1395Understand this warningAI
 4011-Section15.js:1399 [S15] Using fallback values for missing upstream dependencies (initialization timing)
@@ -789,12 +790,6 @@ calculateReferenceModel @ 4011-Section15.js:1395Understand this warningAI
 4011-Section13.js:310 [Section13] Calculated display values updated for target mode
 4011-Section12.js:240 [S12DB] g_104 DISPLAY (target): 0.2924870886396271
 4011-Section12.js:244 [Section12] Calculated display values updated for target mode
-4011-Dependency.js:116 [DependencyGraph] Data loaded: 389 nodes, 663 links
-4011-Dependency.js:718 [DependencyGraph] Calculating node sizes...
-4011-Section01.js:1014 [S01DB] upstream snapshot Object
-4011-Section01.js:574 🔍 [S01DB] updateTEUIDisplay START: e_10=341.2, h_10=93.0, useType=Utility Bills
-4011-Section01.js:729 🔍 [S01DB] UPDATING h_10: 93.6 (from j_32=133574.36633416289, area=1427.2)
-4011-Section01.js:1032 ✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10
 4011-Clock.js:41 [CLOCK] Starting initial load timing
 4011-Section11.js:1642 [S11] calculateAll TRIGGERED. isReferenceMode: false
 4011-Section11.js:1211 [S11] REF TB%=50% → ref_i_97=59532.29, ref_k_97=-947.70
@@ -1015,11 +1010,17 @@ calculateReferenceModel @ 4011-Section15.js:1395Understand this warningAI
 4011-Section04.js:1557 [S04] Dual-engine calculations completed successfully
 4011-Dependency.js:116 [DependencyGraph] Data loaded: 389 nodes, 663 links
 4011-Dependency.js:718 [DependencyGraph] Calculating node sizes...
+4011-Section01.js:1014 [S01DB] upstream snapshot Object
+4011-Section01.js:574 🔍 [S01DB] updateTEUIDisplay START: e_10=341.2, h_10=93.0, useType=Utility Bills
+4011-Section01.js:729 🔍 [S01DB] UPDATING h_10: 93.6 (from j_32=133574.36633416289, area=1427.2)
+4011-Clock.js:59 🕐 [CLOCK] ⭐ INITIALIZATION COMPLETE: 557ms (all calculations finalized)
+4011-Section01.js:1032 ✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10
 4011-Section10.js:511 [S10 AREA EVENT] handleFieldBlur: d_73=1000 in target mode
 4011-Section10.js:171 [S10 MODEMANAGER DEBUG] setValue: d_73=1000 in target mode, source=user-modified
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
 4011-Section11.js:1642 [S11] calculateAll TRIGGERED. isReferenceMode: false
- [S11] REF TB%=50% → ref_i_97=168556.43, ref_k_97=3697.68
- S10: Reference listener triggered by ref_i_98, recalculating all.
+4011-Section11.js:1211 [S11] REF TB%=50% → ref_i_97=168556.43, ref_k_97=3697.68
+4011-Section10.js:2423 S10: Reference listener triggered by ref_i_98, recalculating all.
  [S10 DEBUG] calculateAll() triggered in target mode - running both engines
  [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
  [Section13] 🎯 Mode captured at calculation start: target
@@ -1031,8 +1032,8 @@ calculateReferenceModel @ 4011-Section15.js:1395Understand this warningAI
  [S13 CONTAMINATION DEBUG] storeReferenceResults called during target mode
  [S13 CONTAMINATION DEBUG] Reference heating system: Gas
  [S13 CONTAMINATION DEBUG] Target heating system: Heatpump
-4011-Section13.js:3268 [S13 CONTAMINATION DEBUG] Reference h_115 (gas volume): 19191.892037991598
-4011-Section13.js:3271 [S13 CONTAMINATION DEBUG] Reference f_115 (oil volume): 0
+ [S13 CONTAMINATION DEBUG] Reference h_115 (gas volume): 19191.892037991598
+ [S13 CONTAMINATION DEBUG] Reference f_115 (oil volume): 0
 4011-Section13.js:3283 [S13 CONTAMINATION DEBUG] Writing ref_f_115 = 0
 4011-Section13.js:3283 [S13 CONTAMINATION DEBUG] Writing ref_h_115 = 19191.892037991598
 4011-Section13.js:3295 [Section13] Reference results stored with ref_ prefix for downstream sections
@@ -1042,8 +1043,8 @@ calculateReferenceModel @ 4011-Section15.js:1395Understand this warningAI
 4011-Section13.js:2951 [Section13] 🔄 Starting Target Model calculations...
 4011-Section13.js:3058 [Section13] Running Target Model calculations...
 4011-Section13.js:2464 [S13] TGT HEATING: system=Heatpump, ted=119171.54500166589, afue=1, cop=3.663540445486518
- [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
- [Section13] 🧊 COOLING RESULTS: d_117=3826.8214105081656, j_116=2.663540445486518, l_116=0, l_114=6366.0721940341
+4011-Section13.js:2555 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
+4011-Section13.js:2616 [Section13] 🧊 COOLING RESULTS: d_117=3826.8214105081656, j_116=2.663540445486518, l_116=0, l_114=6366.0721940341
  [Section13] Target Model calculations complete
  [Section13] ✅ Target Model complete
  [Section13] ⏭️ Skipping Reference value re-write - triggered in target mode
@@ -1130,7 +1131,7 @@ calculateReferenceModel @ 4011-Section15.js:1395Understand this warningAI
  [S04DB] storeReference: ref_j_32=229309.58900641365, ref_k_32=8255.145204230892 | current target j_32=128156.11033416289, k_32=6535.961627042308
  [S04] 🔄 Updating calculated display values for target mode
  [S04DB] displayContext mode=target j_32=128156.11033416289 ref_j_32=229309.58900641365 k_32=6535.961627042308 ref_k_32=8255.145204230892
-4011-Section04.js:540 [S04 DEBUG] Target mode - j_32: 128156.11033416289
+ [S04 DEBUG] Target mode - j_32: 128156.11033416289
 4011-Section04.js:540 [S04 DEBUG] Target mode - k_32: 6535.961627042308
 4011-Section04.js:540 [S04 DEBUG] Target mode - l_27: 51
 4011-Section04.js:575 [S04] Calculated display values updated for target mode
@@ -1141,7 +1142,7 @@ calculateReferenceModel @ 4011-Section15.js:1395Understand this warningAI
 4011-Section04.js:540 [S04 DEBUG] Target mode - k_32: 6535.961627042308
 4011-Section04.js:540 [S04 DEBUG] Target mode - l_27: 51
 4011-Section04.js:575 [S04] Calculated display values updated for target mode
- [Section13] Target Model calculations complete
+4011-Section13.js:3097 [Section13] Target Model calculations complete
  [Section13] ✅ Target Model complete
  [Section13] ⏭️ Skipping Reference value re-write - triggered in target mode
  [Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE
@@ -1396,17 +1397,17 @@ calculateReferenceModel @ 4011-Section15.js:1395Understand this warningAI
  [S04 DEBUG] Target mode - l_27: 51
  [S04] Calculated display values updated for target mode
  [S04] Dual-engine calculations completed successfully
- [S04] 🔄 Updating calculated display values for target mode
- [S04DB] displayContext mode=target j_32=160457.58530376287 ref_j_32=229309.58900641365 k_32=8183.336850491906 ref_k_32=8255.145204230892
- [S04 DEBUG] Target mode - j_32: 160457.58530376287
- [S04 DEBUG] Target mode - k_32: 8183.336850491906
- [S04 DEBUG] Target mode - l_27: 51
- [S04] Calculated display values updated for target mode
- [Section13] Target Model calculations complete
- [Section13] ✅ Target Model complete
- [Section13] ⏭️ Skipping Reference value re-write - triggered in target mode
- [Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE
- [Section13] 🔄 Updating calculated display values for target mode
+4011-Section04.js:451 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:459 [S04DB] displayContext mode=target j_32=160457.58530376287 ref_j_32=229309.58900641365 k_32=8183.336850491906 ref_k_32=8255.145204230892
+4011-Section04.js:540 [S04 DEBUG] Target mode - j_32: 160457.58530376287
+4011-Section04.js:540 [S04 DEBUG] Target mode - k_32: 8183.336850491906
+4011-Section04.js:540 [S04 DEBUG] Target mode - l_27: 51
+4011-Section04.js:575 [S04] Calculated display values updated for target mode
+4011-Section13.js:3097 [Section13] Target Model calculations complete
+4011-Section13.js:2953 [Section13] ✅ Target Model complete
+4011-Section13.js:2980 [Section13] ⏭️ Skipping Reference value re-write - triggered in target mode
+4011-Section13.js:2986 [Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE
+4011-Section13.js:226 [Section13] 🔄 Updating calculated display values for target mode
  [Section13] Calculated display values updated for target mode
  [Section13] 📡 🔥 d_127 (TED) listener triggered - S14 energy demand changed!
  [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
@@ -1440,17 +1441,17 @@ calculateReferenceModel @ 4011-Section15.js:1395Understand this warningAI
  [Section13] Calculated display values updated for target mode
  [S14 DEBUG] ✅ Converted to numbers - ref_d_127 calculation: 168556.42501397151 + 337112.85002794303 + 36440.079840319355 + 84603.19999999995 - 120694.93352
  [S14 DEBUG] ✅ ref_d_127 = 506017.6213622338 (should be numeric, not NaN)
-4011-Section14.js:1003 [S14 DEBUG] ✅ Stored ref_d_127 = 506017.6213622338 in StateManager
-4011-Section14.js:1006 [S14 DEBUG] 🔄 Continuing with other Reference calculations...
-4011-Section14.js:1021 [S14 DEBUG] ref_d_128 calculation: 168556.42501397151 + 337112.85002794303 + 36440.079840319355 - 120694.93352 = 421414.4213622339
-4011-Section14.js:986 [S14 DEBUG] ✅ Converted to numbers - ref_d_127 calculation: 168556.42501397151 + 337112.85002794303 + 36440.079840319355 + 84603.19999999995 - 120694.93352
-4011-Section14.js:993 [S14 DEBUG] ✅ ref_d_127 = 506017.6213622338 (should be numeric, not NaN)
-4011-Section14.js:1003 [S14 DEBUG] ✅ Stored ref_d_127 = 506017.6213622338 in StateManager
-4011-Section14.js:1006 [S14 DEBUG] 🔄 Continuing with other Reference calculations...
-4011-Section14.js:1021 [S14 DEBUG] ref_d_128 calculation: 168556.42501397151 + 337112.85002794303 + 36440.079840319355 - 120694.93352 = 421414.4213622339
-4011-Section13.js:2555 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=14394.741604542263
-4011-Section04.js:2440 [S04] S15 target electricity changed: d_136
-4011-Section04.js:1535 [S04] Starting dual-engine Excel-compliant calculations
+ [S14 DEBUG] ✅ Stored ref_d_127 = 506017.6213622338 in StateManager
+ [S14 DEBUG] 🔄 Continuing with other Reference calculations...
+ [S14 DEBUG] ref_d_128 calculation: 168556.42501397151 + 337112.85002794303 + 36440.079840319355 - 120694.93352 = 421414.4213622339
+ [S14 DEBUG] ✅ Converted to numbers - ref_d_127 calculation: 168556.42501397151 + 337112.85002794303 + 36440.079840319355 + 84603.19999999995 - 120694.93352
+ [S14 DEBUG] ✅ ref_d_127 = 506017.6213622338 (should be numeric, not NaN)
+ [S14 DEBUG] ✅ Stored ref_d_127 = 506017.6213622338 in StateManager
+ [S14 DEBUG] 🔄 Continuing with other Reference calculations...
+ [S14 DEBUG] ref_d_128 calculation: 168556.42501397151 + 337112.85002794303 + 36440.079840319355 - 120694.93352 = 421414.4213622339
+ [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=14394.741604542263
+ [S04] S15 target electricity changed: d_136
+ [S04] Starting dual-engine Excel-compliant calculations
  [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 162035.12770869245, K32: 8263.791513143315
  [S04] j_32 update: 162035.12770869245
  [S01] j_32 listener: 160457.58530376287 → 162035.12770869245
@@ -1487,9 +1488,10 @@ calculateReferenceModel @ 4011-Section15.js:1395Understand this warningAI
 4011-Section01.js:1014 [S01DB] upstream snapshot {ref_j_32: 229309.58900641365, ref_k_32: 8255.145204230892, j_32: 162035.12770869245, k_32: 8263.791513143315, ref_h_15: '1427.20', …}
 4011-Section01.js:574 🔍 [S01DB] updateTEUIDisplay START: e_10=341.2, h_10=93.0, useType=Utility Bills
 4011-Section01.js:729 🔍 [S01DB] UPDATING h_10: 113.5 (from j_32=162035.12770869245, area=1427.2)
-4011-Clock.js:59 🕐 [CLOCK] ⭐ INITIALIZATION COMPLETE: 50361ms (all calculations finalized)
+4011-Clock.js:65 🕐 [CLOCK] ⚡ CALCULATION COMPLETE: 243ms (subsequent update)
+4011-Clock.js:161 🕐 [CLOCK] ⚡ USER INTERACTION COMPLETE: 243ms (interaction → h_10 settlement)
 4011-Section01.js:1032 ✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10
-4011-Section12.js:1562 [S12] U-agg REF: TB%=50 → g_101=0.888936, g_102=0.405405
+ [S12] U-agg REF: TB%=50 → g_101=0.888936, g_102=0.405405
  [S12DB] REF CLIMATE: d_20=4600, d_21=196, d_22=1960, h_22=-1680
  [S12DB] REF h_101 calc: (4600*0.888935849350384*24)/1000 = 98.1385177682824
  [S12DB] REF i_101 result: 98.1385177682824 * 3469.1199999999994 = 340454.2947603038
@@ -1513,17 +1515,17 @@ calculateReferenceModel @ 4011-Section15.js:1395Understand this warningAI
  [S04] Dual-engine calculations completed successfully
  [S04] 🔄 Updating calculated display values for target mode
  [S04DB] displayContext mode=target j_32=162035.12770869245 ref_j_32=474634.26789143396 k_32=8263.791513143315 ref_k_32=17086.83364409162
-4011-Section04.js:540 [S04 DEBUG] Target mode - j_32: 162035.12770869245
-4011-Section04.js:540 [S04 DEBUG] Target mode - k_32: 8263.791513143315
-4011-Section04.js:540 [S04 DEBUG] Target mode - l_27: 51
-4011-Section04.js:575 [S04] Calculated display values updated for target mode
-4011-Section12.js:2302 [S12DB] STORED for S15: ref_d_101=3469.1199999999994
-4011-Section12.js:2302 [S12DB] STORED for S15: ref_d_102=1100.42
-4011-Section12.js:2302 [S12DB] STORED for S15: ref_g_101=0.888935849350384
-4011-Section12.js:2302 [S12DB] STORED for S15: ref_g_102=0.4054054054054054
-4011-Section12.js:2302 [S12DB] STORED for S15: ref_g_104=0.7724938066287038
-4011-Section10.js:2423 S10: Reference listener triggered by ref_i_103, recalculating all.
-4011-Section10.js:1666 [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+ [S04 DEBUG] Target mode - j_32: 162035.12770869245
+ [S04 DEBUG] Target mode - k_32: 8263.791513143315
+ [S04 DEBUG] Target mode - l_27: 51
+ [S04] Calculated display values updated for target mode
+ [S12DB] STORED for S15: ref_d_101=3469.1199999999994
+ [S12DB] STORED for S15: ref_d_102=1100.42
+ [S12DB] STORED for S15: ref_g_101=0.888935849350384
+ [S12DB] STORED for S15: ref_g_102=0.4054054054054054
+ [S12DB] STORED for S15: ref_g_104=0.7724938066287038
+ S10: Reference listener triggered by ref_i_103, recalculating all.
+ [S10 DEBUG] calculateAll() triggered in target mode - running both engines
  [S10 DEBUG] Dual-engine calculations complete in target mode
  S10: Reference utilization factor dependency ref_i_103 changed.
  [S14 DEBUG] ✅ Converted to numbers - ref_d_127 calculation: 168556.42501397151 + 337112.85002794303 + 36440.07984031936 + 84603.19999999995 - 120694.93352
@@ -1562,30 +1564,30 @@ calculateReferenceModel @ 4011-Section15.js:1395Understand this warningAI
  [S14 DEBUG] ref_d_128 calculation: 168556.42501397151 + 337112.85002794303 + 36440.07984031936 - 120694.93352 = 421414.4213622339
  [Section13] 📡 🔥 d_127 (TED) listener triggered - S14 energy demand changed!
  [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
- [Section13] 🎯 Mode captured at calculation start: target
- [Section13] 🔄 Starting Reference Model calculations...
- [Section13] Running Reference Model calculations...
- [S13 CONTAMINATION DEBUG] calculateReferenceModel: Using system type = Gas
- [S13] REF HEATING: system=Gas, ted=506017.6213622338, afue=0.9, cop=1
- [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=14394.741604542263
- [S13 CONTAMINATION DEBUG] storeReferenceResults called during target mode
- [S13 CONTAMINATION DEBUG] Reference heating system: Gas
- [S13 CONTAMINATION DEBUG] Target heating system: Heatpump
- [S13 CONTAMINATION DEBUG] Reference h_115 (gas volume): 54270.444161543746
- [S13 CONTAMINATION DEBUG] Reference f_115 (oil volume): 0
+4011-Section13.js:2941 [Section13] 🎯 Mode captured at calculation start: target
+4011-Section13.js:2947 [Section13] 🔄 Starting Reference Model calculations...
+4011-Section13.js:2997 [Section13] Running Reference Model calculations...
+4011-Section13.js:3011 [S13 CONTAMINATION DEBUG] calculateReferenceModel: Using system type = Gas
+4011-Section13.js:2464 [S13] REF HEATING: system=Gas, ted=506017.6213622338, afue=0.9, cop=1
+4011-Section13.js:2555 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=14394.741604542263
+4011-Section13.js:3259 [S13 CONTAMINATION DEBUG] storeReferenceResults called during target mode
+4011-Section13.js:3262 [S13 CONTAMINATION DEBUG] Reference heating system: Gas
+4011-Section13.js:3265 [S13 CONTAMINATION DEBUG] Target heating system: Heatpump
+4011-Section13.js:3268 [S13 CONTAMINATION DEBUG] Reference h_115 (gas volume): 54270.444161543746
+4011-Section13.js:3271 [S13 CONTAMINATION DEBUG] Reference f_115 (oil volume): 0
  [S13 CONTAMINATION DEBUG] Writing ref_f_115 = 0
  [S13 CONTAMINATION DEBUG] Writing ref_h_115 = 54270.444161543746
-4011-Section13.js:3295 [Section13] Reference results stored with ref_ prefix for downstream sections
-4011-Section13.js:3298 [S13 DEBUG] Total Reference results stored: 34
-4011-Section13.js:3044 [Section13] Reference Model calculations complete
-4011-Section13.js:2949 [Section13] ✅ Reference Model complete
-4011-Section13.js:2951 [Section13] 🔄 Starting Target Model calculations...
-4011-Section13.js:3058 [Section13] Running Target Model calculations...
-4011-Section13.js:2464 [S13] TGT HEATING: system=Heatpump, ted=226947.99245076766, afue=1, cop=3.663540445486518
-4011-Section13.js:2555 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=14394.741604542263
-4011-Section13.js:2616 [Section13] 🧊 COOLING RESULTS: d_117=5404.363815437742, j_116=2.663540445486518, l_116=0, l_114=8990.377789104521
-4011-Section04.js:2440 [S04] S15 target electricity changed: d_136
-4011-Section04.js:1535 [S04] Starting dual-engine Excel-compliant calculations
+ [Section13] Reference results stored with ref_ prefix for downstream sections
+ [S13 DEBUG] Total Reference results stored: 34
+ [Section13] Reference Model calculations complete
+ [Section13] ✅ Reference Model complete
+ [Section13] 🔄 Starting Target Model calculations...
+ [Section13] Running Target Model calculations...
+ [S13] TGT HEATING: system=Heatpump, ted=226947.99245076766, afue=1, cop=3.663540445486518
+ [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=14394.741604542263
+ [Section13] 🧊 COOLING RESULTS: d_117=5404.363815437742, j_116=2.663540445486518, l_116=0, l_114=8990.377789104521
+ [S04] S15 target electricity changed: d_136
+ [S04] Starting dual-engine Excel-compliant calculations
  [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 164570.5678347993, K32: 8393.098959574765
  [S04] j_32 update: 164570.5678347993
  [S01] j_32 listener: 162035.12770869245 → 164570.5678347993
@@ -1678,17 +1680,17 @@ calculateReferenceModel @ 4011-Section15.js:1395Understand this warningAI
  [S13 CONTAMINATION DEBUG] Reference h_115 (gas volume): 54270.444161543746
  [S13 CONTAMINATION DEBUG] Reference f_115 (oil volume): 0
  [S13 CONTAMINATION DEBUG] Writing ref_f_115 = 0
- [S13 CONTAMINATION DEBUG] Writing ref_h_115 = 54270.444161543746
- [Section13] Reference results stored with ref_ prefix for downstream sections
- [S13 DEBUG] Total Reference results stored: 34
- [Section13] Reference Model calculations complete
- [Section13] ✅ Reference Model complete
- [Section13] 🔄 Starting Target Model calculations...
- [Section13] Running Target Model calculations...
- [S13] TGT HEATING: system=Heatpump, ted=226947.99245076766, afue=1, cop=3.663540445486518
- [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=14394.741604542263
- [Section13] 🧊 COOLING RESULTS: d_117=5404.363815437742, j_116=2.663540445486518, l_116=0, l_114=8990.377789104521
- [Section13] Target Model calculations complete
+4011-Section13.js:3283 [S13 CONTAMINATION DEBUG] Writing ref_h_115 = 54270.444161543746
+4011-Section13.js:3295 [Section13] Reference results stored with ref_ prefix for downstream sections
+4011-Section13.js:3298 [S13 DEBUG] Total Reference results stored: 34
+4011-Section13.js:3044 [Section13] Reference Model calculations complete
+4011-Section13.js:2949 [Section13] ✅ Reference Model complete
+4011-Section13.js:2951 [Section13] 🔄 Starting Target Model calculations...
+4011-Section13.js:3058 [Section13] Running Target Model calculations...
+4011-Section13.js:2464 [S13] TGT HEATING: system=Heatpump, ted=226947.99245076766, afue=1, cop=3.663540445486518
+4011-Section13.js:2555 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=14394.741604542263
+4011-Section13.js:2616 [Section13] 🧊 COOLING RESULTS: d_117=5404.363815437742, j_116=2.663540445486518, l_116=0, l_114=8990.377789104521
+4011-Section13.js:3097 [Section13] Target Model calculations complete
  [Section13] ✅ Target Model complete
  [Section13] ⏭️ Skipping Reference value re-write - triggered in target mode
  [Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE
@@ -1763,20 +1765,20 @@ calculateReferenceModel @ 4011-Section15.js:1395Understand this warningAI
  [S13 CONTAMINATION DEBUG] storeReferenceResults called during target mode
  [S13 CONTAMINATION DEBUG] Reference heating system: Gas
  [S13 CONTAMINATION DEBUG] Target heating system: Heatpump
- [S13 CONTAMINATION DEBUG] Reference h_115 (gas volume): 54270.444161543746
- [S13 CONTAMINATION DEBUG] Reference f_115 (oil volume): 0
- [S13 CONTAMINATION DEBUG] Writing ref_f_115 = 0
- [S13 CONTAMINATION DEBUG] Writing ref_h_115 = 54270.444161543746
- [Section13] Reference results stored with ref_ prefix for downstream sections
- [S13 DEBUG] Total Reference results stored: 34
- [Section13] Reference Model calculations complete
- [Section13] ✅ Reference Model complete
- [Section13] 🔄 Starting Target Model calculations...
- [Section13] Running Target Model calculations...
- [S13] TGT HEATING: system=Heatpump, ted=226947.99245076766, afue=1, cop=3.663540445486518
- [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=14394.741604542263
- [Section13] 🧊 COOLING RESULTS: d_117=5404.363815437742, j_116=2.663540445486518, l_116=0, l_114=8990.377789104521
- [Section13] Target Model calculations complete
+4011-Section13.js:3268 [S13 CONTAMINATION DEBUG] Reference h_115 (gas volume): 54270.444161543746
+4011-Section13.js:3271 [S13 CONTAMINATION DEBUG] Reference f_115 (oil volume): 0
+4011-Section13.js:3283 [S13 CONTAMINATION DEBUG] Writing ref_f_115 = 0
+4011-Section13.js:3283 [S13 CONTAMINATION DEBUG] Writing ref_h_115 = 54270.444161543746
+4011-Section13.js:3295 [Section13] Reference results stored with ref_ prefix for downstream sections
+4011-Section13.js:3298 [S13 DEBUG] Total Reference results stored: 34
+4011-Section13.js:3044 [Section13] Reference Model calculations complete
+4011-Section13.js:2949 [Section13] ✅ Reference Model complete
+4011-Section13.js:2951 [Section13] 🔄 Starting Target Model calculations...
+4011-Section13.js:3058 [Section13] Running Target Model calculations...
+4011-Section13.js:2464 [S13] TGT HEATING: system=Heatpump, ted=226947.99245076766, afue=1, cop=3.663540445486518
+4011-Section13.js:2555 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=14394.741604542263
+4011-Section13.js:2616 [Section13] 🧊 COOLING RESULTS: d_117=5404.363815437742, j_116=2.663540445486518, l_116=0, l_114=8990.377789104521
+4011-Section13.js:3097 [Section13] Target Model calculations complete
 4011-Section13.js:2953 [Section13] ✅ Target Model complete
 4011-Section13.js:2980 [Section13] ⏭️ Skipping Reference value re-write - triggered in target mode
 4011-Section13.js:2986 [Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE
@@ -1787,6 +1789,8 @@ calculateReferenceModel @ 4011-Section15.js:1395Understand this warningAI
 4011-Section01.js:1014 [S01DB] upstream snapshot {ref_j_32: 474634.26789143396, ref_k_32: 17086.83364409162, j_32: 164570.5678347993, k_32: 8393.098959574765, ref_h_15: '1427.20', …}
 4011-Section01.js:574 🔍 [S01DB] updateTEUIDisplay START: e_10=341.2, h_10=93.0, useType=Utility Bills
 4011-Section01.js:729 🔍 [S01DB] UPDATING h_10: 115.3 (from j_32=164570.5678347993, area=1427.2)
+4011-Clock.js:65 🕐 [CLOCK] ⚡ CALCULATION COMPLETE: 427ms (subsequent update)
+4011-Clock.js:161 🕐 [CLOCK] ⚡ USER INTERACTION COMPLETE: 427ms (interaction → h_10 settlement)
 4011-Section01.js:1032 ✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10
 4011-Section10.js:171 [S10 MODEMANAGER DEBUG] setValue: d_80=NRC 50% in target mode, source=user-modified
 4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
@@ -1798,12 +1802,12 @@ calculateReferenceModel @ 4011-Section15.js:1395Understand this warningAI
 4011-Section10.js:182 [S10 MODEMANAGER DEBUG] Target StateManager write: d_80=NRC 50%
 4011-Section10.js:2298 [S10 DROPDOWN CALC] calculateAll() triggered by d_80 in target mode
 4011-Section10.js:1666 [S10 DEBUG] calculateAll() triggered in target mode - running both engines
- [S14 DEBUG] ✅ Converted to numbers - ref_d_127 calculation: 168556.42501397151 + 337112.85002794303 + 36440.07984031936 + 84603.19999999995 - 120694.93352
- [S14 DEBUG] ✅ ref_d_127 = 506017.6213622338 (should be numeric, not NaN)
- [S14 DEBUG] ✅ Stored ref_d_127 = 506017.6213622338 in StateManager
- [S14 DEBUG] 🔄 Continuing with other Reference calculations...
- [S14 DEBUG] ref_d_128 calculation: 168556.42501397151 + 337112.85002794303 + 36440.07984031936 - 120694.93352 = 421414.4213622339
- [Section13] 📡 🔥 d_127 (TED) listener triggered - S14 energy demand changed!
+4011-Section14.js:986 [S14 DEBUG] ✅ Converted to numbers - ref_d_127 calculation: 168556.42501397151 + 337112.85002794303 + 36440.07984031936 + 84603.19999999995 - 120694.93352
+4011-Section14.js:993 [S14 DEBUG] ✅ ref_d_127 = 506017.6213622338 (should be numeric, not NaN)
+4011-Section14.js:1003 [S14 DEBUG] ✅ Stored ref_d_127 = 506017.6213622338 in StateManager
+4011-Section14.js:1006 [S14 DEBUG] 🔄 Continuing with other Reference calculations...
+4011-Section14.js:1021 [S14 DEBUG] ref_d_128 calculation: 168556.42501397151 + 337112.85002794303 + 36440.07984031936 - 120694.93352 = 421414.4213622339
+4011-Section13.js:2033 [Section13] 📡 🔥 d_127 (TED) listener triggered - S14 energy demand changed!
  [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
  [Section13] 🎯 Mode captured at calculation start: target
  [Section13] 🔄 Starting Reference Model calculations...
@@ -1814,8 +1818,8 @@ calculateReferenceModel @ 4011-Section15.js:1395Understand this warningAI
  [S13 CONTAMINATION DEBUG] storeReferenceResults called during target mode
  [S13 CONTAMINATION DEBUG] Reference heating system: Gas
  [S13 CONTAMINATION DEBUG] Target heating system: Heatpump
- [S13 CONTAMINATION DEBUG] Reference h_115 (gas volume): 54270.444161543746
- [S13 CONTAMINATION DEBUG] Reference f_115 (oil volume): 0
+4011-Section13.js:3268 [S13 CONTAMINATION DEBUG] Reference h_115 (gas volume): 54270.444161543746
+4011-Section13.js:3271 [S13 CONTAMINATION DEBUG] Reference f_115 (oil volume): 0
 4011-Section13.js:3283 [S13 CONTAMINATION DEBUG] Writing ref_f_115 = 0
 4011-Section13.js:3283 [S13 CONTAMINATION DEBUG] Writing ref_h_115 = 54270.444161543746
 4011-Section13.js:3295 [Section13] Reference results stored with ref_ prefix for downstream sections
@@ -1827,12 +1831,12 @@ calculateReferenceModel @ 4011-Section15.js:1395Understand this warningAI
 4011-Section13.js:2464 [S13] TGT HEATING: system=Heatpump, ted=210515.5974107677, afue=1, cop=3.663540445486518
 4011-Section13.js:2555 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=14394.741604542263
 4011-Section13.js:2616 [Section13] 🧊 COOLING RESULTS: d_117=5404.363815437742, j_116=2.663540445486518, l_116=0, l_114=8990.377789104521
- [S04] S15 target electricity changed: d_136
- [S04] Starting dual-engine Excel-compliant calculations
- [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 160085.1812846809, K32: 8164.344245518726
- [S04] j_32 update: 160085.1812846809
- [S01] j_32 listener: 164570.5678347993 → 160085.1812846809
- [S01] 🕐 j_32 listener timing: StateManager current j_32 = 160085.1812846809
+4011-Section04.js:2440 [S04] S15 target electricity changed: d_136
+4011-Section04.js:1535 [S04] Starting dual-engine Excel-compliant calculations
+4011-Section04.js:976 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 160085.1812846809, K32: 8164.344245518726
+4011-Section04.js:94 [S04] j_32 update: 160085.1812846809
+4011-Section01.js:1110 [S01] j_32 listener: 164570.5678347993 → 160085.1812846809
+4011-Section01.js:1111 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 160085.1812846809
 2 🔄 [S05] updateCalculatedDisplayValues: mode=target
  [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 474634.26789143396, K32: 17086.83364409162
  [S04] Reference model calculations complete
@@ -1886,14 +1890,14 @@ calculateReferenceModel @ 4011-Section15.js:1395Understand this warningAI
  [Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE
  [Section13] 🔄 Updating calculated display values for target mode
  [Section13] Calculated display values updated for target mode
- [S14 DEBUG] ✅ Converted to numbers - ref_d_127 calculation: 168556.42501397151 + 337112.85002794303 + 36440.07984031936 + 84603.19999999995 - 120694.93352
- [S14 DEBUG] ✅ ref_d_127 = 506017.6213622338 (should be numeric, not NaN)
- [S14 DEBUG] ✅ Stored ref_d_127 = 506017.6213622338 in StateManager
- [S14 DEBUG] 🔄 Continuing with other Reference calculations...
- [S14 DEBUG] ref_d_128 calculation: 168556.42501397151 + 337112.85002794303 + 36440.07984031936 - 120694.93352 = 421414.4213622339
- [S10 DEBUG] Dual-engine calculations complete in target mode
- [S10 DROPDOWN EVENT] dropdown change: d_80=NRC 50% in target mode
- [S10 MODEMANAGER DEBUG] setValue: d_80=NRC 50% in target mode, source=user-modified
+4011-Section14.js:986 [S14 DEBUG] ✅ Converted to numbers - ref_d_127 calculation: 168556.42501397151 + 337112.85002794303 + 36440.07984031936 + 84603.19999999995 - 120694.93352
+4011-Section14.js:993 [S14 DEBUG] ✅ ref_d_127 = 506017.6213622338 (should be numeric, not NaN)
+4011-Section14.js:1003 [S14 DEBUG] ✅ Stored ref_d_127 = 506017.6213622338 in StateManager
+4011-Section14.js:1006 [S14 DEBUG] 🔄 Continuing with other Reference calculations...
+4011-Section14.js:1021 [S14 DEBUG] ref_d_128 calculation: 168556.42501397151 + 337112.85002794303 + 36440.07984031936 - 120694.93352 = 421414.4213622339
+4011-Section10.js:1672 [S10 DEBUG] Dual-engine calculations complete in target mode
+4011-Section10.js:2292 [S10 DROPDOWN EVENT] dropdown change: d_80=NRC 50% in target mode
+4011-Section10.js:171 [S10 MODEMANAGER DEBUG] setValue: d_80=NRC 50% in target mode, source=user-modified
 4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
 4011-Section10.js:182 [S10 MODEMANAGER DEBUG] Target StateManager write: d_80=NRC 50%
 4011-Section10.js:2298 [S10 DROPDOWN CALC] calculateAll() triggered by d_80 in target mode
