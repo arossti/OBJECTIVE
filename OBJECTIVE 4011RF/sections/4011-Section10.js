@@ -1915,15 +1915,12 @@ window.TEUI.SectionModules.sect10 = (function () {
       setCalculatedValue(`k_${rowId}`, coolingGains);
       setCalculatedValue(`p_${rowId}`, cost);
 
-      // Update the DOM
-      setCalculatedValue(`i_${rowId}`, heatingGains);
-      setCalculatedValue(`k_${rowId}`, coolingGains);
-      setCalculatedValue(`p_${rowId}`, cost, "currency");
+      // ✅ FIX: Remove duplicate DOM calls - state already set via ModeManager above
     } catch (_error) {
       // Set error values
       setCalculatedValue(`i_${rowId}`, 0);
       setCalculatedValue(`k_${rowId}`, 0);
-      setCalculatedValue(`p_${rowId}`, 0, "currency");
+      setCalculatedValue(`p_${rowId}`, 0);
     }
   }
 
@@ -1956,11 +1953,8 @@ window.TEUI.SectionModules.sect10 = (function () {
       ModeManager.setValue("j_79", heatingGains > 0 ? "1" : "0", "calculated");
       ModeManager.setValue("l_79", coolingGains > 0 ? "1" : "0", "calculated");
 
-      // Update the DOM
-      setCalculatedValue("i_79", heatingGains, "number");
-      setCalculatedValue("k_79", coolingGains, "number");
-      setCalculatedValue("j_79", heatingGains > 0 ? 1 : 0, "percent");
-      setCalculatedValue("l_79", coolingGains > 0 ? 1 : 0, "percent");
+      // ✅ FIX: setCalculatedValue only handles state, not formatting
+      // These are duplicate calls - state is already set via ModeManager above
 
       // Update percentages (Columns J and L) for rows 73-78
       for (let i = 73; i <= 78; i++) {
@@ -1988,8 +1982,8 @@ window.TEUI.SectionModules.sect10 = (function () {
           "calculated",
         );
 
-        setCalculatedValue(jFieldId, heatingPercentDecimal, "percent");
-        setCalculatedValue(lFieldId, coolingPercentDecimal, "percent");
+        // ✅ FIX: Remove format parameters - setCalculatedValue only handles state
+        // State is already set via ModeManager above
 
         // Apply Indicator Class & Left Alignment (similar to Section 11)
         const gainIndicatorClasses = ["gain-high", "gain-medium", "gain-low"];
@@ -2053,9 +2047,9 @@ window.TEUI.SectionModules.sect10 = (function () {
       // console.log(`[S10] 🔗 Utilization calc: i_71=${internalGains} [mode=${ModeManager.currentMode}]`);
       const totalGains = solarGains + internalGains;
 
-      // Set total gains for both rows 80 and 81 (DOM only)
-      setCalculatedValue("e_80", totalGains, "number");
-      setCalculatedValue("e_81", totalGains, "number");
+      // ✅ FIX: setCalculatedValue only for state, not formatting
+      setCalculatedValue("e_80", totalGains);
+      setCalculatedValue("e_81", totalGains);
 
       //=====================================================================
       // PART 1: Calculate utilization factor based on selected method in row 80
@@ -2136,18 +2130,16 @@ window.TEUI.SectionModules.sect10 = (function () {
 
       const phReferenceGains = totalGains * phUtilizationFactor;
 
-      // Set state and update DOM for reference row 81
+      // ✅ FIX: setCalculatedValue only for state, not formatting
       setCalculatedValue("g_81", phUtilizationFactor);
       setCalculatedValue("i_81", phReferenceGains);
-      setCalculatedValue("g_81", phUtilizationFactor, "percent");
-      setCalculatedValue("i_81", phReferenceGains, "number");
 
       //=====================================================================
       // PART 3: Calculate unusable gains based on selected method (row 80)
       //=====================================================================
       const unusedGains = totalGains - usableGains;
+      // ✅ FIX: setCalculatedValue only for state, not formatting  
       setCalculatedValue("i_82", unusedGains);
-      setCalculatedValue("i_82", unusedGains, "number");
     } catch (_error) {
       // Set error values or defaults
       setCalculatedValue("e_80", 0);
