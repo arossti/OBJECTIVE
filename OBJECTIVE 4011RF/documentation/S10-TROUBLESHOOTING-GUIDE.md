@@ -318,10 +318,282 @@ if (window.TEUI?.StateManager && shouldUpdateState) {
 ### **🔄 APPLICABLE TO S11:**
 **S11 likely has identical issues** - once S10 is fully resolved, the same fixes can be applied to S11 thermal bridge calculations.
 
+---
+
+## 🧠 **SEPTEMBER 2ND BREAKTHROUGH: STATE MIXING ROOT CAUSE ANALYSIS**
+
+### **🎯 CRITICAL THEORY: Dual-Engine vs Single-Engine Architecture Patterns**
+
+**Based on systematic analysis of successful vs problematic sections:**
+
+#### **✅ SUCCESSFUL SECTIONS (Perfect State Isolation):**
+**S02, S05, S06, S07, S09, S12, S13** - No state mixing observed
+
+**Common Pattern: Single-Engine Calculation Architecture**
+```javascript
+// ✅ WORKING PATTERN: Mode-aware calculation triggers
+function calculateAll() {
+  calculateReferenceModel(); // Always runs, but reads ReferenceState
+  calculateTargetModel();    // Always runs, but reads TargetState  
+}
+
+// ✅ CRITICAL: Mode-aware StateManager publication in ModeManager.setValue()
+setValue: function (fieldId, value, source = "user") {
+  if (this.currentMode === "target") {
+    window.TEUI.StateManager.setValue(fieldId, value, source);        // Unprefixed
+  } else if (this.currentMode === "reference") {
+    window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, source); // ref_ prefix
+  }
+}
+```
+
+#### **❌ PROBLEMATIC SECTIONS (State Mixing Observed):**
+**S03, S10, S11** - Target mode changes affect both Target and Reference states
+
+**Common Pattern: Dual-Engine + Internal State Contamination**
+```javascript
+// ❌ PROBLEMATIC PATTERN: Dual-engine with internal state updates
+function calculateAll() {
+  calculateTargetModel();    // Updates TargetState + publishes to StateManager
+  calculateReferenceModel(); // Updates ReferenceState (even when blocked from StateManager)
+}
+
+// The contamination occurs because:
+// 1. Both engines ALWAYS run (dual-engine pattern)
+// 2. Both engines ALWAYS update their internal state objects
+// 3. Only StateManager publication is mode-aware blocked
+// 4. UI reads from contaminated internal state objects
+```
+
+### **🔍 THE SMOKING GUN: User Input "Fixes" State Mixing**
+
+**Critical Observation**: TB% slider in S11 and nGains dropdown in S10 "correct" state mixing when adjusted.
+
+**Why This Happens:**
+```javascript
+// When user adjusts dropdown/slider:
+// 1. ModeManager.setValue() is called with current mode
+// 2. Correct state object is updated with mode-appropriate value
+// 3. Contaminated internal state is OVERWRITTEN with correct value
+// 4. State mixing temporarily "fixed" until next calculateAll()
+
+// Example: S11 TB% slider in Target mode
+ModeManager.setValue("d_97", "30", "user-modified"); // Target channel only
+// This overwrites any Reference contamination in TargetState.d_97
+```
+
+### **🎯 ARCHITECTURAL INSIGHT: The Real Problem**
+
+**The issue is NOT with StateManager isolation** (that's working correctly).  
+**The issue is with INTERNAL STATE OBJECT contamination** in dual-engine sections.
+
+**Evidence from Logs:**
+```
+✅ PUBLISHED: i_80=45879.58 (Target calc in target mode)    // StateManager ✅
+❌ BLOCKED: i_79 (Reference calc in target mode)           // StateManager ✅  
+```
+
+But internally:
+```
+ReferenceState.setValue("i_79", 0);     // ❌ Still happens (contamination)
+TargetState.setValue("i_80", 45879.58); // ✅ Correct
+```
+
+### **🔧 SOLUTION THEORY: Mode-Aware Internal State Updates**
+
+**The fix is to make internal state updates mode-aware, just like StateManager publication:**
+
+```javascript
+// ✅ PROPOSED FIX: Complete mode-aware isolation
+function setCalculatedValue(fieldId, rawValue, isReferenceCalculation = false) {
+  const shouldUpdateState = (isReferenceCalculation && ModeManager.currentMode === "reference") ||
+                           (!isReferenceCalculation && ModeManager.currentMode === "target");
+  
+  if (shouldUpdateState) {
+    // Only update internal state AND StateManager when calculation matches UI mode
+    const state = isReferenceCalculation ? ReferenceState : TargetState;
+    state.setValue(fieldId, valueToStore);
+    
+    if (window.TEUI?.StateManager) {
+      const key = isReferenceCalculation ? `ref_${fieldId}` : fieldId;
+      window.TEUI.StateManager.setValue(key, valueToStore, "calculated");
+    }
+  }
+  // ✅ CRITICAL: No internal state update when modes don't match
+}
+```
+
+### **🎯 WHY THIS THEORY EXPLAINS ALL OBSERVATIONS:**
+
+1. **State Mixing**: Dual-engine sections contaminate internal state even when StateManager is isolated
+2. **User Input "Fixes"**: ModeManager.setValue() overwrites contaminated internal state  
+3. **Successful Sections**: Don't have dual-engine internal state contamination
+4. **Logs Show**: StateManager isolation working, but internal state still contaminated
+
+### **🔬 THEORY VERIFICATION: CONFIRMED ✅**
+
+**Analysis of successful sections reveals the critical difference:**
+
+#### **✅ SUCCESSFUL SECTIONS (S02, S05): Mode-Aware Calculation Pattern**
+
+**S02 uses `setFieldValue()` that respects current UI mode:**
+```javascript
+function setFieldValue(fieldId, value, fieldType = "calculated") {
+  // ✅ CRITICAL: Uses current UI mode to determine which state to update
+  const currentState = ModeManager.currentMode === "target" ? TargetState : ReferenceState;
+  currentState.setValue(fieldId, value, fieldType);
+  
+  // ✅ Mode-aware StateManager publication
+  if (ModeManager.currentMode === "target") {
+    window.TEUI.StateManager.setValue(fieldId, value.toString(), fieldType);
+  } else {
+    window.TEUI.StateManager.setValue(`ref_${fieldId}`, value.toString(), fieldType);
+  }
+}
+
+// S02's calculation engines temporarily change mode:
+function calculateReferenceModel() {
+  const originalMode = ModeManager.currentMode;
+  ModeManager.currentMode = "reference"; // ✅ Temporarily set mode
+  
+  try {
+    // All setFieldValue() calls now route to ReferenceState
+    setFieldValue("d_16", calculatedValue, "calculated");
+  } finally {
+    ModeManager.currentMode = originalMode; // ✅ Restore mode
+  }
+}
+```
+
+#### **❌ PROBLEMATIC SECTIONS (S10, S11): Mode-Agnostic Calculation Pattern**
+
+**S10 uses `setCalculatedValue()` with explicit `isReferenceCalculation` parameter:**
+```javascript
+function setCalculatedValue(fieldId, rawValue, isReferenceCalculation = false) {
+  // ❌ PROBLEM: Always updates internal state regardless of UI mode
+  const state = isReferenceCalculation ? ReferenceState : TargetState;
+  state.setValue(fieldId, valueToStore); // ❌ Always happens
+  
+  // ✅ StateManager publication is mode-aware (this part works)
+  if (shouldUpdateState) {
+    window.TEUI.StateManager.setValue(key, valueToStore, "calculated");
+  }
+}
+
+// S10's dual-engine pattern ALWAYS runs both engines:
+function calculateAll() {
+  calculateTargetModel();    // Calls setCalculatedValue(fieldId, value, false)
+  calculateReferenceModel(); // Calls setCalculatedValue(fieldId, value, true)
+}
+// ❌ RESULT: Both internal states always updated, regardless of UI mode
+```
+
+### **🎯 ROOT CAUSE IDENTIFIED:**
+
+**Successful sections** use **mode-aware calculation storage** - they temporarily change the UI mode during calculation engines, so all storage operations respect the current calculation context.
+
+**Problematic sections** use **mode-agnostic calculation storage** - they use explicit parameters to determine storage destination, but always update internal state regardless of UI mode.
+
+### **💡 THE "USER INPUT FIX" EXPLAINED:**
+
+When users adjust TB% slider or nGains dropdown:
+1. `ModeManager.setValue()` is called (mode-aware)
+2. Only the current mode's state object is updated
+3. Contaminated opposite-mode state is left unchanged
+4. UI temporarily shows correct values until next `calculateAll()`
+5. Next `calculateAll()` re-contaminates the internal state
+
+**This is why the "fix" is temporary and why non-numeric inputs work better** - they don't trigger heavy calculation chains that re-contaminate the state.
+
+### **🛠️ SOLUTION STRATEGY: Two Architectural Approaches**
+
+#### **Option A: Adopt S02's Mode-Aware Pattern (Recommended)**
+```javascript
+// ✅ SOLUTION: Replace setCalculatedValue() with S02's setFieldValue() pattern
+function setFieldValue(fieldId, value, fieldType = "calculated") {
+  // Use current UI mode to determine state destination
+  const currentState = ModeManager.currentMode === "target" ? TargetState : ReferenceState;
+  currentState.setValue(fieldId, value, fieldType);
+  
+  // Mode-aware StateManager publication
+  if (ModeManager.currentMode === "target") {
+    window.TEUI.StateManager.setValue(fieldId, value.toString(), fieldType);
+  } else {
+    window.TEUI.StateManager.setValue(`ref_${fieldId}`, value.toString(), fieldType);
+  }
+}
+
+// Modify calculation engines to temporarily change mode (like S02):
+function calculateReferenceModel() {
+  const originalMode = ModeManager.currentMode;
+  ModeManager.currentMode = "reference";
+  
+  try {
+    // All setFieldValue() calls now route to ReferenceState
+    orientationConfig.forEach((rowId) => {
+      calculateOrientationGainsReference(rowId.toString());
+    });
+  } finally {
+    ModeManager.currentMode = originalMode;
+  }
+}
+```
+
+#### **Option B: Fix Current setCalculatedValue() Pattern (Conservative)**
+```javascript
+// ✅ ALTERNATIVE: Make setCalculatedValue() mode-aware for internal state
+function setCalculatedValue(fieldId, rawValue, isReferenceCalculation = false) {
+  const shouldUpdateState = (isReferenceCalculation && ModeManager.currentMode === "reference") ||
+                           (!isReferenceCalculation && ModeManager.currentMode === "target");
+  
+  if (shouldUpdateState) {
+    // Only update internal state when calculation matches UI mode
+    const state = isReferenceCalculation ? ReferenceState : TargetState;
+    state.setValue(fieldId, valueToStore);
+    
+    // StateManager publication (already working)
+    if (window.TEUI?.StateManager) {
+      const key = isReferenceCalculation ? `ref_${fieldId}` : fieldId;
+      window.TEUI.StateManager.setValue(key, valueToStore, "calculated");
+    }
+  }
+}
+```
+
+### **🎯 DECISION: Option A (S02 Pattern) - Keep What Works**
+
+**CRITICAL PRINCIPLE: Don't invent new methods - use proven patterns**
+
+**S02's approach eliminates confusion by:**
+1. **Single storage function** - `setFieldValue()` (clear, simple name)
+2. **Mode-aware by design** - uses `ModeManager.currentMode` (no double negatives)
+3. **Temporary mode switching** - engines set mode, call storage, restore mode
+4. **Proven successful** - working in 7+ sections since May
+
+**This avoids the confusion of:**
+- ❌ `isReferenceCalculation=false` (double negative thinking)
+- ❌ Complex conditional logic in storage functions
+- ❌ Dual-engine parameter passing confusion
+- ❌ Novel architectural patterns
+
+### **🎯 IMPLEMENTATION STRATEGY: Small, Methodical Steps**
+
+**Step 1**: Replace `setCalculatedValue()` with S02's `setFieldValue()` pattern
+**Step 2**: Test basic calculations work (Target mode)
+**Step 3**: Test Reference mode calculations work
+**Step 4**: Test mode switching preserves values
+**Step 5**: Test that state mixing is eliminated
+**Step 6**: Commit if successful, revert if any issues
+
+**Each step must pass before proceeding to the next.**
+
 ## 🎯 **NEXT STEPS**
 
 ### **Immediate** (After Break):
-1. **Complete S10 Target Mode Isolation** - Prevent Target mode from publishing to Reference state
+1. **Choose architectural approach** - Option A (S02 pattern) vs Option B (enhanced setCalculatedValue)
+2. **Apply systematic fix** to S10 following chosen pattern
+3. **Test thoroughly** - verify state isolation without breaking calculations
+4. **Apply same fix to S11** - identical architecture pattern
 2. **Apply Same Fixes to S11** - Thermal bridge calculations have identical architecture
 3. **Return to S13** - With clean upstream dependencies
 
