@@ -382,10 +382,10 @@ window.TEUI.SectionModules.sect10 = (function () {
           
           // 🔍 DEBUG: Track StateManager writes for key fields
           if (["i_79", "k_79", "i_80"].includes(fieldId)) {
-            console.log(`[S10 DEBUG] Published to StateManager: ${key}=${valueToStore} (mode match)`);
+            console.log(`[S10 DEBUG] ✅ PUBLISHED: ${key}=${valueToStore} (${stateType} calc in ${ModeManager.currentMode} mode)`);
           }
       } else if (["i_79", "k_79", "i_80"].includes(fieldId)) {
-        console.log(`[S10 DEBUG] SKIPPED StateManager write for ${fieldId} (mode mismatch: calc=${stateType}, UI=${ModeManager.currentMode})`);
+        console.log(`[S10 DEBUG] ❌ BLOCKED: ${fieldId} (${stateType} calc in ${ModeManager.currentMode} mode - mode mismatch)`);
       }
   }
 
@@ -1635,9 +1635,14 @@ window.TEUI.SectionModules.sect10 = (function () {
    * Includes orientation gains (73-78), subtotals (79), and utilization factors (80-82)
    */
   function calculateAll() {
+    // 🔍 DEBUG: Track dual-engine triggers
+    console.log(`[S10 DEBUG] calculateAll() triggered in ${ModeManager.currentMode} mode - running both engines`);
+    
     // ✅ DUAL-ENGINE PATTERN: Always run BOTH Target and Reference calculations
     calculateTargetModel(); // Calculate Target model values
     calculateReferenceModel(); // Calculate Reference model values
+    
+    console.log(`[S10 DEBUG] Dual-engine calculations complete in ${ModeManager.currentMode} mode`);
   }
 
   /**
