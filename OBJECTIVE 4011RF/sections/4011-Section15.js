@@ -2104,13 +2104,12 @@ window.TEUI.SectionModules.sect15 = (function () {
       "d_142",
       "ref_d_142", // Cost premium
 
-      // S01 Dashboard Values (Independent Models: different TEUI targets)
+      // S01 Dashboard Values (Final Display - NO ref_ versions needed)
+      // S01 calculates e_10 and h_10 internally from upstream ref_j_32/j_32
+      // These are FINAL DISPLAY values, not published upstream values
       "e_10",
-      "ref_e_10", // Reference TEUI
       "h_10",
-      "ref_h_10", // Target TEUI
-      "k_10",
-      "ref_k_10", // TEUI tier
+      "k_10"
 
       // Building Geometry (Independent Models: different building sizes)
       "h_12",

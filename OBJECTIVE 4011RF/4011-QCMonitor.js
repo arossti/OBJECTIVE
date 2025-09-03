@@ -191,23 +191,68 @@ TEUI.QCMonitor = (function() {
     }
     
     /**
-     * Track read operations (getValue calls)  
+     * Track read operations (getValue calls) with caller tracing
      */
     function trackRead(fieldId, value, timestamp) {
         if (!isActive) return;
         
+        // Get caller information for debugging
+        const caller = getCaller();
+        
         // Track pathway - mark as read
-        updatePathwayTracker(fieldId, 'read', { value, timestamp });
+        updatePathwayTracker(fieldId, 'read', { value, timestamp, caller });
         
         // Detect fallback usage (indicates missing values)
         if (value === null || value === undefined) {
             logViolation({
                 type: 'MISSING_VALUE',
                 field: fieldId,
-                message: `Field ${fieldId} returned null/undefined`,
+                message: `${fieldId}=null, caller=${caller}`,
                 timestamp: timestamp,
-                severity: 'warning'
+                severity: 'warning',
+                caller: caller
             });
+        }
+    }
+    
+    /**
+     * Get detailed caller information from stack trace  
+     */
+    function getCaller() {
+        try {
+            const stack = new Error().stack;
+            const lines = stack.split('\n');
+            
+            // Find first meaningful caller (skip QCMonitor internals)
+            for (let i = 3; i < lines.length; i++) {
+                const line = lines[i];
+                if (line && !line.includes('QCMonitor') && !line.includes('trackRead') && !line.includes('trackWrite')) {
+                    // Enhanced pattern matching for better caller identification
+                    const match = line.match(/at\s+(.+?)\s+\((.+?):(\d+):(\d+)\)/);
+                    if (match) {
+                        const func = match[1] || 'anonymous';
+                        const file = match[2].split('/').pop() || 'unknown';
+                        const lineNum = match[3];
+                        const colNum = match[4];
+                        return `${func}@${file}:${lineNum}:${colNum}`;
+                    }
+                    
+                    // Try alternative pattern for different browsers
+                    const altMatch = line.match(/(\w+)@(.+?):(\d+):(\d+)/);
+                    if (altMatch) {
+                        const func = altMatch[1];
+                        const file = altMatch[2].split('/').pop();
+                        const lineNum = altMatch[3];
+                        return `${func}@${file}:${lineNum}`;
+                    }
+                    
+                    // Fallback: return more of the line for manual inspection
+                    return line.trim().substring(0, 60).replace(/\s+/g, ' ');
+                }
+            }
+            return 'no-meaningful-caller';
+        } catch (e) {
+            return `trace-error: ${e.message}`;
         }
     }
     
