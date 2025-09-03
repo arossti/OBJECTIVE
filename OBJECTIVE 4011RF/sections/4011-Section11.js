@@ -39,9 +39,6 @@ window.TEUI.SectionModules.sect11 = (function () {
     93: "d_78",
   };
 
-  // ✅ CRITICAL FIX: Define area fields from S10 at module scope
-  const areaFieldsFromS10 = ["d_88", "d_89", "d_90", "d_91", "d_92", "d_93"];
-
   // Configuration for each component row to be calculated
   const componentConfig = [
     { row: 85, type: "air", input: "rsi" },
@@ -328,9 +325,6 @@ window.TEUI.SectionModules.sect11 = (function () {
         "d_97", // Ground RSI + Interior + TBP
       ];
 
-      // ✅ CRITICAL FIX: Also sync area fields that come from S10 (d_88-d_93)
-      // These need mode-aware display when switching between Target/Reference
-
       fieldsToSync.forEach((fieldId) => {
         const stateValue = currentState.getValue(fieldId);
         if (stateValue === undefined || stateValue === null) return;
@@ -356,32 +350,6 @@ window.TEUI.SectionModules.sect11 = (function () {
           }
         } else if (element.hasAttribute("contenteditable")) {
           element.textContent = stateValue;
-        }
-      });
-
-      // ✅ CRITICAL FIX: Handle area fields from S10 (d_88-d_93) with mode-aware values
-      areaFieldsFromS10.forEach((fieldId) => {
-        const element = sectionElement.querySelector(
-          `[data-field-id="${fieldId}"]`,
-        );
-        if (element) {
-          // Get the source field ID from S10 (e.g., d_88 → d_73)
-          const rowNumber = parseInt(fieldId.substring(2)); // Extract number from d_XX
-          const sourceFieldId = areaSourceMap[rowNumber];
-          
-          if (sourceFieldId) {
-            let valueToShow;
-            if (this.currentMode === "reference") {
-              // Reference mode: Show ref_d_73 value
-              valueToShow = getGlobalNumericValue(`ref_${sourceFieldId}`) || 0;
-              console.log(`[S11 refreshUI] ${fieldId} = ${valueToShow} (Reference mode: ref_${sourceFieldId})`);
-            } else {
-              // Target mode: Show d_73 value
-              valueToShow = getGlobalNumericValue(sourceFieldId) || 0;
-              console.log(`[S11 refreshUI] ${fieldId} = ${valueToShow} (Target mode: ${sourceFieldId})`);
-            }
-            element.textContent = formatNumber(valueToShow, 2);
-          }
         }
       });
     },
@@ -463,8 +431,6 @@ window.TEUI.SectionModules.sect11 = (function () {
           }
         }
       });
-
-
     },
   };
 
@@ -1034,26 +1000,12 @@ window.TEUI.SectionModules.sect11 = (function () {
       heatgainFieldId = `k_${rowStr}`;
 
     try {
-      // ✅ CRITICAL FIX: Mode-aware area reading from S10
+      // Area always comes from external state (Section 10) or internal state
       let area = 0;
       const sourceAreaFieldId = areaSourceMap[rowNumber];
-      
-      if (sourceAreaFieldId) {
-        // External dependency from S10 - read mode-appropriate value
-        if (isReferenceCalculation) {
-          area = getGlobalNumericValue(`ref_${sourceAreaFieldId}`) || 0; // Reference: ref_d_73
-          console.log(`[S11 REF CALC] ${areaFieldId} reads ref_${sourceAreaFieldId}=${area} (Reference calculation)`);
-        } else {
-          area = getGlobalNumericValue(sourceAreaFieldId) || 0; // Target: d_73
-          console.log(`[S11 TARGET CALC] ${areaFieldId} reads ${sourceAreaFieldId}=${area} (Target calculation)`);
-        }
-      } else {
-        // Internal to S11 - use local state
-        area = getNumericValue(areaFieldId) || 0;
-        console.log(`[S11 INTERNAL] ${areaFieldId} reads internal value=${area}`);
-      }
-      
-      // Only update DOM/state during Target calculations to avoid overwrites
+      area = sourceAreaFieldId
+        ? getGlobalNumericValue(sourceAreaFieldId) || 0 // External dependency from S10
+        : getNumericValue(areaFieldId) || 0; // Internal to S11
       if (sourceAreaFieldId && !isReferenceCalculation) {
         setCalculatedValue(areaFieldId, area);
       }
@@ -2012,58 +1964,19 @@ window.TEUI.SectionModules.sect11 = (function () {
     // 4. Sync UI to the default (Target) state
     ModeManager.refreshUI();
 
-    // ✅ CRITICAL FIX: Mode-aware listeners for S10 → S11 area dependencies
-    // Listen to both Target and Reference area changes from S10
+    // Register this section with StateManager and add listeners
     Object.entries(areaSourceMap).forEach(([targetRow, sourceFieldId]) => {
       if (window.TEUI?.StateManager?.addListener) {
-        // Listen to Target area changes (unprefixed)
         window.TEUI.StateManager.addListener(sourceFieldId, () => {
-          console.log(`[S11] Target area listener: ${sourceFieldId} → d_${targetRow}`);
-          
-          // ✅ CRITICAL FIX: Always update DOM to show current mode's value
           const targetFieldId = `d_${targetRow}`;
           const targetElement = document.querySelector(
             `[data-field-id="${targetFieldId}"]`,
           );
           if (targetElement) {
-            // Show the value appropriate for the current UI mode
-            if (ModeManager.currentMode === "target") {
-              const numericValue = getGlobalNumericValue(sourceFieldId) || 0;
-              targetElement.textContent = formatNumber(numericValue, 2);
-              console.log(`[S11] DOM updated: d_${targetRow} = ${numericValue} (Target mode)`);
-            } else {
-              // In Reference mode, show Reference value even when Target changes
-              const refNumericValue = getGlobalNumericValue(`ref_${sourceFieldId}`) || 0;
-              targetElement.textContent = formatNumber(refNumericValue, 2);
-              console.log(`[S11] DOM kept: d_${targetRow} = ${refNumericValue} (Reference mode, ignoring Target change)`);
-            }
+            const numericValue = getNumericValue(sourceFieldId) || 0;
+            targetElement.textContent = formatNumber(numericValue, 2);
+            calculateAll(); // Recalc on linked area change
           }
-          calculateAll(); // Recalc with dual engines
-        });
-
-        // Listen to Reference area changes (ref_ prefixed)
-        window.TEUI.StateManager.addListener(`ref_${sourceFieldId}`, () => {
-          console.log(`[S11] Reference area listener: ref_${sourceFieldId} → d_${targetRow}`);
-          
-          // ✅ CRITICAL FIX: Always update DOM to show current mode's value
-          const targetFieldId = `d_${targetRow}`;
-          const targetElement = document.querySelector(
-            `[data-field-id="${targetFieldId}"]`,
-          );
-          if (targetElement) {
-            // Show the value appropriate for the current UI mode
-            if (ModeManager.currentMode === "reference") {
-              const refNumericValue = getGlobalNumericValue(`ref_${sourceFieldId}`) || 0;
-              targetElement.textContent = formatNumber(refNumericValue, 2);
-              console.log(`[S11] DOM updated: d_${targetRow} = ${refNumericValue} (Reference mode)`);
-            } else {
-              // In Target mode, show Target value even when Reference changes
-              const numericValue = getGlobalNumericValue(sourceFieldId) || 0;
-              targetElement.textContent = formatNumber(numericValue, 2);
-              console.log(`[S11] DOM kept: d_${targetRow} = ${numericValue} (Target mode, ignoring Reference change)`);
-            }
-          }
-          calculateAll(); // Recalc with dual engines
         });
       }
     });

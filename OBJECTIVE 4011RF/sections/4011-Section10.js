@@ -1694,10 +1694,6 @@ window.TEUI.SectionModules.sect10 = (function () {
 
       // Update reference indicators for all rows
       updateAllReferenceIndicators();
-      
-      // ✅ CRITICAL FIX: Ensure Reference area values are always available
-      // Even during Target calculations, publish current Reference area values
-      storeReferenceResults();
     } catch (_error) {
       console.error("S10: Error in Target Model calculations:", _error);
     } finally {
@@ -1908,20 +1904,9 @@ window.TEUI.SectionModules.sect10 = (function () {
    * Store Reference results for downstream sections
    */
   function storeReferenceResults() {
-    // ✅ CRITICAL FIX: Ensure Reference area values are always available in StateManager
-    // This prevents S11 from falling back to Target area values during Reference calculations
-    
-    const areaFields = ["d_73", "d_74", "d_75", "d_76", "d_77", "d_78"];
-    
-    areaFields.forEach(fieldId => {
-      const refValue = ReferenceState.getValue(fieldId);
-      if (refValue !== null && refValue !== undefined) {
-        window.TEUI.StateManager.setValue(`ref_${fieldId}`, refValue.toString(), "calculated");
-        console.log(`[S10REF] Published ${`ref_${fieldId}`}=${refValue} for S11 consumption`);
-      }
-    });
-    
-    console.log("[S10REF] Reference area values published to StateManager for downstream sections");
+    // All Reference values are already stored in StateManager with ref_ prefix
+    // This function exists for consistency with the architectural pattern
+    // console.log("[S10REF] Reference results stored for downstream sections");
   }
 
   /**
