@@ -2109,7 +2109,7 @@ window.TEUI.SectionModules.sect15 = (function () {
       // These are FINAL DISPLAY values, not published upstream values
       "e_10",
       "h_10",
-      "k_10"
+      "k_10",
 
       // Building Geometry (Independent Models: different building sizes)
       "h_12",
