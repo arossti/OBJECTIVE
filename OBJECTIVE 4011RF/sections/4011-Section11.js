@@ -358,6 +358,32 @@ window.TEUI.SectionModules.sect11 = (function () {
           element.textContent = stateValue;
         }
       });
+
+      // ✅ CRITICAL FIX: Handle area fields from S10 (d_88-d_93) with mode-aware values
+      areaFieldsFromS10.forEach((fieldId) => {
+        const element = sectionElement.querySelector(
+          `[data-field-id="${fieldId}"]`,
+        );
+        if (element) {
+          // Get the source field ID from S10 (e.g., d_88 → d_73)
+          const rowNumber = parseInt(fieldId.substring(2)); // Extract number from d_XX
+          const sourceFieldId = areaSourceMap[rowNumber];
+          
+          if (sourceFieldId) {
+            let valueToShow;
+            if (this.currentMode === "reference") {
+              // Reference mode: Show ref_d_73 value
+              valueToShow = getGlobalNumericValue(`ref_${sourceFieldId}`) || 0;
+              console.log(`[S11 refreshUI] ${fieldId} = ${valueToShow} (Reference mode: ref_${sourceFieldId})`);
+            } else {
+              // Target mode: Show d_73 value
+              valueToShow = getGlobalNumericValue(sourceFieldId) || 0;
+              console.log(`[S11 refreshUI] ${fieldId} = ${valueToShow} (Target mode: ${sourceFieldId})`);
+            }
+            element.textContent = formatNumber(valueToShow, 2);
+          }
+        }
+      });
     },
     // Update displayed calculated values based on current mode (Target vs Reference)
     updateCalculatedDisplayValues: function () {
@@ -437,6 +463,8 @@ window.TEUI.SectionModules.sect11 = (function () {
           }
         }
       });
+
+
     },
   };
 
@@ -1014,12 +1042,15 @@ window.TEUI.SectionModules.sect11 = (function () {
         // External dependency from S10 - read mode-appropriate value
         if (isReferenceCalculation) {
           area = getGlobalNumericValue(`ref_${sourceAreaFieldId}`) || 0; // Reference: ref_d_73
+          console.log(`[S11 REF CALC] ${areaFieldId} reads ref_${sourceAreaFieldId}=${area} (Reference calculation)`);
         } else {
           area = getGlobalNumericValue(sourceAreaFieldId) || 0; // Target: d_73
+          console.log(`[S11 TARGET CALC] ${areaFieldId} reads ${sourceAreaFieldId}=${area} (Target calculation)`);
         }
       } else {
         // Internal to S11 - use local state
         area = getNumericValue(areaFieldId) || 0;
+        console.log(`[S11 INTERNAL] ${areaFieldId} reads internal value=${area}`);
       }
       
       // Only update DOM/state during Target calculations to avoid overwrites
