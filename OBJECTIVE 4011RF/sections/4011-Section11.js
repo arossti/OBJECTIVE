@@ -93,27 +93,28 @@ window.TEUI.SectionModules.sect11 = (function () {
       }
     },
     setDefaults: function () {
-      // These defaults MUST match the 'value' properties in the sectionRows definition
-      this.state = {
-        d_85: "1411.52",
-        f_85: "9.35", // Roof
-        d_86: "712.97",
-        f_86: "6.69", // Walls Above Grade
-        d_87: "0.00",
-        f_87: "9.52", // Floor Exposed
-        g_88: "0.900", // Doors U-value
-        g_89: "0.900", // Window Area North U-value
-        g_90: "0.900", // Window Area East U-value
-        g_91: "0.900", // Window Area South U-value
-        g_92: "0.900", // Window Area West U-value
-        g_93: "0.900", // Skylights U-value
-        d_94: "0.00",
-        f_94: "4.00", // Walls Below Grade
-        d_95: "1100.42",
-        f_95: "3.70", // Floor Slab
-        d_96: "29.70", // Interior Floors
-        d_97: "20", // Thermal Bridge Penalty %
-      };
+      // ✅ CHEATSHEET COMPLIANCE: Read defaults from field definitions only (single source of truth)
+      this.state = {};
+      
+      // Get all field definitions
+      const fields = getFields();
+      
+      // Only populate defaults that exist in field definitions
+      Object.keys(fields).forEach((fieldId) => {
+        const defaultValue = getFieldDefault(fieldId);
+        if (defaultValue !== "") {
+          this.state[fieldId] = defaultValue;
+        }
+      });
+      
+      // ✅ CRITICAL: Publish to StateManager for cross-section communication
+      if (window.TEUI?.StateManager) {
+        Object.entries(this.state).forEach(([fieldId, value]) => {
+          window.TEUI.StateManager.setValue(fieldId, value, "default");
+        });
+      }
+      
+      console.log("S11: TargetState defaults loaded from field definitions (single source of truth)");
     },
     saveState: function () {
       localStorage.setItem("S11_TARGET_STATE", JSON.stringify(this.state));
@@ -139,37 +140,41 @@ window.TEUI.SectionModules.sect11 = (function () {
       }
     },
     setDefaults: function () {
-      // ✅ DYNAMIC LOADING: Get current reference standard from dropdown d_13
+      // ✅ CHEATSHEET COMPLIANCE: Start with field definitions, then apply Reference overlay
+      this.state = {};
+      
+      // Step 1: Get all field definitions (single source of truth)
+      const fields = getFields();
+      Object.keys(fields).forEach((fieldId) => {
+        const defaultValue = getFieldDefault(fieldId);
+        if (defaultValue !== "") {
+          this.state[fieldId] = defaultValue;
+        }
+      });
+      
+      // Step 2: Apply Reference standard overlay for code-governed fields only
       const currentStandard =
         window.TEUI?.StateManager?.getValue?.("d_13") || "OBC SB10 5.5-6 Z6";
       const referenceValues =
         window.TEUI?.ReferenceValues?.[currentStandard] || {};
 
-      // Apply reference values to this section's fields, with fallbacks for missing values
-      this.state = {
-        // Area values (d_) inherit from Target - not typically in building codes
-        d_85: "1411.52",
-        f_85: referenceValues.f_85 || "5.30", // Roof
-        d_86: "712.97",
-        f_86: referenceValues.f_86 || "4.10", // Walls Above Grade
-        d_87: "0.00",
-        f_87: referenceValues.f_87 || "6.60", // Floor Exposed
-        g_88: referenceValues.g_88 || "1.990", // Doors U-value
-        g_89: referenceValues.g_89 || "1.420", // Window Area North U-value
-        g_90: referenceValues.g_90 || "1.420", // Window Area East U-value
-        g_91: referenceValues.g_91 || "1.420", // Window Area South U-value
-        g_92: referenceValues.g_92 || "1.420", // Window Area West U-value
-        g_93: referenceValues.g_93 || "1.420", // Skylights U-value
-        d_94: "0.00",
-        f_94: referenceValues.f_94 || "1.80", // Walls Below Grade
-        d_95: "1100.42",
-        f_95: referenceValues.f_95 || "3.50", // Floor Slab
-        d_96: "29.70", // Interior Floors (not in codes)
-        d_97: referenceValues.d_97 || "50", // Thermal Bridge Penalty %
-      };
+      // ✅ CORRECT PATTERN: Only override specific code-governed fields
+      const codeGovernedFields = ["f_85", "f_86", "f_87", "g_88", "g_89", "g_90", "g_91", "g_92", "g_93", "f_94", "f_95", "d_97"];
+      codeGovernedFields.forEach(fieldId => {
+        if (referenceValues[fieldId]) {
+          this.state[fieldId] = referenceValues[fieldId];
+        }
+      });
+      
+      // ✅ CRITICAL: Publish to StateManager for cross-section communication
+      if (window.TEUI?.StateManager) {
+        Object.entries(this.state).forEach(([fieldId, value]) => {
+          window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "default");
+        });
+      }
 
       console.log(
-        `S11: Reference defaults loaded from standard: ${currentStandard}`,
+        `S11: Reference defaults loaded from field definitions + ${currentStandard} overlay`,
       );
     },
 
@@ -789,6 +794,12 @@ window.TEUI.SectionModules.sect11 = (function () {
       });
     });
     return fields;
+  }
+
+  // ✅ CHEATSHEET COMPLIANCE: Helper function for reading field definition defaults
+  function getFieldDefault(fieldId) {
+    const fields = getFields();
+    return fields[fieldId]?.defaultValue || "";
   }
 
   function getDropdownOptions() {
