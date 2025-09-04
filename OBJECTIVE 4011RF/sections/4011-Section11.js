@@ -2021,20 +2021,20 @@ window.TEUI.SectionModules.sect11 = (function () {
         window.TEUI.StateManager.addListener(sourceFieldId, (newValue) => {
           // Always update the TargetState, regardless of current UI mode
           TargetState.setValue(targetFieldId, newValue, 'calculated');
-          // If currently in target mode, trigger a recalculation to update UI
-          if (ModeManager.currentMode === 'target') {
-            calculateAll();
-          }
+          // ✅ CHEATSHEET CORE PRINCIPLE #1: Always run both engines to keep states current
+          calculateAll();
+          // ✅ CHEATSHEET MANDATORY PATTERN: Always update DOM after calculations
+          ModeManager.updateCalculatedDisplayValues();
         });
 
         // Listener for REFERENCE value from S10
         window.TEUI.StateManager.addListener(refSourceFieldId, (newValue) => {
           // Always update the ReferenceState, regardless of current UI mode
           ReferenceState.setValue(targetFieldId, newValue, 'calculated');
-          // If currently in reference mode, trigger a recalculation to update UI
-          if (ModeManager.currentMode === 'reference') {
-            calculateAll();
-          }
+          // ✅ CHEATSHEET CORE PRINCIPLE #1: Always run both engines to keep states current
+          calculateAll();
+          // ✅ CHEATSHEET MANDATORY PATTERN: Always update DOM after calculations
+          ModeManager.updateCalculatedDisplayValues();
         });
       }
     });
