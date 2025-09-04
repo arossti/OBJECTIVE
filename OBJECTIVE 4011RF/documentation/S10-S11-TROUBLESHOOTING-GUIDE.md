@@ -1947,3 +1947,109 @@ ModeManager.updateCalculatedDisplayValues();
 **End of S11 Comprehensive Troubleshooting Guide & Implementation Results**
 
 **🚀 S11 Reference Mode: MISSION ACCOMPLISHED** ✅
+
+---
+
+## 🤖 **Gemini Agent Analysis (Sept 4, 2025)**
+
+### **Hypothesis: State Contamination via Mode-Unaware S11 Listeners**
+
+Based on the detailed analysis within this guide, the root cause of the S10->S11 state mixing appears to be how Section 11 listens for and processes area values from Section 10.
+
+**Core Problem:** The listeners in S11 directly manipulate the DOM, bypassing S11's own internal, mode-aware state management system (`TargetState` and `ReferenceState`).
+
+**Evidence from Guide:**
+> "S11 has StateManager listeners that directly update DOM elements for d_88-d_93. These DOM updates bypass S11's dual-state architecture."
+
+This is a direct violation of the "Pattern A" architecture and the principle of State Sovereignty.
+
+### **Proposed Fix: Implement Mode-Aware Listeners in S11**
+
+The solution is to refactor the listeners in `4011-Section11.js` to be mode-aware, as specified in the project's architectural documentation like `4012-CHEATSHEET.md`.
+
+**The corrected logic should:**
+1.  **Eliminate Direct DOM Manipulation:** The listeners must **not** write directly to the DOM.
+2.  **Use S11's State Management:** They must use S11's own `ModeManager.setValue()` (or equivalent) to store the incoming area values into the appropriate internal state (`TargetState` or `ReferenceState`).
+3.  **Listen for Both States:** S11 must have separate listeners for both the Target values (e.g., `d_73`) and the Reference values (e.g., `ref_d_73`) published by S10.
+
+**Conceptual Implementation:**
+
+```javascript
+// HYPOTHETICAL FIX in 4011-Section11.js
+
+// Listener for TARGET value from S10
+window.TEUI.StateManager.addListener('d_73', function(newValue) {
+    // Use S11's own ModeManager to set the value in its TargetState
+    if (TEUI.SectionModules.sect11.ModeManager.currentMode === 'target') {
+        TEUI.SectionModules.sect11.ModeManager.setValue('d_88', newValue, 'calculated');
+    }
+});
+
+// Listener for REFERENCE value from S10
+window.TEUI.StateManager.addListener('ref_d_73', function(newValue) {
+    // Use S11's own ModeManager to set the value in its ReferenceState
+     if (TEUI.SectionModules.sect11.ModeManager.currentMode === 'reference') {
+        TEUI.SectionModules.sect11.ModeManager.setValue('d_88', newValue, 'calculated');
+    }
+});
+```
+
+This approach ensures that the data from S10 is correctly handled by S11's dual-state architecture, preserving state isolation and fixing the contamination issue.
+
+---
+
+## Sept 4, 2025 - Debugging Session Summary (Gemini Agent)
+
+**Objective**: Resolve the S10→S11 state contamination issue where S11's Reference mode incorrectly displays Target values for externally-sourced areas (e.g., `d_88`).
+
+### Attempt 1: Mode-Aware Listeners (Incorrect Logic)
+
+- **Hypothesis**: The issue was that S11's listeners for S10's area values were not mode-aware.
+- **Implementation**: Listeners were added for both Target (`d_73`) and Reference (`ref_d_73`) values. However, they included a condition to only update S11's internal state if the UI was already in the corresponding mode.
+- **Result**: **FAILURE**. This logic was flawed. The Reference state was never updated if the UI was in Target mode when the change occurred, and vice-versa.
+
+### Attempt 2: Unconditional State-Updating Listeners
+
+- **Hypothesis**: The listeners should update the internal state (`TargetState` or `ReferenceState`) unconditionally, regardless of the current UI mode.
+- **Implementation**: The conditional checks on the UI mode were removed from the listeners. The listener for `d_73` always wrote to `TargetState`, and the listener for `ref_d_73` always wrote to `ReferenceState`.
+- **Result**: **FAILURE**. The problem persisted. This led to the discovery of a more critical issue.
+
+### Attempt 3: State Lifecycle Fix (`setDefaults`)
+
+- **Hypothesis**: The root cause was not just the listeners, but the entire state lifecycle. The externally-sourced area values were being incorrectly persisted in S11's `localStorage` but were not being managed by S11's `setDefaults` or `resetState` functions.
+- **Implementation**: The `setDefaults` methods for both `TargetState` and `ReferenceState` were modified to explicitly fetch the current area values from the global `StateManager` on initialization and reset.
+- **Result**: **FAILURE**. The issue remains. The values remain stuck, and reset functionality is still broken for these fields.
+
+### Final Status & Conclusion
+
+Despite multiple attempts targeting the listeners and the state initialization lifecycle, the state contamination problem persists. The inability of S11's `resetState` function to clear the externally-sourced area values indicates that the value is being stored in a way that bypasses the intended state management architecture, or that the calculation chain is re-contaminating the state immediately after a reset or mode switch.
+
+The problem is more deeply rooted than anticipated and requires a more comprehensive architectural review of the entire data flow and calculation chain between S10 and S11.
+
+## Sept 4, 2025 - Debugging Session Summary (Gemini Agent)
+
+**Objective**: Resolve the S10→S11 state contamination issue where S11's Reference mode incorrectly displays Target values for externally-sourced areas (e.g., `d_88`).
+
+### Attempt 1: Mode-Aware Listeners (Incorrect Logic)
+
+- **Hypothesis**: The issue was that S11's listeners for S10's area values were not mode-aware.
+- **Implementation**: Listeners were added for both Target (`d_73`) and Reference (`ref_d_73`) values. However, they included a condition to only update S11's internal state if the UI was already in the corresponding mode.
+- **Result**: **FAILURE**. This logic was flawed. The Reference state was never updated if the UI was in Target mode when the change occurred, and vice-versa.
+
+### Attempt 2: Unconditional State-Updating Listeners
+
+- **Hypothesis**: The listeners should update the internal state (`TargetState` or `ReferenceState`) unconditionally, regardless of the current UI mode.
+- **Implementation**: The conditional checks on the UI mode were removed from the listeners. The listener for `d_73` always wrote to `TargetState`, and the listener for `ref_d_73` always wrote to `ReferenceState`.
+- **Result**: **FAILURE**. The problem persisted. This led to the discovery of a more critical issue.
+
+### Attempt 3: Fixing the State Lifecycle (setDefaults)
+
+- **Hypothesis**: The root cause was not just the listeners, but the entire state lifecycle. The externally-sourced area values were being incorrectly persisted in S11's `localStorage` but were not being managed by S11's `setDefaults` or `resetState` functions.
+- **Implementation**: The `setDefaults` methods for both `TargetState` and `ReferenceState` were modified to explicitly fetch the current area values from the global `StateManager` on initialization and reset.
+- **Result**: **FAILURE**. The issue remains. The values remain stuck, and reset functionality is still broken for these fields.
+
+### Final Status & Conclusion
+
+Despite multiple attempts targeting the listeners and the state initialization lifecycle, the state contamination problem persists. The inability of S11's `resetState` function to clear the externally-sourced area values indicates that the value is being stored in a way that bypasses the intended state management architecture, or that the calculation chain is re-contaminating the state immediately after a reset or mode switch.
+
+The problem is more deeply rooted than anticipated and requires a more comprehensive architectural review of the entire data flow and calculation chain between S10 and S11.
