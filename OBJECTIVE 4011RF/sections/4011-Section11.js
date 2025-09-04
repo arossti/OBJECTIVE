@@ -245,8 +245,9 @@ window.TEUI.SectionModules.sect11 = (function () {
       this.currentMode = mode;
       console.log(`S11: Switched to ${mode.toUpperCase()} mode`);
 
+      // ✅ CHEATSHEET COMPLIANCE: UI toggle is display-only, no calculations
       this.refreshUI();
-      calculateAll(); // Recalculate for the new mode
+      // ❌ REMOVED: calculateAll() - this was the anti-pattern causing contamination
       // Ensure displayed values reflect the selected mode
       if (typeof this.updateCalculatedDisplayValues === "function") {
         this.updateCalculatedDisplayValues();
