@@ -93,36 +93,27 @@ window.TEUI.SectionModules.sect11 = (function () {
       }
     },
     setDefaults: function () {
-      // ✅ CHEATSHEET COMPLIANCE: Read defaults from field definitions only (single source of truth)
-      this.state = {};
-      
-      // Get all field definitions
-      const fields = getFields();
-      
-      // Only populate defaults that exist in field definitions
-      Object.keys(fields).forEach((fieldId) => {
-        const defaultValue = getFieldDefault(fieldId);
-        if (defaultValue !== "") {
-          this.state[fieldId] = defaultValue;
-        }
-      });
-
-      // ✅ FIX: Explicitly fetch area values from S10 as they are not "owned" by S11
-      if (window.TEUI?.StateManager) {
-        Object.entries(areaSourceMap).forEach(([targetRow, sourceFieldId]) => {
-          const areaValue = window.TEUI.StateManager.getValue(sourceFieldId) || "0.00";
-          this.state[`d_${targetRow}`] = areaValue;
-        });
-      }
-      
-      // ✅ CRITICAL: Publish to StateManager for cross-section communication
-      if (window.TEUI?.StateManager) {
-        Object.entries(this.state).forEach(([fieldId, value]) => {
-          window.TEUI.StateManager.setValue(fieldId, value, "default");
-        });
-      }
-      
-      console.log("S11: TargetState defaults loaded from field definitions (single source of truth)");
+      // These defaults MUST match the 'value' properties in the sectionRows definition
+      this.state = {
+        d_85: "1411.52",
+        f_85: "9.35", // Roof
+        d_86: "712.97",
+        f_86: "6.69", // Walls Above Grade
+        d_87: "0.00",
+        f_87: "9.52", // Floor Exposed
+        g_88: "0.900", // Doors U-value
+        g_89: "0.900", // Window Area North U-value
+        g_90: "0.900", // Window Area East U-value
+        g_91: "0.900", // Window Area South U-value
+        g_92: "0.900", // Window Area West U-value
+        g_93: "0.900", // Skylights U-value
+        d_94: "0.00",
+        f_94: "4.00", // Walls Below Grade
+        d_95: "1100.42",
+        f_95: "3.70", // Floor Slab
+        d_96: "29.70", // Interior Floors
+        d_97: "20", // Thermal Bridge Penalty %
+      };
     },
     saveState: function () {
       localStorage.setItem("S11_TARGET_STATE", JSON.stringify(this.state));
@@ -148,49 +139,37 @@ window.TEUI.SectionModules.sect11 = (function () {
       }
     },
     setDefaults: function () {
-      // ✅ CHEATSHEET COMPLIANCE: Start with field definitions, then apply Reference overlay
-      this.state = {};
-      
-      // Step 1: Get all field definitions (single source of truth)
-      const fields = getFields();
-      Object.keys(fields).forEach((fieldId) => {
-        const defaultValue = getFieldDefault(fieldId);
-        if (defaultValue !== "") {
-          this.state[fieldId] = defaultValue;
-        }
-      });
-
-      // ✅ FIX: Explicitly fetch reference area values from S10
-      if (window.TEUI?.StateManager) {
-        Object.entries(areaSourceMap).forEach(([targetRow, sourceFieldId]) => {
-          const areaValue = window.TEUI.StateManager.getValue(`ref_${sourceFieldId}`) || "0.00";
-          this.state[`d_${targetRow}`] = areaValue;
-        });
-      }
-      
-      // Step 2: Apply Reference standard overlay for code-governed fields only
+      // ✅ DYNAMIC LOADING: Get current reference standard from dropdown d_13
       const currentStandard =
         window.TEUI?.StateManager?.getValue?.("d_13") || "OBC SB10 5.5-6 Z6";
       const referenceValues =
         window.TEUI?.ReferenceValues?.[currentStandard] || {};
 
-      // ✅ CORRECT PATTERN: Only override specific code-governed fields
-      const codeGovernedFields = ["f_85", "f_86", "f_87", "g_88", "g_89", "g_90", "g_91", "g_92", "g_93", "f_94", "f_95", "d_97"];
-      codeGovernedFields.forEach(fieldId => {
-        if (referenceValues[fieldId]) {
-          this.state[fieldId] = referenceValues[fieldId];
-        }
-      });
-      
-      // ✅ CRITICAL: Publish to StateManager for cross-section communication
-      if (window.TEUI?.StateManager) {
-        Object.entries(this.state).forEach(([fieldId, value]) => {
-          window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "default");
-        });
-      }
+      // Apply reference values to this section's fields, with fallbacks for missing values
+      this.state = {
+        // Area values (d_) inherit from Target - not typically in building codes
+        d_85: "1411.52",
+        f_85: referenceValues.f_85 || "5.30", // Roof
+        d_86: "712.97",
+        f_86: referenceValues.f_86 || "4.10", // Walls Above Grade
+        d_87: "0.00",
+        f_87: referenceValues.f_87 || "6.60", // Floor Exposed
+        g_88: referenceValues.g_88 || "1.990", // Doors U-value
+        g_89: referenceValues.g_89 || "1.420", // Window Area North U-value
+        g_90: referenceValues.g_90 || "1.420", // Window Area East U-value
+        g_91: referenceValues.g_91 || "1.420", // Window Area South U-value
+        g_92: referenceValues.g_92 || "1.420", // Window Area West U-value
+        g_93: referenceValues.g_93 || "1.420", // Skylights U-value
+        d_94: "0.00",
+        f_94: referenceValues.f_94 || "1.80", // Walls Below Grade
+        d_95: "1100.42",
+        f_95: referenceValues.f_95 || "3.50", // Floor Slab
+        d_96: "29.70", // Interior Floors (not in codes)
+        d_97: referenceValues.d_97 || "50", // Thermal Bridge Penalty %
+      };
 
       console.log(
-        `S11: Reference defaults loaded from field definitions + ${currentStandard} overlay`,
+        `S11: Reference defaults loaded from standard: ${currentStandard}`,
       );
     },
 
@@ -392,33 +371,26 @@ window.TEUI.SectionModules.sect11 = (function () {
         "k_87",
         "g_87",
         "f_87",
-        // ✅ CRITICAL FIX: Include area fields from S10 (d_88-d_93)
-        "d_88", // Door areas from S10 d_73
         "i_88",
         "k_88",
         "g_88",
         "f_88",
-        "d_89", // Window N areas from S10 d_74
         "i_89",
         "k_89",
         "g_89",
         "f_89",
-        "d_90", // Window E areas from S10 d_75
         "i_90",
         "k_90",
         "g_90",
         "f_90",
-        "d_91", // Window S areas from S10 d_76
         "i_91",
         "k_91",
         "g_91",
         "f_91",
-        "d_92", // Window W areas from S10 d_77
         "i_92",
         "k_92",
         "g_92",
         "f_92",
-        "d_93", // Skylight areas from S10 d_78
         "i_93",
         "k_93",
         "g_93",
@@ -819,12 +791,6 @@ window.TEUI.SectionModules.sect11 = (function () {
     return fields;
   }
 
-  // ✅ CHEATSHEET COMPLIANCE: Helper function for reading field definition defaults
-  function getFieldDefault(fieldId) {
-    const fields = getFields();
-    return fields[fieldId]?.defaultValue || "";
-  }
-
   function getDropdownOptions() {
     return {};
   }
@@ -913,7 +879,7 @@ window.TEUI.SectionModules.sect11 = (function () {
         format = "W/m2";
       } // U-Values are 3 decimals
       else if (
-        /[hjl]_[\d]{2,}/.test(fieldId) ||
+        /[hjl]_[\\d]{2,}/.test(fieldId) ||
         fieldId === "h_98" ||
         fieldId === "j_98" ||
         fieldId === "l_98"
@@ -1034,27 +1000,14 @@ window.TEUI.SectionModules.sect11 = (function () {
       heatgainFieldId = `k_${rowStr}`;
 
     try {
-      // ✅ CRITICAL FIX: Mode-aware area reading to prevent state contamination
+      // Area always comes from external state (Section 10) or internal state
       let area = 0;
       const sourceAreaFieldId = areaSourceMap[rowNumber];
-      
-      if (sourceAreaFieldId) {
-        // External dependency from S10 - read mode-appropriate value
-        if (isReferenceCalculation) {
-          // Reference calculations: read ref_ prefixed values from S10
-          area = getGlobalNumericValue(`ref_${sourceAreaFieldId}`) || 0;
-        } else {
-          // Target calculations: read unprefixed values from S10  
-          area = getGlobalNumericValue(sourceAreaFieldId) || 0;
-        }
-        
-        // Only Target calculations update DOM (Reference values stored separately)
-        if (!isReferenceCalculation) {
-          setCalculatedValue(areaFieldId, area);
-        }
-      } else {
-        // Internal to S11 - use section's internal state
-        area = getNumericValue(areaFieldId) || 0;
+      area = sourceAreaFieldId
+        ? getGlobalNumericValue(sourceAreaFieldId) || 0 // External dependency from S10
+        : getNumericValue(areaFieldId) || 0; // Internal to S11
+      if (sourceAreaFieldId && !isReferenceCalculation) {
+        setCalculatedValue(areaFieldId, area);
       }
 
       let rsiValue, uValue, inputValue;
@@ -2011,30 +1964,33 @@ window.TEUI.SectionModules.sect11 = (function () {
     // 4. Sync UI to the default (Target) state
     ModeManager.refreshUI();
 
-    // Register mode-aware listeners for area values from Section 10
+    // ✅ CRITICAL FIX: Mode-aware area display listeners (prevent state contamination)
     Object.entries(areaSourceMap).forEach(([targetRow, sourceFieldId]) => {
       const targetFieldId = `d_${targetRow}`;
-      const refSourceFieldId = `ref_${sourceFieldId}`;
-
-      // Listener for TARGET value from S10
+      
       if (window.TEUI?.StateManager?.addListener) {
+        // Listen for Target area changes from S10 (unprefixed)
         window.TEUI.StateManager.addListener(sourceFieldId, (newValue) => {
-          // Always update the TargetState, regardless of current UI mode
-          TargetState.setValue(targetFieldId, newValue, 'calculated');
-          // ✅ CHEATSHEET CORE PRINCIPLE #1: Always run both engines to keep states current
-          calculateAll();
-          // ✅ CHEATSHEET MANDATORY PATTERN: Always update DOM after calculations
-          ModeManager.updateCalculatedDisplayValues();
+          console.log(`[S11 AREA] Target listener: ${sourceFieldId}=${newValue} → ${targetFieldId}`);
+          if (ModeManager.currentMode === "target") {
+            const element = document.querySelector(`[data-field-id="${targetFieldId}"]`);
+            if (element) {
+              const num = window.TEUI.parseNumeric(newValue, 0);
+              element.textContent = formatNumber(num, "number");
+            }
+          }
         });
-
-        // Listener for REFERENCE value from S10
-        window.TEUI.StateManager.addListener(refSourceFieldId, (newValue) => {
-          // Always update the ReferenceState, regardless of current UI mode
-          ReferenceState.setValue(targetFieldId, newValue, 'calculated');
-          // ✅ CHEATSHEET CORE PRINCIPLE #1: Always run both engines to keep states current
-          calculateAll();
-          // ✅ CHEATSHEET MANDATORY PATTERN: Always update DOM after calculations
-          ModeManager.updateCalculatedDisplayValues();
+        
+        // Listen for Reference area changes from S10 (ref_ prefixed)
+        window.TEUI.StateManager.addListener(`ref_${sourceFieldId}`, (newValue) => {
+          console.log(`[S11 AREA] Reference listener: ref_${sourceFieldId}=${newValue} → ${targetFieldId}`);
+          if (ModeManager.currentMode === "reference") {
+            const element = document.querySelector(`[data-field-id="${targetFieldId}"]`);
+            if (element) {
+              const num = window.TEUI.parseNumeric(newValue, 0);
+              element.textContent = formatNumber(num, "number");
+            }
+          }
         });
       }
     });
@@ -2047,18 +2003,52 @@ window.TEUI.SectionModules.sect11 = (function () {
         "S11: ModeManager exposed globally for cross-section integration.",
       );
     }
+
+    // 5. Perform initial calculations for this section
+    calculateAll();
   }
+
+  //==========================================================================
+  // REFERENCE MODEL HANDLING (Refactored to use Factory)
+  //==========================================================================
+
+  // Create the reference handler using the factory function from ReferenceManager
+  const referenceHandler = TEUI.ReferenceManager.createReferenceHandler({
+    sectionId: "envelopeTransmissionLosses",
+    sectionName: "Transmission Losses",
+    sectionCalculateAll: calculateAll,
+    sectionRecalculateRow: calculateComponentRow, // Pass the specific row recalculation function
+    componentConfig: componentConfig, // Pass the config needed by sectionRecalculateRow
+    sectionUpdateIndicators: updateReferenceIndicators, // Pass the indicator update function
+  });
 
   //==========================================================================
   // PUBLIC API
   //==========================================================================
   return {
-    getFields: getFields,
-    getDropdownOptions: getDropdownOptions,
-    getLayout: getLayout,
-    initializeEventHandlers: initializeEventHandlers,
-    onSectionRendered: onSectionRendered,
-    calculateAll: calculateAll,
+    getFields,
+    getDropdownOptions,
+    getLayout,
+    initializeEventHandlers,
+    onSectionRendered,
+    calculateAll,
+    referenceHandler, // Expose the generated handler
+
+    // ✅ CRITICAL FIX: Export ModeManager for dual-state field routing
     ModeManager: ModeManager,
   };
 })();
+
+// REMOVED Event Listeners
+// // Initialize when the section is rendered
+// document.addEventListener('teui-section-rendered', (event) => {
+//     if (event.detail?.sectionId === 'transmissionLosses') {
+//         // Small delay to ensure other sections are ready and StateManager has values
+//         setTimeout(() => { window.TEUI.SectionModules.sect11?.onSectionRendered(); }, 50);
+//     }
+// });
+//
+// // Fallback to rendering complete event (ensure it runs even if teui-section-rendered is missed)
+// document.addEventListener('teui-rendering-complete', () => {
+//     setTimeout(() => { if (document.getElementById('transmissionLosses')) window.TEUI.SectionModules.sect11?.onSectionRendered(); }, 250);
+// });
