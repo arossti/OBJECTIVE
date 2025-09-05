@@ -1023,26 +1023,18 @@ window.TEUI.SectionModules.sect11 = (function () {
 
       // Get input values based on which engine is calling
       if (isReferenceCalculation) {
-        // For Reference calculations, use reference values
+        // ✅ CRITICAL FIX: Reference calculations read from S11's own ReferenceState
         if (input === "rsi") {
-          // Try to get reference RSI value
-          const refFieldId = `f_${rowStr}`;
-          inputValue =
-            window.TEUI?.StateManager?.getReferenceValue(refFieldId) ||
-            baselineValues[rowNumber]?.value ||
-            getNumericValue(rsiFieldId);
+          // Reference RSI: read from S11's ReferenceState (like Target does)
+          inputValue = ReferenceState.getValue(rsiFieldId) || baselineValues[rowNumber]?.value || 0;
           rsiValue = inputValue;
           if (rsiValue <= 0) {
             uValue = Infinity;
           } else uValue = 1 / rsiValue;
         } else {
           // input === 'uvalue'
-          // Try to get reference U-value
-          const refFieldId = `g_${rowStr}`;
-          inputValue =
-            window.TEUI?.StateManager?.getReferenceValue(refFieldId) ||
-            baselineValues[rowNumber]?.value ||
-            getNumericValue(uValueFieldId);
+          // ✅ CRITICAL FIX: Reference U-value: read from S11's ReferenceState (like Target does)
+          inputValue = ReferenceState.getValue(uValueFieldId) || baselineValues[rowNumber]?.value || 0;
           uValue = inputValue;
           if (uValue <= 0) {
             rsiValue = Infinity;
