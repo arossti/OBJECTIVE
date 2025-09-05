@@ -1017,14 +1017,27 @@ window.TEUI.SectionModules.sect11 = (function () {
       heatgainFieldId = `k_${rowStr}`;
 
     try {
-      // Area always comes from external state (Section 10) or internal state
+      // ✅ CRITICAL FIX: Mode-aware area reading to prevent state contamination
       let area = 0;
       const sourceAreaFieldId = areaSourceMap[rowNumber];
-      area = sourceAreaFieldId
-        ? getGlobalNumericValue(sourceAreaFieldId) || 0 // External dependency from S10
-        : getNumericValue(areaFieldId) || 0; // Internal to S11
-      if (sourceAreaFieldId && !isReferenceCalculation) {
-        setCalculatedValue(areaFieldId, area);
+      
+      if (sourceAreaFieldId) {
+        // External dependency from S10 - read mode-appropriate value
+        if (isReferenceCalculation) {
+          // Reference calculations: read ref_ prefixed values from S10
+          area = getGlobalNumericValue(`ref_${sourceAreaFieldId}`) || 0;
+        } else {
+          // Target calculations: read unprefixed values from S10  
+          area = getGlobalNumericValue(sourceAreaFieldId) || 0;
+        }
+        
+        // Only Target calculations update DOM (Reference values stored separately)
+        if (!isReferenceCalculation) {
+          setCalculatedValue(areaFieldId, area);
+        }
+      } else {
+        // Internal to S11 - use section's internal state
+        area = getNumericValue(areaFieldId) || 0;
       }
 
       let rsiValue, uValue, inputValue;
@@ -1986,35 +1999,39 @@ window.TEUI.SectionModules.sect11 = (function () {
       const targetFieldId = `d_${targetRow}`;
       
       if (window.TEUI?.StateManager?.addListener) {
-        // ✅ PHASE 3: Area caching following S11 TB% slider success pattern
+        // ✅ MODE-AWARE: Area listeners following TB% slider success pattern
         window.TEUI.StateManager.addListener(sourceFieldId, (newValue) => {
           console.log(`[S11 AREA] Target listener: ${sourceFieldId}=${newValue} → ${targetFieldId}`);
           // ✅ ALWAYS cache Target values in S11's TargetState (like TB% slider)
           TargetState.setValue(targetFieldId, newValue, 'calculated');
           
-          // Update DOM only if currently in Target mode
+          // ✅ MODE-AWARE: Only trigger calculations if S11 is in Target mode (prevent state mixing)
           if (ModeManager.currentMode === "target") {
             const element = document.querySelector(`[data-field-id="${targetFieldId}"]`);
             if (element) {
               const num = window.TEUI.parseNumeric(newValue, 0);
               element.textContent = formatNumber(num, "number");
             }
+            // ✅ CRITICAL: Trigger S11 recalculations (like TB% slider pattern)
+            calculateAll();
           }
         });
         
-        // ✅ PHASE 3: Area caching following S11 TB% slider success pattern
+        // ✅ MODE-AWARE: Area listeners following TB% slider success pattern
         window.TEUI.StateManager.addListener(`ref_${sourceFieldId}`, (newValue) => {
           console.log(`[S11 AREA] Reference listener: ref_${sourceFieldId}=${newValue} → ${targetFieldId}`);
           // ✅ ALWAYS cache Reference values in S11's ReferenceState (like TB% slider)
           ReferenceState.setValue(targetFieldId, newValue, 'calculated');
           
-          // Update DOM only if currently in Reference mode
+          // ✅ MODE-AWARE: Only trigger calculations if S11 is in Reference mode (prevent state mixing)
           if (ModeManager.currentMode === "reference") {
             const element = document.querySelector(`[data-field-id="${targetFieldId}"]`);
             if (element) {
               const num = window.TEUI.parseNumeric(newValue, 0);
               element.textContent = formatNumber(num, "number");
             }
+            // ✅ CRITICAL: Trigger S11 recalculations (like TB% slider pattern)
+            calculateAll();
           }
         });
       }
