@@ -248,6 +248,22 @@ window.TEUI.SectionModules.sect11 = (function () {
       // ✅ CHEATSHEET COMPLIANCE: UI toggle is display-only, no calculations
       this.refreshUI();
       // ❌ REMOVED: calculateAll() - this was the anti-pattern causing contamination
+      
+      // ✅ PHASE 2: Area field refresh following S11→S12 TB% success pattern
+      Object.entries(areaSourceMap).forEach(([targetRow, sourceFieldId]) => {
+        const targetFieldId = `d_${targetRow}`;
+        const element = document.querySelector(`[data-field-id="${targetFieldId}"]`);
+        if (element) {
+          const stateKey = mode === "reference" ? `ref_${sourceFieldId}` : sourceFieldId;
+          const currentValue = window.TEUI.StateManager.getValue(stateKey);
+          if (currentValue !== null && currentValue !== undefined) {
+            const num = window.TEUI.parseNumeric(currentValue, 0);
+            element.textContent = formatNumber(num, "number");
+            console.log(`[S11 MODE REFRESH] ${targetFieldId}=${num} (from ${stateKey})`);
+          }
+        }
+      });
+      
       // Ensure displayed values reflect the selected mode
       if (typeof this.updateCalculatedDisplayValues === "function") {
         this.updateCalculatedDisplayValues();
@@ -1970,9 +1986,13 @@ window.TEUI.SectionModules.sect11 = (function () {
       const targetFieldId = `d_${targetRow}`;
       
       if (window.TEUI?.StateManager?.addListener) {
-        // Listen for Target area changes from S10 (unprefixed)
+        // ✅ PHASE 3: Area caching following S11 TB% slider success pattern
         window.TEUI.StateManager.addListener(sourceFieldId, (newValue) => {
           console.log(`[S11 AREA] Target listener: ${sourceFieldId}=${newValue} → ${targetFieldId}`);
+          // ✅ ALWAYS cache Target values in S11's TargetState (like TB% slider)
+          TargetState.setValue(targetFieldId, newValue, 'calculated');
+          
+          // Update DOM only if currently in Target mode
           if (ModeManager.currentMode === "target") {
             const element = document.querySelector(`[data-field-id="${targetFieldId}"]`);
             if (element) {
@@ -1982,9 +2002,13 @@ window.TEUI.SectionModules.sect11 = (function () {
           }
         });
         
-        // Listen for Reference area changes from S10 (ref_ prefixed)
+        // ✅ PHASE 3: Area caching following S11 TB% slider success pattern
         window.TEUI.StateManager.addListener(`ref_${sourceFieldId}`, (newValue) => {
           console.log(`[S11 AREA] Reference listener: ref_${sourceFieldId}=${newValue} → ${targetFieldId}`);
+          // ✅ ALWAYS cache Reference values in S11's ReferenceState (like TB% slider)
+          ReferenceState.setValue(targetFieldId, newValue, 'calculated');
+          
+          // Update DOM only if currently in Reference mode
           if (ModeManager.currentMode === "reference") {
             const element = document.querySelector(`[data-field-id="${targetFieldId}"]`);
             if (element) {

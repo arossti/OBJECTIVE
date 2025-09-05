@@ -106,6 +106,19 @@ window.TEUI.SectionModules.sect10 = (function () {
       this.state.f_78 = "0.35"; // Reference: Better shading factor
       this.state.h_78 = "0"; // Reference: No user adjustments
 
+      // ✅ CRITICAL: Publish Reference area defaults to StateManager (S02 pattern)
+      // This enables S11 to read Reference area values during initialization and mode switching
+      if (window.TEUI?.StateManager) {
+        const areaFields = ["d_73", "d_74", "d_75", "d_76", "d_77", "d_78"];
+        areaFields.forEach((fieldId) => {
+          const value = this.state[fieldId];
+          if (value !== null && value !== undefined) {
+            window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "default");
+            console.log(`[S10 REF DEFAULTS] Published ref_${fieldId}=${value} to StateManager`);
+          }
+        });
+      }
+
       console.log(
         "S10: ReferenceState defaults loaded from field definitions with Reference overrides",
       );
