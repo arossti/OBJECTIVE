@@ -2242,6 +2242,65 @@ StateManager.addListener(`ref_${sourceFieldId}`, (newValue) => {
 
 ---
 
+## 🎉 **SEPTEMBER 5TH EVENING - SURGICAL REMOVAL SUCCESS**
+
+**Status**: ✅ **S11 Self-Contained Area Fields Working Like Row 85**  
+**Achievement**: Perfect dual-state isolation for area inputs established  
+**Next Target**: Eliminate S01 state mixing by fixing S11's mode-aware calculation reporting
+
+### **✅ SURGICAL REMOVAL PHASE 1 COMPLETED**
+
+#### **What Was Fixed:**
+1. **FieldDefinitions**: Changed d_88-d_93 from "calculated" to "editable" with proper defaults
+2. **Target Defaults**: Match S10 values (d_88=7.50, d_89=81.14, d_90=3.83, d_91=159.00, d_92=100.66, d_93=0.00)
+3. **Reference Defaults**: Target +1 for differentiation (d_88=8.50, d_89=82.14, etc.)
+4. **Event Handling**: Added d_88-d_93 to editableFields array for user input
+5. **Mode Switching**: Added d_88-d_93 to fieldsToSync array in refreshUI()
+6. **S10 Dependencies**: Completely removed areaSourceMap and complex listeners
+
+#### **✅ CONFIRMED WORKING:**
+- **Target Mode**: Area fields show Target defaults, user edits persist ✅
+- **Reference Mode**: Area fields show Reference defaults (+1), user edits persist ✅  
+- **Mode Switching**: Perfect value preservation like row 85 ✅
+- **Immediate Calculations**: Area changes trigger immediate calculation updates ✅
+- **Clean Architecture**: S11 now standard dual-state section ✅
+
+### **🚨 NEXT CRITICAL ISSUE: S01 STATE MIXING**
+
+#### **Current Problem:**
+S11 area changes in **any mode** are causing **both e_10 AND h_10** to change in S01, indicating **state mixing** in S11's calculation reporting.
+
+#### **Root Cause Hypothesis:**
+S11's **calculation engines** may be:
+1. **Publishing to wrong StateManager keys** (both Target and Reference)
+2. **Running in wrong mode context** (mode-unaware calculations)
+3. **Missing mode-aware listeners** or **incorrect listener logic**
+4. **`calculateAll()` anti-pattern** still present (triggers both engines inappropriately)
+
+#### **Diagnostic Strategy:**
+1. **Check S11's StateManager publication pattern** in calculation engines
+2. **Verify mode-aware calculation triggering** (only appropriate engine should run)
+3. **Audit listener logic** for cross-mode contamination
+4. **Compare with working sections** (S05, S06) for proper dual-state reporting
+
+#### **Success Criteria:**
+- ✅ **Target mode S11 changes**: Only h_10 updates (Target total)
+- ✅ **Reference mode S11 changes**: Only e_10 updates (Reference total)  
+- ✅ **Perfect state isolation**: No cross-mode contamination
+- ✅ **Immediate responsiveness**: Changes flow correctly to S01
+
+### **🎯 ARCHITECTURAL FOUNDATION ESTABLISHED**
+
+**Critical Achievement**: S11 area fields now work **exactly like row 85**:
+- ✅ **Self-contained**: No external dependencies
+- ✅ **Mode-aware**: Different defaults and preserved user values per mode
+- ✅ **Standard architecture**: Follows proven dual-state patterns
+- ✅ **Immediate responsiveness**: User changes trigger calculations instantly
+
+**This provides the clean foundation** needed to solve the S01 state mixing issue without architectural complexity.
+
+---
+
 ## 🤖 **Gemini Agent Analysis (Sept 4, 2025)**
 
 ### **Hypothesis: State Contamination via Mode-Unaware S11 Listeners**
