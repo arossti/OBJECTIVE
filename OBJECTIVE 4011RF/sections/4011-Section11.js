@@ -29,15 +29,7 @@ window.TEUI.SectionModules.sect11 = (function () {
     97: { type: "penalty", value: 0.2 }, // TBP (Pass <= 20%)
   };
 
-  // Map Section 11 area fields (d_88-d_93) to their Section 10 sources
-  const areaSourceMap = {
-    88: "d_73",
-    89: "d_74",
-    90: "d_75",
-    91: "d_76",
-    92: "d_77",
-    93: "d_78",
-  };
+  // ✅ SURGICAL REMOVAL: areaSourceMap removed - S11 now self-contained
 
   // Configuration for each component row to be calculated
   const componentConfig = [
@@ -62,11 +54,17 @@ window.TEUI.SectionModules.sect11 = (function () {
     "f_86",
     "d_87",
     "f_87", // Air-facing RSI inputs
+    "d_88", // Door area (now editable like row 85)
     "g_88",
+    "d_89", // Window North area (now editable like row 85)
     "g_89",
+    "d_90", // Window East area (now editable like row 85)
     "g_90",
+    "d_91", // Window South area (now editable like row 85)
     "g_91",
+    "d_92", // Window West area (now editable like row 85)
     "g_92",
+    "d_93", // Skylight area (now editable like row 85)
     "g_93", // Window/Door U-value inputs
     "d_94",
     "f_94",
@@ -101,12 +99,18 @@ window.TEUI.SectionModules.sect11 = (function () {
         f_86: "6.69", // Walls Above Grade
         d_87: "0.00",
         f_87: "9.52", // Floor Exposed
-        g_88: "0.900", // Doors U-value
-        g_89: "0.900", // Window Area North U-value
-        g_90: "0.900", // Window Area East U-value
-        g_91: "0.900", // Window Area South U-value
-        g_92: "0.900", // Window Area West U-value
-        g_93: "0.900", // Skylights U-value
+        d_88: "7.50", // Door area (matches S10 Target default)
+        g_88: "0.900", // Doors U-value (Target default, not ReferenceValues)
+        d_89: "81.14", // Window North area (matches S10 Target default)
+        g_89: "0.900", // Window North U-value (Target default, not ReferenceValues)
+        d_90: "3.83", // Window East area (matches S10 Target default)
+        g_90: "0.900", // Window East U-value (Target default, not ReferenceValues)
+        d_91: "159.00", // Window South area (matches S10 Target default)
+        g_91: "0.900", // Window South U-value (Target default, not ReferenceValues)
+        d_92: "100.66", // Window West area (matches S10 Target default)
+        g_92: "0.900", // Window West U-value (Target default, not ReferenceValues)
+        d_93: "0.00", // Skylights area (matches S10 Target default)
+        g_93: "0.900", // Skylights U-value (Target default, not ReferenceValues)
         d_94: "0.00",
         f_94: "4.00", // Walls Below Grade
         d_95: "1100.42",
@@ -147,19 +151,25 @@ window.TEUI.SectionModules.sect11 = (function () {
 
       // Apply reference values to this section's fields, with fallbacks for missing values
       this.state = {
-        // Area values (d_) inherit from Target - not typically in building codes
+        // Area values (d_) - Reference defaults are Target +1 for clear differentiation
         d_85: "1411.52",
         f_85: referenceValues.f_85 || "5.30", // Roof
         d_86: "712.97",
         f_86: referenceValues.f_86 || "4.10", // Walls Above Grade
         d_87: "0.00",
         f_87: referenceValues.f_87 || "6.60", // Floor Exposed
-        g_88: referenceValues.g_88 || "1.990", // Doors U-value
-        g_89: referenceValues.g_89 || "1.420", // Window Area North U-value
-        g_90: referenceValues.g_90 || "1.420", // Window Area East U-value
-        g_91: referenceValues.g_91 || "1.420", // Window Area South U-value
-        g_92: referenceValues.g_92 || "1.420", // Window Area West U-value
-        g_93: referenceValues.g_93 || "1.420", // Skylights U-value
+        d_88: "8.50", // Door area (Target 7.50 + 1 for Reference differentiation)
+        g_88: referenceValues.g_88 || "1.990", // Doors U-value (from ReferenceValues)
+        d_89: "82.14", // Window North area (Target 81.14 + 1 for Reference differentiation)
+        g_89: referenceValues.g_89 || "1.420", // Window North U-value (from ReferenceValues)
+        d_90: "4.83", // Window East area (Target 3.83 + 1 for Reference differentiation)
+        g_90: referenceValues.g_90 || "1.420", // Window East U-value (from ReferenceValues)
+        d_91: "160.00", // Window South area (Target 159.00 + 1 for Reference differentiation)
+        g_91: referenceValues.g_91 || "1.420", // Window South U-value (from ReferenceValues)
+        d_92: "101.66", // Window West area (Target 100.66 + 1 for Reference differentiation)
+        g_92: referenceValues.g_92 || "1.420", // Window West U-value (from ReferenceValues)
+        d_93: "1.00", // Skylights area (Target 0.00 + 1 for Reference differentiation)
+        g_93: referenceValues.g_93 || "1.420", // Skylights U-value (from ReferenceValues)
         d_94: "0.00",
         f_94: referenceValues.f_94 || "1.80", // Walls Below Grade
         d_95: "1100.42",
@@ -245,25 +255,8 @@ window.TEUI.SectionModules.sect11 = (function () {
       this.currentMode = mode;
       console.log(`S11: Switched to ${mode.toUpperCase()} mode`);
 
-      // ✅ CHEATSHEET COMPLIANCE: UI toggle is display-only, no calculations
       this.refreshUI();
-      // ❌ REMOVED: calculateAll() - this was the anti-pattern causing contamination
-      
-      // ✅ PHASE 2: Area field refresh following S11→S12 TB% success pattern
-      Object.entries(areaSourceMap).forEach(([targetRow, sourceFieldId]) => {
-        const targetFieldId = `d_${targetRow}`;
-        const element = document.querySelector(`[data-field-id="${targetFieldId}"]`);
-        if (element) {
-          const stateKey = mode === "reference" ? `ref_${sourceFieldId}` : sourceFieldId;
-          const currentValue = window.TEUI.StateManager.getValue(stateKey);
-          if (currentValue !== null && currentValue !== undefined) {
-            const num = window.TEUI.parseNumeric(currentValue, 0);
-            element.textContent = formatNumber(num, "number");
-            console.log(`[S11 MODE REFRESH] ${targetFieldId}=${num} (from ${stateKey})`);
-          }
-        }
-      });
-      
+      calculateAll(); // Recalculate for the new mode
       // Ensure displayed values reflect the selected mode
       if (typeof this.updateCalculatedDisplayValues === "function") {
         this.updateCalculatedDisplayValues();
@@ -328,11 +321,17 @@ window.TEUI.SectionModules.sect11 = (function () {
         "f_86",
         "d_87",
         "f_87", // RSI inputs
+        "d_88", // Door area (now editable like d_85)
         "g_88",
+        "d_89", // Window North area (now editable like d_85)
         "g_89",
+        "d_90", // Window East area (now editable like d_85)
         "g_90",
+        "d_91", // Window South area (now editable like d_85)
         "g_91",
+        "d_92", // Window West area (now editable like d_85)
         "g_92",
+        "d_93", // Skylight area (now editable like d_85)
         "g_93", // U-value inputs
         "d_94",
         "f_94",
@@ -574,10 +573,10 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Doors",
       cells: {
         c: { label: "Doors" },
-        d: { fieldId: "d_88", type: "calculated", value: "0.00" },
+        d: { fieldId: "d_88", type: "editable", value: "7.50" },
         e: { fieldId: "e_88", type: "calculated", value: "0.00" },
         f: { fieldId: "f_88", type: "calculated", value: "0.00" },
-        g: { fieldId: "g_88", type: "editable", value: "0.900" },
+        g: { fieldId: "g_88", type: "editable", value: "1.990" },
         h: { fieldId: "h_88", type: "calculated", value: "0%" },
         i: { fieldId: "i_88", type: "calculated", value: "0.00" },
         j: { fieldId: "j_88", type: "calculated", value: "0%" },
@@ -593,10 +592,10 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Window Area North",
       cells: {
         c: { label: "Window Area North" },
-        d: { fieldId: "d_89", type: "calculated", value: "0.00" },
+        d: { fieldId: "d_89", type: "editable", value: "81.14" },
         e: { fieldId: "e_89", type: "calculated", value: "0.00" },
         f: { fieldId: "f_89", type: "calculated", value: "0.00" },
-        g: { fieldId: "g_89", type: "editable", value: "0.900" },
+        g: { fieldId: "g_89", type: "editable", value: "1.420" },
         h: { fieldId: "h_89", type: "calculated", value: "0%" },
         i: { fieldId: "i_89", type: "calculated", value: "0.00" },
         j: { fieldId: "j_89", type: "calculated", value: "0%" },
@@ -612,10 +611,10 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Window Area East",
       cells: {
         c: { label: "Window Area East" },
-        d: { fieldId: "d_90", type: "calculated", value: "0.00" },
+        d: { fieldId: "d_90", type: "editable", value: "3.83" },
         e: { fieldId: "e_90", type: "calculated", value: "0.00" },
         f: { fieldId: "f_90", type: "calculated", value: "0.00" },
-        g: { fieldId: "g_90", type: "editable", value: "0.900" },
+        g: { fieldId: "g_90", type: "editable", value: "1.420" },
         h: { fieldId: "h_90", type: "calculated", value: "0%" },
         i: { fieldId: "i_90", type: "calculated", value: "0.00" },
         j: { fieldId: "j_90", type: "calculated", value: "0%" },
@@ -631,10 +630,10 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Window Area South",
       cells: {
         c: { label: "Window Area South" },
-        d: { fieldId: "d_91", type: "calculated", value: "0.00" },
+        d: { fieldId: "d_91", type: "editable", value: "159.00" },
         e: { fieldId: "e_91", type: "calculated", value: "0.00" },
         f: { fieldId: "f_91", type: "calculated", value: "0.00" },
-        g: { fieldId: "g_91", type: "editable", value: "0.900" },
+        g: { fieldId: "g_91", type: "editable", value: "1.420" },
         h: { fieldId: "h_91", type: "calculated", value: "0%" },
         i: { fieldId: "i_91", type: "calculated", value: "0.00" },
         j: { fieldId: "j_91", type: "calculated", value: "0%" },
@@ -650,10 +649,10 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Window Area West",
       cells: {
         c: { label: "Window Area West" },
-        d: { fieldId: "d_92", type: "calculated", value: "0.00" },
+        d: { fieldId: "d_92", type: "editable", value: "100.66" },
         e: { fieldId: "e_92", type: "calculated", value: "0.00" },
         f: { fieldId: "f_92", type: "calculated", value: "0.00" },
-        g: { fieldId: "g_92", type: "editable", value: "0.900" },
+        g: { fieldId: "g_92", type: "editable", value: "1.420" },
         h: { fieldId: "h_92", type: "calculated", value: "0%" },
         i: { fieldId: "i_92", type: "calculated", value: "0.00" },
         j: { fieldId: "j_92", type: "calculated", value: "0%" },
@@ -669,10 +668,10 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Skylights",
       cells: {
         c: { label: "Skylights" },
-        d: { fieldId: "d_93", type: "calculated", value: "0.00" },
+        d: { fieldId: "d_93", type: "editable", value: "0.00" },
         e: { fieldId: "e_93", type: "calculated", value: "0.00" },
         f: { fieldId: "f_93", type: "calculated", value: "0.00" },
-        g: { fieldId: "g_93", type: "editable", value: "0.900" },
+        g: { fieldId: "g_93", type: "editable", value: "1.420" },
         h: { fieldId: "h_93", type: "calculated", value: "0%" },
         i: { fieldId: "i_93", type: "calculated", value: "0.00" },
         j: { fieldId: "j_93", type: "calculated", value: "0%" },
@@ -1017,28 +1016,8 @@ window.TEUI.SectionModules.sect11 = (function () {
       heatgainFieldId = `k_${rowStr}`;
 
     try {
-      // ✅ CRITICAL FIX: Mode-aware area reading to prevent state contamination
-      let area = 0;
-      const sourceAreaFieldId = areaSourceMap[rowNumber];
-      
-      if (sourceAreaFieldId) {
-        // External dependency from S10 - read mode-appropriate value
-        if (isReferenceCalculation) {
-          // Reference calculations: read ref_ prefixed values from S10
-          area = getGlobalNumericValue(`ref_${sourceAreaFieldId}`) || 0;
-        } else {
-          // Target calculations: read unprefixed values from S10  
-          area = getGlobalNumericValue(sourceAreaFieldId) || 0;
-        }
-        
-        // Only Target calculations update DOM (Reference values stored separately)
-        if (!isReferenceCalculation) {
-          setCalculatedValue(areaFieldId, area);
-        }
-      } else {
-        // Internal to S11 - use section's internal state
-        area = getNumericValue(areaFieldId) || 0;
-      }
+      // ✅ SURGICAL REMOVAL: Area now comes from S11's own internal state (like row 85)
+      let area = getNumericValue(areaFieldId) || 0;
 
       let rsiValue, uValue, inputValue;
 
@@ -1994,44 +1973,18 @@ window.TEUI.SectionModules.sect11 = (function () {
     // 4. Sync UI to the default (Target) state
     ModeManager.refreshUI();
 
-    // ✅ CRITICAL FIX: Mode-aware area display listeners (prevent state contamination)
+    // Register this section with StateManager and add listeners
     Object.entries(areaSourceMap).forEach(([targetRow, sourceFieldId]) => {
-      const targetFieldId = `d_${targetRow}`;
-      
       if (window.TEUI?.StateManager?.addListener) {
-        // ✅ MODE-AWARE: Area listeners following TB% slider success pattern
-        window.TEUI.StateManager.addListener(sourceFieldId, (newValue) => {
-          console.log(`[S11 AREA] Target listener: ${sourceFieldId}=${newValue} → ${targetFieldId}`);
-          // ✅ ALWAYS cache Target values in S11's TargetState (like TB% slider)
-          TargetState.setValue(targetFieldId, newValue, 'calculated');
-          
-          // ✅ MODE-AWARE: Only trigger calculations if S11 is in Target mode (prevent state mixing)
-          if (ModeManager.currentMode === "target") {
-            const element = document.querySelector(`[data-field-id="${targetFieldId}"]`);
-            if (element) {
-              const num = window.TEUI.parseNumeric(newValue, 0);
-              element.textContent = formatNumber(num, "number");
-            }
-            // ✅ CRITICAL: Trigger S11 recalculations (like TB% slider pattern)
-            calculateAll();
-          }
-        });
-        
-        // ✅ MODE-AWARE: Area listeners following TB% slider success pattern
-        window.TEUI.StateManager.addListener(`ref_${sourceFieldId}`, (newValue) => {
-          console.log(`[S11 AREA] Reference listener: ref_${sourceFieldId}=${newValue} → ${targetFieldId}`);
-          // ✅ ALWAYS cache Reference values in S11's ReferenceState (like TB% slider)
-          ReferenceState.setValue(targetFieldId, newValue, 'calculated');
-          
-          // ✅ MODE-AWARE: Only trigger calculations if S11 is in Reference mode (prevent state mixing)
-          if (ModeManager.currentMode === "reference") {
-            const element = document.querySelector(`[data-field-id="${targetFieldId}"]`);
-            if (element) {
-              const num = window.TEUI.parseNumeric(newValue, 0);
-              element.textContent = formatNumber(num, "number");
-            }
-            // ✅ CRITICAL: Trigger S11 recalculations (like TB% slider pattern)
-            calculateAll();
+        window.TEUI.StateManager.addListener(sourceFieldId, () => {
+          const targetFieldId = `d_${targetRow}`;
+          const targetElement = document.querySelector(
+            `[data-field-id="${targetFieldId}"]`,
+          );
+          if (targetElement) {
+            const numericValue = getNumericValue(sourceFieldId) || 0;
+            targetElement.textContent = formatNumber(numericValue, 2);
+            calculateAll(); // Recalc on linked area change
           }
         });
       }
