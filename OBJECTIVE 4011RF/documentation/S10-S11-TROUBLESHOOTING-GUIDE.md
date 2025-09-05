@@ -1,5 +1,32 @@
 # S10-S11 RADIANT GAINS & TRANSMISSION LOSSES - TROUBLESHOOTING GUIDE
 
+## 🤖 **AI AGENT HANDOFF PROMPT (September 5th, 2025 Evening)**
+
+**CURRENT STATUS**: ✅ **S11 Self-Contained Area Fields Working** | 🚨 **S01 State Mixing Remains**
+
+**CONTEXT**: After 4 days of debugging, we achieved major breakthrough by making S11 self-contained like other sections. The complex S10→S11 area linkage was surgically removed and S11 now works perfectly internally.
+
+**WHAT WORKS NOW**:
+- ✅ **S11 area fields (d_88-d_93)**: Work exactly like row 85 - editable, mode-aware, perfect dual-state isolation
+- ✅ **S11 U-value responsiveness**: Both Target and Reference modes update calculations immediately  
+- ✅ **S11→S12 robot fingers**: TB% slider updates downstream sections correctly
+- ✅ **Clean architecture**: S11 follows standard dual-state patterns
+
+**REMAINING ISSUE**: S11 changes cause **both e_10 AND h_10** to update in S01 (state mixing). Should be **only e_10** (Reference total) OR **only h_10** (Target total) depending on S11's current mode.
+
+**NEXT TASK**: Fix S11's **calculation reporting** to StateManager so it publishes mode-aware results:
+- Target mode S11 changes → only h_10 updates
+- Reference mode S11 changes → only e_10 updates
+
+**KEY FILES**: 
+- `OBJECTIVE 4011RF/sections/4011-Section11.js` (recently fixed)
+- Check S11's `calculateTargetModel()` and `calculateReferenceModel()` functions
+- Compare with working sections like S05, S06 for proper dual-state reporting patterns
+
+**SAFE RESTORE POINT**: Commit `07ad926` - "Fix S11 Reference calculations"
+
+---
+
 **Date**: September 3, 2025  
 **Status**: **🚨 CRITICAL ISSUE - S10→S11 Area Value State Mixing**  
 **Purpose**: Resolve state contamination between S10 area inputs and S11 area displays
