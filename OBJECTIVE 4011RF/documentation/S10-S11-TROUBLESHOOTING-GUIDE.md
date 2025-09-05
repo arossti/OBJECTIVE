@@ -2144,6 +2144,104 @@ StateManager.addListener(`ref_${sourceFieldId}`, (newValue) => {
 
 ---
 
+## 🏥 **SEPTEMBER 5TH AFTERNOON - SURGICAL REMOVAL APPROACH**
+
+**Status**: ✅ **Target mode working perfectly** | ❌ **Reference mode broken (area = 0 calculations)**  
+**Discovery**: S10→S11 linkage architecture is fundamentally broken and fighting the dual-state system  
+**New Strategy**: **Surgical removal** of broken linkage, establish baseline isolation, then rebuild cleanly
+
+### **🚨 ARCHITECTURAL CANCER IDENTIFIED**
+
+**The Problem**: S10→S11 area linkage creates **multiple data paths** and **architectural violations**:
+- S11 Reference calculations read `ref_d_73` (doesn't exist) → `area = 0` → all heatloss = 0.00
+- S11 area listeners never fire (S10 doesn't publish Reference values properly)  
+- Complex conditional logic fights dual-state architecture
+- Every fix breaks something else (4-dimensional whackamole)
+
+### **🏗️ SURGICAL REMOVAL & REBUILD STRATEGY**
+
+#### **Phase 1: Complete S10→S11 Linkage Removal (30 minutes)**
+
+**Target**: Make S11 fully self-contained like other sections (row 85 pattern)
+
+**Implementation**:
+1. **Remove all S10 area listeners** from S11 `onSectionRendered()`
+2. **Remove areaSourceMap dependencies** from calculations  
+3. **Add area field defaults** to S11 FieldDefinitions (d_88-d_93)
+4. **Make area fields editable** in S11 (like d_85, d_86, d_87)
+
+**Pattern**: Copy **exactly how row 85 works** for rows 88-93:
+```javascript
+// ✅ SELF-CONTAINED PATTERN (like row 85):
+88: {
+  cells: {
+    d: { fieldId: "d_88", type: "editable", value: "7.50" }, // User enters door area
+    g: { fieldId: "g_88", type: "editable", value: "1.99" }, // User enters door U-value
+  }
+}
+```
+
+#### **Phase 2: Verify Perfect Dual-State Isolation (15 minutes)**
+
+**Target**: Confirm S11 works identically to other sections
+
+**Tests**:
+1. **Target mode**: Change d_88 → calculations update → row 98 updates → h_10 updates ✅
+2. **Reference mode**: Change d_88 → calculations update → e_10 updates ✅  
+3. **Mode switching**: Perfect value preservation ✅
+4. **No state mixing**: Only appropriate totals change ✅
+
+#### **Phase 3: Clean S10→S11 Linkage Rebuild (Future Session)**
+
+**Target**: Add back S10 area linkage as **enhancement**, not **requirement**
+
+**Approach**: 
+- **Robot fingers pattern**: S10 area changes directly call S11 functions
+- **Mode-aware updates**: Clean, simple, no complex listeners
+- **Enhancement only**: S11 works perfectly without it, better with it
+
+### **🎯 WHY THIS APPROACH WILL SUCCEED**
+
+#### **1. Follows Proven Patterns**
+- **S11 becomes identical to S02, S03, S05** (self-contained dual-state)
+- **No special architecture** for area fields
+- **Standard FieldDefinitions pattern** for defaults
+
+#### **2. Eliminates Architectural Conflicts**
+- **No cross-section dependencies** during core functionality
+- **No complex StateManager listener chains**
+- **No timing dependencies** or initialization order issues
+
+#### **3. Incremental Enhancement**
+- **Phase 1-2**: Establish rock-solid baseline functionality
+- **Phase 3**: Add S10 linkage as **convenience feature**, not **core dependency**
+
+### **📋 SURGICAL REMOVAL CHECKLIST**
+
+#### **Files to Modify:**
+1. **S11 FieldDefinitions**: Add d_88-d_93 with default values
+2. **S11 sectionRows**: Make d_88-d_93 editable (copy d_85 pattern)
+3. **S11 calculateComponentRow**: Remove areaSourceMap logic
+4. **S11 onSectionRendered**: Remove all S10 area listeners
+5. **S11 editableFields**: Add d_88-d_93 to editable array
+
+#### **Expected Result:**
+- ✅ **S11 row 88**: User enters area → immediate calculation update → perfect isolation
+- ✅ **Identical to row 85**: Same input pattern, same calculation flow, same dual-state behavior
+- ✅ **No S10 dependency**: S11 works perfectly standalone
+- ✅ **Clean architecture**: Standard dual-state section pattern
+
+### **🏆 SUCCESS CRITERIA:**
+- **Perfect dual-state isolation**: Target/Reference calculations independent
+- **Immediate responsiveness**: Area changes → instant calculation updates  
+- **Standard architecture**: S11 behaves like other sections
+- **No calculation storms**: Clean, predictable behavior
+- **Baseline established**: Ready for clean S10 linkage enhancement
+
+**This approach treats S10→S11 linkage as a UX enhancement, not an architectural requirement.**
+
+---
+
 ## 🤖 **Gemini Agent Analysis (Sept 4, 2025)**
 
 ### **Hypothesis: State Contamination via Mode-Unaware S11 Listeners**
