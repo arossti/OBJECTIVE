@@ -567,11 +567,13 @@ window.TEUI.SectionModules.sect01 = (function () {
     const useType =
       window.TEUI.StateManager?.getValue("d_14") || "Targeted Use";
     const isUtilityMode = useType === "Utility Bills";
-    
+
     // 🔍 CONTAMINATION TRACE: Log current TEUI values (same as m_43 debug pattern)
     const current_e_10 = window.TEUI.StateManager?.getValue("e_10") || "0.0";
     const current_h_10 = window.TEUI.StateManager?.getValue("h_10") || "0.0";
-    console.log(`🔍 [S01DB] updateTEUIDisplay START: e_10=${current_e_10}, h_10=${current_h_10}, useType=${useType}`);
+    console.log(
+      `🔍 [S01DB] updateTEUIDisplay START: e_10=${current_e_10}, h_10=${current_h_10}, useType=${useType}`,
+    );
 
     // ✅ CONSUMER PATTERN: Read upstream values directly from StateManager
     // Building data from S02 - CRITICAL FIX: Separate Target and Reference areas
@@ -726,7 +728,9 @@ window.TEUI.SectionModules.sect01 = (function () {
     }
 
     // 🔍 CONTAMINATION TRACE: Log h_10 updates to track contamination source
-    console.log(`🔍 [S01DB] UPDATING h_10: ${h10Formatted} (from j_32=${targetEnergy}, area=${targetArea})`);
+    console.log(
+      `🔍 [S01DB] UPDATING h_10: ${h10Formatted} (from j_32=${targetEnergy}, area=${targetArea})`,
+    );
     updateDisplayValue("h_10", h10Formatted, calculatedTier);
     updateDisplayValue("h_8", h8Formatted);
     updateDisplayValue("h_6", h6Formatted);

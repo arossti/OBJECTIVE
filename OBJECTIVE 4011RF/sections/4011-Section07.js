@@ -3,7 +3,7 @@
  * Water Use (Section 7) module for TEUI Calculator 4.011
  *
  * Refactored to use the standardized dual-engine architecture.
- * 
+ *
  * 🚨 LOG ERRORS TO RESOLVE: S07 ref_d_63 fallback contamination (S09 timing issue)
  */
 

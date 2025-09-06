@@ -813,7 +813,9 @@ window.TEUI.SectionModules.sect04 = (function () {
    */
   function calculateRow27(isReferenceCalculation, setFunc) {
     // H27: Target vs Reference electricity from S15
-    const electricitySourceField = isReferenceCalculation ? "ref_d_136" : "d_136";
+    const electricitySourceField = isReferenceCalculation
+      ? "ref_d_136"
+      : "d_136";
     const electricityValue = getGlobalNumericValue(electricitySourceField) || 0;
 
     // F27: Convert actual to ekWh (D27 already in kWh)
@@ -823,9 +825,9 @@ window.TEUI.SectionModules.sect04 = (function () {
     const emissionFactor = getElectricityEmissionFactor(isReferenceCalculation);
     const actualEmissions = (actualElectricity * emissionFactor) / 1000;
     const targetEmissions = (electricityValue * emissionFactor) / 1000;
-    
+
     setFunc("h_27", electricityValue);
-    setFunc("f_27", calculateF27(isReferenceCalculation, setFunc)); 
+    setFunc("f_27", calculateF27(isReferenceCalculation, setFunc));
     setFunc("g_27", actualEmissions);
     setFunc("j_27", calculateJ27(isReferenceCalculation, setFunc));
     setFunc("k_27", targetEmissions);
@@ -838,14 +840,14 @@ window.TEUI.SectionModules.sect04 = (function () {
    */
   function calculateRow28(isReferenceCalculation, setFunc) {
     // Call individual calculation functions (Excel-compliant)
-    setFunc("f_28", calculateF28(isReferenceCalculation, setFunc)); 
-    setFunc("g_28", calculateG28(isReferenceCalculation, setFunc)); 
+    setFunc("f_28", calculateF28(isReferenceCalculation, setFunc));
+    setFunc("g_28", calculateG28(isReferenceCalculation, setFunc));
     setFunc("h_28", calculateH28(isReferenceCalculation, setFunc));
     setFunc("j_28", calculateJ28(isReferenceCalculation, setFunc));
     setFunc("k_28", calculateK28(isReferenceCalculation, setFunc));
 
     // Set emission factor
-    setFunc("l_28", 1921, "integer"); 
+    setFunc("l_28", 1921, "integer");
   }
 
   /**
@@ -874,8 +876,8 @@ window.TEUI.SectionModules.sect04 = (function () {
    */
   function calculateRow30(isReferenceCalculation, setFunc) {
     // Call individual calculation functions (Excel-compliant)
-    setFunc("f_30", calculateF30(isReferenceCalculation, setFunc)); 
-    setFunc("g_30", calculateG30(isReferenceCalculation, setFunc)); 
+    setFunc("f_30", calculateF30(isReferenceCalculation, setFunc));
+    setFunc("g_30", calculateG30(isReferenceCalculation, setFunc));
     setFunc("h_30", calculateH30(isReferenceCalculation, setFunc));
     setFunc("j_30", calculateJ30(isReferenceCalculation, setFunc));
     setFunc("k_30", calculateK30(isReferenceCalculation, setFunc));
@@ -892,7 +894,7 @@ window.TEUI.SectionModules.sect04 = (function () {
     const targetWood = actualWood;
 
     const actualWood_ekWh = actualWood * 1000;
-    const actualEmissions = actualWood * 150; 
+    const actualEmissions = actualWood * 150;
 
     const targetWood_ekWh = targetWood * 1000;
     const targetEmissions = targetWood * 150;
@@ -936,7 +938,8 @@ window.TEUI.SectionModules.sect04 = (function () {
     const k_31 = ModeManager.getValue("k_31") || 0;
 
     // Calculate subtotals with forestry offset (Excel: =SUM(G27:G31)-(D60*1000), =SUM(K27:K31)-(D60*1000))
-    const d_60 = getGlobalNumericValue(isReferenceCalculation ? "ref_d_60" : "d_60") || 0; // ✅ Forestry offset from S08
+    const d_60 =
+      getGlobalNumericValue(isReferenceCalculation ? "ref_d_60" : "d_60") || 0; // ✅ Forestry offset from S08
     const actualEnergySum = f_27 + f_28 + f_29 + f_30 + f_31;
     const actualEmissionsSum = g_27 + g_28 + g_29 + g_30 + g_31 - d_60 * 1000; // ✅ Include forestry offset
     const targetEnergySum = j_27 + j_28 + j_29 + j_30 + j_31;
@@ -971,8 +974,12 @@ window.TEUI.SectionModules.sect04 = (function () {
     const j_30 = ModeManager.getValue("j_30") || 0;
     const j_31 = ModeManager.getValue("j_31") || 0;
 
-    const d_43 = getGlobalNumericValue(isReferenceCalculation ? "ref_d_43" : "d_43"); // Onsite renewables
-    const i_43 = getGlobalNumericValue(isReferenceCalculation ? "ref_i_43" : "i_43"); // Offsite REC
+    const d_43 = getGlobalNumericValue(
+      isReferenceCalculation ? "ref_d_43" : "d_43",
+    ); // Onsite renewables
+    const i_43 = getGlobalNumericValue(
+      isReferenceCalculation ? "ref_i_43" : "i_43",
+    ); // Offsite REC
 
     // d_33: Actual Total Net Energy in GJ/yr
     const d_33 = (f_27 + f_28 + f_29 + f_30 + f_31 - d_43 - i_43) / 277.7777;
@@ -993,8 +1000,9 @@ window.TEUI.SectionModules.sect04 = (function () {
     const d_33 = ModeManager.getValue("d_33") || 0; // Actual GJ
     const j_32 = ModeManager.getValue("j_32") || 0; // Target energy total
     const h_33 = ModeManager.getValue("h_33") || 0; // Target GJ
-    
-    const d_63 = getGlobalNumericValue(isReferenceCalculation ? "ref_d_63" : "d_63") || 1;
+
+    const d_63 =
+      getGlobalNumericValue(isReferenceCalculation ? "ref_d_63" : "d_63") || 1;
 
     const d_34 = f_32 / d_63; // Actual energy per person
     const f_34 = d_33 / d_63; // Actual GJ per person
@@ -1012,11 +1020,14 @@ window.TEUI.SectionModules.sect04 = (function () {
    * Excel: d_35 = IF(D14="Targeted Use", J27*H35, F27*H35), f_35 = D35/H15
    */
   function calculateRow35(isReferenceCalculation, setFunc) {
-    const d_14 = getGlobalNumericValue(isReferenceCalculation ? "ref_d_14" : "d_14") || "Utility Bills";
+    const d_14 =
+      getGlobalNumericValue(isReferenceCalculation ? "ref_d_14" : "d_14") ||
+      "Utility Bills";
     const j_27 = ModeManager.getValue("j_27") || 0;
     const f_27 = ModeManager.getValue("f_27") || 0;
     const h_35 = ModeManager.getValue("h_35") || 1.0; // PER Factor
-    const h_15 = getGlobalNumericValue(isReferenceCalculation ? "ref_h_15" : "h_15") || 1;
+    const h_15 =
+      getGlobalNumericValue(isReferenceCalculation ? "ref_h_15" : "h_15") || 1;
 
     // d_35: Primary Energy - conditional based on building status
     const d_35 = d_14 === "Targeted Use" ? j_27 * h_35 : f_27 * h_35;
@@ -1092,9 +1103,7 @@ window.TEUI.SectionModules.sect04 = (function () {
   // G-column calculations (actual emissions)
   function calculateG27(isReferenceCalculation, setFunc) {
     const f_27 = ModeManager.getValue("f_27") || 0;
-    const l_27 = getElectricityEmissionFactor(
-      isReferenceCalculation,
-    );
+    const l_27 = getElectricityEmissionFactor(isReferenceCalculation);
     const result = (f_27 * l_27) / 1000; // Convert gCO2e to kgCO2e
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
     setFunc("g_27", result);
@@ -1415,9 +1424,7 @@ window.TEUI.SectionModules.sect04 = (function () {
 
   // L-column calculation (emission factor)
   function calculateL27(isReferenceCalculation, setFunc) {
-    const result = getElectricityEmissionFactor(
-      isReferenceCalculation,
-    );
+    const result = getElectricityEmissionFactor(isReferenceCalculation);
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
     setFunc("l_27", result, "integer");
     return result;
@@ -1538,7 +1545,9 @@ window.TEUI.SectionModules.sect04 = (function () {
    */
   function runCalculations(isReferenceCalculation) {
     // Determine which state-setting function to use based on the context
-    const setFunc = isReferenceCalculation ? setReferenceCalculatedValue : setCalculatedValue;
+    const setFunc = isReferenceCalculation
+      ? setReferenceCalculatedValue
+      : setCalculatedValue;
 
     // Calculate each Excel row in sequence, passing the context
     calculateRow27(isReferenceCalculation, setFunc);

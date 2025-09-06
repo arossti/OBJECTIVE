@@ -136,8 +136,19 @@ window.TEUI.SectionModules.sect14 = (function () {
     // Update displayed calculated values based on current mode
     updateCalculatedDisplayValues: function () {
       const calculatedFields = [
-        "d_127", "h_127", "d_128", "h_128", "d_129", "h_129", 
-        "m_129", "d_130", "h_130", "d_131", "h_131", "d_132", "h_132"
+        "d_127",
+        "h_127",
+        "d_128",
+        "h_128",
+        "d_129",
+        "h_129",
+        "m_129",
+        "d_130",
+        "h_130",
+        "d_131",
+        "h_131",
+        "d_132",
+        "h_132",
       ];
 
       calculatedFields.forEach((fieldId) => {
@@ -150,7 +161,7 @@ window.TEUI.SectionModules.sect14 = (function () {
           } else {
             value = window.TEUI.StateManager.getValue(fieldId);
           }
-          
+
           // Use a neutral default if the value is not found in the correct state.
           if (value === null || value === undefined) {
             value = "0.00";

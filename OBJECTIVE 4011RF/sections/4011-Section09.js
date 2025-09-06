@@ -626,19 +626,15 @@ window.TEUI.SectionModules.sect09 = (function () {
 
     // Bridge to StateManager for backward compatibility
     if (window.TEUI?.StateManager?.setValue) {
-        if (ModeManager.currentMode === "target") {
-            window.TEUI.StateManager.setValue(
-                fieldId,
-                valueToStore,
-                "calculated",
-            );
-        } else if (ModeManager.currentMode === "reference") {
-            window.TEUI.StateManager.setValue(
-                `ref_${fieldId}`,
-                valueToStore,
-                "calculated",
-            );
-        }
+      if (ModeManager.currentMode === "target") {
+        window.TEUI.StateManager.setValue(fieldId, valueToStore, "calculated");
+      } else if (ModeManager.currentMode === "reference") {
+        window.TEUI.StateManager.setValue(
+          `ref_${fieldId}`,
+          valueToStore,
+          "calculated",
+        );
+      }
     }
   }
   //==========================================================================
@@ -1887,7 +1883,8 @@ window.TEUI.SectionModules.sect09 = (function () {
       0,
     );
     const buildingType =
-      window.TEUI.StateManager.getValue(isReference ? "ref_d_12" : "d_12") || "A-Assembly";
+      window.TEUI.StateManager.getValue(isReference ? "ref_d_12" : "d_12") ||
+      "A-Assembly";
 
     // Preliminary calculations based on the section's internal state
     const activityLevel = state.getValue("d_64");
@@ -2360,14 +2357,16 @@ window.TEUI.SectionModules.sect09 = (function () {
       window.TEUI.StateManager.setValue(
         "ref_d_63",
         ReferenceState.getValue("d_63") || "126",
-        "default"
+        "default",
       );
       window.TEUI.StateManager.setValue(
-        "ref_d_64", 
+        "ref_d_64",
         ReferenceState.getValue("d_64") || "Normal",
-        "default"
+        "default",
       );
-      console.log(`[S09] 🔗 Published initial ref_d_63=${ReferenceState.getValue("d_63")} for S07`);
+      console.log(
+        `[S09] 🔗 Published initial ref_d_63=${ReferenceState.getValue("d_63")} for S07`,
+      );
     }
 
     // 3. Inject header controls

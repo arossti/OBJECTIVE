@@ -182,15 +182,42 @@ window.TEUI.SectionModules.sect11 = (function () {
       // This fixes the QC violations: ref_d_85, ref_d_86, ref_d_89-d_92, ref_d_95 UNDEFINED_FIELD
       if (window.TEUI?.StateManager) {
         const referenceFields = [
-          "d_85", "d_86", "d_87", "d_88", "d_89", "d_90", "d_91", "d_92", "d_93", "d_94", "d_95", "d_96", "d_97", // Area and component fields
-          "f_85", "f_86", "f_87", "f_94", "f_95", // RSI values
-          "g_88", "g_89", "g_90", "g_91", "g_92", "g_93" // U-values
+          "d_85",
+          "d_86",
+          "d_87",
+          "d_88",
+          "d_89",
+          "d_90",
+          "d_91",
+          "d_92",
+          "d_93",
+          "d_94",
+          "d_95",
+          "d_96",
+          "d_97", // Area and component fields
+          "f_85",
+          "f_86",
+          "f_87",
+          "f_94",
+          "f_95", // RSI values
+          "g_88",
+          "g_89",
+          "g_90",
+          "g_91",
+          "g_92",
+          "g_93", // U-values
         ];
         referenceFields.forEach((fieldId) => {
           const value = this.state[fieldId];
           if (value !== null && value !== undefined) {
-            window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "default");
-            console.log(`[S11 REF DEFAULTS] Published ref_${fieldId}=${value} to StateManager`);
+            window.TEUI.StateManager.setValue(
+              `ref_${fieldId}`,
+              value,
+              "default",
+            );
+            console.log(
+              `[S11 REF DEFAULTS] Published ref_${fieldId}=${value} to StateManager`,
+            );
           }
         });
       }
@@ -1043,7 +1070,10 @@ window.TEUI.SectionModules.sect11 = (function () {
         // ✅ CRITICAL FIX: Reference calculations read from S11's own ReferenceState
         if (input === "rsi") {
           // Reference RSI: read from S11's ReferenceState (like Target does)
-          inputValue = ReferenceState.getValue(rsiFieldId) || baselineValues[rowNumber]?.value || 0;
+          inputValue =
+            ReferenceState.getValue(rsiFieldId) ||
+            baselineValues[rowNumber]?.value ||
+            0;
           rsiValue = inputValue;
           if (rsiValue <= 0) {
             uValue = Infinity;
@@ -1051,7 +1081,10 @@ window.TEUI.SectionModules.sect11 = (function () {
         } else {
           // input === 'uvalue'
           // ✅ CRITICAL FIX: Reference U-value: read from S11's ReferenceState (like Target does)
-          inputValue = ReferenceState.getValue(uValueFieldId) || baselineValues[rowNumber]?.value || 0;
+          inputValue =
+            ReferenceState.getValue(uValueFieldId) ||
+            baselineValues[rowNumber]?.value ||
+            0;
           uValue = inputValue;
           if (uValue <= 0) {
             rsiValue = Infinity;

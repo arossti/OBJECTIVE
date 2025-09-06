@@ -18,7 +18,7 @@
  * - Phase 5: Consolidated defaults using getFieldDefault() ✅
  * - Phase 6: Mode-aware external dependency reading (i_39, i_41) ✅
  *
- * ⚠️ PARTLY FIXED: Occupancy state mixing (d_12) 
+ * ⚠️ PARTLY FIXED: Occupancy state mixing (d_12)
  * ✅ Target contamination eliminated - Target d_12 changes no longer affect Reference e_10
  * ❌ Reference dependency broken - Reference d_12 changes do nothing (under investigation)
  * Fixed S09 d_12 contamination patterns, strategic logging added for dependency chain tracing.
@@ -603,7 +603,7 @@ window.TEUI.SectionModules.sect02 = (function () {
     if (rawValue === null || rawValue === undefined) {
       rawValue = defaultValue;
     }
-    
+
     return window.TEUI?.parseNumeric?.(rawValue, defaultValue) ?? defaultValue;
   }
 
@@ -866,7 +866,9 @@ window.TEUI.SectionModules.sect02 = (function () {
         );
         // 🔍 CONTAMINATION TRACE: Log d_12 Reference storage
         if (fieldId === "d_12") {
-          console.log(`🔍 [S02DB] storeReferenceResults: ref_${fieldId}=${value} stored in StateManager`);
+          console.log(
+            `🔍 [S02DB] storeReferenceResults: ref_${fieldId}=${value} stored in StateManager`,
+          );
         }
       }
     });
@@ -1007,7 +1009,9 @@ window.TEUI.SectionModules.sect02 = (function () {
     }
 
     // 🔍 CONTAMINATION TRACE: Log the change
-    console.log(`🔍 [S02DB] d_12 dropdown change: ${selectedValue}, mode=${ModeManager.currentMode}`);
+    console.log(
+      `🔍 [S02DB] d_12 dropdown change: ${selectedValue}, mode=${ModeManager.currentMode}`,
+    );
 
     // ✅ CRITICAL FIX: Save to current state (Target or Reference) via ModeManager
     // This ensures user changes persist when toggling between modes
@@ -1073,10 +1077,10 @@ window.TEUI.SectionModules.sect02 = (function () {
     // Set up dropdown handlers using event delegation on the section container
     const sectionElement = document.getElementById("buildingInfo");
     if (sectionElement) {
-        sectionElement.removeEventListener("change", handleSectionDropdownChange);
-        sectionElement.addEventListener("change", handleSectionDropdownChange);
+      sectionElement.removeEventListener("change", handleSectionDropdownChange);
+      sectionElement.addEventListener("change", handleSectionDropdownChange);
     }
-    
+
     // Set initial values on dropdown if not already set
     if (!window.TEUI.sect02.initialized) {
       const dropdown = document.querySelector(
@@ -1191,24 +1195,24 @@ window.TEUI.SectionModules.sect02 = (function () {
    * Handle dropdown changes via event delegation
    */
   function handleSectionDropdownChange(e) {
-    if (e.target.tagName !== 'SELECT') return;
-    
+    if (e.target.tagName !== "SELECT") return;
+
     const fieldId = e.target.getAttribute("data-field-id");
     if (!fieldId) return;
 
     switch (fieldId) {
-        case "d_12":
-            handleMajorOccupancyChange(e);
-            break;
-        case "d_13":
-            handleBuildingCodeChange(e);
-            break;
-        case "d_14":
-            handleActualTargetChange(e);
-            break;
-        case "d_15":
-            handleCarbonStandardChange(e);
-            break;
+      case "d_12":
+        handleMajorOccupancyChange(e);
+        break;
+      case "d_13":
+        handleBuildingCodeChange(e);
+        break;
+      case "d_14":
+        handleActualTargetChange(e);
+        break;
+      case "d_15":
+        handleCarbonStandardChange(e);
+        break;
     }
   }
 
@@ -1816,14 +1820,18 @@ window.TEUI.SectionModules.sect02 = (function () {
 
       // 🔍 CONTAMINATION TRACE: Log d_12 (Major Occupancy) changes
       if (fieldId === "d_12") {
-        console.log(`🔍 [S02DB] d_12 setValue: field=${fieldId}, value=${value}, mode=${this.currentMode}, source=${source}`);
+        console.log(
+          `🔍 [S02DB] d_12 setValue: field=${fieldId}, value=${value}, mode=${this.currentMode}, source=${source}`,
+        );
       }
 
       // ✅ CRITICAL BRIDGE: Sync Target changes to StateManager for downstream sections
       if (this.currentMode === "target" && window.TEUI?.StateManager) {
         window.TEUI.StateManager.setValue(fieldId, value, source);
         if (fieldId === "d_12") {
-          console.log(`🔍 [S02DB] Target d_12 published to StateManager: ${fieldId}=${value}`);
+          console.log(
+            `🔍 [S02DB] Target d_12 published to StateManager: ${fieldId}=${value}`,
+          );
         }
       }
 
@@ -1831,7 +1839,9 @@ window.TEUI.SectionModules.sect02 = (function () {
       if (this.currentMode === "reference" && window.TEUI?.StateManager) {
         window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, source);
         if (fieldId === "d_12") {
-          console.log(`🔍 [S02DB] Reference d_12 published to StateManager: ref_${fieldId}=${value}`);
+          console.log(
+            `🔍 [S02DB] Reference d_12 published to StateManager: ref_${fieldId}=${value}`,
+          );
         }
       }
     },
@@ -1985,7 +1995,7 @@ window.TEUI.SectionModules.sect02 = (function () {
 
           // If a value isn't found in the correct state, use a safe default. NEVER fall back.
           if (value === null || value === undefined) {
-            value = "0.00"; 
+            value = "0.00";
           }
 
           if (value !== null && value !== undefined) {

@@ -4,43 +4,43 @@
  *
  * DUAL-STATE-CHEATSHEET AUDIT STATUS (December 2024):
  * ================================================================================
- * 
+ *
  * 🏆 COMPLIANCE SUMMARY: ✅ 100% DUAL-STATE-CHEATSHEET COMPLIANT
  * 🚨 LOG ERRORS TO RESOLVE: S15 missing ref_i_104, ref_g_101, ref_d_101 (S12 timing issue)
- * 
+ *
  * ✅ PHASE 1 - Pattern B Contamination: CLEAN
  *    - No target_ prefixes found ✅
  *    - Clean Pattern A implementation ✅
- * 
+ *
  * ✅ PHASE 2 - ComponentBridge Contamination: CLEAN
  *    - No ComponentBridge usage found ✅
  *    - Clean post-retirement architecture ✅
- * 
+ *
  * ✅ PHASE 3 - DOM Update Pattern: FIXED
  *    - switchMode() properly calls calculateAll() then updateCalculatedDisplayValues() ✅
  *    - All calculateAll() calls properly paired with updateCalculatedDisplayValues() ✅
  *    - FIXED: Added missing updateCalculatedDisplayValues() call in resetCurrentState() ✅
- * 
+ *
  * ✅ PHASE 4 - switchMode Anti-pattern: CLEAN
  *    - switchMode() properly structured with calculateAll() then updateCalculatedDisplayValues() ✅
- * 
+ *
  * ✅ PHASE 5 - Duplicate Defaults: CLEAN
  *    - Empty setDefaults() functions - no hardcoded defaults ✅
  *    - Field definitions as single source of truth ✅
  *    - Clean calculation section pattern ✅
- * 
+ *
  * ✅ PHASE 6 - Mode-Aware State Reading: CRITICAL FIX APPLIED
  *    - FIXED: getRefValue() fallback contamination eliminated ✅
  *    - FIXED: Reference calculations now ONLY read ref_ prefixed values ✅
  *    - FIXED: Target m_43 no longer contaminates Reference e_10 calculations ✅
  *    - ACHIEVED: Perfect state isolation for Excel D135/D136 flow ✅
- * 
+ *
  * 🏆 CRITICAL CONTAMINATION RESOLVED:
  * 1. ✅ FIXED: getRefValue() fallback pattern eliminated - prevents Target→Reference bleeding
- * 2. ✅ FIXED: S06 m_43 Target entries no longer affect Reference e_10 
+ * 2. ✅ FIXED: S06 m_43 Target entries no longer affect Reference e_10
  * 3. ✅ VERIFIED: Excel D135/D136 flow working with perfect state isolation
  * 4. ✅ FIXED: DOM update pattern complete - all calculateAll() calls properly paired
- * 
+ *
  * 🏆 ARCHITECTURAL IMPACT: EXCELLENT - S15 now provides clean dual-state feed to S04→S01
  * ================================================================================
  */
@@ -298,7 +298,7 @@ window.TEUI.SectionModules.sect15 = (function () {
       }
 
       this.currentMode = mode;
-      
+
       // ✅ CORRECTED: Only refresh UI, don't re-run calculations.
       this.refreshUI();
       this.updateCalculatedDisplayValues();
@@ -335,41 +335,75 @@ window.TEUI.SectionModules.sect15 = (function () {
     // Update calculated field displays based on current mode
     updateCalculatedDisplayValues: function () {
       const calculatedFields = [
-        "d_135", "h_135", "d_136", "h_136", "d_137", "h_137", "d_138", "h_138",
-        "d_139", "h_139", "d_140", "h_140", "l_137", "l_138", "l_139", "d_141", 
-        "h_141", "l_141", "h_142", "d_143", "h_143", "l_143", "d_144", "h_144", 
-        "l_144", "d_145"
+        "d_135",
+        "h_135",
+        "d_136",
+        "h_136",
+        "d_137",
+        "h_137",
+        "d_138",
+        "h_138",
+        "d_139",
+        "h_139",
+        "d_140",
+        "h_140",
+        "l_137",
+        "l_138",
+        "l_139",
+        "d_141",
+        "h_141",
+        "l_141",
+        "h_142",
+        "d_143",
+        "h_143",
+        "l_143",
+        "d_144",
+        "h_144",
+        "l_144",
+        "d_145",
       ];
 
       const currentState = this.getCurrentState();
 
       calculatedFields.forEach((fieldId) => {
-          const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-          if (element) {
-              let rawValue = currentState.getValue(fieldId);
-              
-              // ✅ SPECIAL CASE: d_145 is mode-agnostic (always Target vs Reference ratio)
-              // If not available in current state, read from Target state as fallback
-              if ((rawValue === 'N/A' || rawValue === null || rawValue === undefined) && fieldId === "d_145") {
-                rawValue = TargetState.getValue(fieldId); // Escape to Target state for ratio
-              }
-              
-              if (rawValue === 'N/A' || rawValue === null || rawValue === undefined) {
-                  element.textContent = 'N/A';
-                  return;
-              }
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+          let rawValue = currentState.getValue(fieldId);
 
-              const num = window.TEUI.parseNumeric(rawValue, 0);
-              let format = 'number'; // Default format
-              if (["d_141", "h_141", "l_141", "d_142"].includes(fieldId)) format = 'currency';
-              else if (["d_144", "h_144", "l_144", "d_145"].includes(fieldId)) format = 'percent';
-              else if (["l_137", "l_138", "l_139"].includes(fieldId)) format = 'btu';
-              else if (["h_138", "h_139"].includes(fieldId)) format = 'tons';
-              else if (fieldId === "h_142") format = 'number';
-              
-              element.textContent = formatNumber(num, format);
-              element.classList.toggle("negative-value", num < 0);
+          // ✅ SPECIAL CASE: d_145 is mode-agnostic (always Target vs Reference ratio)
+          // If not available in current state, read from Target state as fallback
+          if (
+            (rawValue === "N/A" ||
+              rawValue === null ||
+              rawValue === undefined) &&
+            fieldId === "d_145"
+          ) {
+            rawValue = TargetState.getValue(fieldId); // Escape to Target state for ratio
           }
+
+          if (
+            rawValue === "N/A" ||
+            rawValue === null ||
+            rawValue === undefined
+          ) {
+            element.textContent = "N/A";
+            return;
+          }
+
+          const num = window.TEUI.parseNumeric(rawValue, 0);
+          let format = "number"; // Default format
+          if (["d_141", "h_141", "l_141", "d_142"].includes(fieldId))
+            format = "currency";
+          else if (["d_144", "h_144", "l_144", "d_145"].includes(fieldId))
+            format = "percent";
+          else if (["l_137", "l_138", "l_139"].includes(fieldId))
+            format = "btu";
+          else if (["h_138", "h_139"].includes(fieldId)) format = "tons";
+          else if (fieldId === "h_142") format = "number";
+
+          element.textContent = formatNumber(num, format);
+          element.classList.toggle("negative-value", num < 0);
+        }
       });
     },
 
@@ -388,15 +422,7 @@ window.TEUI.SectionModules.sect15 = (function () {
 
       console.log(`S15: ${this.currentMode} state reset to defaults`);
 
-      // ✅ DUAL-STATE: Also publish to global StateManager for downstream sections
-      if (window.TEUI?.StateManager) {
-        const globalFieldId =
-          this.currentMode === "reference" ? `ref_${fieldId}` : fieldId;
-        // Ensure value is a string for StateManager
-        const valueStr =
-          value !== null && value !== undefined ? value.toString() : "";
-        window.TEUI.StateManager.setValue(globalFieldId, valueStr, "calculated");
-      }
+      // ✅ DUAL-STATE: State reset complete - values will be published via calculateAll()
     },
 
     // Get current value based on active mode
@@ -1309,8 +1335,6 @@ window.TEUI.SectionModules.sect15 = (function () {
    */
   function calculateReferenceModel() {
     try {
-
-
       // 🎯 Enhanced helper function to get Reference values with comprehensive parseFloat
       const getRefValue = (fieldId) => {
         const refFieldId = `ref_${fieldId}`;
@@ -1318,7 +1342,7 @@ window.TEUI.SectionModules.sect15 = (function () {
 
         // ✅ CRITICAL CONTAMINATION FIX: No fallbacks to Target values (Phase 6 compliance)
         // Reference calculations must ONLY read ref_ prefixed values for perfect state isolation
-        
+
         // Return null if truly missing, so we can handle N/A properly
         if (refValue === null || refValue === undefined) {
           return null;
@@ -1331,10 +1355,12 @@ window.TEUI.SectionModules.sect15 = (function () {
       // ✅ Get Reference values from upstream sections and convert to numbers
       const area = getRefValue("h_15");
       if (area === null || area <= 0) {
-        console.warn("[S15 REF DEBUG] Critical: ref_h_15 (area) missing or zero - cannot calculate Reference model");
+        console.warn(
+          "[S15 REF DEBUG] Critical: ref_h_15 (area) missing or zero - cannot calculate Reference model",
+        );
         return; // Exit early if we can't calculate without area
       }
-      
+
       const elecPrice =
         window.TEUI?.parseNumeric?.(
           window.TEUI?.StateManager?.getValue(`ref_l_12`),
@@ -1396,7 +1422,9 @@ window.TEUI.SectionModules.sect15 = (function () {
           `[S15] Missing critical upstream Reference values: ${missingValues.join(", ")}`,
         );
         // ✅ TIMING FIX: Use fallback values during initialization, values will be available later
-        console.log(`[S15] Using fallback values for missing upstream dependencies (initialization timing)`);
+        console.log(
+          `[S15] Using fallback values for missing upstream dependencies (initialization timing)`,
+        );
       }
 
       const d65 = parseFloat(getRefValue("d_65")) || 0;
@@ -1419,10 +1447,20 @@ window.TEUI.SectionModules.sect15 = (function () {
       const d30_litres = parseFloat(getRefValue("d_30")) || 0; // Total Oil Use (litres/yr)
       const hpCostPremium = parseFloat(getRefValue("d_142")) || 0; // Heat pump cost premium
       // Read S01 dashboard values directly (S01 is state-agnostic)
-      const refTEUI_e10 = window.TEUI?.parseNumeric(window.TEUI?.StateManager?.getValue("e_10")) || 0; // Reference TEUI (Sec 1)
-      const targetTEUI_h10 = window.TEUI?.parseNumeric(window.TEUI?.StateManager?.getValue("h_10")) || 0; // Target TEUI (Sec 1) 
-      const actualTEUI_k10 = window.TEUI?.parseNumeric(window.TEUI?.StateManager?.getValue("k_10")) || 0; // Actual TEUI from Sec 1
-      const reportingMode_d14 = window.TEUI?.StateManager?.getValue("d_14") || "Targeted Use"; // Reporting Mode
+      const refTEUI_e10 =
+        window.TEUI?.parseNumeric(
+          window.TEUI?.StateManager?.getValue("e_10"),
+        ) || 0; // Reference TEUI (Sec 1)
+      const targetTEUI_h10 =
+        window.TEUI?.parseNumeric(
+          window.TEUI?.StateManager?.getValue("h_10"),
+        ) || 0; // Target TEUI (Sec 1)
+      const actualTEUI_k10 =
+        window.TEUI?.parseNumeric(
+          window.TEUI?.StateManager?.getValue("k_10"),
+        ) || 0; // Actual TEUI from Sec 1
+      const reportingMode_d14 =
+        window.TEUI?.StateManager?.getValue("d_14") || "Targeted Use"; // Reporting Mode
 
       // console.log(
       //   `✅ S15 Reference Model: Additional fuel variables declared for cost calculations`,
@@ -1454,7 +1492,8 @@ window.TEUI.SectionModules.sect15 = (function () {
       if (primaryHeating === "Electricity") {
         ref_teuTargetedElecHPGasOil = ref_teuTargetTotal;
       } else if (primaryHeating === "Heatpump") {
-        ref_teuTargetedElecHPGasOil = k51 + d117_effective + d114 + m43_final + h70;
+        ref_teuTargetedElecHPGasOil =
+          k51 + d117_effective + d114 + m43_final + h70;
       } else {
         ref_teuTargetedElecHPGasOil = k51 + d117_effective + m43_final + h70;
       }
@@ -1553,7 +1592,7 @@ window.TEUI.SectionModules.sect15 = (function () {
       // These are the final Reference values that Section 01 needs for e_10 calculation
       setReferenceValue("d_143", refTEUI_e10); // Reference TEUI
       setReferenceValue("h_143", targetTEUI_h10); // Target TEUI
-      
+
       // Calculate Reference percentage reductions
       let ref_teuiReduction_d144 =
         refTEUI_e10 > 0 ? 1 - targetTEUI_h10 / refTEUI_e10 : 0;
@@ -1572,7 +1611,7 @@ window.TEUI.SectionModules.sect15 = (function () {
       }
       setReferenceValue("h_144", ref_targetVsActual_h144);
 
-      // Reference l_144: Actual vs Target comparison  
+      // Reference l_144: Actual vs Target comparison
       let ref_actualVsTarget_l144 = NaN;
       if (reportingMode_d14 === "Utility Bills" && targetTEUI_h10 > 0) {
         ref_actualVsTarget_l144 = ref_actualTEUI_l143 / targetTEUI_h10;
@@ -1582,7 +1621,8 @@ window.TEUI.SectionModules.sect15 = (function () {
       // GHG Reduction: Always Target vs Reference (same in both UI modes)
       // d_145 formula: 1 - (k_32 / ref_k_32) - compares Target vs Reference regardless of UI mode
       const targetEmissions_k32_forRatio = getNumericValue("k_32") || 0; // Always read Target emissions
-      let ref_ghgReduction_d145 = ref_k32 > 0 ? 1 - targetEmissions_k32_forRatio / ref_k32 : 0;
+      let ref_ghgReduction_d145 =
+        ref_k32 > 0 ? 1 - targetEmissions_k32_forRatio / ref_k32 : 0;
       setReferenceValue("d_145", ref_ghgReduction_d145);
 
       // Debug logging (reduced frequency)
@@ -1630,8 +1670,6 @@ window.TEUI.SectionModules.sect15 = (function () {
         return;
       }
       const sm = window.TEUI.StateManager;
-
-
 
       // --- Get Input Values ---
       const area = getNumericValue("h_15");
@@ -1948,7 +1986,6 @@ window.TEUI.SectionModules.sect15 = (function () {
             fieldId === "d_142"
           ) {
             format = "currency";
-
           } else if (
             fieldId === "d_144" ||
             fieldId === "h_144" ||
@@ -1989,15 +2026,22 @@ window.TEUI.SectionModules.sect15 = (function () {
     if (!isNaN(numValue)) {
       // Store in both local state and global StateManager to trigger dependencies
       ModeManager.setValue(fieldId, numValue.toString(), "user-modified");
-      window.TEUI.StateManager.setValue(fieldId, numValue.toString(), "user-modified");
-      
+      window.TEUI.StateManager.setValue(
+        fieldId,
+        numValue.toString(),
+        "user-modified",
+      );
+
       // Format for display
       const formattedValue = formatNumber(numValue, "currency");
       fieldElement.textContent = formattedValue;
     } else {
       // Invalid input - revert to stored value or default
       const storedValue = ModeManager.getValue(fieldId) || "30000.00";
-      fieldElement.textContent = formatNumber(parseFloat(storedValue), "currency");
+      fieldElement.textContent = formatNumber(
+        parseFloat(storedValue),
+        "currency",
+      );
     }
 
     // Trigger recalculations
@@ -2023,7 +2067,11 @@ window.TEUI.SectionModules.sect15 = (function () {
 
     editableFields.forEach((fieldId) => {
       const field = document.querySelector(`[data-field-id="${fieldId}"]`);
-      if (field && field.hasAttribute("contenteditable") && !field.hasEditableListeners) {
+      if (
+        field &&
+        field.hasAttribute("contenteditable") &&
+        !field.hasEditableListeners
+      ) {
         // Prevent Enter key from creating newlines
         field.addEventListener("keydown", (e) => {
           if (e.key === "Enter") {
@@ -2038,7 +2086,9 @@ window.TEUI.SectionModules.sect15 = (function () {
 
         // Visual feedback for editing state
         field.addEventListener("focus", () => field.classList.add("editing"));
-        field.addEventListener("focusout", () => field.classList.remove("editing"));
+        field.addEventListener("focusout", () =>
+          field.classList.remove("editing"),
+        );
 
         field.hasEditableListeners = true;
       }

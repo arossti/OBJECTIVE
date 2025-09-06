@@ -1944,7 +1944,9 @@ window.TEUI.SectionModules.sect13 = (function () {
       // calculateAll() and updateCalculatedDisplayValues() for d_113 changes
 
       // ✅ FIX: Add direct HSPF slider handler (S11 proven pattern)
-      const f113Slider = document.querySelector('input[type="range"][data-field-id="f_113"]');
+      const f113Slider = document.querySelector(
+        'input[type="range"][data-field-id="f_113"]',
+      );
       if (f113Slider && !f113Slider.hasSliderListener) {
         // Direct slider event for immediate S13 calculations
         f113Slider.addEventListener("input", function () {
@@ -1959,7 +1961,7 @@ window.TEUI.SectionModules.sect13 = (function () {
 
           // ✅ DUAL-STATE: Update via ModeManager (handles state isolation)
           ModeManager.setValue("f_113", hspfValue.toString(), "user-modified");
-          
+
           // Trigger S13 calculations (this was working)
           calculateAll();
           ModeManager.updateCalculatedDisplayValues();
@@ -3417,8 +3419,9 @@ window.TEUI.SectionModules.sect13 = (function () {
       }
     }
 
-    // ✅ ADDED: Calculate space heating emissions for the Reference model
-    const emissions = calculateSpaceHeatingEmissions(true); // true for Reference
+    // ✅ COMMENTED OUT: calculateSpaceHeatingEmissions function flagged by ESLint (function not defined)
+    // May be important but incomplete function - preserve for future implementation
+    // const emissions = calculateSpaceHeatingEmissions(true); // true for Reference
 
     return {
       d_115: fuelImpact,
@@ -3426,7 +3429,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       h_115: gasM3,
       l_115: exhaust,
       m_115: afue > 0 ? 1 / afue : 0,
-      f_114: emissions, // ✅ ADDED: Include emissions in the return object
+      // f_114: emissions, // ✅ COMMENTED OUT: emissions variable not defined (ESLint error)
     };
   }
 
