@@ -90,7 +90,15 @@ window.TEUI.SectionModules.sect10 = (function () {
       // ✅ REFERENCE MODE OVERRIDES: Only values that should differ from Target
       // These represent building code reference values vs actual building values
       this.state.d_73 = "5.00"; // Reference: Smaller window area
-      this.state.e_73 = "South"; // Reference: Optimal orientation
+      // ✅ REFERENCE ORIENTATION OVERRIDES: Optimal orientations for Reference model
+      this.state.e_73 = "South"; // Reference: Optimal orientation for doors
+      this.state.e_74 = "South"; // Reference: Optimal orientation for windows
+      this.state.e_75 = "South"; // Reference: Optimal orientation for skylights  
+      this.state.e_76 = "South"; // Reference: Optimal orientation for glazed doors
+      this.state.e_77 = "South"; // Reference: Optimal orientation for curtain wall
+      this.state.e_78 = "South"; // Reference: Optimal orientation for other glazing
+      
+      // ✅ REFERENCE PERFORMANCE OVERRIDES: Better performance for Reference model
       this.state.f_73 = "0.35"; // Reference: Better shading factor
       this.state.h_73 = "0"; // Reference: No user adjustments
       this.state.d_74 = "60.00"; // Reference: Smaller window area
@@ -108,9 +116,13 @@ window.TEUI.SectionModules.sect10 = (function () {
 
       // ✅ CRITICAL: Publish Reference defaults to StateManager (S02 pattern)
       // This enables S11 to read Reference area values during initialization and mode switching
-      // ✅ FIX: Include d_80 (nGains dropdown) for proper Reference mode functionality
+      // ✅ FIX: Include d_80 (nGains dropdown) and orientation dropdowns (e_73-e_78) for proper Reference mode functionality
       if (window.TEUI?.StateManager) {
-        const referenceFields = ["d_73", "d_74", "d_75", "d_76", "d_77", "d_78", "d_80"];
+        const referenceFields = [
+          "d_73", "d_74", "d_75", "d_76", "d_77", "d_78", // Area fields
+          "e_73", "e_74", "e_75", "e_76", "e_77", "e_78", // Orientation dropdowns  
+          "d_80" // nGains dropdown
+        ];
         referenceFields.forEach((fieldId) => {
           const value = this.state[fieldId];
           if (value !== null && value !== undefined) {
@@ -1908,7 +1920,7 @@ window.TEUI.SectionModules.sect10 = (function () {
       //=====================================================================
       // PART 1: Calculate utilization factor based on selected method in row 80 (Reference dropdown)
       //=====================================================================
-      const utilizationMethod = ReferenceState.getValue("d_80") || "NRC 40%";
+      const utilizationMethod = ModeManager.getCurrentState().getValue("d_80") || "NRC 40%";
       let utilizationFactor = 0.4; // Default to 40%
       console.log(`[S10REF] Using utilization method: ${utilizationMethod}`);
 
