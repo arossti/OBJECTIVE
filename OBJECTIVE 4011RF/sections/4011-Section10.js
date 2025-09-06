@@ -90,13 +90,13 @@ window.TEUI.SectionModules.sect10 = (function () {
       // ✅ REFERENCE MODE OVERRIDES: Only values that should differ from Target
       // These represent building code reference values vs actual building values
       this.state.d_73 = "5.00"; // Reference: Smaller window area
-      // ✅ REFERENCE ORIENTATION OVERRIDES: Optimal orientations for Reference model
-      this.state.e_73 = "South"; // Reference: Optimal orientation for doors
-      this.state.e_74 = "South"; // Reference: Optimal orientation for windows
-      this.state.e_75 = "South"; // Reference: Optimal orientation for skylights  
-      this.state.e_76 = "South"; // Reference: Optimal orientation for glazed doors
-      this.state.e_77 = "South"; // Reference: Optimal orientation for curtain wall
-      this.state.e_78 = "South"; // Reference: Optimal orientation for other glazing
+      // ✅ REFERENCE ORIENTATION DEFAULTS: Match FieldDefinition defaults for 100% user flexibility
+      this.state.e_73 = "Average"; // Reference: Row 73 - Average (matches FieldDefinition)
+      this.state.e_74 = "North"; // Reference: Row 74 - North (matches FieldDefinition)
+      this.state.e_75 = "East"; // Reference: Row 75 - East (matches FieldDefinition)  
+      this.state.e_76 = "South"; // Reference: Row 76 - South (matches FieldDefinition)
+      this.state.e_77 = "West"; // Reference: Row 77 - West (matches FieldDefinition)
+      this.state.e_78 = "Skylight"; // Reference: Row 78 - Skylight (matches FieldDefinition)
       
       // ✅ REFERENCE PERFORMANCE OVERRIDES: Better performance for Reference model
       this.state.f_73 = "0.35"; // Reference: Better shading factor
