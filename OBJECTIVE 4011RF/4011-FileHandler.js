@@ -156,34 +156,7 @@
           this.applyImportedData(); // Renamed for clarity
         });
       }
-      if (debugExcelBtn) {
-        /* Keep existing debug logic */
-        debugExcelBtn.addEventListener("click", () => {
-          console.log("=== DEBUG INFORMATION ===");
-          if (window.TEUI && window.TEUI.ExcelLocationHandler) {
-            const locationData =
-              window.TEUI.ExcelLocationHandler.getLocationData();
-            console.log("ExcelLocationHandler exists");
-            console.log(
-              "Location data:",
-              locationData ? "Available" : "Not available",
-            );
-            if (locationData) {
-              console.log(`Provinces: ${Object.keys(locationData).join(", ")}`);
-              const sampleProvince = Object.keys(locationData)[0];
-              if (sampleProvince) {
-                console.log(
-                  `Sample province ${sampleProvince} has ${locationData[sampleProvince].cities.length} cities`,
-                );
-              }
-            }
-          } else {
-            console.log("ExcelLocationHandler not available");
-          }
-          // ... rest of debug code ...
-          this.showStatus("Debug information logged to console", "info");
-        });
-      }
+      // NOTE: debugExcelBtn functionality moved to 4011-init.js for QC activation
     }
 
     // --- IMPORT LOGIC ---

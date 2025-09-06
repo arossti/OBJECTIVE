@@ -767,12 +767,31 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (debugExcelBtn) {
       debugExcelBtn.addEventListener("click", function () {
-        const data = TEUI.ExcelLocationHandler.getLocationData();
-
-        if (data) {
-          alert("See console for location data");
-        } else {
-          alert("No location data available yet");
+        // Add ?qc=true to current URL and reload page
+        const currentUrl = new URL(window.location.href);
+        
+        // Check if QC is already enabled
+        if (currentUrl.searchParams.get('qc') === 'true') {
+          // QC already enabled - show info
+          alert('QC monitoring is already active! Check the QC Dashboard in the top-right corner.');
+          return;
+        }
+        
+        // Add QC parameter to URL
+        currentUrl.searchParams.set('qc', 'true');
+        
+        // Show confirmation before reload
+        const confirmed = confirm(
+          'This will reload the page with QC monitoring enabled.\n\n' +
+          '• QC Dashboard will appear in top-right\n' +
+          '• Complete violation tracking from startup\n' +
+          '• One-click report copy to clipboard\n\n' +
+          'Continue?'
+        );
+        
+        if (confirmed) {
+          // Reload with QC parameter
+          window.location.href = currentUrl.toString();
         }
       });
     }

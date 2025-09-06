@@ -215,6 +215,21 @@ window.TEUI.SectionModules.sect18 = (function () {
       font-size: 12px;
     `;
     
+    // Create copy modal button
+    const copyModalButton = document.createElement('button');
+    copyModalButton.textContent = '📋 Copy Report';
+    copyModalButton.style.cssText = `
+      padding: 6px 12px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: 500;
+      cursor: pointer;
+      font-size: 12px;
+      margin-left: 8px;
+    `;
+    
     // Add toggle functionality
     toggleSwitch.addEventListener('click', function(event) {
       event.stopPropagation();
@@ -250,6 +265,13 @@ window.TEUI.SectionModules.sect18 = (function () {
       generateAndDisplayQCReport(selectedSection);
     });
     
+    // Add copy modal button functionality
+    copyModalButton.addEventListener('click', function(event) {
+      event.stopPropagation();
+      const selectedSection = sectionFilter.value;
+      showCopyModal(selectedSection);
+    });
+    
     // Assemble toggle
     toggleSwitch.appendChild(toggleSlider);
     toggleDiv.appendChild(toggleLabel);
@@ -259,6 +281,7 @@ window.TEUI.SectionModules.sect18 = (function () {
     toggleContainer.appendChild(toggleDiv);
     toggleContainer.appendChild(sectionFilter);
     toggleContainer.appendChild(reportButton);
+    toggleContainer.appendChild(copyModalButton);
     
     sectionHeader.appendChild(toggleContainer);
   }
@@ -557,64 +580,6 @@ ${generateCategoryBreakdown(report.violations)}
 ### All Violations (${report.violations.length} total):
 ${formatViolationsByType(report.violations)}`;
 
-    html += `
-      </div>
-      
-      <!-- SEPARATE COPY SECTION (always visible) -->
-      <div style="
-        background: #fff; 
-        border: 2px solid #007bff; 
-        border-radius: 8px; 
-        padding: 20px; 
-        margin-top: 30px;
-        position: sticky;
-        bottom: 20px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      ">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-          <h6 style="color: #007bff; margin: 0; font-weight: bold;">📋 Copy for Logs.md</h6>
-          <button 
-            onclick="copyQCReportToClipboard()" 
-            style="
-              display: flex; 
-              align-items: center; 
-              gap: 8px; 
-              padding: 8px 16px; 
-              background: #007bff; 
-              color: white; 
-              border: none; 
-              border-radius: 6px; 
-              cursor: pointer; 
-              font-size: 13px;
-              font-weight: 600;
-              box-shadow: 0 2px 4px rgba(0,123,255,0.3);
-            "
-            title="Copy QC report to clipboard"
-          >
-            <i class="bi bi-clipboard" style="font-size: 16px;"></i>
-            Copy Report
-          </button>
-        </div>
-        <textarea 
-          id="qc-logs-textarea"
-          style="
-            width: 100%; 
-            height: 300px; 
-            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace; 
-            font-size: 11px; 
-            padding: 15px; 
-            border: 1px solid #ced4da; 
-            border-radius: 6px; 
-            background: #f8f9fa;
-            resize: vertical;
-            overflow-y: auto;
-            max-height: 500px;
-          " 
-          readonly
-        >${logsContent}</textarea>
-      </div>
-    `;
-    
     html += `</div>`;
     
     return html;
@@ -901,7 +866,241 @@ ${formatViolationsByType(report.violations)}`;
   }
   
   /**
-   * Copy QC report to clipboard with confirmation
+   * Show copy modal with QC report for clipboard
+   */
+  function showCopyModal(sectionFilter = 'all') {
+    if (!qcEnabled || !window.TEUI?.QCMonitor) {
+      alert('QC Monitor not available. Enable QC monitoring first.');
+      return;
+    }
+    
+    // Generate fresh report
+    const fullReport = window.TEUI.QCMonitor.generateQCReport();
+    
+    // Filter violations by section if specified
+    let filteredReport = fullReport;
+    if (sectionFilter !== 'all') {
+      filteredReport = filterReportBySection(fullReport, sectionFilter);
+    }
+    
+    const sectionTitle = sectionFilter === 'all' ? 'All Sections' : sectionFilter;
+    
+    // Generate the copy content
+    const logsContent = `## QC Report ${new Date(filteredReport.timestamp).toLocaleDateString()}
+
+**Summary**: ${filteredReport.summary.total} violations detected
+**Types**: ${Object.entries(filteredReport.summary.byType).map(([type, count]) => `${type}(${count})`).join(', ')}
+**Sections**: ${sectionTitle}
+**Status**: QC monitoring ${filteredReport.monitoring.active ? 'active' : 'inactive'}, Mirror Target ${filteredReport.monitoring.mirrorTarget ? 'enabled' : 'disabled'}
+
+### Violation Categories:
+${generateCategoryBreakdown(filteredReport.violations)}
+
+### All Violations (${filteredReport.violations.length} total):
+${formatViolationsByType(filteredReport.violations)}`;
+
+    // Create modal
+    createCopyModal(logsContent, sectionTitle);
+  }
+  
+  /**
+   * Create and show the copy modal
+   */
+  function createCopyModal(content, sectionTitle) {
+    // Remove any existing modal
+    const existingModal = document.getElementById('qc-copy-modal');
+    if (existingModal) {
+      existingModal.remove();
+    }
+    
+    // Create modal overlay
+    const modal = document.createElement('div');
+    modal.id = 'qc-copy-modal';
+    modal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 10001;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
+    `;
+    
+    // Create modal content
+    const modalContent = document.createElement('div');
+    modalContent.style.cssText = `
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      max-width: 900px;
+      max-height: 90vh;
+      width: 100%;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+    `;
+    
+    modalContent.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #007bff;">
+        <h5 style="margin: 0; color: #007bff; font-weight: bold;">📋 Copy QC Report for Logs.md</h5>
+        <button 
+          id="modal-close-btn"
+          style="
+            background: none; 
+            border: none; 
+            font-size: 24px; 
+            cursor: pointer; 
+            color: #666;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          "
+          title="Close modal"
+        >×</button>
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <strong>Section Filter:</strong> ${sectionTitle} | 
+        <strong>Generated:</strong> ${new Date().toLocaleString()}
+      </div>
+      
+      <textarea 
+        id="modal-qc-textarea"
+        style="
+          width: 100%; 
+          height: 600px; 
+          font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace; 
+          font-size: 11px; 
+          padding: 15px; 
+          border: 1px solid #ced4da; 
+          border-radius: 6px; 
+          background: #f8f9fa;
+          resize: vertical;
+          overflow-y: auto;
+          margin-bottom: 15px;
+          flex: 1;
+          min-height: 600px;
+        " 
+        readonly
+      >${content}</textarea>
+      
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="font-size: 12px; color: #666;">
+          Click Copy to add this report to your clipboard for pasting into Logs.md
+        </div>
+        <button 
+          id="modal-copy-btn"
+          style="
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            padding: 10px 20px; 
+            background: #28a745; 
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+          "
+          title="Copy QC report to clipboard"
+        >
+          <i class="bi bi-clipboard" style="font-size: 16px;"></i>
+          Copy to Clipboard
+        </button>
+      </div>
+    `;
+    
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+    
+    // Add event listeners
+    modal.querySelector('#modal-close-btn').addEventListener('click', () => modal.remove());
+    modal.querySelector('#modal-copy-btn').addEventListener('click', () => copyFromModal());
+    
+    // Close on overlay click
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.remove();
+      }
+    });
+    
+    // Close on Escape key
+    const escapeHandler = (e) => {
+      if (e.key === 'Escape') {
+        modal.remove();
+        document.removeEventListener('keydown', escapeHandler);
+      }
+    };
+    document.addEventListener('keydown', escapeHandler);
+  }
+  
+  /**
+   * Copy content from modal to clipboard
+   */
+  function copyFromModal() {
+    const textarea = document.getElementById('modal-qc-textarea');
+    if (!textarea) {
+      console.error('[S18] Modal textarea not found');
+      return;
+    }
+    
+    // Copy to clipboard using modern API
+    navigator.clipboard.writeText(textarea.value).then(() => {
+      showModalCopyConfirmation();
+    }).catch((err) => {
+      console.error('[S18] Failed to copy to clipboard:', err);
+      // Fallback method
+      textarea.select();
+      document.execCommand('copy');
+      showModalCopyConfirmation();
+    });
+  }
+  
+  /**
+   * Show copy confirmation for modal
+   */
+  function showModalCopyConfirmation() {
+    const copyBtn = document.getElementById('modal-copy-btn');
+    if (!copyBtn) return;
+    
+    // Temporarily change button appearance
+    const originalText = copyBtn.innerHTML;
+    copyBtn.innerHTML = '<i class="bi bi-check-circle-fill" style="font-size: 16px;"></i> Copied!';
+    copyBtn.style.background = '#28a745';
+    copyBtn.disabled = true;
+    
+    // Restore button after 2 seconds
+    setTimeout(() => {
+      if (copyBtn.parentNode) {
+        copyBtn.innerHTML = originalText;
+        copyBtn.style.background = '#28a745';
+        copyBtn.disabled = false;
+      }
+    }, 2000);
+    
+    // Also close modal after successful copy
+    setTimeout(() => {
+      const modal = document.getElementById('qc-copy-modal');
+      if (modal) {
+        modal.style.transition = 'opacity 0.3s ease-out';
+        modal.style.opacity = '0';
+        setTimeout(() => modal.remove(), 300);
+      }
+    }, 1500);
+  }
+  
+  /**
+   * Copy QC report to clipboard with confirmation (legacy function for S18 section)
    */
   function copyQCReportToClipboard() {
     const textarea = document.getElementById('qc-logs-textarea');
