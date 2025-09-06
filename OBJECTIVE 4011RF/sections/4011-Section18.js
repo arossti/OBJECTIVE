@@ -555,13 +555,7 @@ window.TEUI.SectionModules.sect18 = (function () {
 ${generateCategoryBreakdown(report.violations)}
 
 ### All Violations (${report.violations.length} total):
-${report.violations.map(v => {
-    const section = identifyViolationSection(v.field);
-    const caller = v.caller ? ` (${v.caller})` : '';
-    const category = v.analysis?.category ? ` [${v.analysis.category}]` : '';
-    const recommendations = v.analysis?.recommendations ? ` | Recommendations: ${v.analysis.recommendations.slice(0, 2).join(', ')}` : '';
-    return `- **[${section}] ${v.type}**: \`${v.field}\`${category} - ${v.message}${caller}${recommendations}`;
-}).join('\n')}`;
+${formatViolationsByType(report.violations)}`;
 
     html += `
       </div>
@@ -627,6 +621,115 @@ ${report.violations.map(v => {
   }
   
   /**
+   * Format violations by type for concise reporting
+   */
+  function formatViolationsByType(violations) {
+    // Group violations by type
+    const groupedByType = {};
+    violations.forEach(v => {
+      if (!groupedByType[v.type]) {
+        groupedByType[v.type] = [];
+      }
+      groupedByType[v.type].push(v);
+    });
+    
+    // Define type ordering and formatting
+    const typeOrder = [
+      'UNDEFINED_FIELD',
+      'ORPHANED_REF_FIELD', 
+      'CALCULATION_FAILURE',
+      'RACE_CONDITION',
+      'CRITICAL_STALE_VALUE',
+      'HIGH_TRAFFIC_STALE_VALUE',
+      'MIRROR_TARGET_DIVERGENCE',
+      'UPSTREAM_STALE_VALUE',
+      'NORMAL_STALE_VALUE',
+      'UNREGISTERED_FIELD',
+      'EARLY_READ',
+      'MISSING_VALUE',
+      'FALLBACK_READ'
+    ];
+    
+    const typeIcons = {
+      'UNDEFINED_FIELD': '🚫',
+      'ORPHANED_REF_FIELD': '🔗',
+      'CALCULATION_FAILURE': '💥',
+      'RACE_CONDITION': '⏱️',
+      'CRITICAL_STALE_VALUE': '🔥',
+      'HIGH_TRAFFIC_STALE_VALUE': '⚠️',
+      'MIRROR_TARGET_DIVERGENCE': '🎯',
+      'UPSTREAM_STALE_VALUE': '📤',
+      'NORMAL_STALE_VALUE': '💤',
+      'UNREGISTERED_FIELD': '📝',
+      'EARLY_READ': 'ℹ️',
+      'MISSING_VALUE': '❓',
+      'FALLBACK_READ': '🔍'
+    };
+    
+    let output = '';
+    
+    // Process violations in priority order
+    typeOrder.forEach(type => {
+      const violationsOfType = groupedByType[type];
+      if (!violationsOfType || violationsOfType.length === 0) return;
+      
+      const icon = typeIcons[type] || '•';
+      const typeTitle = type.replace(/_/g, ' ');
+      
+      output += `\n#### ${icon} **${typeTitle}** (${violationsOfType.length} violations)\n`;
+      
+      if (type === 'MIRROR_TARGET_DIVERGENCE') {
+        // Special handling for mirror target divergence - show field pairs
+        const grouped = {};
+        violationsOfType.forEach(v => {
+          const baseField = v.field.replace('ref_', '');
+          if (!grouped[baseField]) grouped[baseField] = [];
+          grouped[baseField].push(v);
+        });
+        
+        Object.entries(grouped).forEach(([baseField, violations]) => {
+          const sections = [...new Set(violations.map(v => identifyViolationSection(v.field)))];
+          output += `- **[${sections.join(',')}]** \`${baseField}\`: Reference vs Target divergence (${violations.length} instances)\n`;
+        });
+      } else if (type === 'CRITICAL_STALE_VALUE' || type === 'HIGH_TRAFFIC_STALE_VALUE') {
+        // Group by section for stale values
+        const bySectionAndReason = {};
+        violationsOfType.forEach(v => {
+          const section = identifyViolationSection(v.field);
+          const reason = v.analysis?.recommendations?.[0] || 'Check dependencies';
+          const key = `${section}|${reason}`;
+          if (!bySectionAndReason[key]) bySectionAndReason[key] = [];
+          bySectionAndReason[key].push(v.field);
+        });
+        
+        Object.entries(bySectionAndReason).forEach(([key, fields]) => {
+          const [section, reason] = key.split('|');
+          output += `- **[${section}]** ${fields.map(f => `\`${f}\``).join(', ')} - ${reason}\n`;
+        });
+      } else {
+        // Group by section for other types
+        const bySection = {};
+        violationsOfType.forEach(v => {
+          const section = identifyViolationSection(v.field);
+          if (!bySection[section]) bySection[section] = [];
+          bySection[section].push(v.field);
+        });
+        
+        Object.entries(bySection).forEach(([section, fields]) => {
+          if (fields.length > 10) {
+            // For long lists, show first 10 and count
+            output += `- **[${section}]** ${fields.slice(0, 10).map(f => `\`${f}\``).join(', ')} ... and ${fields.length - 10} more\n`;
+          } else {
+            output += `- **[${section}]** ${fields.map(f => `\`${f}\``).join(', ')}\n`;
+          }
+        });
+      }
+    });
+    
+    return output;
+  }
+  
+  /**
    * Generate category breakdown for violation analysis
    */
   function generateCategoryBreakdown(violations) {
@@ -637,7 +740,11 @@ ${report.violations.map(v => {
       'timing_race_condition': '⏱️ Race Conditions (timing issues)',
       'early_initialization': 'ℹ️ Early Reads (initialization phase)',
       'unregistered_field': '📝 Unregistered Fields (defined but not in StateManager)',
-      'standard_missing': '❓ Standard Missing Values'
+      'standard_missing': '❓ Standard Missing Values',
+      'critical_integration_stale': '🔥 Critical Integration Stale (affects data flow)',
+      'high_traffic_stale': '⚠️ High Traffic Stale (calculation issues)',
+      'upstream_stale': '📤 Upstream Stale (normal for input fields)',
+      'normal_stale': '💤 Normal Stale (low priority)'
     };
     
     const categoryCounts = {};

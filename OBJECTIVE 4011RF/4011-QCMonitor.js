@@ -406,12 +406,11 @@ TEUI.QCMonitor = (function() {
             'h_15', 'd_85', 'd_86', 'd_89', 'd_90', 'd_91', 'd_92', 'd_95', // Building geometry
             'd_20', 'd_21', 'd_23', 'd_24', // Climate data
             'd_63', 'd_12', // Occupancy
-            'h_10', 'k_10', 'e_10', // Key TEUI values
+            'h_10', 'k_10', 'e_10', // Key TEUI values (S01 is state agnostic: h_10=Target, e_10=Reference)
             'j_32', 'f_32', // Energy totals
             'ref_h_15', 'ref_d_85', 'ref_d_86', 'ref_d_89', 'ref_d_90', 'ref_d_91', 'ref_d_92', 'ref_d_95',
             'ref_d_20', 'ref_d_21', 'ref_d_23', 'ref_d_24',
             'ref_d_63', 'ref_d_12',
-            'ref_h_10', 'ref_k_10', 'ref_e_10',
             'ref_j_32', 'ref_f_32'
         ];
         
@@ -598,21 +597,131 @@ TEUI.QCMonitor = (function() {
     }
     
     /**
-     * Detect stale values (values that haven't been updated recently)
+     * Detect stale values with intelligent flow-aware categorization
+     * Uses actual calculation order from Calculator.js to determine if stale values matter
      */
     function detectStaleValues() {
         const staleThreshold = 5000; // 5 seconds
         const currentTime = performance.now();
         const violations = [];
         
+        // Actual calculation flow order from Calculator.js (lines 488-506)
+        const calculationOrder = [
+            'sect02', 'sect03', 'sect08', 'sect09', 'sect12', 'sect10', 'sect11', 
+            'sect07', 'sect13', 'sect06', 'sect14', 'sect04', 'sect05', 'sect15', 'sect01'
+        ];
+        
+        // Critical integration points - these fields flow data between sections
+        const criticalIntegrationFields = {
+            // S15 → S01 (Key Values dashboard) - S01 is state agnostic
+            'h_136': { priority: 'error', reason: 'TEUI Summary feeds dashboard' },
+            'd_144': { priority: 'error', reason: 'Reduction % feeds dashboard' },
+            'h_10': { priority: 'error', reason: 'Target TEUI for dashboard (state agnostic)' },
+            'k_10': { priority: 'error', reason: 'Actual TEUI for dashboard' },
+            'e_10': { priority: 'error', reason: 'Reference TEUI for dashboard (state agnostic)' },
+            
+            // S04 → S05, S15 (Energy flows to Emissions and Summary)
+            'f_32': { priority: 'error', reason: 'Actual energy total for emissions' },
+            'j_32': { priority: 'error', reason: 'Target energy total for TEUI calc' },
+            
+            // S14 → S15 (TEDI flows to TEUI Summary)
+            'h_126': { priority: 'warning', reason: 'TEDI feeds TEUI Summary' },
+            'h_130': { priority: 'warning', reason: 'TELI feeds TEUI Summary' },
+            
+            // S10, S11, S12, S13 → S14 (Building performance feeds TEDI)
+            'i_80': { priority: 'warning', reason: 'Radiant gains feed TEDI' },
+            'd_117': { priority: 'warning', reason: 'Mechanical loads feed TEDI' },
+            'm_121': { priority: 'warning', reason: 'Mechanical totals feed TEDI' },
+            
+            // S07 → S15 (Water use feeds summary)
+            'k_51': { priority: 'warning', reason: 'Water use feeds TEUI Summary' },
+            
+            // S06 → S15 (Renewable energy feeds summary)  
+            'm_43': { priority: 'warning', reason: 'PV contribution feeds TEUI Summary' },
+            
+            // Reference equivalents of critical fields
+            'ref_h_136': { priority: 'error', reason: 'Reference TEUI Summary feeds dashboard' },
+            'ref_d_144': { priority: 'error', reason: 'Reference reduction % feeds dashboard' },
+            'ref_f_32': { priority: 'error', reason: 'Reference actual energy total' },
+            'ref_j_32': { priority: 'error', reason: 'Reference target energy total' }
+        };
+        
+        // Fields that are legitimately upstream and being stale is normal
+        const upstreamFields = {
+            // S02 Building Info - rarely changes once set
+            'd_85': true, 'd_86': true, 'd_89': true, 'd_90': true, 'd_91': true, 'd_92': true, 'd_95': true,
+            'h_15': true, // Conditioned area
+            'd_12': true, 'd_63': true, // Occupancy type
+            
+            // S03 Climate - set once per location
+            'd_20': true, 'd_21': true, 'd_23': true, 'd_24': true, // Weather data
+            'h_23': true, 'd_24': true, // Setpoints
+            
+            // S08 IAQ - often not modified
+            'd_56': true, 'd_57': true, 'd_58': true,
+            
+            // Reference versions
+            'ref_d_85': true, 'ref_d_86': true, 'ref_d_89': true, 'ref_d_90': true, 
+            'ref_d_91': true, 'ref_d_92': true, 'ref_d_95': true, 'ref_h_15': true,
+            'ref_d_12': true, 'ref_d_63': true, 'ref_d_20': true, 'ref_d_21': true,
+            'ref_d_23': true, 'ref_d_24': true, 'ref_h_23': true
+        };
+        
         for (const [fieldId, metadata] of staleDetector) {
             if (currentTime - metadata.lastWrite > staleThreshold) {
+                const age = currentTime - metadata.lastWrite;
+                const ageSeconds = (age / 1000).toFixed(1);
+                
+                // Determine violation type and severity based on field importance
+                let violationType = 'STALE_VALUE';
+                let severity = 'info';
+                let message = `Field ${fieldId} hasn't been updated in ${ageSeconds}s`;
+                
+                if (criticalIntegrationFields[fieldId]) {
+                    const critical = criticalIntegrationFields[fieldId];
+                    violationType = 'CRITICAL_STALE_VALUE';
+                    severity = critical.priority;
+                    message = `Critical integration field ${fieldId} stale for ${ageSeconds}s - ${critical.reason}`;
+                } else if (upstreamFields[fieldId]) {
+                    // Upstream fields being stale is usually normal
+                    violationType = 'UPSTREAM_STALE_VALUE';
+                    severity = 'info';
+                    message = `Upstream field ${fieldId} stale for ${ageSeconds}s (normal for input fields)`;
+                } else {
+                    // Check if this is a calculated field that should be updating
+                    const fieldTracker = pathwayTracker.get(fieldId);
+                    const readCount = fieldTracker ? fieldTracker.operations.filter(op => op.operation === 'read').length : 0;
+                    
+                    if (readCount > 5) {
+                        // High-traffic field that's stale might indicate calculation issues
+                        violationType = 'HIGH_TRAFFIC_STALE_VALUE';
+                        severity = 'warning';
+                        message = `High-traffic field ${fieldId} stale for ${ageSeconds}s (${readCount} reads) - may indicate calculation issue`;
+                    } else {
+                        // Regular stale value - probably not important
+                        violationType = 'NORMAL_STALE_VALUE';
+                        severity = 'info';
+                        message = `Field ${fieldId} stale for ${ageSeconds}s (low traffic, likely unimportant)`;
+                    }
+                }
+                
                 violations.push({
-                    type: 'STALE_VALUE',
+                    type: violationType,
                     field: fieldId,
-                    age: currentTime - metadata.lastWrite,
+                    age: age,
                     lastValue: metadata.value,
-                    message: `Field ${fieldId} hasn't been updated in ${((currentTime - metadata.lastWrite) / 1000).toFixed(1)}s`
+                    message: message,
+                    severity: severity,
+                    analysis: {
+                        category: severity === 'error' ? 'critical_integration_stale' :
+                                 severity === 'warning' ? 'high_traffic_stale' :
+                                 upstreamFields[fieldId] ? 'upstream_stale' : 'normal_stale',
+                        recommendations: severity === 'error' ? 
+                            ['Check calculation chain', 'Verify section dependencies', 'Review Calculator.js order'] :
+                            severity === 'warning' ?
+                            ['Monitor calculation performance', 'Check if field should be updating'] :
+                            ['Normal behavior for input fields', 'No action needed unless actively editing']
+                    }
                 });
             }
         }
@@ -665,6 +774,167 @@ TEUI.QCMonitor = (function() {
         allViolations = allViolations.concat(detectPathwayViolations());
         
         return allViolations;
+    }
+    
+    /**
+     * Generate and copy QC report to clipboard (for modal dashboard button)
+     */
+    function generateAndCopyQCReport() {
+        console.log('[QCMonitor] Generating and copying QC report to clipboard...');
+        
+        // Generate the full report
+        const report = generateQCReport();
+        
+        if (!report) {
+            console.error('[QCMonitor] Failed to generate report');
+            showCopyNotification('Failed to generate QC report', 'error');
+            return;
+        }
+        
+        // Format report for Logs.md (using S18's formatting function if available)
+        let formattedReport;
+        if (window.TEUI?.SectionModules?.sect18?.formatReportForLogs) {
+            formattedReport = window.TEUI.SectionModules.sect18.formatReportForLogs(report);
+        } else {
+            // Fallback formatting
+            formattedReport = formatReportForClipboard(report);
+        }
+        
+        // Copy to clipboard
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(formattedReport).then(() => {
+                showCopyNotification('QC Report copied to clipboard!', 'success');
+                console.log('[QCMonitor] Report copied to clipboard successfully');
+            }).catch(err => {
+                console.error('[QCMonitor] Failed to copy to clipboard:', err);
+                showCopyNotification('Failed to copy to clipboard', 'error');
+            });
+        } else {
+            // Fallback for older browsers
+            const textarea = document.createElement('textarea');
+            textarea.value = formattedReport;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showCopyNotification('QC Report copied to clipboard!', 'success');
+        }
+    }
+    
+    /**
+     * Format QC report for clipboard (fallback if S18 formatter not available)
+     */
+    function formatReportForClipboard(report) {
+        const timestamp = new Date(report.timestamp).toLocaleDateString();
+        
+        let content = `## QC Report ${timestamp}\n\n`;
+        content += `**Summary**: ${report.summary.total} violations detected\n`;
+        content += `**Types**: ${Object.entries(report.summary.byType).map(([type, count]) => `${type}(${count})`).join(', ')}\n`;
+        content += `**Sections**: All Sections\n`;
+        content += `**Status**: QC monitoring ${report.monitoring.active ? 'active' : 'inactive'}, Mirror Target ${report.monitoring.mirrorTarget ? 'enabled' : 'disabled'}\n\n`;
+        
+        // Add violation categories
+        const categoryCounts = {};
+        report.violations.forEach(v => {
+            const category = v.analysis?.category || 'unknown';
+            categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+        });
+        
+        content += `### Violation Categories:\n`;
+        Object.entries(categoryCounts)
+            .sort((a, b) => b[1] - a[1])
+            .forEach(([category, count]) => {
+                const categoryMap = {
+                    'critical_integration_stale': '🔥 Critical Integration Stale (affects data flow)',
+                    'high_traffic_stale': '⚠️ High Traffic Stale (calculation issues)',
+                    'upstream_stale': '📤 Upstream Stale (normal for input fields)',
+                    'normal_stale': '💤 Normal Stale (low priority)',
+                    'undefined_field': '🚫 Undefined Fields (not defined anywhere)',
+                    'orphaned_ref_field': '🔗 Orphaned Reference Fields (ref_ without base)',
+                    'calculation_failure': '💥 Calculation Failures (never computed)',
+                    'timing_race_condition': '⏱️ Race Conditions (timing issues)',
+                    'early_initialization': 'ℹ️ Early Reads (initialization phase)',
+                    'unregistered_field': '📝 Unregistered Fields (defined but not in StateManager)',
+                    'standard_missing': '❓ Standard Missing Values'
+                };
+                const description = categoryMap[category] || `${category} (unknown category)`;
+                content += `- **${description}**: ${count} violations\n`;
+            });
+        
+        content += `\n### Top Priority Violations:\n`;
+        
+        // Show only critical violations in the quick copy version
+        const criticalViolations = report.violations.filter(v => v.severity === 'error');
+        const warningViolations = report.violations.filter(v => v.severity === 'warning').slice(0, 10);
+        
+        if (criticalViolations.length > 0) {
+            content += `#### 🔥 Critical Issues (${criticalViolations.length}):\n`;
+            criticalViolations.forEach(v => {
+                content += `- **${v.type}**: \`${v.field}\` - ${v.message}\n`;
+            });
+        }
+        
+        if (warningViolations.length > 0) {
+            content += `\n#### ⚠️ Top Warnings (${warningViolations.length} shown):\n`;
+            warningViolations.forEach(v => {
+                content += `- **${v.type}**: \`${v.field}\` - ${v.message}\n`;
+            });
+        }
+        
+        content += `\n*For complete detailed report, visit S18 Notes section*`;
+        
+        return content;
+    }
+    
+    /**
+     * Show copy notification modal
+     */
+    function showCopyNotification(message, type = 'success') {
+        // Remove any existing notification
+        const existing = document.getElementById('qc-copy-notification');
+        if (existing) {
+            existing.remove();
+        }
+        
+        // Create notification modal
+        const notification = document.createElement('div');
+        notification.id = 'qc-copy-notification';
+        notification.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: ${type === 'success' ? 'rgba(40, 167, 69, 0.95)' : 'rgba(220, 53, 69, 0.95)'};
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 10002;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            max-width: 400px;
+            text-align: center;
+        `;
+        
+        const icon = type === 'success' ? '✅' : '❌';
+        notification.innerHTML = `${icon} ${message}`;
+        
+        document.body.appendChild(notification);
+        
+        // Auto-remove after 3 seconds with fade out
+        setTimeout(() => {
+            notification.style.transition = 'opacity 0.3s ease-out';
+            notification.style.opacity = '0';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 300);
+        }, 3000);
     }
     
     /**
@@ -790,6 +1060,7 @@ TEUI.QCMonitor = (function() {
         const stateManager = window.TEUI.StateManager;
         
         // Check for missing ref_ values where Target values exist
+        // NOTE: Excludes h_10 and e_10 since S01 is state agnostic (h_10=Target, e_10=Reference)
         const expectedRefFields = ['d_20', 'd_21', 'h_15', 'j_32', 'k_32', 'i_98'];
         
         expectedRefFields.forEach(fieldId => {
@@ -845,15 +1116,19 @@ TEUI.QCMonitor = (function() {
             
             knownFields.forEach(fieldId => {
                 const targetValue = stateManager.getValue(fieldId);
-                const refValue = stateManager.getValue(`ref_${fieldId}`);
+                
+                // EXCLUDE S01 REFERENCE FIELDS: S01 is state agnostic (h_10=Target, e_10=Reference)
+                if (fieldId !== 'h_10' && fieldId !== 'e_10') {
+                    const refValue = stateManager.getValue(`ref_${fieldId}`);
+                    if (refValue !== null) {
+                        analysis.referenceFields++;
+                        analysis.sampleFields[`ref_${fieldId}`] = refValue;
+                    }
+                }
                 
                 if (targetValue !== null) {
                     analysis.targetFields++;
                     analysis.sampleFields[fieldId] = targetValue;
-                }
-                if (refValue !== null) {
-                    analysis.referenceFields++;
-                    analysis.sampleFields[`ref_${fieldId}`] = refValue;
                 }
             });
         }
@@ -916,7 +1191,7 @@ TEUI.QCMonitor = (function() {
         dashboard.id = 'qc-dashboard';
         dashboard.style.cssText = `
             position: fixed;
-            top: 10px;
+            top: 110px;
             right: 10px;
             width: 300px;
             background: rgba(255, 255, 255, 0.95);
@@ -947,13 +1222,13 @@ TEUI.QCMonitor = (function() {
                 </div>
             </div>
             <button id="qc-report" style="width: 100%; margin-top: 10px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                Generate Report
+                📋 Copy Report to Clipboard
             </button>
         `;
         
         // Add event listeners
         dashboard.querySelector('#qc-close').onclick = () => dashboard.remove();
-        dashboard.querySelector('#qc-report').onclick = () => generateQCReport();
+        dashboard.querySelector('#qc-report').onclick = () => generateAndCopyQCReport();
         
         // Append to body
         document.body.appendChild(dashboard);
