@@ -1982,22 +1982,7 @@ window.TEUI.SectionModules.sect11 = (function () {
     // 4. Sync UI to the default (Target) state
     ModeManager.refreshUI();
 
-    // Register this section with StateManager and add listeners
-    Object.entries(areaSourceMap).forEach(([targetRow, sourceFieldId]) => {
-      if (window.TEUI?.StateManager?.addListener) {
-        window.TEUI.StateManager.addListener(sourceFieldId, () => {
-          const targetFieldId = `d_${targetRow}`;
-          const targetElement = document.querySelector(
-            `[data-field-id="${targetFieldId}"]`,
-          );
-          if (targetElement) {
-            const numericValue = getNumericValue(sourceFieldId) || 0;
-            targetElement.textContent = formatNumber(numericValue, 2);
-            calculateAll(); // Recalc on linked area change
-          }
-        });
-      }
-    });
+    // ✅ SURGICAL REMOVAL COMPLETE: areaSourceMap listeners removed for clean state isolation
 
     // Expose ModeManager globally for cross-section communication (e.g., global toggle)
     if (window.TEUI) {
