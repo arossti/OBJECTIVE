@@ -178,6 +178,23 @@ window.TEUI.SectionModules.sect11 = (function () {
         d_97: referenceValues.d_97 || "50", // Thermal Bridge Penalty %
       };
 
+      // ✅ CRITICAL: Publish Reference defaults to StateManager (S10 pattern)
+      // This fixes the QC violations: ref_d_85, ref_d_86, ref_d_89-d_92, ref_d_95 UNDEFINED_FIELD
+      if (window.TEUI?.StateManager) {
+        const referenceFields = [
+          "d_85", "d_86", "d_87", "d_88", "d_89", "d_90", "d_91", "d_92", "d_93", "d_94", "d_95", "d_96", "d_97", // Area and component fields
+          "f_85", "f_86", "f_87", "f_94", "f_95", // RSI values
+          "g_88", "g_89", "g_90", "g_91", "g_92", "g_93" // U-values
+        ];
+        referenceFields.forEach((fieldId) => {
+          const value = this.state[fieldId];
+          if (value !== null && value !== undefined) {
+            window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "default");
+            console.log(`[S11 REF DEFAULTS] Published ref_${fieldId}=${value} to StateManager`);
+          }
+        });
+      }
+
       console.log(
         `S11: Reference defaults loaded from standard: ${currentStandard}`,
       );
