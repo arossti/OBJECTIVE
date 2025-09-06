@@ -288,6 +288,7 @@ window.TEUI.SectionModules.sect10 = (function () {
 
     // Update displayed calculated values based on current mode (Target vs Reference)
     updateCalculatedDisplayValues: function () {
+      console.log(`[S10DISPLAY] updateCalculatedDisplayValues() called in ${this.currentMode} mode`);
       if (!window.TEUI?.StateManager) return;
 
       // All calculated fields that need mode-aware display updates
@@ -316,6 +317,11 @@ window.TEUI.SectionModules.sect10 = (function () {
             valueToDisplay = TargetState.getValue(fieldId);
         }
 
+        // 🔍 DEBUG: Special logging for g_80 to understand the issue
+        if (fieldId === "g_80") {
+          console.log(`[S10DISPLAY] g_80 DEBUG: mode=${this.currentMode}, valueToDisplay=${valueToDisplay}`);
+        }
+
         if (valueToDisplay !== null && valueToDisplay !== undefined) {
           const element = document.querySelector(
             `[data-field-id="${fieldId}"]`,
@@ -336,7 +342,7 @@ window.TEUI.SectionModules.sect10 = (function () {
             }
 
             element.textContent = formattedValue;
-            // console.log(`[S10DISPLAY] Display (${this.currentMode}) ${fieldId} = ${formattedValue}`);
+            console.log(`[S10DISPLAY] Display (${this.currentMode}) ${fieldId} = ${formattedValue}`);
           }
         }
       });
@@ -1884,33 +1890,113 @@ window.TEUI.SectionModules.sect10 = (function () {
    */
   function calculateUtilizationFactorsReference() {
     try {
-      // Get Reference internal gains from S09 (critical for E80/E81 Excel formula)
+      // Get total solar gains (internal to S10 Reference model)
+      const solarGains = window.TEUI.parseNumeric(
+        window.TEUI.StateManager.getValue("ref_i_79"),
+      ) || 0;
+      
+      // EXTERNAL DEPENDENCY: Get internal gains from S09 via global state (Reference mode)
       const internalGains = getGlobalNumericValue("ref_i_71") || 0;
-      const subtotalHeating =
-        window.TEUI.parseNumeric(
-          window.TEUI.StateManager.getValue("ref_i_79"),
-        ) || 0;
+      
+      const totalGains = solarGains + internalGains;
+      console.log(`[S10REF] Utilization calc: ref_i_71=${internalGains}, ref_i_79=${solarGains}, totalGains=${totalGains}`);
 
-      // Excel formula: E80 = I71 + I79 (Reference version)
-      const utilizationE80 = internalGains + subtotalHeating;
-      const utilizationE81 = internalGains + subtotalHeating; // Same formula
-      const utilizationE82 = 50.0; // Default or specific Reference logic
+      // Store total gains in e_80, e_81 (same as Target logic)
+      setFieldValue("e_80", totalGains);
+      setFieldValue("e_81", totalGains);
 
-      // Store Reference utilization factors in StateManager
-      setFieldValue("e_80", utilizationE80);
-      setFieldValue("e_81", utilizationE81);
+      //=====================================================================
+      // PART 1: Calculate utilization factor based on selected method in row 80 (Reference dropdown)
+      //=====================================================================
+      const utilizationMethod = ReferenceState.getValue("d_80") || "NRC 40%";
+      let utilizationFactor = 0.4; // Default to 40%
+      console.log(`[S10REF] Using utilization method: ${utilizationMethod}`);
 
-      // ✅ CRITICAL: Publish ref_i_80 for S15 (same value as ref_e_80 for Excel compliance)
-      setFieldValue("i_80", utilizationE80);
-      // console.log(`[S10] 🔗 Published ref_i_80=${utilizationE80} for S15 (Reference utilization)`);
-      setFieldValue("e_82", utilizationE82);
+      if (utilizationMethod === "NRC 0%") {
+        utilizationFactor = 0;
+      } else if (utilizationMethod === "NRC 40%") {
+        utilizationFactor = 0.4;
+      } else if (utilizationMethod === "NRC 50%") {
+        utilizationFactor = 0.5;
+      } else if (utilizationMethod === "NRC 60%") {
+        utilizationFactor = 0.6;
+      } else if (utilizationMethod === "PH Method") {
+        // EXTERNAL DEPENDENCIES: Get loss values from other sections via global state (Reference values)
+        const i97 = getGlobalNumericValue("ref_i_97") || 0;
+        const i103 = getGlobalNumericValue("ref_i_103") || 0;
+        const m121 = getGlobalNumericValue("ref_m_121") || 0;
+        const i98 = getGlobalNumericValue("ref_i_98") || 0;
 
-      // console.log(`[S10REF] Utilization: E80=${utilizationE80.toFixed(2)} (ref_i_71=${internalGains} + ref_i_79=${subtotalHeating}), E81=${utilizationE81.toFixed(2)}, E82=${utilizationE82.toFixed(2)}`);
+        const numerator = totalGains;
+        const denominator = i97 + i103 + m121 + i98;
+
+        if (denominator > 0) {
+          const gamma = numerator / denominator;
+          if (Math.abs(gamma - 1) < 1e-9) {
+            utilizationFactor = 5 / 6;
+          } else {
+            const a = 5;
+            const gamma_a = Math.pow(gamma, a);
+            const gamma_a_plus_1 = Math.pow(gamma, a + 1);
+            utilizationFactor = (1 - gamma_a) / (1 - gamma_a_plus_1);
+            utilizationFactor = Math.max(0, Math.min(1, utilizationFactor));
+          }
+        } else {
+          utilizationFactor = numerator > 0 ? 1 : 0;
+        }
+      }
+
+      const usableGains = totalGains * utilizationFactor;
+      console.log(`[S10REF] Final calc: utilizationFactor=${utilizationFactor}, usableGains=${usableGains}`);
+
+      // ✅ CRITICAL: Store g_80 (utilization factor percentage) and i_80 (usable gains)
+      setFieldValue("g_80", utilizationFactor);
+      setFieldValue("i_80", usableGains);
+
+      //=====================================================================
+      // PART 2: Calculate PHPP method as reference in row 81 (always)
+      //=====================================================================
+      const i97Reference = getGlobalNumericValue("ref_i_97") || 0;
+      const i103Reference = getGlobalNumericValue("ref_i_103") || 0;
+      const m121Reference = getGlobalNumericValue("ref_m_121") || 0;
+      const i98Reference = getGlobalNumericValue("ref_i_98") || 0;
+
+      const numeratorReference = totalGains;
+      const denominatorReference = i97Reference + i103Reference + m121Reference + i98Reference;
+
+      let phUtilizationFactor = 0.9;
+
+      if (denominatorReference > 0) {
+        const gammaReference = numeratorReference / denominatorReference;
+        if (Math.abs(gammaReference - 1) < 1e-9) {
+          phUtilizationFactor = 5 / 6;
+        } else {
+          const a = 5;
+          const gamma_a = Math.pow(gammaReference, a);
+          const gamma_a_plus_1 = Math.pow(gammaReference, a + 1);
+          phUtilizationFactor = (1 - gamma_a) / (1 - gamma_a_plus_1);
+          phUtilizationFactor = Math.max(0, Math.min(1, phUtilizationFactor));
+        }
+      } else {
+        phUtilizationFactor = numeratorReference > 0 ? 1 : 0;
+      }
+
+      const phReferenceGains = totalGains * phUtilizationFactor;
+
+      // ✅ Store g_81 (PHPP utilization factor) and i_81 (PHPP usable gains)
+      setFieldValue("g_81", phUtilizationFactor);
+      setFieldValue("i_81", phReferenceGains);
+
+      console.log(`[S10REF] Complete: g_80=${utilizationFactor}, g_81=${phUtilizationFactor}, i_80=${usableGains}, i_81=${phReferenceGains}`);
     } catch (_error) {
-      console.error(
-        "S10: Error calculating Reference utilization factors:",
-        _error,
-      );
+      console.error("S10: Error calculating Reference utilization factors:", _error);
+      // Set error values or defaults
+      setFieldValue("e_80", 0);
+      setFieldValue("g_80", 0);
+      setFieldValue("i_80", 0);
+      setFieldValue("e_81", 0);
+      setFieldValue("g_81", 0);
+      setFieldValue("i_81", 0);
     }
   }
 
