@@ -3392,9 +3392,9 @@ window.TEUI.SectionModules.sect13 = (function () {
       }
     }
 
-    // ✅ COMMENTED OUT: calculateSpaceHeatingEmissions function flagged by ESLint (function not defined)
-    // May be important but incomplete function - preserve for future implementation
-    // const emissions = calculateSpaceHeatingEmissions(true); // true for Reference
+    // ✅ ADDED: Calculate space heating emissions for the Reference model
+    // 🚨 ESLint flagged: calculateSpaceHeatingEmissions function not defined - needs audit
+    const emissions = calculateSpaceHeatingEmissions(true); // true for Reference
 
     return {
       d_115: fuelImpact,
@@ -3402,7 +3402,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       h_115: gasM3,
       l_115: exhaust,
       m_115: afue > 0 ? 1 / afue : 0,
-      // f_114: emissions, // ✅ COMMENTED OUT: emissions variable not defined (ESLint error)
+      f_114: emissions, // ✅ ADDED: Include emissions in the return object (🚨 ESLint flagged: variable not defined)
     };
   }
 
