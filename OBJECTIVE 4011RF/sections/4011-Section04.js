@@ -260,6 +260,20 @@ window.TEUI.SectionModules.sect04 = (function () {
         // ✅ ALL CALCULATED VALUES REMOVED - Reference calculations produce different values
         // but they come from calculation functions, not defaults!
       };
+
+      // ✅ CRITICAL: Publish Reference defaults to StateManager (S10/S11 pattern)
+      // This fixes QC violations: ref_j_32, ref_f_32 CRITICAL_STALE_VALUE
+      if (window.TEUI?.StateManager) {
+        const referenceFields = ["d_27", "d_28", "d_29", "d_30", "d_31", "h_35"];
+        referenceFields.forEach((fieldId) => {
+          const value = this.data[fieldId];
+          if (value !== null && value !== undefined) {
+            window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "default");
+            console.log(`[S04 REF DEFAULTS] Published ref_${fieldId}=${value} to StateManager`);
+          }
+        });
+      }
+
       console.log(
         "S04: ReferenceState minimal defaults set (user inputs only)",
       );
@@ -397,13 +411,23 @@ window.TEUI.SectionModules.sect04 = (function () {
 
       // ✅ CRITICAL: Sync defaults back to StateManager for downstream sections
       if (window.TEUI?.StateManager) {
+        // Sync Target defaults (unprefixed)
         Object.keys(TargetState.data).forEach((fieldId) => {
           const value = TargetState.data[fieldId];
           if (value !== null && value !== undefined) {
             window.TEUI.StateManager.setValue(fieldId, value, "default");
           }
         });
-        console.log("S04: Synced reset defaults to StateManager");
+        
+        // ✅ FIX: Also sync Reference defaults (ref_ prefixed)
+        Object.keys(ReferenceState.data).forEach((fieldId) => {
+          const value = ReferenceState.data[fieldId];
+          if (value !== null && value !== undefined) {
+            window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "default");
+          }
+        });
+        
+        console.log("S04: Synced reset defaults to StateManager (Target and Reference)");
       }
 
       console.log("S04: States have been reset to defaults");
