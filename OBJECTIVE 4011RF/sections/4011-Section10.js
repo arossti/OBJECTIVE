@@ -106,11 +106,12 @@ window.TEUI.SectionModules.sect10 = (function () {
       this.state.f_78 = "0.35"; // Reference: Better shading factor
       this.state.h_78 = "0"; // Reference: No user adjustments
 
-      // ✅ CRITICAL: Publish Reference area defaults to StateManager (S02 pattern)
+      // ✅ CRITICAL: Publish Reference defaults to StateManager (S02 pattern)
       // This enables S11 to read Reference area values during initialization and mode switching
+      // ✅ FIX: Include d_80 (nGains dropdown) for proper Reference mode functionality
       if (window.TEUI?.StateManager) {
-        const areaFields = ["d_73", "d_74", "d_75", "d_76", "d_77", "d_78"];
-        areaFields.forEach((fieldId) => {
+        const referenceFields = ["d_73", "d_74", "d_75", "d_76", "d_77", "d_78", "d_80"];
+        referenceFields.forEach((fieldId) => {
           const value = this.state[fieldId];
           if (value !== null && value !== undefined) {
             window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "default");
@@ -326,8 +327,8 @@ window.TEUI.SectionModules.sect10 = (function () {
             let formattedValue;
             if (fieldId.startsWith("m_")) {
               formattedValue = window.TEUI.formatNumber(num, "number-2dp"); // Gain factors
-            } else if (fieldId.startsWith("j_") || fieldId.startsWith("l_")) {
-              formattedValue = window.TEUI.formatNumber(num, "percent-0dp"); // Percentages
+            } else if (fieldId.startsWith("j_") || fieldId.startsWith("l_") || fieldId === "g_80" || fieldId === "g_81") {
+              formattedValue = window.TEUI.formatNumber(num, "percent-2dp"); // Percentages (2dp for g_80, g_81)
             } else if (fieldId.startsWith("p_")) {
               formattedValue = window.TEUI.formatNumber(num, "currency"); // Costs
             } else {
