@@ -2038,6 +2038,153 @@ ModeManager.updateCalculatedDisplayValues();
 
 ---
 
+## 🏗️ **PROPOSED: DUAL-STATE AREA INHERITANCE SYSTEM**
+
+**Date**: December 29, 2025  
+**Purpose**: Clean method for S10→S11 area inheritance with perfect state isolation  
+**Status**: **THEORY PHASE** - Design complete, implementation pending
+
+### **🎯 Design Requirements Met**
+
+✅ **Cross-Section Operation**: StateManager-mediated communication  
+✅ **Dual-State Compatible**: Works equally in Target and Reference modes  
+✅ **StateManager Travel**: All data flows through StateManager channels  
+✅ **Mode Switch Updates**: Displays correct inherited values for current mode  
+✅ **State Isolation**: No cross-mode contamination  
+
+### **🔧 Technical Architecture**
+
+#### **Inheritance Mapping**
+```javascript
+const areaInheritanceMap = {
+  "d_73": "d_88", // S10 doors → S11 doors  
+  "d_74": "d_89", // S10 windows North → S11 windows North
+  "d_75": "d_90", // S10 skylights → S11 windows East  
+  "d_76": "d_91", // S10 glazed doors → S11 windows South
+  "d_77": "d_92", // S10 curtain wall → S11 windows West
+  "d_78": "d_93"  // S10 other glazing → S11 skylights
+};
+```
+
+#### **Dual-State Listener Pattern**
+```javascript
+// S11 subscribes to both Target and Reference channels
+Object.entries(areaInheritanceMap).forEach(([sourceField, targetField]) => {
+  // Target inheritance: S10 d_73 → S11 d_88 (Target only)
+  StateManager.addListener(sourceField, (newValue) => {
+    if (isFieldInherited(targetField)) {
+      updateInheritedField(targetField, newValue, "target");
+    }
+  });
+  
+  // Reference inheritance: S10 ref_d_73 → S11 ref_d_88 (Reference only)  
+  StateManager.addListener(`ref_${sourceField}`, (newValue) => {
+    if (isFieldInherited(targetField)) {
+      updateInheritedField(targetField, newValue, "reference");
+    }
+  });
+});
+```
+
+#### **Mode-Aware Inheritance Storage**
+```javascript
+function updateInheritedField(fieldId, value, mode) {
+  // Store in appropriate state object (perfect isolation)
+  if (mode === "target") {
+    TargetState.setValue(fieldId, value, "inherited");
+  } else {
+    ReferenceState.setValue(fieldId, value, "inherited");  
+  }
+  
+  // Update DOM only if current mode matches (prevents cross-mode updates)
+  if (ModeManager.currentMode === mode) {
+    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+    if (element) {
+      element.textContent = formatNumber(value, "number");
+      element.classList.add("inherited-value"); // Visual distinction
+    }
+  }
+  
+  // Trigger calculations for current inheritance
+  calculateAll();
+  ModeManager.updateCalculatedDisplayValues();
+}
+```
+
+### **🎨 User Experience Design**
+
+#### **Visual Inheritance Indicators (DRY Principle)**
+- **Inherited Fields**: Light blue background, italic text, "📎" icon prefix
+- **Tooltip**: "Inherited from S10 [source field] - Edit in S10 to change"
+- **Read-Only Display**: S11 areas are purely display/calculation - editing only in S10
+
+### **🚦 State Isolation Guarantees**
+
+#### **Target Mode Flow:**
+```
+S10 Target d_73="100" → StateManager "d_73" → S11 Target d_88="100"
+✅ S11 Reference d_88 unchanged (preserves Reference values)
+✅ Perfect state isolation maintained
+```
+
+#### **Reference Mode Flow:**
+```  
+S10 Reference d_73="80" → StateManager "ref_d_73" → S11 Reference d_88="80"
+✅ S11 Target d_88 unchanged (preserves Target values)  
+✅ Perfect state isolation maintained
+```
+
+#### **Mode Switch Behavior:**
+```
+User toggles S11 Target→Reference:
+1. refreshUI() reads inherited values from ReferenceState  
+2. Displays Reference-inherited areas (may differ from Target)
+3. No calculations triggered (display-only switch)
+4. Perfect value preservation for both modes
+```
+
+### **🧪 Comprehensive Testing Protocol**
+
+#### **Test 1: Basic Dual-State Inheritance**
+- S10 Target mode: Change d_73="100" → Verify S11 Target d_88="100", Reference d_88 unchanged
+- S10 Reference mode: Change d_73="80" → Verify S11 Reference d_88="80", Target d_88 unchanged
+
+#### **Test 2: Mode Switch Preservation**  
+- Set S10 Target d_73="100", Reference d_73="80"
+- Toggle S11 Target→Reference → Verify d_88 shows "80" (inherited from Reference)
+- Toggle S11 Reference→Target → Verify d_88 shows "100" (inherited from Target)
+
+#### **Test 3: DRY Principle Validation**
+- Verify S11 d_88-d_93 are read-only (no editing capability)
+- Verify S10 changes immediately reflect in S11 inherited fields
+- Verify tooltip guidance directs users to edit in S10
+
+#### **Test 4: Cross-Section Calculation Flow**
+- S10 area change → S11 inherited area update → S11 calculations → S12/S15 downstream flow
+- Verify: Only appropriate mode's totals update in S01 (h_10 OR e_10, not both)
+
+### **🏆 Architectural Advantages**
+
+✅ **Eliminates Duplicate Entry**: Users define areas once in S10  
+✅ **Maintains State Sovereignty**: S11 retains full control over its values  
+✅ **Enforces DRY Principle**: Single source of truth for area editing (S10 only)  
+✅ **Visual Clarity**: Clear distinction between inherited and user-defined values  
+✅ **Mode-Aware**: Perfect state isolation between Target and Reference inheritance  
+✅ **StateManager Compliant**: All communication via established StateManager patterns  
+✅ **Robot Fingers Pattern**: Follows proven S11→S12 cross-section success model
+
+### **🚀 Implementation Phases (Future)**
+
+**Phase 1**: Add dual-state inheritance listeners to S11  
+**Phase 2**: Implement visual inheritance indicators and styling  
+**Phase 3**: Implement read-only inheritance styling and tooltips  
+**Phase 4**: Comprehensive testing across all scenarios  
+**Phase 5**: Documentation and user guidance
+
+**This design maintains the bombproof state isolation we achieved while restoring the UX convenience of single-point area definition.**
+
+---
+
 ## 🎉 **SEPTEMBER 5TH, 2025 - CRITICAL BREAKTHROUGH: S11→S12 ROBOT FINGERS SUCCESS PATTERN**
 
 **Status**: ✅ **S11→S12 Cross-Section Dependencies Working Perfectly**  
