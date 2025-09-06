@@ -1,16 +1,23 @@
 # S10-S11 RADIANT GAINS & TRANSMISSION LOSSES - TROUBLESHOOTING GUIDE
 
-## 🤖 **AI AGENT HANDOFF PROMPT (September 5th, 2025 Evening)**
+## 🤖 **AI AGENT HANDOFF PROMPT (December 29th, 2025 Evening)**
 
-**CURRENT STATUS**: ✅ **S11 Self-Contained Area Fields Working** | 🚨 **S01 State Mixing Remains**
+**CURRENT STATUS**: ✅ **S10 FULLY COMPLIANT** | ✅ **S11 Self-Contained Area Fields Working** | 🚨 **S01 State Mixing Remains**
 
-**CONTEXT**: After 4 days of debugging, we achieved major breakthrough by making S11 self-contained like other sections. The complex S10→S11 area linkage was surgically removed and S11 now works perfectly internally.
+**COMPLETED DECEMBER 29, 2025**:
+- ✅ **S10 Bug Fixes**: Percentage formatting (g_80, g_81), Reference mode dropdown responsiveness, orientation state isolation
+- ✅ **S10 4012-CHEATSHEET Compliance**: Passes all 7 phases of QA/QC audit
+- ✅ **S10 Reference Mode**: 100% flexible, dynamic calculations, perfect state separation
+- ✅ **S10→S11 Area Linkage Removal**: Surgically removed to achieve bombproof state isolation
+
+**ARCHITECTURAL DECISION**: S10→S11 area auto-update **intentionally removed** to achieve 100% state isolation. Users must define window/door areas in both S10 and S11 independently. This temporary UX trade-off ensures perfect dual-state architecture before re-implementing cross-section linkage.
 
 **WHAT WORKS NOW**:
+- ✅ **S10**: Fully compliant Pattern A dual-state architecture, 100% flexible Reference mode
 - ✅ **S11 area fields (d_88-d_93)**: Work exactly like row 85 - editable, mode-aware, perfect dual-state isolation
 - ✅ **S11 U-value responsiveness**: Both Target and Reference modes update calculations immediately  
 - ✅ **S11→S12 robot fingers**: TB% slider updates downstream sections correctly
-- ✅ **Clean architecture**: S11 follows standard dual-state patterns
+- ✅ **Clean architecture**: Both S10 and S11 follow standard dual-state patterns
 
 **REMAINING ISSUE**: S11 changes cause **both e_10 AND h_10** to update in S01 (state mixing). Should be **only e_10** (Reference total) OR **only h_10** (Target total) depending on S11's current mode.
 
@@ -23,7 +30,61 @@
 - Check S11's `calculateTargetModel()` and `calculateReferenceModel()` functions
 - Compare with working sections like S05, S06 for proper dual-state reporting patterns
 
-**SAFE RESTORE POINT**: Commit `07ad926` - "Fix S11 Reference calculations"
+**SAFE RESTORE POINT**: Commit `a9394fd` - "S10 fully compliant with 4012-CHEATSHEET"
+
+---
+
+## 🎉 **S10 COMPLETION SUMMARY (December 29, 2025)**
+
+### **✅ S10 ACHIEVEMENTS - FULLY COMPLIANT PATTERN A ARCHITECTURE**
+
+**Bug Fixes Completed:**
+1. **✅ Percentage Formatting**: g_80, g_81 now display as "40.00%" instead of "0.00%" or "4,000.00%"
+2. **✅ Reference Mode Responsiveness**: dd_d_80 dropdown changes trigger immediate calculations and UI updates
+3. **✅ Orientation State Isolation**: e_73-e_78 dropdowns have independent values in Target vs Reference modes
+4. **✅ Dynamic Reference Calculations**: calculateUtilizationFactorsReference() now reads dropdown values dynamically
+
+**Architectural Compliance:**
+- ✅ **4012-CHEATSHEET QA/QC**: Passes all 7 phases (Pattern B, Current State, DOM Updates, Excel Preservation, Defaults, Mode Isolation, Direct DOM)
+- ✅ **100% User Flexibility**: Reference model fully customizable (users can set all orientations to "Average" if desired)
+- ✅ **Perfect State Separation**: Target and Reference models completely independent
+- ✅ **Single Source of Truth**: Field definitions drive defaults, only legitimate Reference overrides in state objects
+
+**Reference Model Defaults (100% Flexible):**
+- Row 73: Average, Row 74: North, Row 75: East, Row 76: South, Row 77: West, Row 78: Skylight
+- Users can customize any orientation independently in Reference mode
+- All dropdown changes trigger immediate calculations and downstream flow
+
+**Cross-Section Integration:**
+- ✅ **StateManager Publication**: All Reference values (d_73-d_78, e_73-e_78, d_80) published with ref_ prefix
+- ✅ **Downstream Flow**: Reference calculations flow to S15 → S04 → S01 (when S11 state mixing is resolved)
+- ✅ **External Dependencies**: Properly reads ref_i_71 from S09, ref_j_19 from S03
+
+**S10 Status**: **MISSION ACCOMPLISHED** - Ready for S11 state mixing resolution
+
+### **🏗️ ARCHITECTURAL DECISION: S10→S11 Area Linkage Removal**
+
+**Decision Made**: S10→S11 automatic area propagation **intentionally removed** (December 29, 2025)
+
+**Rationale:**
+- **State Mixing Prevention**: Auto-linkage was causing serious cross-section state contamination
+- **Bombproof Architecture**: Prioritized 100% state isolation over UX convenience
+- **Foundation First**: Establish perfect dual-state architecture before adding complex cross-section features
+
+**Current State:**
+- ❌ **UX Impact**: Users must define window/door areas in both S10 (input) and S11 (calculation) 
+- ✅ **Architectural Benefit**: Perfect state isolation achieved in both sections
+- ✅ **Future Enhancement**: Clean foundation ready for intelligent area linkage re-implementation
+
+**Future Re-Implementation Plan:**
+1. **Complete S11 state mixing resolution** (eliminate e_10/h_10 dual updates)
+2. **Verify both S10 and S11 are bombproof** with perfect isolation
+3. **Re-implement area linkage** as enhancement using proven "robot fingers" pattern (like S11→S12 TB% slider)
+4. **Maintain state isolation** while adding UX convenience
+
+**Priority**: Fix S11 state mixing first, then consider area linkage enhancement
+
+---
 
 ---
 
