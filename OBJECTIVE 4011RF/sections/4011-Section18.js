@@ -528,13 +528,14 @@ window.TEUI.SectionModules.sect18 = (function () {
         html += `<div style="margin: 8px 0; padding: 6px; background: #f8f9fa; border-left: 3px solid ${typeColor};">`;
         html += `<strong style="color: ${typeColor};">${type} (${violations.length})</strong><br>`;
         
-        violations.slice(0, 20).forEach(v => {
+        violations.slice(0, 50).forEach(v => {
           const caller = v.caller ? `, ${v.caller}` : '';
-          html += `${v.field}${caller}; `;
+          const category = v.analysis?.category ? `[${v.analysis.category}]` : '';
+          html += `${v.field}${category}${caller}; `;
         });
         
-        if (violations.length > 20) {
-          html += `<br><em>+${violations.length - 20} more...</em>`;
+        if (violations.length > 50) {
+          html += `<br><em>+${violations.length - 50} more (see copy section below for complete list)...</em>`;
         }
         html += `</div>`;
       });
@@ -542,7 +543,7 @@ window.TEUI.SectionModules.sect18 = (function () {
       html += `</div></div>`;
     }
     
-    // Add copy-paste section for Logs.md (always visible at bottom)
+    // Add copy-paste section for Logs.md (always visible at bottom) - FULL REPORT
     const logsContent = `## QC Report ${new Date(report.timestamp).toLocaleDateString()}
 
 **Summary**: ${report.summary.total} violations detected
@@ -550,9 +551,17 @@ window.TEUI.SectionModules.sect18 = (function () {
 **Sections**: ${sectionTitle}
 **Status**: QC monitoring ${report.monitoring.active ? 'active' : 'inactive'}, Mirror Target ${report.monitoring.mirrorTarget ? 'enabled' : 'disabled'}
 
-### Top Violations:
-${report.violations.slice(0, 20).map(v => `- **[${identifyViolationSection(v.field)}] ${v.type}**: \`${v.field}\` - ${v.message}`).join('\n')}
-${report.violations.length > 20 ? `\n... and ${report.violations.length - 20} more violations` : ''}`;
+### Violation Categories:
+${generateCategoryBreakdown(report.violations)}
+
+### All Violations (${report.violations.length} total):
+${report.violations.map(v => {
+    const section = identifyViolationSection(v.field);
+    const caller = v.caller ? ` (${v.caller})` : '';
+    const category = v.analysis?.category ? ` [${v.analysis.category}]` : '';
+    const recommendations = v.analysis?.recommendations ? ` | Recommendations: ${v.analysis.recommendations.slice(0, 2).join(', ')}` : '';
+    return `- **[${section}] ${v.type}**: \`${v.field}\`${category} - ${v.message}${caller}${recommendations}`;
+}).join('\n')}`;
 
     html += `
       </div>
@@ -596,7 +605,7 @@ ${report.violations.length > 20 ? `\n... and ${report.violations.length - 20} mo
           id="qc-logs-textarea"
           style="
             width: 100%; 
-            height: 140px; 
+            height: 300px; 
             font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace; 
             font-size: 11px; 
             padding: 15px; 
@@ -605,6 +614,7 @@ ${report.violations.length > 20 ? `\n... and ${report.violations.length - 20} mo
             background: #f8f9fa;
             resize: vertical;
             overflow-y: auto;
+            max-height: 500px;
           " 
           readonly
         >${logsContent}</textarea>
@@ -614,6 +624,35 @@ ${report.violations.length > 20 ? `\n... and ${report.violations.length - 20} mo
     html += `</div>`;
     
     return html;
+  }
+  
+  /**
+   * Generate category breakdown for violation analysis
+   */
+  function generateCategoryBreakdown(violations) {
+    const categoryMap = {
+      'undefined_field': '🚫 Undefined Fields (not defined anywhere)',
+      'orphaned_ref_field': '🔗 Orphaned Reference Fields (ref_ without base)',
+      'calculation_failure': '💥 Calculation Failures (never computed)',
+      'timing_race_condition': '⏱️ Race Conditions (timing issues)',
+      'early_initialization': 'ℹ️ Early Reads (initialization phase)',
+      'unregistered_field': '📝 Unregistered Fields (defined but not in StateManager)',
+      'standard_missing': '❓ Standard Missing Values'
+    };
+    
+    const categoryCounts = {};
+    violations.forEach(v => {
+      const category = v.analysis?.category || 'unknown';
+      categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+    });
+    
+    return Object.entries(categoryCounts)
+      .sort((a, b) => b[1] - a[1]) // Sort by count descending
+      .map(([category, count]) => {
+        const description = categoryMap[category] || `${category} (unknown category)`;
+        return `- **${description}**: ${count} violations`;
+      })
+      .join('\n');
   }
   
   /**

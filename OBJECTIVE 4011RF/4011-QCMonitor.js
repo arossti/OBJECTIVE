@@ -202,17 +202,221 @@ TEUI.QCMonitor = (function() {
         // Track pathway - mark as read
         updatePathwayTracker(fieldId, 'read', { value, timestamp, caller });
         
-        // Detect fallback usage (indicates missing values)
+        // Detect fallback usage (indicates missing values) - but gracefully handle legitimate nulls
         if (value === null || value === undefined) {
-            logViolation({
-                type: 'MISSING_VALUE',
-                field: fieldId,
-                message: `${fieldId}=null, caller=${caller}`,
-                timestamp: timestamp,
-                severity: 'warning',
-                caller: caller
-            });
+            // Check if this is a legitimate null/zero field that shouldn't be flagged
+            if (shouldReportNullValue(fieldId, caller)) {
+                // Analyze the type of missing value to distinguish definition vs timing issues
+                const missingValueAnalysis = analyzeMissingValue(fieldId, caller, timestamp);
+                
+                logViolation({
+                    type: missingValueAnalysis.violationType,
+                    field: fieldId,
+                    message: missingValueAnalysis.message,
+                    timestamp: timestamp,
+                    severity: missingValueAnalysis.severity,
+                    caller: caller,
+                    analysis: missingValueAnalysis
+                });
+            }
         }
+    }
+    
+    /**
+     * Analyze missing value to distinguish between definition vs timing issues
+     * Returns detailed analysis of why a field is null/undefined
+     */
+    function analyzeMissingValue(fieldId, caller, timestamp) {
+        const analysis = {
+            fieldId: fieldId,
+            caller: caller,
+            timestamp: timestamp,
+            violationType: 'MISSING_VALUE', // Default
+            severity: 'warning', // Default
+            message: '',
+            category: 'unknown',
+            recommendations: []
+        };
+        
+        // Check if field exists in StateManager at all
+        const fieldExistsInStateManager = window.TEUI?.StateManager && 
+            (window.TEUI.StateManager.getAllKeys && window.TEUI.StateManager.getAllKeys().includes(fieldId));
+        
+        // Check if field is defined in FieldManager
+        const fieldDefinition = window.TEUI?.FieldManager?.getField(fieldId);
+        const fieldExistsInFieldManager = !!fieldDefinition;
+        
+        // Check if this is a ref_ field and if the base field exists
+        let baseFieldExists = true;
+        let isRefField = fieldId.startsWith('ref_');
+        if (isRefField) {
+            const baseFieldId = fieldId.substring(4);
+            baseFieldExists = window.TEUI?.FieldManager?.getField(baseFieldId) || 
+                             window.TEUI?.StateManager?.getAllKeys()?.includes(baseFieldId);
+        }
+        
+        // Check timing - has this field been accessed multiple times?
+        const fieldTracker = pathwayTracker.get(fieldId);
+        const readCount = fieldTracker ? fieldTracker.operations.filter(op => op.operation === 'read').length : 0;
+        const hasBeenWritten = fieldTracker ? fieldTracker.written : false;
+        
+        // Check if field was ever successfully written (not null)
+        const wasEverNonNull = fieldTracker ? 
+            fieldTracker.operations.some(op => op.operation === 'read' && op.value !== null && op.value !== undefined) : false;
+        
+        // Analysis logic
+        if (!fieldExistsInFieldManager && !fieldExistsInStateManager) {
+            // Field doesn't exist anywhere - completely undefined
+            analysis.category = 'undefined_field';
+            analysis.violationType = 'UNDEFINED_FIELD';
+            analysis.severity = 'error';
+            analysis.message = `${fieldId} is not defined in FieldManager or StateManager`;
+            analysis.recommendations = [
+                'Add field definition to appropriate section module',
+                'Check field naming convention',
+                'Verify field is needed for calculations'
+            ];
+        } else if (isRefField && !baseFieldExists) {
+            // Reference field exists but base field doesn't
+            analysis.category = 'orphaned_ref_field';
+            analysis.violationType = 'ORPHANED_REF_FIELD';
+            analysis.severity = 'error';
+            analysis.message = `${fieldId} references non-existent base field ${fieldId.substring(4)}`;
+            analysis.recommendations = [
+                'Define base field in appropriate section',
+                'Remove orphaned reference field if not needed',
+                'Check dual-state architecture compliance'
+            ];
+        } else if (readCount > 10 && !hasBeenWritten && !wasEverNonNull) {
+            // Field exists but has never been successfully calculated/written after many reads
+            analysis.category = 'calculation_failure';
+            analysis.violationType = 'CALCULATION_FAILURE';
+            analysis.severity = 'error';
+            analysis.message = `${fieldId} never calculated after ${readCount} read attempts`;
+            analysis.recommendations = [
+                'Check calculation dependencies',
+                'Verify calculation function exists and runs',
+                'Check for circular dependencies',
+                'Review dependency registration'
+            ];
+        } else if (readCount > 3 && wasEverNonNull && !hasBeenWritten) {
+            // Field was calculated before but now returning null - timing/race condition
+            analysis.category = 'timing_race_condition';
+            analysis.violationType = 'RACE_CONDITION';
+            analysis.severity = 'warning';
+            analysis.message = `${fieldId} timing issue - was non-null before, now null after ${readCount} reads`;
+            analysis.recommendations = [
+                'Check calculation order in dependency chain',
+                'Add explicit dependency registration',
+                'Review StateManager setValue timing',
+                'Consider using Dependency.js for ordered execution'
+            ];
+        } else if (readCount <= 3 && !hasBeenWritten) {
+            // Early in calculation cycle - may be normal initialization
+            analysis.category = 'early_initialization';
+            analysis.violationType = 'EARLY_READ';
+            analysis.severity = 'info';
+            analysis.message = `${fieldId} read during early initialization (${readCount} reads)`;
+            analysis.recommendations = [
+                'May be normal during app startup',
+                'Monitor if persists after full initialization',
+                'Check if field should have default value'
+            ];
+        } else if (fieldExistsInFieldManager && !fieldExistsInStateManager) {
+            // Defined but never registered in StateManager
+            analysis.category = 'unregistered_field';
+            analysis.violationType = 'UNREGISTERED_FIELD';
+            analysis.severity = 'warning';
+            analysis.message = `${fieldId} defined in FieldManager but not registered in StateManager`;
+            analysis.recommendations = [
+                'Ensure field is registered during section initialization',
+                'Check setValue calls in section calculateAll',
+                'Verify field is included in section getFields()'
+            ];
+        } else {
+            // Default case - standard missing value
+            analysis.category = 'standard_missing';
+            analysis.violationType = 'MISSING_VALUE';
+            analysis.severity = 'warning';
+            analysis.message = `${fieldId}=null, caller=${caller}`;
+            analysis.recommendations = [
+                'Check field initialization',
+                'Verify calculation dependencies',
+                'Review field default values'
+            ];
+        }
+        
+        return analysis;
+    }
+    
+    /**
+     * Determine if a null value should be reported as a violation
+     * Many energy model fields can legitimately be null/zero (e.g., PV contributions, optional equipment)
+     */
+    function shouldReportNullValue(fieldId, caller) {
+        // Fields that can legitimately be null/zero and shouldn't trigger violations
+        const legitimateNullFields = [
+            // Renewable energy fields (PV, wind, etc.) - often zero in many projects
+            'm_43', 'm_44', 'm_45', 'm_46', 'm_47', 'm_48', 'm_49',
+            
+            // Optional equipment fields
+            'd_70', 'd_71', 'd_72', 'd_73', 'd_74', 'd_75', 'd_76',
+            
+            // Additional energy sources (often zero)
+            'f_33', 'f_34', 'f_35', 'f_36', 'f_37', 'f_38', 'f_39',
+            'j_33', 'j_34', 'j_35', 'j_36', 'j_37', 'j_38', 'j_39',
+            
+            // Optional cooling/heating systems
+            'd_77', 'd_78', 'd_79', 'd_80', 'd_81', 'd_82',
+            
+            // Optional water features
+            'j_50', 'j_51', 'j_52', 'k_50', 'k_51', 'k_52',
+            
+            // Calculated fields that may be zero in early stages
+            'i_98', 'i_99', 'i_100', 'i_101', 'i_102', 'i_103', 'i_104',
+            
+            // Reference prefixed versions of the above
+            'ref_m_43', 'ref_m_44', 'ref_m_45', 'ref_m_46', 'ref_m_47', 'ref_m_48', 'ref_m_49',
+            'ref_d_70', 'ref_d_71', 'ref_d_72', 'ref_d_73', 'ref_d_74', 'ref_d_75', 'ref_d_76',
+            'ref_f_33', 'ref_f_34', 'ref_f_35', 'ref_f_36', 'ref_f_37', 'ref_f_38', 'ref_f_39',
+            'ref_j_33', 'ref_j_34', 'ref_j_35', 'ref_j_36', 'ref_j_37', 'ref_j_38', 'ref_j_39',
+            'ref_d_77', 'ref_d_78', 'ref_d_79', 'ref_d_80', 'ref_d_81', 'ref_d_82',
+            'ref_j_50', 'ref_j_51', 'ref_j_52', 'ref_k_50', 'ref_k_51', 'ref_k_52',
+            'ref_i_98', 'ref_i_99', 'ref_i_100', 'ref_i_101', 'ref_i_102', 'ref_i_103', 'ref_i_104'
+        ];
+        
+        // Check if this field is in the legitimate null list
+        if (legitimateNullFields.includes(fieldId)) {
+            return false; // Don't report as violation
+        }
+        
+        // Pattern-based checks for optional fields
+        // Optional sub-components (often have null values)
+        if (fieldId.match(/^[a-z]_[4-9][0-9]$/)) { // Fields like d_40-d_99, m_40-m_99 etc.
+            return false; // Many optional fields in higher ranges
+        }
+        
+        // Calculated display fields that may be null during initialization
+        if (fieldId.startsWith('cf_') || fieldId.startsWith('calc_')) {
+            return false; // Calculated fields can be null during setup
+        }
+        
+        // Critical core fields that should never be null
+        const criticalFields = [
+            'h_15', 'd_85', 'd_86', 'd_89', 'd_90', 'd_91', 'd_92', 'd_95', // Building geometry
+            'd_20', 'd_21', 'd_23', 'd_24', // Climate data
+            'd_63', 'd_12', // Occupancy
+            'h_10', 'k_10', 'e_10', // Key TEUI values
+            'j_32', 'f_32', // Energy totals
+            'ref_h_15', 'ref_d_85', 'ref_d_86', 'ref_d_89', 'ref_d_90', 'ref_d_91', 'ref_d_92', 'ref_d_95',
+            'ref_d_20', 'ref_d_21', 'ref_d_23', 'ref_d_24',
+            'ref_d_63', 'ref_d_12',
+            'ref_h_10', 'ref_k_10', 'ref_e_10',
+            'ref_j_32', 'ref_f_32'
+        ];
+        
+        // Only report violations for critical fields
+        return criticalFields.includes(fieldId);
     }
     
     /**
