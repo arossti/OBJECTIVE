@@ -1394,12 +1394,11 @@ window.TEUI.SectionModules.sect15 = (function () {
       const m121 = ref_m121; // Use Reference values for Reference calculations
       const i80 = ref_i80; // Use Reference values for Reference calculations
 
-      const primaryHeating =
-        window.TEUI?.StateManager?.getReferenceValue("d_113") || "Electricity";
+      // ✅ FIX: Use direct ref_d_113 instead of broken getReferenceValue()
+      const primaryHeating = window.TEUI?.StateManager?.getValue("ref_d_113") || "Electricity";
       
-      // 🔍 CRITICAL DEBUG: Check what heating system S15 Reference engine is reading
-      const ref_d_113_direct = window.TEUI?.StateManager?.getValue("ref_d_113");
-      console.log(`[S15 REF DEBUG] Heating system sources: getReferenceValue("d_113")="${primaryHeating}", direct ref_d_113="${ref_d_113_direct}"`);
+      // 🔍 CRITICAL DEBUG: Confirm S15 Reference engine now reads correct heating system
+      console.log(`[S15 REF DEBUG] FIXED: Reading ref_d_113 directly = "${primaryHeating}"`);
       const d114 = parseFloat(getRefValue("d_114")) || 0;
       
       // 🔍 DEBUG: Log S15 Reference calculation inputs
