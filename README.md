@@ -958,6 +958,49 @@ The application follows a precise initialization sequence critical for proper op
 - ❌ Cross-state contamination (Reference showing Target values)
 - ❌ Race conditions requiring timing-based workarounds
 
+#### **🔧 Complete Traffic Cop Implementation Pattern**
+
+**When to Use**: Apply to any section's `calculateAll()` function that experiences timing conflicts or calculation interference with other sections.
+
+**⚠️ Note**: Current initialization warnings (S15 missing S12 values) are expected startup behavior and do not require Traffic Cop coordination. Use this pattern only when actual calculation failures occur.
+
+```javascript
+function calculateAll() {
+  // 🛑 TRAFFIC COP: Check if another section is calculating
+  if (window.sectionCalculationInProgress) {
+    console.log("[SXX] Traffic Cop: Another section calculating, skipping");
+    return; // Stop and wait - another section has priority
+  }
+
+  // 🟡 TRAFFIC COP: Set flag to coordinate with other sections
+  window.sectionCalculationInProgress = true;
+  console.log("[SXX] 🚀 Traffic Cop: Starting coordinated calculations");
+
+  try {
+    // 🟢 SAFE ZONE: No other section can interfere during calculations
+    calculateReferenceModel(); // Uses Reference standard values
+    calculateTargetModel();    // Uses user's design values
+    updateCalculatedDisplayValues(); // Update UI display
+    
+    console.log("[SXX] ✅ Traffic Cop: Calculations complete, releasing coordination");
+  } catch (error) {
+    console.error("[SXX] Traffic Cop: Calculation error:", error);
+  } finally {
+    // 🔓 TRAFFIC COP: Release coordination flag (CRITICAL - must always execute)
+    window.sectionCalculationInProgress = false;
+  }
+}
+```
+
+**Critical Implementation Notes**:
+1. **Stop/Wait/Start Coordination**: Sections check the flag, wait if busy, claim exclusive access when clear
+2. **Try/Finally Pattern**: Ensures flag is always released even if calculations throw errors  
+3. **Atomic Section Completion**: Each section completes entirely before next section starts
+4. **No Nested Traffic Cop**: Don't add Traffic Cop to functions called within `calculateAll()`
+5. **Initialization vs Runtime**: Traffic Cop coordinates runtime calculations, not initialization sequences
+
+**Sections Currently Using Traffic Cop**: OBC Matrix sections demonstrate the complete pattern. Main TEUI sections rely on Calculator.js orchestration and may need Traffic Cop if timing conflicts arise.
+
 ### **📂 Module Hierarchy**
 
 ```
@@ -2033,16 +2076,27 @@ The application now runs **two independent calculation engines simultaneously**:
 #### 1. **Recursion Protection System**
 
 ```javascript
-// Global flag prevents infinite calculation loops
-if (window.sectionCalculationInProgress) return;
-window.sectionCalculationInProgress = true;
+// ✅ COMPLETE TRAFFIC COP PATTERN (matches implementation above)
+function calculateAll() {
+  // 🛑 STOP: Check if another section is calculating
+  if (window.sectionCalculationInProgress) {
+    console.log("[SXX] Traffic Cop: Another section calculating, skipping");
+    return;
+  }
 
-try {
-  // Run both engines independently
-  calculateReferenceModel(); // Uses Reference standard values
-  calculateApplicationModel(); // Uses user's design values
-} finally {
-  window.sectionCalculationInProgress = false;
+  // 🟡 START: Set flag to coordinate with other sections  
+  window.sectionCalculationInProgress = true;
+
+  try {
+    // 🟢 SAFE: Run both engines independently without interference
+    calculateReferenceModel(); // Uses Reference standard values
+    calculateTargetModel();    // Uses user's design values
+  } catch (error) {
+    console.error("[SXX] Traffic Cop: Calculation error:", error);
+  } finally {
+    // 🔓 RELEASE: Always release flag (critical for coordination)
+    window.sectionCalculationInProgress = false;
+  }
 }
 ```
 
