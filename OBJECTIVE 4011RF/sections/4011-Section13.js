@@ -605,7 +605,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         window.TEUI.StateManager.setValue(fieldId, valueToStore, fieldType);
         
         // 🔍 ENHANCED DEBUG: Track StateManager publications
-        if (["d_122", "m_121", "f_114", "d_114"].includes(fieldId)) {
+        if (["d_122", "m_121", "f_114", "d_114", "j_115"].includes(fieldId)) {
           console.log(
             `[S13 PUBLICATION DEBUG] Target published: ${fieldId}=${valueToStore}`,
           );
@@ -621,7 +621,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         );
 
         // 🔍 ENHANCED DEBUG: Track StateManager publications
-        if (["d_122", "m_121", "f_114", "d_114"].includes(fieldId)) {
+        if (["d_122", "m_121", "f_114", "d_114", "j_115"].includes(fieldId)) {
           console.log(
             `[S13 PUBLICATION DEBUG] Reference published: ref_${fieldId}=${valueToStore}`,
           );
@@ -2224,11 +2224,14 @@ window.TEUI.SectionModules.sect13 = (function () {
         // if (fieldId === 'l_118') {
         //     console.log(`[S13 DEBUG l_118] Attempting to set StateManager for l_118 to: "${valueToStore}". Display will be: "${formattedDisplay}"`);
         // }
-        window.TEUI.StateManager.setValue(
-          fieldId,
-          valueToStore,
-          "user-modified",
-        );
+        // ✅ FIX: Use mode-aware ModeManager.setValue for user inputs (especially j_115 AFUE)
+        if (ModeManager && typeof ModeManager.setValue === "function") {
+          ModeManager.setValue(fieldId, valueToStore, "user-modified");
+        } else {
+          // Fallback to direct StateManager if ModeManager not available
+          window.TEUI.StateManager.setValue(fieldId, valueToStore, "user-modified");
+        }
+        
         // ADDED: Explicitly trigger calculateAll after user modifies AFUE
         if (fieldId === "j_115") {
           // console.log("[S13 DEBUG] j_115 changed by user, explicitly calling calculateAll().")
