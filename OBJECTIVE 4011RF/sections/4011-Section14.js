@@ -1439,6 +1439,13 @@ window.TEUI.SectionModules.sect14 = (function () {
       sm.addListener("h_22", calculateAll); // GF CDD
       sm.addListener("d_22", calculateAll); // GF HDD
 
+      // ✅ CRITICAL FIX: Add missing S13 Reference listeners for dependency flow
+      sm.addListener("ref_d_114", calculateAll); // S13 Reference heating demand
+      sm.addListener("ref_d_117", calculateAll); // S13 Reference cooling demand
+      sm.addListener("ref_m_121", calculateAll); // S13 Reference ventilation energy
+      
+      console.log("[Section14] ✅ Added S13 Reference listeners: ref_d_114, ref_d_117, ref_m_121");
+
       // CRITICAL: Listen for d_13 changes to update reference indicators
       sm.addListener("d_13", () => {
         console.log("[Section14] d_13 changed - updating reference indicators");
