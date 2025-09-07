@@ -1397,6 +1397,9 @@ window.TEUI.SectionModules.sect15 = (function () {
       const primaryHeating =
         window.TEUI?.StateManager?.getReferenceValue("d_113") || "Electricity";
       const d114 = parseFloat(getRefValue("d_114")) || 0;
+      
+      // 🔍 DEBUG: Log S15 Reference calculation inputs
+      console.log(`[S15 REF DEBUG] d_114 calculation: ref_d_114=${window.TEUI?.StateManager?.getValue("ref_d_114")}, parsed=${d114}, heating=${primaryHeating}`);
 
       const g101 = parseFloat(getRefValue("g_101")) || 0;
       const d101 = parseFloat(getRefValue("d_101")) || 0;
@@ -1498,8 +1501,10 @@ window.TEUI.SectionModules.sect15 = (function () {
         ref_teuTargetedElecHPGasOil = k51 + d117_effective + m43_final + h70;
       }
 
-      // 🔍 KEY: Log S15 Reference calculation for S04 debugging
-      // console.log(`[S15] 🔗 REF d_136 calc: ${ref_teuTargetedElecHPGasOil} (heating=${primaryHeating}, h70=${h70} PLE subtotal, i80=${i80} from S10)`);
+      // 🔍 CRITICAL DEBUG: Log S15 Reference d_136 calculation details
+      console.log(`[S15 REF DEBUG] d_136 calculation: heating=${primaryHeating}`);
+      console.log(`[S15 REF DEBUG] d_136 inputs: k51=${k51}, d117=${d117_effective}, d114=${d114}, m43=${m43_final}, h70=${h70}`);
+      console.log(`[S15 REF DEBUG] d_136 result: ${ref_teuTargetedElecHPGasOil}`);
 
       setReferenceValue("d_136", ref_teuTargetedElecHPGasOil);
 
