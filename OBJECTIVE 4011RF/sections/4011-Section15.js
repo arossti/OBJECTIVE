@@ -1472,14 +1472,17 @@ window.TEUI.SectionModules.sect15 = (function () {
       //   `✅ S15 Reference Model: Additional fuel variables declared for cost calculations`,
       // );
 
-      // Get cooling type for d117 logic
-      const coolingType_d116 =
-        window.TEUI?.StateManager?.getReferenceValue("d_116") || "No Cooling";
+      // Get cooling type for d117 logic  
+      // ✅ FIX: Use direct ref_d_116 instead of broken getReferenceValue()
+      const coolingType_d116 = window.TEUI?.StateManager?.getValue("ref_d_116") || "No Cooling";
       let d117_actual_val = parseFloat(getRefValue("d_117")) || 0;
       let d117_effective = d117_actual_val;
       if (coolingType_d116 === "No Cooling") {
         d117_effective = 0;
       }
+      
+      // 🔍 DEBUG: Log cooling system logic for d_136 calculation
+      console.log(`[S15 REF DEBUG] Cooling logic: ref_d_116="${coolingType_d116}", ref_d_117=${d117_actual_val}, effective=${d117_effective}`);
 
       // d_135: TEU Targeted Electricity (Reference)
       let ref_teuTargetTotal =
