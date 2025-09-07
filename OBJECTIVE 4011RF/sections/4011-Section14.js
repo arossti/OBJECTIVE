@@ -993,29 +993,13 @@ window.TEUI.SectionModules.sect14 = (function () {
 
       // Calculate Reference values with proper numeric safety
 
-      // TEMPORARY DEBUG: Confirm numeric conversion worked
-      console.log(
-        `[S14 DEBUG] ✅ Converted to numbers - ref_d_127 calculation: ${i97} + ${i98} + ${i103} + ${m121} - ${i80}`,
-      );
-
       // d_127: TED (Heating Load) - Using original calculation logic with numeric values
       const ref_tedHeatloss_d127 = i97 + i98 + i103 + m121 - i80;
-
-      console.log(
-        `[S14 DEBUG] ✅ ref_d_127 = ${ref_tedHeatloss_d127} (should be numeric, not NaN)`,
-      );
 
       window.TEUI?.StateManager?.setValue(
         "ref_d_127",
         ref_tedHeatloss_d127.toString(),
         "calculated",
-      );
-
-      console.log(
-        `[S14 DEBUG] ✅ Stored ref_d_127 = ${ref_tedHeatloss_d127} in StateManager`,
-      );
-      console.log(
-        `[S14 DEBUG] 🔄 Continuing with other Reference calculations...`,
       );
 
       // h_127: TEDI (Heating Load Intensity kWh/m²/yr)
@@ -1028,10 +1012,6 @@ window.TEUI.SectionModules.sect14 = (function () {
 
       // d_128: TED Envelope (Heating Load - Envelope Only)
       const ref_tediEnvelope_d128 = i97 + i98 + i103 - i80;
-
-      console.log(
-        `[S14 DEBUG] ref_d_128 calculation: ${i97} + ${i98} + ${i103} - ${i80} = ${ref_tediEnvelope_d128}`,
-      );
 
       window.TEUI?.StateManager?.setValue(
         "ref_d_128",
@@ -1434,15 +1414,36 @@ window.TEUI.SectionModules.sect14 = (function () {
 
     // Add listeners for climate data changes from Section 3 (needed for some calcs)
     if (window.TEUI?.StateManager?.addListener) {
-      sm.addListener("d_20", calculateAll); // HDD
-      sm.addListener("d_21", calculateAll); // CDD
-      sm.addListener("h_22", calculateAll); // GF CDD
-      sm.addListener("d_22", calculateAll); // GF HDD
+      sm.addListener("d_20", () => {
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
+      }); // HDD
+      sm.addListener("d_21", () => {
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
+      }); // CDD
+      sm.addListener("h_22", () => {
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
+      }); // GF CDD
+      sm.addListener("d_22", () => {
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
+      }); // GF HDD
 
       // ✅ CRITICAL FIX: Add missing S13 Reference listeners for dependency flow
-      sm.addListener("ref_d_114", calculateAll); // S13 Reference heating demand
-      sm.addListener("ref_d_117", calculateAll); // S13 Reference cooling demand
-      sm.addListener("ref_m_121", calculateAll); // S13 Reference ventilation energy
+      sm.addListener("ref_d_114", () => {
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
+      }); // S13 Reference heating demand
+      sm.addListener("ref_d_117", () => {
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
+      }); // S13 Reference cooling demand
+      sm.addListener("ref_m_121", () => {
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
+      }); // S13 Reference ventilation energy
       
       console.log("[Section14] ✅ Added S13 Reference listeners: ref_d_114, ref_d_117, ref_m_121");
 
