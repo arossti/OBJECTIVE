@@ -50,8 +50,8 @@ window.TEUI.SectionModules.sect13 = (function () {
         f_113: "12.5", // HSPF coefficient (slider)
         d_116: "Cooling", // Cooling system (dropdown) - FIXED: was "AC"
         f_117: "18.0", // SEER coefficient (slider)
-        d_118: "HRV", // Ventilation system (dropdown)
-        f_118: "0.89", // Heat recovery efficiency (slider) - 89% default
+        d_118: "89", // Heat recovery efficiency (slider) - 89% default
+        f_118: "0.89", // Heat recovery efficiency (decimal for calculations)
         d_119: "No", // Free cooling (dropdown)
         f_119: "0.75", // Free cooling efficiency (slider)
         // Add other section-specific user-editable fields as needed
@@ -415,8 +415,10 @@ window.TEUI.SectionModules.sect13 = (function () {
               display.textContent = numericValue.toFixed(1); // HSPF range format (e.g., "12.5")
             } else if (fieldId === "f_117") {
               display.textContent = numericValue.toFixed(1); // SEER range format (e.g., "18.0")
-            } else if (fieldId === "f_118" || fieldId === "f_119") {
-              display.textContent = (numericValue * 100).toFixed(0) + "%"; // Efficiency percentage format (e.g., "85%")
+            } else if (fieldId === "d_118" || fieldId === "f_119") {
+              display.textContent = numericValue.toFixed(0) + "%"; // Percentage slider format (e.g., "89%")
+            } else if (fieldId === "f_118") {
+              display.textContent = (numericValue * 100).toFixed(0) + "%"; // Decimal efficiency format (e.g., "89%")
             } else {
               display.textContent = stateValue; // Default format
             }
