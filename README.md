@@ -1001,6 +1001,63 @@ function calculateAll() {
 
 **Sections Currently Using Traffic Cop**: OBC Matrix sections demonstrate the complete pattern. Main TEUI sections rely on Calculator.js orchestration and may need Traffic Cop if timing conflicts arise.
 
+#### **🎚️ Slider Persistence Across Mode Switches (Critical Pattern)**
+
+**Problem**: Sliders often fail to maintain separate Target/Reference position values during mode switching, showing "last value set" instead of state-specific memory.
+
+**Root Cause**: Incorrect element targeting and missing Reference mode StateManager publication.
+
+**✅ PROVEN SOLUTION PATTERN** (from S10 success, applied to S13 breakthrough):
+
+```javascript
+// 🎯 CRITICAL: Proper slider element detection
+refreshUI: function () {
+  fieldsToSync.forEach((fieldId) => {
+    const stateValue = currentState.getValue(fieldId);
+    const element = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
+    
+    // ✅ CORRECT: Find slider inside table cell (not check if cell IS slider)
+    const slider = element.matches('input[type="range"]')
+      ? element  // If element IS the slider
+      : element.querySelector('input[type="range"]'); // If slider is INSIDE element (TD, etc.)
+    
+    if (slider) {
+      const numericValue = window.TEUI.parseNumeric(stateValue, 0);
+      slider.value = numericValue; // ✅ Update slider position from state
+      
+      // ✅ Update display using slider's nextElementSibling
+      const display = slider.nextElementSibling;
+      if (display) {
+        display.textContent = numericValue.toFixed(1); // Format appropriately
+      }
+    }
+  });
+}
+
+// 🎯 CRITICAL: Mode-aware StateManager publication
+setValue: function (fieldId, value, source = "user") {
+  this.getCurrentState().setValue(fieldId, value, source);
+
+  if (this.currentMode === "target") {
+    window.TEUI.StateManager.setValue(fieldId, value, source);
+  } else if (this.currentMode === "reference") {
+    // ✅ CRITICAL: Reference values must use ref_ prefix
+    window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, source);
+  }
+}
+```
+
+**Key Implementation Notes**:
+1. **Element Detection**: Always use `querySelector('input[type="range"]')` to find sliders inside table cells
+2. **Position Update**: Use `slider.value = numericValue`, never `element.value`
+3. **Display Update**: Use `slider.nextElementSibling` for display spans
+4. **State Publication**: Both Target (unprefixed) AND Reference (ref_ prefixed) modes must publish to StateManager
+5. **Performance**: Use `input` events for display, `change` events for calculations to prevent storms
+
+**Sections Successfully Using This Pattern**: S10 (SHGC/shading sliders), S11 (TB% slider), S13 (HSPF slider after breakthrough fix)
+
+**This pattern ensures perfect state isolation** - Target slider positions remain independent of Reference slider positions during mode switching.
+
 ### **📂 Module Hierarchy**
 
 ```
