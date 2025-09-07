@@ -140,9 +140,25 @@ window.TEUI.SectionModules.sect13 = (function () {
     },
     // MANDATORY: Include onReferenceStandardChange for d_13 changes
     onReferenceStandardChange: function () {
-      console.log("S13: Reference standard changed, reloading defaults");
-      this.setDefaults();
+      console.log("S13: Reference standard changed, updating defaults while preserving user modifications");
+      
+      // ✅ S09 PATTERN: Selective update - preserve user-modified values
+      const currentStandard = window.TEUI?.StateManager?.getValue?.("d_13") || "OBC SB10 5.5-6 Z6";
+      const referenceValues = window.TEUI?.ReferenceValues?.[currentStandard] || {};
+      
+      // Only update system defaults, preserve user-modified slider values
+      // Users can set Reference HSPF to 10 for comparison even if standard default is 7.1
+      if (!this.state.f_113_userModified) {
+        this.state.f_113 = referenceValues.f_113 || "7.1";
+      }
+      if (!this.state.j_115_userModified) {
+        this.state.j_115 = referenceValues.j_115 || "0.90"; 
+      }
+      // Always update system type (this determines calculation methodology)
+      this.state.d_113 = referenceValues.d_113 || "Gas";
+      
       this.saveState();
+      
       // Only refresh UI if currently in reference mode
       if (ModeManager.currentMode === "reference") {
         ModeManager.refreshUI();
@@ -154,6 +170,12 @@ window.TEUI.SectionModules.sect13 = (function () {
     },
     setValue: function (fieldId, value, source = "user") {
       this.state[fieldId] = value;
+      
+      // ✅ TRACK USER MODIFICATIONS: Mark fields as user-modified to preserve during d_13 changes
+      if (source === "user-modified" && (fieldId === "f_113" || fieldId === "j_115")) {
+        this.state[`${fieldId}_userModified`] = true;
+      }
+      
       // ✅ FIXED: Save state for any user action (user or user-modified)
       if (source === "user" || source === "user-modified") {
         this.saveState();
@@ -340,10 +362,6 @@ window.TEUI.SectionModules.sect13 = (function () {
         // ✅ CRITICAL FIX: Reference mode writes with ref_ prefix
         window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, source);
         
-        // 🔍 DEBUG: Track Reference StateManager writes for f_113
-        if (fieldId === "f_113") {
-          console.log(`[S13 MODEMANAGER DEBUG] Reference StateManager write: ref_${fieldId}=${value}`);
-        }
       }
     },
     refreshUI: function () {
@@ -370,32 +388,12 @@ window.TEUI.SectionModules.sect13 = (function () {
       fieldsToSync.forEach((fieldId) => {
         const stateValue = currentState.getValue(fieldId);
         
-        // 🔍 DEBUG: Track f_113 processing in refreshUI
-        if (fieldId === "f_113") {
-          console.log(`[S13 SLIDER DEBUG] refreshUI: Processing f_113, stateValue="${stateValue}" from ${this.currentMode} state`);
-        }
-        
-        if (stateValue === undefined || stateValue === null) {
-          if (fieldId === "f_113") {
-            console.log(`[S13 SLIDER DEBUG] refreshUI: f_113 stateValue is null/undefined - skipping`);
-          }
-          return;
-        }
+        if (stateValue === undefined || stateValue === null) return;
 
         const element = sectionElement.querySelector(
           `[data-field-id="${fieldId}"]`,
         );
-        if (!element) {
-          if (fieldId === "f_113") {
-            console.log(`[S13 SLIDER DEBUG] refreshUI: f_113 element not found`);
-          }
-          return;
-        }
-
-        // 🔍 DEBUG: Track f_113 element type detection
-        if (fieldId === "f_113") {
-          console.log(`[S13 SLIDER DEBUG] refreshUI: f_113 element found, type="${element.type}", tagName="${element.tagName}"`);
-        }
+        if (!element) return;
 
         // ✅ S10 SUCCESS PATTERN: Proper element detection
         const slider = element.matches('input[type="range"]')
@@ -410,17 +408,11 @@ window.TEUI.SectionModules.sect13 = (function () {
           const numericValue = window.TEUI.parseNumeric(stateValue, 0);
           slider.value = numericValue; // ✅ FIXED: Update slider position (not element)
           
-          // 🔍 DEBUG: Track f_113 slider position update
-          if (fieldId === "f_113") {
-            console.log(`[S13 SLIDER DEBUG] refreshUI: Setting f_113 slider.value=${numericValue} (from stateValue="${stateValue}")`);
-          }
-          
           // ✅ S10 SUCCESS PATTERN: Update display (use slider's nextElementSibling)
           const display = slider.nextElementSibling;
           if (display) {
             if (fieldId === "f_113") {
               display.textContent = numericValue.toFixed(1); // HSPF range format (e.g., "12.5")
-              console.log(`[S13 SLIDER DEBUG] refreshUI: Setting f_113 display.textContent="${numericValue.toFixed(1)}"`);
             } else if (fieldId === "f_117") {
               display.textContent = numericValue.toFixed(1); // SEER range format (e.g., "18.0")
             } else if (fieldId === "f_118" || fieldId === "f_119") {
@@ -598,12 +590,6 @@ window.TEUI.SectionModules.sect13 = (function () {
     const valueToStore =
       value !== null && value !== undefined ? String(value) : "0";
 
-    // 🔍 ENHANCED DEBUG: Track S13 critical field publications
-    if (["d_113", "f_113", "d_117", "f_114", "m_121"].includes(fieldId)) {
-      console.log(
-        `[S13 PUBLICATION DEBUG] setFieldValue: ${fieldId}=${valueToStore} in ${ModeManager.currentMode} mode`,
-      );
-    }
 
     // ✅ S02 PATTERN: Use current UI mode to determine which state to update
     const currentState =
@@ -616,12 +602,6 @@ window.TEUI.SectionModules.sect13 = (function () {
       if (window.TEUI?.StateManager) {
         window.TEUI.StateManager.setValue(fieldId, valueToStore, fieldType);
 
-        // 🔍 ENHANCED DEBUG: Track StateManager publications
-        if (["d_117", "f_114", "m_121"].includes(fieldId)) {
-          console.log(
-            `[S13 PUBLICATION DEBUG] Target published: ${fieldId}=${valueToStore}`,
-          );
-        }
       }
     } else {
       // Reference mode: Store with ref_ prefix for downstream consumption
