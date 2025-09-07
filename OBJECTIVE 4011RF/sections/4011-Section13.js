@@ -425,6 +425,10 @@ window.TEUI.SectionModules.sect13 = (function () {
               display.textContent = stateValue; // Default format
             }
           }
+        } else if (dropdown) {
+          // ✅ CRITICAL FIX: Update dropdown selections for mode persistence
+          dropdown.value = stateValue;
+          console.log(`[S13 refreshUI] Updated dropdown ${fieldId} to "${stateValue}" for ${this.currentMode} mode`);
         }
       });
 
