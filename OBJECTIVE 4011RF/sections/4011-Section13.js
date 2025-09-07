@@ -54,6 +54,8 @@ window.TEUI.SectionModules.sect13 = (function () {
         f_118: "0.89", // Heat recovery efficiency (decimal for calculations)
         d_119: "No", // Free cooling (dropdown)
         f_119: "0.75", // Free cooling efficiency (slider)
+        j_115: "0.98", // AFUE for Gas/Oil systems
+        j_116: "3.3", // ✅ ADDED: Dedicated cooling COP for Gas/Oil systems (Target default)
         // Add other section-specific user-editable fields as needed
       };
     },
@@ -1342,10 +1344,10 @@ window.TEUI.SectionModules.sect13 = (function () {
         i: {},
         j: {
           fieldId: "j_116",
-          type: "calculated",
-          value: "2.7",
+          type: "editable", // ✅ FIXED: Should be user-editable for Gas/Oil + Cooling
+          value: "3.3", // ✅ FIXED: Correct building code default (was 2.7)
           section: "mechanicalLoads",
-          dependencies: [],
+          classes: ["user-input", "editable"], // ✅ ADDED: Editable styling
         },
         k: {
           content: "M.3.4 Sink",
@@ -2237,6 +2239,10 @@ window.TEUI.SectionModules.sect13 = (function () {
           // console.log("[S13 DEBUG] j_115 changed by user, explicitly calling calculateAll().")
           calculateAll(); // Keep this trigger for AFUE changes
         }
+        // ADDED: Explicitly trigger calculateAll after user modifies dedicated cooling COP
+        if (fieldId === "j_116") {
+          calculateAll(); // ✅ ADDED: Trigger recalculation for cooling COP changes
+        }
         // ADDED: Explicitly trigger calculateAll after user modifies l_118 (ACH)
         if (fieldId === "l_118") {
           // console.log("[S13 DEBUG l_118] l_118 changed by user, explicitly calling S13.calculateAll().")
@@ -2301,10 +2307,10 @@ window.TEUI.SectionModules.sect13 = (function () {
       Object.entries(fields).forEach(([fieldId, fieldDef]) => {
         // Check if it's one of the problematic editable fields with a defined default
         if (
-          (fieldId === "d_119" || fieldId === "j_115" || fieldId === "l_118") &&
+          (fieldId === "d_119" || fieldId === "j_115" || fieldId === "j_116" || fieldId === "l_118") &&
           fieldDef.defaultValue
         ) {
-          // ADDED l_118
+          // ADDED j_116, l_118
           // Check if StateManager *doesn't* already have a value (to avoid overwriting user/imported data later)
           if (window.TEUI.StateManager.getValue(fieldId) === null) {
             // console.log(`[S13 Init Defaults] Setting default for ${fieldId} to ${fieldDef.defaultValue}`);
@@ -2334,7 +2340,7 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     // --- ADDED: Explicitly update DOM display for editable defaults AFTER initial calculations ---
     if (window.TEUI?.StateManager && window.TEUI?.formatNumber) {
-      const fieldsToUpdate = ["d_119", "j_115", "l_118"]; // ADDED l_118
+      const fieldsToUpdate = ["d_119", "j_115", "j_116", "l_118"]; // ADDED j_116, l_118
       fieldsToUpdate.forEach((fieldId) => {
         const element = document.querySelector(
           `td[data-field-id="${fieldId}"]`,
@@ -2642,7 +2648,10 @@ window.TEUI.SectionModules.sect13 = (function () {
       window.TEUI.parseNumeric(getFieldValue("m_129")) || 0;
     const copcool_hp_j113 =
       window.TEUI.parseNumeric(getFieldValue("j_113")) || 0;
-    const copcool_dedicated_h116 = 2.7; // Default value for dedicated
+    // ✅ FIXED: Read dedicated cooling COP from j_116 field (mode-aware)
+    const copcool_dedicated_j116 = window.TEUI.parseNumeric(
+      getSectionValue("j_116", isReferenceCalculation)
+    ) || 3.3; // Fallback to building code default
 
     let copcool_to_use = 0;
     let coolingLoad_d117 = 0;
@@ -2669,7 +2678,8 @@ window.TEUI.SectionModules.sect13 = (function () {
         coolingSink_l116 = 0;
         // Note: Original logic had a duplicate assignment here `coolingSink_l114 = 0;`, removed.
       } else {
-        copcool_to_use = copcool_dedicated_h116;
+        // ✅ FIXED: Use dedicated cooling COP from j_116 field (mode-aware)
+        copcool_to_use = copcool_dedicated_j116;
         if (copcool_to_use > 0) {
           // Clamp the result at 0 here as well
           coolingLoad_d117 = Math.max(0, coolingDemand_m129 / copcool_to_use);
