@@ -1396,6 +1396,10 @@ window.TEUI.SectionModules.sect15 = (function () {
 
       const primaryHeating =
         window.TEUI?.StateManager?.getReferenceValue("d_113") || "Electricity";
+      
+      // 🔍 CRITICAL DEBUG: Check what heating system S15 Reference engine is reading
+      const ref_d_113_direct = window.TEUI?.StateManager?.getValue("ref_d_113");
+      console.log(`[S15 REF DEBUG] Heating system sources: getReferenceValue("d_113")="${primaryHeating}", direct ref_d_113="${ref_d_113_direct}"`);
       const d114 = parseFloat(getRefValue("d_114")) || 0;
       
       // 🔍 DEBUG: Log S15 Reference calculation inputs

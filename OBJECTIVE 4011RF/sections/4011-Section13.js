@@ -2409,6 +2409,17 @@ window.TEUI.SectionModules.sect13 = (function () {
     // Store via ModeManager (dual-state aware)
     if (ModeManager && typeof ModeManager.setValue === "function") {
       ModeManager.setValue(fieldId, newValue, "user-modified");
+      
+      // 🔍 CRITICAL DEBUG: Confirm StateManager publication for d_113
+      if (fieldId === "d_113") {
+        if (ModeManager.currentMode === "reference") {
+          const published = window.TEUI?.StateManager?.getValue("ref_d_113");
+          console.log(`[S13 REF DEBUG] Published ref_d_113="${published}" to StateManager`);
+        } else {
+          const published = window.TEUI?.StateManager?.getValue("d_113");
+          console.log(`[S13 TGT DEBUG] Published d_113="${published}" to StateManager`);
+        }
+      }
     }
 
     // Special handling for heating system changes
@@ -2542,6 +2553,12 @@ window.TEUI.SectionModules.sect13 = (function () {
     console.log(
       `[S13] ${isReferenceCalculation ? "REF" : "TGT"} HEATING: system=${systemType}, ted=${tedValue}, afue=${afue}, cop=${copHeat}`,
     );
+    
+    // 🔍 CRITICAL DEBUG: Check if S13 publishes heating system selection
+    if (isReferenceCalculation) {
+      console.log(`[S13 REF DEBUG] About to calculate with heating system: ${systemType}`);
+      console.log(`[S13 REF DEBUG] Will S13 publish ref_d_113=${systemType}?`);
+    }
 
     let heatingDemand_d114 = 0;
     let heatingSink_l113 = 0;
