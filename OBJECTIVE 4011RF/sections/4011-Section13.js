@@ -114,7 +114,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         j_115: referenceValues.j_115 || "0.90", // ✅ Min. AFUE if Gas or Oil (from ReferenceValues.js)
 
         // Cooling System
-        d_116: referenceValues.d_116 || "Cooling", // Cooling system
+        d_116: "No Cooling", // ✅ FIXED: Reference default should be No Cooling (matches e_10=274.8 baseline)
         f_117: referenceValues.f_117 || "15.0", // SEER for cooling (fallback - not in ReferenceValues.js)
         j_116: referenceValues.j_116 || "3.3", // ✅ Min. COPc if Dedicated Cooling (from ReferenceValues.js)
 
@@ -428,7 +428,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         } else if (dropdown) {
           // ✅ CRITICAL FIX: Update dropdown selections for mode persistence
           dropdown.value = stateValue;
-          console.log(`[S13 refreshUI] Updated dropdown ${fieldId} to "${stateValue}" for ${this.currentMode} mode`);
+          // console.log(`[S13 refreshUI] Updated dropdown ${fieldId} to "${stateValue}" for ${this.currentMode} mode`);
         }
       });
 
@@ -610,12 +610,10 @@ window.TEUI.SectionModules.sect13 = (function () {
       if (window.TEUI?.StateManager) {
         window.TEUI.StateManager.setValue(fieldId, valueToStore, fieldType);
         
-        // 🔍 ENHANCED DEBUG: Track StateManager publications
-        if (["d_122", "m_121", "f_114", "d_114", "j_115", "d_117"].includes(fieldId)) {
-          console.log(
-            `[S13 PUBLICATION DEBUG] Target published: ${fieldId}=${valueToStore}`,
-          );
-        }
+        // 🔍 ENHANCED DEBUG: Track StateManager publications (commented out for clean logs)
+        // if (["d_122", "m_121", "f_114", "d_114", "j_115", "d_117"].includes(fieldId)) {
+        //   console.log(`[S13 PUBLICATION DEBUG] Target published: ${fieldId}=${valueToStore}`);
+        // }
       }
     } else {
       // Reference mode: Store with ref_ prefix for downstream consumption
@@ -626,12 +624,10 @@ window.TEUI.SectionModules.sect13 = (function () {
           fieldType,
         );
 
-        // 🔍 ENHANCED DEBUG: Track StateManager publications
-        if (["d_122", "m_121", "f_114", "d_114", "j_115", "d_117"].includes(fieldId)) {
-          console.log(
-            `[S13 PUBLICATION DEBUG] Reference published: ref_${fieldId}=${valueToStore}`,
-          );
-        }
+        // 🔍 ENHANCED DEBUG: Track StateManager publications (commented out for clean logs)
+        // if (["d_122", "m_121", "f_114", "d_114", "j_115", "d_117"].includes(fieldId)) {
+        //   console.log(`[S13 PUBLICATION DEBUG] Reference published: ref_${fieldId}=${valueToStore}`);
+        // }
       }
     }
 
@@ -2423,16 +2419,16 @@ window.TEUI.SectionModules.sect13 = (function () {
     if (ModeManager && typeof ModeManager.setValue === "function") {
       ModeManager.setValue(fieldId, newValue, "user-modified");
       
-      // 🔍 CRITICAL DEBUG: Confirm StateManager publication for d_113
-      if (fieldId === "d_113") {
-        if (ModeManager.currentMode === "reference") {
-          const published = window.TEUI?.StateManager?.getValue("ref_d_113");
-          console.log(`[S13 REF DEBUG] Published ref_d_113="${published}" to StateManager`);
-        } else {
-          const published = window.TEUI?.StateManager?.getValue("d_113");
-          console.log(`[S13 TGT DEBUG] Published d_113="${published}" to StateManager`);
-        }
-      }
+      // 🔍 CRITICAL DEBUG: Confirm StateManager publication for d_113 (commented out for clean logs)
+      // if (fieldId === "d_113") {
+      //   if (ModeManager.currentMode === "reference") {
+      //     const published = window.TEUI?.StateManager?.getValue("ref_d_113");
+      //     console.log(`[S13 REF DEBUG] Published ref_d_113="${published}" to StateManager`);
+      //   } else {
+      //     const published = window.TEUI?.StateManager?.getValue("d_113");
+      //     console.log(`[S13 TGT DEBUG] Published d_113="${published}" to StateManager`);
+      //   }
+      // }
     }
 
     // Special handling for heating system changes

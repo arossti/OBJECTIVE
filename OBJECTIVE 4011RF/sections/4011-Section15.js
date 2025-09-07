@@ -1397,12 +1397,12 @@ window.TEUI.SectionModules.sect15 = (function () {
       // ✅ FIX: Use direct ref_d_113 instead of broken getReferenceValue()
       const primaryHeating = window.TEUI?.StateManager?.getValue("ref_d_113") || "Electricity";
       
-      // 🔍 CRITICAL DEBUG: Confirm S15 Reference engine now reads correct heating system
-      console.log(`[S15 REF DEBUG] FIXED: Reading ref_d_113 directly = "${primaryHeating}"`);
+      // 🔍 CRITICAL DEBUG: Confirm S15 Reference engine now reads correct heating system (commented out for clean logs)
+      // console.log(`[S15 REF DEBUG] FIXED: Reading ref_d_113 directly = "${primaryHeating}"`);
       const d114 = parseFloat(getRefValue("d_114")) || 0;
       
-      // 🔍 DEBUG: Log S15 Reference calculation inputs
-      console.log(`[S15 REF DEBUG] d_114 calculation: ref_d_114=${window.TEUI?.StateManager?.getValue("ref_d_114")}, parsed=${d114}, heating=${primaryHeating}`);
+      // 🔍 DEBUG: Log S15 Reference calculation inputs (commented out for clean logs)  
+      // console.log(`[S15 REF DEBUG] d_114 calculation: ref_d_114=${window.TEUI?.StateManager?.getValue("ref_d_114")}, parsed=${d114}, heating=${primaryHeating}`);
 
       const g101 = parseFloat(getRefValue("g_101")) || 0;
       const d101 = parseFloat(getRefValue("d_101")) || 0;
@@ -1481,8 +1481,8 @@ window.TEUI.SectionModules.sect15 = (function () {
         d117_effective = 0;
       }
       
-      // 🔍 DEBUG: Log cooling system logic for d_136 calculation
-      console.log(`[S15 REF DEBUG] Cooling logic: ref_d_116="${coolingType_d116}", ref_d_117=${d117_actual_val}, effective=${d117_effective}`);
+      // 🔍 DEBUG: Log cooling system logic for d_136 calculation (commented out for clean logs)
+      // console.log(`[S15 REF DEBUG] Cooling logic: ref_d_116="${coolingType_d116}", ref_d_117=${d117_actual_val}, effective=${d117_effective}`);
 
       // d_135: TEU Targeted Electricity (Reference)
       let ref_teuTargetTotal =
@@ -1507,10 +1507,10 @@ window.TEUI.SectionModules.sect15 = (function () {
         ref_teuTargetedElecHPGasOil = k51 + d117_effective + m43_final + h70;
       }
 
-      // 🔍 CRITICAL DEBUG: Log S15 Reference d_136 calculation details
-      console.log(`[S15 REF DEBUG] d_136 calculation: heating=${primaryHeating}`);
-      console.log(`[S15 REF DEBUG] d_136 inputs: k51=${k51}, d117=${d117_effective}, d114=${d114}, m43=${m43_final}, h70=${h70}`);
-      console.log(`[S15 REF DEBUG] d_136 result: ${ref_teuTargetedElecHPGasOil}`);
+      // 🔍 CRITICAL DEBUG: Log S15 Reference d_136 calculation details (commented out for clean logs)
+      // console.log(`[S15 REF DEBUG] d_136 calculation: heating=${primaryHeating}`);
+      // console.log(`[S15 REF DEBUG] d_136 inputs: k51=${k51}, d117=${d117_effective}, d114=${d114}, m43=${m43_final}, h70=${h70}`);
+      // console.log(`[S15 REF DEBUG] d_136 result: ${ref_teuTargetedElecHPGasOil}`);
 
       setReferenceValue("d_136", ref_teuTargetedElecHPGasOil);
 
