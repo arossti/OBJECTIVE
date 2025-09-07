@@ -109,7 +109,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       // ✅ FIXED: Apply correct reference values from ReferenceValues.js based on d_13 selection
       this.state = {
         // Heating System
-        d_113: referenceValues.d_113 || "Gas", // Gas heating system (building code baseline)
+        d_113: "Electricity", // ✅ FIXED: Reference default should be Electricity (matches calculation behavior)
         f_113: referenceValues.f_113 || "7.1", // ✅ Min. HSPF if Heatpump (from ReferenceValues.js)
         j_115: referenceValues.j_115 || "0.90", // ✅ Min. AFUE if Gas or Oil (from ReferenceValues.js)
 
