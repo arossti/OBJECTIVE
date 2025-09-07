@@ -1,38 +1,844 @@
-## QC Report 9/6/2025
-
-**Summary**: 771 violations detected
-**Types**: HIGH_TRAFFIC_STALE_VALUE(216), NORMAL_STALE_VALUE(443), CRITICAL_STALE_VALUE(13), UPSTREAM_STALE_VALUE(14), FALLBACK_READ(85)
-**Sections**: All Sections
-**Status**: QC monitoring active, Mirror Target disabled
-
-### Violation Categories:
-- **💤 Normal Stale (low priority)**: 443 violations
-- **⚠️ High Traffic Stale (calculation issues)**: 221 violations
-- **unknown (unknown category)**: 85 violations
-- **📤 Upstream Stale (normal for input fields)**: 14 violations
-- **🔥 Critical Integration Stale (affects data flow)**: 8 violations
-
-### Top Priority Violations:
-#### 🔥 Critical Issues (8):
-- **CRITICAL_STALE_VALUE**: `ref_h_136` - Critical integration field ref_h_136 stale for 11.4s - Reference TEUI Summary feeds dashboard
-- **CRITICAL_STALE_VALUE**: `ref_d_144` - Critical integration field ref_d_144 stale for 11.4s - Reference reduction % feeds dashboard
-- **CRITICAL_STALE_VALUE**: `h_136` - Critical integration field h_136 stale for 11.4s - TEUI Summary feeds dashboard
-- **CRITICAL_STALE_VALUE**: `d_144` - Critical integration field d_144 stale for 11.4s - Reduction % feeds dashboard
-- **CRITICAL_STALE_VALUE**: `f_32` - Critical integration field f_32 stale for 11.4s - Actual energy total for emissions
-- **CRITICAL_STALE_VALUE**: `j_32` - Critical integration field j_32 stale for 11.4s - Target energy total for TEUI calc
-- **CRITICAL_STALE_VALUE**: `ref_f_32` - Critical integration field ref_f_32 stale for 11.4s - Reference actual energy total
-- **CRITICAL_STALE_VALUE**: `ref_j_32` - Critical integration field ref_j_32 stale for 11.4s - Reference target energy total
-
-#### ⚠️ Top Warnings (10 shown):
-- **HIGH_TRAFFIC_STALE_VALUE**: `d_60` - High-traffic field d_60 stale for 11.0s (11 reads) - may indicate calculation issue
-- **HIGH_TRAFFIC_STALE_VALUE**: `ref_d_101` - High-traffic field ref_d_101 stale for 11.5s (154 reads) - may indicate calculation issue
-- **HIGH_TRAFFIC_STALE_VALUE**: `d_135` - High-traffic field d_135 stale for 11.4s (80 reads) - may indicate calculation issue
-- **HIGH_TRAFFIC_STALE_VALUE**: `d_136` - High-traffic field d_136 stale for 11.4s (7 reads) - may indicate calculation issue
-- **HIGH_TRAFFIC_STALE_VALUE**: `ref_d_102` - High-traffic field ref_d_102 stale for 11.5s (78 reads) - may indicate calculation issue
-- **HIGH_TRAFFIC_STALE_VALUE**: `ref_d_106` - High-traffic field ref_d_106 stale for 11.5s (11 reads) - may indicate calculation issue
-- **HIGH_TRAFFIC_STALE_VALUE**: `i_39` - High-traffic field i_39 stale for 11.4s (21 reads) - may indicate calculation issue
-- **HIGH_TRAFFIC_STALE_VALUE**: `d_38` - High-traffic field d_38 stale for 11.4s (21 reads) - may indicate calculation issue
-- **HIGH_TRAFFIC_STALE_VALUE**: `g_38` - High-traffic field g_38 stale for 11.4s (17 reads) - may indicate calculation issue
-- **HIGH_TRAFFIC_STALE_VALUE**: `i_38` - High-traffic field i_38 stale for 11.4s (8 reads) - may indicate calculation issue
-
-*For complete detailed report, visit S18 Notes section*
+4011-Section07.js:658 [S07] 🚨 CRITICAL: ref_d_63 missing, using default 0 for Reference calculation
+calculateWaterUse @ 4011-Section07.js:658
+calculateReferenceModel @ 4011-Section07.js:988
+calculateAll @ 4011-Section07.js:1031
+onSectionRendered @ 4011-Section07.js:1433
+initializeSectionEventHandlers @ 4011-FieldManager.js:398
+renderSection @ 4011-FieldManager.js:443
+(anonymous) @ 4011-FieldManager.js:470
+renderAllSections @ 4011-FieldManager.js:469
+(anonymous) @ 4011-FieldManager.js:1461Understand this warningAI
+4011-Section07.js:658 [S07] 🚨 CRITICAL: ref_d_63 missing, using default 0 for Reference calculation
+calculateWaterUse @ 4011-Section07.js:658
+calculateReferenceModel @ 4011-Section07.js:988
+calculateAll @ 4011-Section07.js:1031
+onSectionRendered @ 4011-Section07.js:1433
+initializeSectionEventHandlers @ 4011-FieldManager.js:398
+renderSection @ 4011-FieldManager.js:443
+(anonymous) @ 4011-FieldManager.js:470
+renderAllSections @ 4011-FieldManager.js:469
+initialize @ 4011-Calculator.js:66
+(anonymous) @ 4011-Calculator.js:973Understand this warningAI
+4011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+initializeEventHandlers @ 4011-Section15.js:2253
+initializeSectionEventHandlers @ 4011-FieldManager.js:386
+renderSection @ 4011-FieldManager.js:443
+(anonymous) @ 4011-FieldManager.js:470
+renderAllSections @ 4011-FieldManager.js:469
+initialize @ 4011-Calculator.js:66
+(anonymous) @ 4011-Calculator.js:973Understand this warningAI
+4011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+(anonymous) @ 4011-Section15.js:2106
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setReferenceCalculatedValue @ 4011-Section04.js:123
+setRefCalculatedValue @ 4011-Section04.js:1646
+calculateRow32 @ 4011-Section04.js:1026
+calculateReferenceModel @ 4011-Section04.js:1659
+calculateAll @ 4011-Section04.js:1591
+(anonymous) @ 4011-Section04.js:2491
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:401
+setReferenceValue @ 4011-Section15.js:164
+calculateReferenceModel @ 4011-Section15.js:1504
+calculateAll @ 4011-Section15.js:1327
+initializeEventHandlers @ 4011-Section15.js:2253
+initializeSectionEventHandlers @ 4011-FieldManager.js:386
+renderSection @ 4011-FieldManager.js:443
+(anonymous) @ 4011-FieldManager.js:470
+renderAllSections @ 4011-FieldManager.js:469
+initialize @ 4011-Calculator.js:66
+(anonymous) @ 4011-Calculator.js:973Understand this warningAI
+24011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+(anonymous) @ 4011-Section15.js:2106
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setReferenceCalculatedValue @ 4011-Section04.js:123
+setRefCalculatedValue @ 4011-Section04.js:1646
+calculateRow32 @ 4011-Section04.js:1026
+calculateTargetModel @ 4011-Section04.js:1620
+calculateAll @ 4011-Section04.js:1586
+(anonymous) @ 4011-Section04.js:2483
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setTargetValue @ 4011-Section15.js:146
+calculateValues @ 4011-Section15.js:1796
+calculateTargetModel @ 4011-Section15.js:1649
+calculateAll @ 4011-Section15.js:1328
+(anonymous) @ 4011-Section15.js:2106
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setReferenceCalculatedValue @ 4011-Section04.js:123
+setRefCalculatedValue @ 4011-Section04.js:1646
+calculateRow32 @ 4011-Section04.js:1026
+calculateReferenceModel @ 4011-Section04.js:1659
+calculateAll @ 4011-Section04.js:1591
+(anonymous) @ 4011-Section04.js:2491
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:401
+setReferenceValue @ 4011-Section15.js:164
+calculateReferenceModel @ 4011-Section15.js:1504
+calculateAll @ 4011-Section15.js:1327
+initializeEventHandlers @ 4011-Section15.js:2253
+initializeSectionEventHandlers @ 4011-FieldManager.js:386
+renderSection @ 4011-FieldManager.js:443
+(anonymous) @ 4011-FieldManager.js:470
+renderAllSections @ 4011-FieldManager.js:469
+initialize @ 4011-Calculator.js:66
+(anonymous) @ 4011-Calculator.js:973Understand this warningAI
+24011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+(anonymous) @ 4011-Section15.js:2106
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setReferenceCalculatedValue @ 4011-Section04.js:123
+setRefCalculatedValue @ 4011-Section04.js:1646
+calculateRow32 @ 4011-Section04.js:1026
+calculateReferenceModel @ 4011-Section04.js:1659
+calculateAll @ 4011-Section04.js:1591
+(anonymous) @ 4011-Section04.js:2483
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setTargetValue @ 4011-Section15.js:146
+calculateValues @ 4011-Section15.js:1796
+calculateTargetModel @ 4011-Section15.js:1649
+calculateAll @ 4011-Section15.js:1328
+(anonymous) @ 4011-Section15.js:2106
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setReferenceCalculatedValue @ 4011-Section04.js:123
+setRefCalculatedValue @ 4011-Section04.js:1646
+calculateRow32 @ 4011-Section04.js:1026
+calculateReferenceModel @ 4011-Section04.js:1659
+calculateAll @ 4011-Section04.js:1591
+(anonymous) @ 4011-Section04.js:2491
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:401
+setReferenceValue @ 4011-Section15.js:164
+calculateReferenceModel @ 4011-Section15.js:1504
+calculateAll @ 4011-Section15.js:1327
+initializeEventHandlers @ 4011-Section15.js:2253
+initializeSectionEventHandlers @ 4011-FieldManager.js:386
+renderSection @ 4011-FieldManager.js:443
+(anonymous) @ 4011-FieldManager.js:470
+renderAllSections @ 4011-FieldManager.js:469
+initialize @ 4011-Calculator.js:66
+(anonymous) @ 4011-Calculator.js:973Understand this warningAI
+4011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+(anonymous) @ 4011-Section15.js:2106
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setReferenceCalculatedValue @ 4011-Section04.js:123
+setRefCalculatedValue @ 4011-Section04.js:1646
+calculateRow32 @ 4011-Section04.js:1026
+calculateReferenceModel @ 4011-Section04.js:1659
+calculateAll @ 4011-Section04.js:1591
+(anonymous) @ 4011-Section04.js:2491
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:401
+setReferenceValue @ 4011-Section15.js:164
+calculateReferenceModel @ 4011-Section15.js:1504
+calculateAll @ 4011-Section15.js:1327
+initializeEventHandlers @ 4011-Section15.js:2253
+initializeSectionEventHandlers @ 4011-FieldManager.js:386
+renderSection @ 4011-FieldManager.js:443
+(anonymous) @ 4011-FieldManager.js:470
+renderAllSections @ 4011-FieldManager.js:469
+initialize @ 4011-Calculator.js:66
+(anonymous) @ 4011-Calculator.js:973Understand this warningAI
+4011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+initializeEventHandlers @ 4011-Section15.js:2253
+onSectionRendered @ 4011-Section15.js:2279
+initializeSectionEventHandlers @ 4011-FieldManager.js:398
+renderSection @ 4011-FieldManager.js:443
+(anonymous) @ 4011-FieldManager.js:470
+renderAllSections @ 4011-FieldManager.js:469
+initialize @ 4011-Calculator.js:66
+(anonymous) @ 4011-Calculator.js:973Understand this warningAI
+4011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+forceTEDITELIUpdate @ 4011-SectionIntegrator.js:305
+initializeTEDITELIIntegration @ 4011-SectionIntegrator.js:241
+(anonymous) @ 4011-SectionIntegrator.js:187
+initializeAllIntegrations @ 4011-SectionIntegrator.js:184
+(anonymous) @ 4011-SectionIntegrator.js:106
+renderAllSections @ 4011-FieldManager.js:474
+initialize @ 4011-Calculator.js:66
+(anonymous) @ 4011-Calculator.js:973Understand this warningAI
+4011-Section07.js:658 [S07] 🚨 CRITICAL: ref_d_63 missing, using default 0 for Reference calculation
+calculateWaterUse @ 4011-Section07.js:658
+calculateReferenceModel @ 4011-Section07.js:988
+calculateAll @ 4011-Section07.js:1031
+onSectionRendered @ 4011-Section07.js:1433
+initializeSectionEventHandlers @ 4011-FieldManager.js:398
+renderSection @ 4011-FieldManager.js:443
+(anonymous) @ 4011-FieldManager.js:470
+renderAllSections @ 4011-FieldManager.js:469
+(anonymous) @ 4011-init.js:879Understand this warningAI
+4011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+initializeEventHandlers @ 4011-Section15.js:2253
+initializeSectionEventHandlers @ 4011-FieldManager.js:386
+renderSection @ 4011-FieldManager.js:443
+(anonymous) @ 4011-FieldManager.js:470
+renderAllSections @ 4011-FieldManager.js:469
+(anonymous) @ 4011-init.js:879Understand this warningAI
+4011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+(anonymous) @ 4011-Section15.js:2106
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setReferenceCalculatedValue @ 4011-Section04.js:123
+setRefCalculatedValue @ 4011-Section04.js:1646
+calculateRow32 @ 4011-Section04.js:1026
+calculateReferenceModel @ 4011-Section04.js:1659
+calculateAll @ 4011-Section04.js:1591
+(anonymous) @ 4011-Section04.js:2491
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:401
+setReferenceValue @ 4011-Section15.js:164
+calculateReferenceModel @ 4011-Section15.js:1504
+calculateAll @ 4011-Section15.js:1327
+initializeEventHandlers @ 4011-Section15.js:2253
+initializeSectionEventHandlers @ 4011-FieldManager.js:386
+renderSection @ 4011-FieldManager.js:443
+(anonymous) @ 4011-FieldManager.js:470
+renderAllSections @ 4011-FieldManager.js:469
+(anonymous) @ 4011-init.js:879Understand this warningAI
+24011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+(anonymous) @ 4011-Section15.js:2106
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setReferenceCalculatedValue @ 4011-Section04.js:123
+setRefCalculatedValue @ 4011-Section04.js:1646
+calculateRow32 @ 4011-Section04.js:1026
+calculateTargetModel @ 4011-Section04.js:1620
+calculateAll @ 4011-Section04.js:1586
+(anonymous) @ 4011-Section04.js:2483
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setTargetValue @ 4011-Section15.js:146
+calculateValues @ 4011-Section15.js:1796
+calculateTargetModel @ 4011-Section15.js:1649
+calculateAll @ 4011-Section15.js:1328
+(anonymous) @ 4011-Section15.js:2106
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setReferenceCalculatedValue @ 4011-Section04.js:123
+setRefCalculatedValue @ 4011-Section04.js:1646
+calculateRow32 @ 4011-Section04.js:1026
+calculateReferenceModel @ 4011-Section04.js:1659
+calculateAll @ 4011-Section04.js:1591
+(anonymous) @ 4011-Section04.js:2491
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:401
+setReferenceValue @ 4011-Section15.js:164
+calculateReferenceModel @ 4011-Section15.js:1504
+calculateAll @ 4011-Section15.js:1327
+initializeEventHandlers @ 4011-Section15.js:2253
+initializeSectionEventHandlers @ 4011-FieldManager.js:386
+renderSection @ 4011-FieldManager.js:443
+(anonymous) @ 4011-FieldManager.js:470
+renderAllSections @ 4011-FieldManager.js:469
+(anonymous) @ 4011-init.js:879Understand this warningAI
+24011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+(anonymous) @ 4011-Section15.js:2106
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setReferenceCalculatedValue @ 4011-Section04.js:123
+setRefCalculatedValue @ 4011-Section04.js:1646
+calculateRow32 @ 4011-Section04.js:1026
+calculateReferenceModel @ 4011-Section04.js:1659
+calculateAll @ 4011-Section04.js:1591
+(anonymous) @ 4011-Section04.js:2483
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setTargetValue @ 4011-Section15.js:146
+calculateValues @ 4011-Section15.js:1796
+calculateTargetModel @ 4011-Section15.js:1649
+calculateAll @ 4011-Section15.js:1328
+(anonymous) @ 4011-Section15.js:2106
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setReferenceCalculatedValue @ 4011-Section04.js:123
+setRefCalculatedValue @ 4011-Section04.js:1646
+calculateRow32 @ 4011-Section04.js:1026
+calculateReferenceModel @ 4011-Section04.js:1659
+calculateAll @ 4011-Section04.js:1591
+(anonymous) @ 4011-Section04.js:2491
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:401
+setReferenceValue @ 4011-Section15.js:164
+calculateReferenceModel @ 4011-Section15.js:1504
+calculateAll @ 4011-Section15.js:1327
+initializeEventHandlers @ 4011-Section15.js:2253
+initializeSectionEventHandlers @ 4011-FieldManager.js:386
+renderSection @ 4011-FieldManager.js:443
+(anonymous) @ 4011-FieldManager.js:470
+renderAllSections @ 4011-FieldManager.js:469
+(anonymous) @ 4011-init.js:879Understand this warningAI
+4011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+(anonymous) @ 4011-Section15.js:2106
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setReferenceCalculatedValue @ 4011-Section04.js:123
+setRefCalculatedValue @ 4011-Section04.js:1646
+calculateRow32 @ 4011-Section04.js:1026
+calculateReferenceModel @ 4011-Section04.js:1659
+calculateAll @ 4011-Section04.js:1591
+(anonymous) @ 4011-Section04.js:2491
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:401
+setReferenceValue @ 4011-Section15.js:164
+calculateReferenceModel @ 4011-Section15.js:1504
+calculateAll @ 4011-Section15.js:1327
+initializeEventHandlers @ 4011-Section15.js:2253
+initializeSectionEventHandlers @ 4011-FieldManager.js:386
+renderSection @ 4011-FieldManager.js:443
+(anonymous) @ 4011-FieldManager.js:470
+renderAllSections @ 4011-FieldManager.js:469
+(anonymous) @ 4011-init.js:879Understand this warningAI
+4011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+initializeEventHandlers @ 4011-Section15.js:2253
+onSectionRendered @ 4011-Section15.js:2279
+initializeSectionEventHandlers @ 4011-FieldManager.js:398
+renderSection @ 4011-FieldManager.js:443
+(anonymous) @ 4011-FieldManager.js:470
+renderAllSections @ 4011-FieldManager.js:469
+(anonymous) @ 4011-init.js:879Understand this warningAI
+4011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+forceTEDITELIUpdate @ 4011-SectionIntegrator.js:305
+initializeTEDITELIIntegration @ 4011-SectionIntegrator.js:241
+(anonymous) @ 4011-SectionIntegrator.js:187
+initializeAllIntegrations @ 4011-SectionIntegrator.js:184
+(anonymous) @ 4011-SectionIntegrator.js:106
+renderAllSections @ 4011-FieldManager.js:474
+(anonymous) @ 4011-init.js:879Understand this warningAI
+4011-Section07.js:658 [S07] 🚨 CRITICAL: ref_d_63 missing, using default 0 for Reference calculation
+calculateWaterUse @ 4011-Section07.js:658
+calculateReferenceModel @ 4011-Section07.js:988
+calculateAll @ 4011-Section07.js:1031
+onSectionRendered @ 4011-Section07.js:1433
+initializeSectionEventHandlers @ 4011-FieldManager.js:398
+renderSection @ 4011-FieldManager.js:443
+(anonymous) @ 4011-FieldManager.js:470
+renderAllSections @ 4011-FieldManager.js:469
+(anonymous) @ index.html:1050Understand this warningAI
+4011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+initializeEventHandlers @ 4011-Section15.js:2253
+initializeSectionEventHandlers @ 4011-FieldManager.js:386
+renderSection @ 4011-FieldManager.js:443
+(anonymous) @ 4011-FieldManager.js:470
+renderAllSections @ 4011-FieldManager.js:469
+(anonymous) @ index.html:1050Understand this warningAI
+4011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+(anonymous) @ 4011-Section15.js:2106
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setReferenceCalculatedValue @ 4011-Section04.js:123
+setRefCalculatedValue @ 4011-Section04.js:1646
+calculateRow32 @ 4011-Section04.js:1026
+calculateReferenceModel @ 4011-Section04.js:1659
+calculateAll @ 4011-Section04.js:1591
+(anonymous) @ 4011-Section04.js:2491
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:401
+setReferenceValue @ 4011-Section15.js:164
+calculateReferenceModel @ 4011-Section15.js:1504
+calculateAll @ 4011-Section15.js:1327
+initializeEventHandlers @ 4011-Section15.js:2253
+initializeSectionEventHandlers @ 4011-FieldManager.js:386
+renderSection @ 4011-FieldManager.js:443
+(anonymous) @ 4011-FieldManager.js:470
+renderAllSections @ 4011-FieldManager.js:469
+(anonymous) @ index.html:1050Understand this warningAI
+24011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+(anonymous) @ 4011-Section15.js:2106
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setReferenceCalculatedValue @ 4011-Section04.js:123
+setRefCalculatedValue @ 4011-Section04.js:1646
+calculateRow32 @ 4011-Section04.js:1026
+calculateTargetModel @ 4011-Section04.js:1620
+calculateAll @ 4011-Section04.js:1586
+(anonymous) @ 4011-Section04.js:2483
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setTargetValue @ 4011-Section15.js:146
+calculateValues @ 4011-Section15.js:1796
+calculateTargetModel @ 4011-Section15.js:1649
+calculateAll @ 4011-Section15.js:1328
+(anonymous) @ 4011-Section15.js:2106
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setReferenceCalculatedValue @ 4011-Section04.js:123
+setRefCalculatedValue @ 4011-Section04.js:1646
+calculateRow32 @ 4011-Section04.js:1026
+calculateReferenceModel @ 4011-Section04.js:1659
+calculateAll @ 4011-Section04.js:1591
+(anonymous) @ 4011-Section04.js:2491
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:401
+setReferenceValue @ 4011-Section15.js:164
+calculateReferenceModel @ 4011-Section15.js:1504
+calculateAll @ 4011-Section15.js:1327
+initializeEventHandlers @ 4011-Section15.js:2253
+initializeSectionEventHandlers @ 4011-FieldManager.js:386
+renderSection @ 4011-FieldManager.js:443
+(anonymous) @ 4011-FieldManager.js:470
+renderAllSections @ 4011-FieldManager.js:469
+(anonymous) @ index.html:1050Understand this warningAI
+24011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+(anonymous) @ 4011-Section15.js:2106
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setReferenceCalculatedValue @ 4011-Section04.js:123
+setRefCalculatedValue @ 4011-Section04.js:1646
+calculateRow32 @ 4011-Section04.js:1026
+calculateReferenceModel @ 4011-Section04.js:1659
+calculateAll @ 4011-Section04.js:1591
+(anonymous) @ 4011-Section04.js:2483
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setTargetValue @ 4011-Section15.js:146
+calculateValues @ 4011-Section15.js:1796
+calculateTargetModel @ 4011-Section15.js:1649
+calculateAll @ 4011-Section15.js:1328
+(anonymous) @ 4011-Section15.js:2106
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setReferenceCalculatedValue @ 4011-Section04.js:123
+setRefCalculatedValue @ 4011-Section04.js:1646
+calculateRow32 @ 4011-Section04.js:1026
+calculateReferenceModel @ 4011-Section04.js:1659
+calculateAll @ 4011-Section04.js:1591
+(anonymous) @ 4011-Section04.js:2491
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:401
+setReferenceValue @ 4011-Section15.js:164
+calculateReferenceModel @ 4011-Section15.js:1504
+calculateAll @ 4011-Section15.js:1327
+initializeEventHandlers @ 4011-Section15.js:2253
+initializeSectionEventHandlers @ 4011-FieldManager.js:386
+renderSection @ 4011-FieldManager.js:443
+(anonymous) @ 4011-FieldManager.js:470
+renderAllSections @ 4011-FieldManager.js:469
+(anonymous) @ index.html:1050Understand this warningAI
+4011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+(anonymous) @ 4011-Section15.js:2106
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setReferenceCalculatedValue @ 4011-Section04.js:123
+setRefCalculatedValue @ 4011-Section04.js:1646
+calculateRow32 @ 4011-Section04.js:1026
+calculateReferenceModel @ 4011-Section04.js:1659
+calculateAll @ 4011-Section04.js:1591
+(anonymous) @ 4011-Section04.js:2491
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:401
+setReferenceValue @ 4011-Section15.js:164
+calculateReferenceModel @ 4011-Section15.js:1504
+calculateAll @ 4011-Section15.js:1327
+initializeEventHandlers @ 4011-Section15.js:2253
+initializeSectionEventHandlers @ 4011-FieldManager.js:386
+renderSection @ 4011-FieldManager.js:443
+(anonymous) @ 4011-FieldManager.js:470
+renderAllSections @ 4011-FieldManager.js:469
+(anonymous) @ index.html:1050Understand this warningAI
+4011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+initializeEventHandlers @ 4011-Section15.js:2253
+onSectionRendered @ 4011-Section15.js:2279
+initializeSectionEventHandlers @ 4011-FieldManager.js:398
+renderSection @ 4011-FieldManager.js:443
+(anonymous) @ 4011-FieldManager.js:470
+renderAllSections @ 4011-FieldManager.js:469
+(anonymous) @ index.html:1050Understand this warningAI
+24011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+forceTEDITELIUpdate @ 4011-SectionIntegrator.js:305
+initializeTEDITELIIntegration @ 4011-SectionIntegrator.js:241
+(anonymous) @ 4011-SectionIntegrator.js:187
+initializeAllIntegrations @ 4011-SectionIntegrator.js:184
+(anonymous) @ 4011-SectionIntegrator.js:106
+renderAllSections @ 4011-FieldManager.js:474
+(anonymous) @ index.html:1050Understand this warningAI
+4011-Section07.js:658 [S07] 🚨 CRITICAL: ref_d_63 missing, using default 0 for Reference calculation
+calculateWaterUse @ 4011-Section07.js:658
+calculateReferenceModel @ 4011-Section07.js:988
+calculateAll @ 4011-Section07.js:1031
+onSectionRendered @ 4011-Section07.js:1433
+initializeSectionEventHandlers @ 4011-FieldManager.js:398
+renderSection @ 4011-FieldManager.js:443
+(anonymous) @ 4011-FieldManager.js:470
+renderAllSections @ 4011-FieldManager.js:469
+initialize @ 4011-Calculator.js:66
+(anonymous) @ index.html:1070Understand this warningAI
+4011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+initializeEventHandlers @ 4011-Section15.js:2253
+initializeSectionEventHandlers @ 4011-FieldManager.js:386
+renderSection @ 4011-FieldManager.js:443
+(anonymous) @ 4011-FieldManager.js:470
+renderAllSections @ 4011-FieldManager.js:469
+initialize @ 4011-Calculator.js:66
+(anonymous) @ index.html:1070Understand this warningAI
+4011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+(anonymous) @ 4011-Section15.js:2106
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setReferenceCalculatedValue @ 4011-Section04.js:123
+setRefCalculatedValue @ 4011-Section04.js:1646
+calculateRow32 @ 4011-Section04.js:1026
+calculateReferenceModel @ 4011-Section04.js:1659
+calculateAll @ 4011-Section04.js:1591
+(anonymous) @ 4011-Section04.js:2491
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:401
+setReferenceValue @ 4011-Section15.js:164
+calculateReferenceModel @ 4011-Section15.js:1504
+calculateAll @ 4011-Section15.js:1327
+initializeEventHandlers @ 4011-Section15.js:2253
+initializeSectionEventHandlers @ 4011-FieldManager.js:386
+renderSection @ 4011-FieldManager.js:443
+(anonymous) @ 4011-FieldManager.js:470
+renderAllSections @ 4011-FieldManager.js:469
+initialize @ 4011-Calculator.js:66
+(anonymous) @ index.html:1070Understand this warningAI
+24011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+(anonymous) @ 4011-Section15.js:2106
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setReferenceCalculatedValue @ 4011-Section04.js:123
+setRefCalculatedValue @ 4011-Section04.js:1646
+calculateRow32 @ 4011-Section04.js:1026
+calculateTargetModel @ 4011-Section04.js:1620
+calculateAll @ 4011-Section04.js:1586
+(anonymous) @ 4011-Section04.js:2483
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setTargetValue @ 4011-Section15.js:146
+calculateValues @ 4011-Section15.js:1796
+calculateTargetModel @ 4011-Section15.js:1649
+calculateAll @ 4011-Section15.js:1328
+(anonymous) @ 4011-Section15.js:2106
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setReferenceCalculatedValue @ 4011-Section04.js:123
+setRefCalculatedValue @ 4011-Section04.js:1646
+calculateRow32 @ 4011-Section04.js:1026
+calculateReferenceModel @ 4011-Section04.js:1659
+calculateAll @ 4011-Section04.js:1591
+(anonymous) @ 4011-Section04.js:2491
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:401
+setReferenceValue @ 4011-Section15.js:164
+calculateReferenceModel @ 4011-Section15.js:1504
+calculateAll @ 4011-Section15.js:1327
+initializeEventHandlers @ 4011-Section15.js:2253
+initializeSectionEventHandlers @ 4011-FieldManager.js:386
+renderSection @ 4011-FieldManager.js:443
+(anonymous) @ 4011-FieldManager.js:470
+renderAllSections @ 4011-FieldManager.js:469
+initialize @ 4011-Calculator.js:66
+(anonymous) @ index.html:1070Understand this warningAI
+24011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+(anonymous) @ 4011-Section15.js:2106
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setReferenceCalculatedValue @ 4011-Section04.js:123
+setRefCalculatedValue @ 4011-Section04.js:1646
+calculateRow32 @ 4011-Section04.js:1026
+calculateReferenceModel @ 4011-Section04.js:1659
+calculateAll @ 4011-Section04.js:1591
+(anonymous) @ 4011-Section04.js:2483
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setTargetValue @ 4011-Section15.js:146
+calculateValues @ 4011-Section15.js:1796
+calculateTargetModel @ 4011-Section15.js:1649
+calculateAll @ 4011-Section15.js:1328
+(anonymous) @ 4011-Section15.js:2106
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setReferenceCalculatedValue @ 4011-Section04.js:123
+setRefCalculatedValue @ 4011-Section04.js:1646
+calculateRow32 @ 4011-Section04.js:1026
+calculateReferenceModel @ 4011-Section04.js:1659
+calculateAll @ 4011-Section04.js:1591
+(anonymous) @ 4011-Section04.js:2491
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:401
+setReferenceValue @ 4011-Section15.js:164
+calculateReferenceModel @ 4011-Section15.js:1504
+calculateAll @ 4011-Section15.js:1327
+initializeEventHandlers @ 4011-Section15.js:2253
+initializeSectionEventHandlers @ 4011-FieldManager.js:386
+renderSection @ 4011-FieldManager.js:443
+(anonymous) @ 4011-FieldManager.js:470
+renderAllSections @ 4011-FieldManager.js:469
+initialize @ 4011-Calculator.js:66
+(anonymous) @ index.html:1070Understand this warningAI
+4011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+(anonymous) @ 4011-Section15.js:2106
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setReferenceCalculatedValue @ 4011-Section04.js:123
+setRefCalculatedValue @ 4011-Section04.js:1646
+calculateRow32 @ 4011-Section04.js:1026
+calculateReferenceModel @ 4011-Section04.js:1659
+calculateAll @ 4011-Section04.js:1591
+(anonymous) @ 4011-Section04.js:2491
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:401
+setReferenceValue @ 4011-Section15.js:164
+calculateReferenceModel @ 4011-Section15.js:1504
+calculateAll @ 4011-Section15.js:1327
+initializeEventHandlers @ 4011-Section15.js:2253
+initializeSectionEventHandlers @ 4011-FieldManager.js:386
+renderSection @ 4011-FieldManager.js:443
+(anonymous) @ 4011-FieldManager.js:470
+renderAllSections @ 4011-FieldManager.js:469
+initialize @ 4011-Calculator.js:66
+(anonymous) @ index.html:1070Understand this warningAI
+4011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+initializeEventHandlers @ 4011-Section15.js:2253
+onSectionRendered @ 4011-Section15.js:2279
+initializeSectionEventHandlers @ 4011-FieldManager.js:398
+renderSection @ 4011-FieldManager.js:443
+(anonymous) @ 4011-FieldManager.js:470
+renderAllSections @ 4011-FieldManager.js:469
+initialize @ 4011-Calculator.js:66
+(anonymous) @ index.html:1070Understand this warningAI
+24011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+forceTEDITELIUpdate @ 4011-SectionIntegrator.js:305
+initializeTEDITELIIntegration @ 4011-SectionIntegrator.js:241
+(anonymous) @ 4011-SectionIntegrator.js:187
+initializeAllIntegrations @ 4011-SectionIntegrator.js:184
+(anonymous) @ 4011-SectionIntegrator.js:106
+renderAllSections @ 4011-FieldManager.js:474
+initialize @ 4011-Calculator.js:66
+(anonymous) @ index.html:1070Understand this warningAI
+44011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_g_101, ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+(anonymous) @ 4011-Section15.js:2106
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:401
+setCalculatedValue @ 4011-Section12.js:1160
+calculateVolumeMetrics @ 4011-Section12.js:1411
+calculateReferenceModel @ 4011-Section12.js:2219
+calculateAll @ 4011-Section12.js:2191
+(anonymous) @ 4011-SectionIntegrator.js:656
+setTimeout
+forceVolumeMetricsUpdate @ 4011-SectionIntegrator.js:650
+initializeVolumeMetricsIntegration @ 4011-SectionIntegrator.js:589
+(anonymous) @ 4011-SectionIntegrator.js:187
+initializeAllIntegrations @ 4011-SectionIntegrator.js:184
+(anonymous) @ 4011-SectionIntegrator.js:106
+renderAllSections @ 4011-FieldManager.js:474
+initialize @ 4011-Calculator.js:66
+(anonymous) @ index.html:1070Understand this warningAI
+44011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_g_101, ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+(anonymous) @ 4011-Section15.js:2106
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:401
+setCalculatedValue @ 4011-Section12.js:1160
+calculateVolumeMetrics @ 4011-Section12.js:1417
+calculateReferenceModel @ 4011-Section12.js:2219
+calculateAll @ 4011-Section12.js:2191
+(anonymous) @ 4011-SectionIntegrator.js:656
+setTimeout
+forceVolumeMetricsUpdate @ 4011-SectionIntegrator.js:650
+initializeVolumeMetricsIntegration @ 4011-SectionIntegrator.js:589
+(anonymous) @ 4011-SectionIntegrator.js:187
+initializeAllIntegrations @ 4011-SectionIntegrator.js:184
+(anonymous) @ 4011-SectionIntegrator.js:106
+renderAllSections @ 4011-FieldManager.js:474
+initialize @ 4011-Calculator.js:66
+(anonymous) @ index.html:1070Understand this warningAI
+44011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+(anonymous) @ 4011-Section15.js:2106
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:401
+setCalculatedValue @ 4011-Section12.js:1160
+calculateCombinedUValue @ 4011-Section12.js:1592
+calculateReferenceModel @ 4011-Section12.js:2220
+calculateAll @ 4011-Section12.js:2191
+(anonymous) @ 4011-SectionIntegrator.js:656
+setTimeout
+forceVolumeMetricsUpdate @ 4011-SectionIntegrator.js:650
+initializeVolumeMetricsIntegration @ 4011-SectionIntegrator.js:589
+(anonymous) @ 4011-SectionIntegrator.js:187
+initializeAllIntegrations @ 4011-SectionIntegrator.js:184
+(anonymous) @ 4011-SectionIntegrator.js:106
+renderAllSections @ 4011-FieldManager.js:474
+initialize @ 4011-Calculator.js:66
+(anonymous) @ index.html:1070Understand this warningAI
+44011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+(anonymous) @ 4011-Section15.js:2106
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:401
+setCalculatedValue @ 4011-Section12.js:1160
+calculateCombinedUValue @ 4011-Section12.js:1593
+calculateReferenceModel @ 4011-Section12.js:2220
+calculateAll @ 4011-Section12.js:2191
+(anonymous) @ 4011-SectionIntegrator.js:656
+setTimeout
+forceVolumeMetricsUpdate @ 4011-SectionIntegrator.js:650
+initializeVolumeMetricsIntegration @ 4011-SectionIntegrator.js:589
+(anonymous) @ 4011-SectionIntegrator.js:187
+initializeAllIntegrations @ 4011-SectionIntegrator.js:184
+(anonymous) @ 4011-SectionIntegrator.js:106
+renderAllSections @ 4011-FieldManager.js:474
+initialize @ 4011-Calculator.js:66
+(anonymous) @ index.html:1070Understand this warningAI
+44011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+(anonymous) @ 4011-Section15.js:2106
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:401
+setCalculatedValue @ 4011-Section12.js:1160
+calculateCombinedUValue @ 4011-Section12.js:1594
+calculateReferenceModel @ 4011-Section12.js:2220
+calculateAll @ 4011-Section12.js:2191
+(anonymous) @ 4011-SectionIntegrator.js:656
+setTimeout
+forceVolumeMetricsUpdate @ 4011-SectionIntegrator.js:650
+initializeVolumeMetricsIntegration @ 4011-SectionIntegrator.js:589
+(anonymous) @ 4011-SectionIntegrator.js:187
+initializeAllIntegrations @ 4011-SectionIntegrator.js:184
+(anonymous) @ 4011-SectionIntegrator.js:106
+renderAllSections @ 4011-FieldManager.js:474
+initialize @ 4011-Calculator.js:66
+(anonymous) @ index.html:1070Understand this warningAI
+44011-Section15.js:1421 [S15] Missing critical upstream Reference values: ref_i_104
+calculateReferenceModel @ 4011-Section15.js:1421
+calculateAll @ 4011-Section15.js:1327
+(anonymous) @ 4011-Section15.js:2106
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setCalculatedValue @ 4011-Section12.js:1160
+calculateEnvelopeTotals @ 4011-Section12.js:2143
+calculateReferenceModel @ 4011-Section12.js:2236
+calculateAll @ 4011-Section12.js:2191
+(anonymous) @ 4011-SectionIntegrator.js:656
+setTimeout
+forceVolumeMetricsUpdate @ 4011-SectionIntegrator.js:650
+initializeVolumeMetricsIntegration @ 4011-SectionIntegrator.js:589
+(anonymous) @ 4011-SectionIntegrator.js:187
+initializeAllIntegrations @ 4011-SectionIntegrator.js:184
+(anonymous) @ 4011-SectionIntegrator.js:106
+renderAllSections @ 4011-FieldManager.js:474
+initialize @ 4011-Calculator.js:66
+(anonymous) @ index.html:1070Understand this warningAI
