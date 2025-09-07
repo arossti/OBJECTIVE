@@ -1396,65 +1396,45 @@ window.TEUI.SectionModules.sect14 = (function () {
       "k_103",
       "ref_k_103", // Additional gain factors
 
-      // S13 Ventilation (Independent Models: different ventilation systems)
+      // S13 Mechanical Loads (Independent Models: different HVAC systems)
+      "d_114",
+      "ref_d_114", // S13 heating demand
+      "d_117", 
+      "ref_d_117", // S13 cooling demand
       "m_121",
-      "ref_m_121", // Ventilation load
+      "ref_m_121", // S13 ventilation load
     ];
 
     // Remove duplicates
     const uniqueDependencies = [...new Set(dependencies)];
 
+    // ✅ S15 PROVEN PATTERN: Add listeners with complete calculation + UI update
+    const addCalculationListener = (key) => {
+      sm.addListener(key, () => {
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
+      });
+    };
+
     // Add listeners for all unique dependencies
     uniqueDependencies.forEach((dep) => {
-      sm.addListener(dep, () => {
-        // console.log(`Listener triggered for dependency: ${dep} in Section 14`);
-        calculateAll();
-      });
+      addCalculationListener(dep);
     });
 
-    // Add listeners for climate data changes from Section 3 (needed for some calcs)
-    if (window.TEUI?.StateManager?.addListener) {
-      sm.addListener("d_20", () => {
-        calculateAll();
-        ModeManager.updateCalculatedDisplayValues();
-      }); // HDD
-      sm.addListener("d_21", () => {
-        calculateAll();
-        ModeManager.updateCalculatedDisplayValues();
-      }); // CDD
-      sm.addListener("h_22", () => {
-        calculateAll();
-        ModeManager.updateCalculatedDisplayValues();
-      }); // GF CDD
-      sm.addListener("d_22", () => {
-        calculateAll();
-        ModeManager.updateCalculatedDisplayValues();
-      }); // GF HDD
+    // ✅ CONSISTENT PATTERN: Add climate listeners using same pattern
+    const climateFields = ["d_20", "d_21", "h_22", "d_22"];
+    climateFields.forEach((field) => {
+      addCalculationListener(field);
+      addCalculationListener(`ref_${field}`); // Add Reference versions too
+    });
 
-      // ✅ CRITICAL FIX: Add missing S13 Reference listeners for dependency flow
-      sm.addListener("ref_d_114", () => {
-        calculateAll();
-        ModeManager.updateCalculatedDisplayValues();
-      }); // S13 Reference heating demand
-      sm.addListener("ref_d_117", () => {
-        calculateAll();
-        ModeManager.updateCalculatedDisplayValues();
-      }); // S13 Reference cooling demand
-      sm.addListener("ref_m_121", () => {
-        calculateAll();
-        ModeManager.updateCalculatedDisplayValues();
-      }); // S13 Reference ventilation energy
-      
-      console.log("[Section14] ✅ Added S13 Reference listeners: ref_d_114, ref_d_117, ref_m_121");
+    // CRITICAL: Listen for d_13 changes to update reference indicators
+    sm.addListener("d_13", () => {
+      console.log("[Section14] d_13 changed - updating reference indicators");
+      updateReferenceIndicator();
+    });
 
-      // CRITICAL: Listen for d_13 changes to update reference indicators
-      sm.addListener("d_13", () => {
-        console.log("[Section14] d_13 changed - updating reference indicators");
-        updateReferenceIndicator();
-      });
-    } else {
-      // console.warn("Section 14: StateManager not available to add climate listeners.");
-    }
+    console.log(`[Section14] ✅ Added comprehensive listeners for ${uniqueDependencies.length} dependencies + ${climateFields.length * 2} climate fields`);
   }
 
   /**
