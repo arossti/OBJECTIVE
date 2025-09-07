@@ -567,6 +567,73 @@ window.TEUI.StateManager.setValue(
 - **Verify StateManager listener pattern**: Compare with ARCHIVE for proper event handling
 - **Fix timing race conditions**: Remove direct DOM handlers causing calculation storms
 
+### **Phase 8: refreshUI Mode Persistence Compliance (CRITICAL UI ISOLATION)**
+- **🚨 COMPREHENSIVE UI PERSISTENCE AUDIT**: All user input fields must persist correctly across mode switches
+- **Scan for incomplete refreshUI implementations**: `grep -A 20 "refreshUI.*function" sections/4011-SectionXX.js`
+
+#### **MANDATORY refreshUI Pattern (S10/S13 Proven Success):**
+
+```javascript
+refreshUI: function () {
+  const sectionElement = document.getElementById("sectionId");
+  if (!sectionElement) return;
+  
+  const currentState = this.getCurrentState();
+  const fieldsToSync = [/* ALL user input fields */];
+  
+  fieldsToSync.forEach((fieldId) => {
+    const stateValue = currentState.getValue(fieldId);
+    if (stateValue === undefined || stateValue === null) return;
+    
+    const element = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
+    if (!element) return;
+    
+    // ✅ CRITICAL: Handle ALL input types
+    const slider = element.matches('input[type="range"]') ? element : element.querySelector('input[type="range"]');
+    const dropdown = element.matches("select") ? element : element.querySelector("select");
+    
+    if (slider) {
+      // ✅ Slider persistence
+      const numericValue = window.TEUI.parseNumeric(stateValue, 0);
+      slider.value = numericValue;
+      const display = slider.nextElementSibling;
+      if (display) {
+        display.textContent = formatSliderDisplay(fieldId, numericValue);
+      }
+    } else if (dropdown) {
+      // ✅ Dropdown persistence  
+      dropdown.value = stateValue;
+    } else if (element.getAttribute("contenteditable") === "true") {
+      // ✅ CRITICAL: Editable field persistence (d_119, j_115, j_116, l_118)
+      element.textContent = stateValue;
+    }
+  });
+  
+  this.updateCalculatedDisplayValues();
+}
+```
+
+#### **FAILURE SYMPTOMS:**
+- **Missing slider handler**: Slider positions don't persist across mode switches
+- **Missing dropdown handler**: Dropdown selections contaminate between modes  
+- **Missing editable field handler**: User inputs show wrong mode values (MOST COMMON)
+- **Incomplete fieldsToSync**: Some user input fields not included in refresh cycle
+
+#### **DETECTION COMMANDS:**
+```bash
+# Find sections missing editable field handlers
+grep -A 30 "refreshUI.*function" sections/4011-Section*.js | grep -L "contenteditable"
+
+# Find incomplete fieldsToSync arrays  
+grep -A 10 "fieldsToSync.*=" sections/4011-Section*.js
+
+# Find sections with user inputs not in refreshUI
+grep "type.*editable\|contenteditable" sections/4011-Section*.js
+```
+
+#### **CRITICAL REQUIREMENT:**
+**EVERY section with user inputs MUST implement complete refreshUI with ALL three handlers: sliders, dropdowns, AND contenteditable fields.**
+
 ---
 
 ## Guiding Principle: The "Gold Standard" Archive

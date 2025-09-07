@@ -52,7 +52,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         f_117: "18.0", // SEER coefficient (slider)
         d_118: "89", // Heat recovery efficiency (slider) - 89% default
         f_118: "0.89", // Heat recovery efficiency (decimal for calculations)
-        d_119: "No", // Free cooling (dropdown)
+        d_119: "14.00", // ✅ FIXED: Per person ventilation rate (was incorrectly "No" - that's for d_119 free cooling)
         f_119: "0.75", // Free cooling efficiency (slider)
         j_115: "0.98", // AFUE for Gas/Oil systems
         j_116: "3.3", // ✅ ADDED: Dedicated cooling COP for Gas/Oil systems (Target default)
@@ -337,11 +337,18 @@ window.TEUI.SectionModules.sect13 = (function () {
     },
     resetState: function () {
       console.log("S13: Resetting state and clearing localStorage.");
+      
+      // ✅ FIXED: Clear user modification flags before resetting defaults
+      delete TargetState.state.f_113_userModified;
+      delete TargetState.state.j_115_userModified;
+      delete ReferenceState.state.f_113_userModified;
+      delete ReferenceState.state.j_115_userModified;
+      
       TargetState.setDefaults();
       TargetState.saveState();
       ReferenceState.setDefaults();
       ReferenceState.saveState();
-      console.log("S13: States have been reset to defaults.");
+      console.log("S13: States have been reset to defaults, user modifications cleared.");
 
       this.refreshUI();
       this.updateConditionalUI();
@@ -429,6 +436,10 @@ window.TEUI.SectionModules.sect13 = (function () {
           // ✅ CRITICAL FIX: Update dropdown selections for mode persistence
           dropdown.value = stateValue;
           // console.log(`[S13 refreshUI] Updated dropdown ${fieldId} to "${stateValue}" for ${this.currentMode} mode`);
+        } else if (element.getAttribute("contenteditable") === "true") {
+          // ✅ CRITICAL FIX: Update editable fields for mode persistence (d_119, j_115, j_116, l_118)
+          element.textContent = stateValue;
+          // console.log(`[S13 refreshUI] Updated editable field ${fieldId} to "${stateValue}" for ${this.currentMode} mode`);
         }
       });
 
@@ -611,7 +622,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         window.TEUI.StateManager.setValue(fieldId, valueToStore, fieldType);
         
         // 🔍 ENHANCED DEBUG: Track StateManager publications (commented out for clean logs)
-        // if (["d_122", "m_121", "f_114", "d_114", "j_115", "d_117"].includes(fieldId)) {
+        // if (["d_122", "m_121", "f_114", "d_114", "j_115", "d_117", "f_119", "h_119"].includes(fieldId)) {
         //   console.log(`[S13 PUBLICATION DEBUG] Target published: ${fieldId}=${valueToStore}`);
         // }
       }
@@ -625,7 +636,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         );
 
         // 🔍 ENHANCED DEBUG: Track StateManager publications (commented out for clean logs)
-        // if (["d_122", "m_121", "f_114", "d_114", "j_115", "d_117"].includes(fieldId)) {
+        // if (["d_122", "m_121", "f_114", "d_114", "j_115", "d_117", "f_119", "h_119"].includes(fieldId)) {
         //   console.log(`[S13 PUBLICATION DEBUG] Reference published: ref_${fieldId}=${valueToStore}`);
         // }
       }
@@ -2251,6 +2262,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         // ADDED: Explicitly trigger calculateAll after user modifies d_119 (Per Person Vent)
         if (fieldId === "d_119") {
           calculateAll();
+          ModeManager.updateCalculatedDisplayValues(); // ✅ CRITICAL: Update displayed calculated fields immediately
         }
       }
     } else {
@@ -2754,17 +2766,16 @@ window.TEUI.SectionModules.sect13 = (function () {
    * Calculate ventilation rates based on method (g_118) and per-person rate (d_119)
    */
   function calculateVentilationRates(isReferenceCalculation = false) {
-    // Use helper defined in this module
-    const ratePerPerson = getNumericValue("d_119");
-    // console.log(`[S13 CalcVentRates] Read d_119 as: ${ratePerPerson}`); // Log value read
+    // ✅ FIXED: Use mode-aware reading instead of getNumericValue
+    const ratePerPerson = window.TEUI.parseNumeric(
+      getSectionValue("d_119", isReferenceCalculation)
+    ) || 0;
     const cfm = ratePerPerson * 2.11888;
     const m3hr = ratePerPerson * 3.6;
 
-    // Only update DOM for Target calculations
-    if (!isReferenceCalculation) {
-      setFieldValue("f_119", cfm, "number-2dp");
-      setFieldValue("h_119", m3hr, "number-2dp");
-    }
+    // ✅ FIXED: Always update state for both Target and Reference calculations
+    setFieldValue("f_119", cfm, "number-2dp");
+    setFieldValue("h_119", m3hr, "number-2dp");
     // console.log(`[S13 CalcVentRates] Calculated f_119: ${cfm}, h_119: ${m3hr}`); // Log calculated values
 
     // Now calculate d_120 (Volumetric Rate) as it depends on d_119 and g_118
