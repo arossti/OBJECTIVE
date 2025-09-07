@@ -65,17 +65,28 @@ const gfcdd = window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("h_22"
 
 ### **🎯 NEXT SESSION TARGETS:**
 
-#### **1. S12→S15 Dependency Chain Analysis**
-- **Issue**: S12 not properly publishing ref_g_101, ref_d_101, ref_i_104 to StateManager
-- **Pattern**: Same as S10/S11/S04 but S12 may need different approach
-- **Investigation**: S12 calculation engines vs initialization timing
+#### **1. Dependency Ordering Implementation (PRIORITY)**
+**Traffic-Cop Sequencing per README.md:**
+```
+S12 (publish ref_values) → S15 (consume ref_values) → S04 (read S15) → S01 (final dashboard)
+```
 
-#### **2. S01 State Mixing Resolution (Primary Goal)**
+**Implementation Options:**
+- **Dependency.js**: `window.TEUI.Dependency.addDependency("S12_calculations", "S15_calculations")`
+- **StateManager Sequencing**: Batch publication with completion signals
+- **Calculation Engine Sync**: S12 Reference completion → S15 Reference start
+
+#### **2. S12→S15 Dependency Chain Resolution**
+- **Root Cause**: Initialization timing race, not architectural issue
+- **Solution**: Ensure S12 completes `ref_g_101`, `ref_d_101`, `ref_i_104` publication before S15 starts
+- **Pattern**: StateManager batch publication with ready signals
+
+#### **3. S01 State Mixing Resolution (Primary Goal)**
 - **Issue**: S11 changes cause both e_10 AND h_10 to update (should be mode-specific)
 - **Foundation**: Clean S10/S11/S04/S15 architecture now established
 - **Approach**: Apply S11 calculation reporting fixes with proven patterns
 
-#### **3. S10→S11 Area Inheritance Implementation**
+#### **4. S10→S11 Area Inheritance Implementation**
 - **Design**: Complete theoretical framework ready
 - **Pattern**: DRY principle - edit in S10, display in S11
 - **Foundation**: Perfect state isolation achieved in both sections
@@ -98,6 +109,15 @@ const gfcdd = window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("h_22"
 - **Progressive Improvement**: Each fix builds on previous success
 - **Validation**: Dramatic violation reduction confirms systematic approach
 
+#### **🚨 INITIALIZATION TIMING ANALYSIS:**
+
+**Chrome Restart vs Refresh Behavior:**
+- **Fresh Chrome (6 lines)**: Clean initialization, predictable S12→S15 timing race
+- **Cached Chrome (844+ lines)**: Browser memory interference causes cascading retry warnings
+- **Root Cause**: S15 Reference calculations start before S12 finishes publishing `ref_g_101`, `ref_d_101`, `ref_i_104`
+
+**Evidence**: Consistent 6-line pattern on fresh startup confirms no architectural contamination - just sequencing issue.
+
 ### **🏗️ ARCHITECTURAL FOUNDATION ESTABLISHED:**
 
 **Pattern A Dual-State Compliance:**
@@ -114,9 +134,37 @@ const gfcdd = window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("h_22"
 ## 📋 **NEXT SESSION PREPARATION:**
 
 ### **Immediate Priorities:**
-1. **S01 State Mixing**: Fix S11 calculation reporting (primary goal from troubleshooting guide)
-2. **S12 Dependency Analysis**: Investigate why S12→S15 flow needs different approach
+1. **Dependency Ordering**: Implement traffic-cop sequencing S12→S15→S04→S01 (timing fix)
+2. **S01 State Mixing**: Fix S11 calculation reporting (primary goal from troubleshooting guide)
 3. **Area Inheritance Implementation**: Apply DRY principle design to restore UX convenience
+
+### **🔧 SPECIFIC TECHNICAL SOLUTIONS:**
+
+#### **Option 1: Dependency.js Traffic-Cop (RECOMMENDED)**
+```javascript
+// Ensure proper calculation sequence
+window.TEUI.Dependency.addDependency("S12_reference_complete", "S15_calculations");
+window.TEUI.Dependency.addDependency("S15_calculations", "S04_calculations");  
+window.TEUI.Dependency.addDependency("S04_calculations", "S01_dashboard");
+```
+
+#### **Option 2: StateManager Batch Publication**
+```javascript
+// S12 publishes all Reference values atomically
+window.TEUI.StateManager.publishBatch([
+  { field: "ref_g_101", value: g101 },
+  { field: "ref_d_101", value: d101 },
+  { field: "ref_i_104", value: i104 }
+], "S12_reference_batch_complete");
+```
+
+#### **Option 3: Calculation Engine Synchronization**
+```javascript
+// S15 waits for S12 completion signal
+if (window.TEUI?.StateManager?.isReady?.("S12_reference_complete")) {
+  calculateReferenceModel(); // S15 can safely proceed
+}
+```
 
 ### **Success Metrics Achieved:**
 - **QC Violations**: 804 → ~775 (systematic reduction)
