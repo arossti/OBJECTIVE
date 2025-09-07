@@ -1683,25 +1683,33 @@ window.TEUI.SectionModules.sect15 = (function () {
       //   `[S15 DEBUG] 💰 Electricity price from S04: $${elecPrice}/kWh`,
       // );
 
-      // 🔍 CONTAMINATION TRACKER: Monitor what climate data Target engine is actually using
-      const target_hdd = getNumericValue("d_20");
-      const target_cdd = getNumericValue("d_21");
-      const target_gfhdd = getNumericValue("d_22");
-      const target_gfcdd = getNumericValue("h_22");
-      // console.log(`🔍 S15 TARGET ENGINE CLIMATE: HDD=${target_hdd}, CDD=${target_cdd}, GFHDD=${target_gfhdd}, GFCDD=${target_gfcdd}`);
+      // ✅ PATTERN A FIX: Target engine reads unprefixed climate data (proper external dependencies)
+      const hdd =
+        window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("d_20")) ||
+        0;
+      const cdd =
+        window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("d_21")) ||
+        0;
+      const gfhdd =
+        window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("d_22")) ||
+        0;
+      const gfcdd =
+        window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("h_22")) ||
+        0;
+      // console.log(`✅ S15 TARGET ENGINE CLIMATE: HDD=${hdd}, CDD=${cdd}, GFHDD=${gfhdd}, GFCDD=${gfcdd}`);
 
-      // Track key upstream values that feed Target TEUI calculation - READ ONLY target_ prefixed values
-      const target_i104 =
-        window.TEUI?.StateManager?.getValue("target_i_104") ||
-        getNumericValue("i_104"); // From S12 Building Envelope
-      const target_m121 =
-        window.TEUI?.StateManager?.getValue("target_m_121") ||
-        getNumericValue("m_121"); // From S13 Ventilation
-      const target_i80 =
-        window.TEUI?.StateManager?.getValue("target_i_80") ||
-        getNumericValue("i_80"); // From S10 Solar Gains
+      // ✅ PATTERN A FIX: Target engine reads unprefixed upstream values (clean external dependencies)
+      const i104 =
+        window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("i_104")) ||
+        0; // From S12 Building Envelope
+      const m121 =
+        window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("m_121")) ||
+        0; // From S13 Ventilation
+      const i80 =
+        window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("i_80")) ||
+        0; // From S10 Solar Gains
       // console.log(
-      //   `🔍 S15 TARGET UPSTREAM: target_i_104=${target_i104}, target_m_121=${target_m121}, target_i_80=${target_i80}`,
+      //   `✅ S15 TARGET UPSTREAM: i_104=${i104}, m_121=${m121}, i_80=${i80}`,
       // );
       const gasPrice = getNumericValue("l_13"); // Price per m3
       const propanePrice = getNumericValue("l_14"); // Price per kg
@@ -1711,9 +1719,7 @@ window.TEUI.SectionModules.sect15 = (function () {
       const m43 = getNumericValue("m_43"); // Onsite Energy Subtotals
       const k51 = getNumericValue("k_51"); // W.3.3 Net Electrical Demand (DHW)
       const h70 = getNumericValue("h_70"); // Plug/Light/Eqpt. Subtotals (Annual kWh)
-      const i104 = target_i104; // Use Target values for Target calculations
-      const m121 = target_m121; // Use Target values for Target calculations
-      const i80 = target_i80; // Use Target values for Target calculations
+      // ✅ PATTERN A FIX: Variables already properly assigned above with clean external dependency reads
 
       const primaryHeating = sm.getValue("d_113"); // e.g., "Heatpump", "Gas", "Oil", "Electricity"
       const d114 = getNumericValue("d_114"); // Heating System Demand (after COP/AFUE)
