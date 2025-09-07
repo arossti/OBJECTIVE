@@ -1411,6 +1411,10 @@ window.TEUI.SectionModules.sect14 = (function () {
     // ✅ S15 PROVEN PATTERN: Add listeners with complete calculation + UI update
     const addCalculationListener = (key) => {
       sm.addListener(key, () => {
+        // ✅ DEBUG: Log critical S13 dependency changes
+        if (["d_114", "ref_d_114", "d_117", "ref_d_117", "m_121", "ref_m_121"].includes(key)) {
+          console.log(`[S14 LISTENER] 🔥 ${key} changed - triggering calculateAll() + UI update`);
+        }
         calculateAll();
         ModeManager.updateCalculatedDisplayValues();
       });

@@ -601,7 +601,13 @@ window.TEUI.SectionModules.sect13 = (function () {
       // Target mode: Store unprefixed for downstream consumption
       if (window.TEUI?.StateManager) {
         window.TEUI.StateManager.setValue(fieldId, valueToStore, fieldType);
-
+        
+        // 🔍 ENHANCED DEBUG: Track StateManager publications
+        if (["d_114", "d_117", "f_114", "m_121"].includes(fieldId)) {
+          console.log(
+            `[S13 PUBLICATION DEBUG] Target published: ${fieldId}=${valueToStore}`,
+          );
+        }
       }
     } else {
       // Reference mode: Store with ref_ prefix for downstream consumption
@@ -613,7 +619,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         );
 
         // 🔍 ENHANCED DEBUG: Track StateManager publications
-        if (["d_117", "f_114", "m_121"].includes(fieldId)) {
+        if (["d_114", "d_117", "f_114", "m_121"].includes(fieldId)) {
           console.log(
             `[S13 PUBLICATION DEBUG] Reference published: ref_${fieldId}=${valueToStore}`,
           );
@@ -2037,8 +2043,9 @@ window.TEUI.SectionModules.sect13 = (function () {
         f113Slider.hasSliderListener = true;
       }
 
-      // Keep original StateManager listener
-      sm.addListener("f_113", calculateCOPValues);
+      // ✅ PERFORMANCE FIX: Remove StateManager listener that causes calculation storms
+      // Direct slider event handlers (input/change) provide better performance control
+      // sm.addListener("f_113", calculateCOPValues); // REMOVED - causes storms in Reference mode
 
       // Listener for d_116 (Cooling System) changes
       sm.addListener("d_116", () => {
