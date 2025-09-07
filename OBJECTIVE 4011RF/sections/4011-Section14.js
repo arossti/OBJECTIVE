@@ -1397,10 +1397,6 @@ window.TEUI.SectionModules.sect14 = (function () {
       "ref_k_103", // Additional gain factors
 
       // S13 Mechanical Loads (Independent Models: different HVAC systems)
-      "d_114",
-      "ref_d_114", // S13 heating demand
-      "d_117", 
-      "ref_d_117", // S13 cooling demand
       "m_121",
       "ref_m_121", // S13 ventilation load
     ];
@@ -1412,7 +1408,7 @@ window.TEUI.SectionModules.sect14 = (function () {
     const addCalculationListener = (key) => {
       sm.addListener(key, () => {
         // ✅ DEBUG: Log critical S13 dependency changes
-        if (["d_114", "ref_d_114", "d_117", "ref_d_117", "m_121", "ref_m_121"].includes(key)) {
+        if (["d_122", "ref_d_122", "m_121", "ref_m_121"].includes(key)) {
           console.log(`[S14 LISTENER] 🔥 ${key} changed - triggering calculateAll() + UI update`);
         }
         calculateAll();

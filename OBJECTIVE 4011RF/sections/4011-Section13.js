@@ -603,7 +603,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         window.TEUI.StateManager.setValue(fieldId, valueToStore, fieldType);
         
         // 🔍 ENHANCED DEBUG: Track StateManager publications
-        if (["d_114", "d_117", "f_114", "m_121"].includes(fieldId)) {
+        if (["d_122", "m_121", "f_114"].includes(fieldId)) {
           console.log(
             `[S13 PUBLICATION DEBUG] Target published: ${fieldId}=${valueToStore}`,
           );
@@ -619,7 +619,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         );
 
         // 🔍 ENHANCED DEBUG: Track StateManager publications
-        if (["d_114", "d_117", "f_114", "m_121"].includes(fieldId)) {
+        if (["d_122", "m_121", "f_114"].includes(fieldId)) {
           console.log(
             `[S13 PUBLICATION DEBUG] Reference published: ref_${fieldId}=${valueToStore}`,
           );
