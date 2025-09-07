@@ -29,13 +29,46 @@
 
 ---
 
-## 🚨 **CRITICAL UNFIXED BUGS (MUST PRESERVE)**
+## 🏆 **RESOLVED SUCCESS PATTERNS**
 
-### **1. HSPF Slider Value Persistence Bug** (S13-REFACTOR-WORKPLAN.md lines 52-106)
-**Issue**: HSPF slider position doesn't restore correctly when switching modes
+### **✅ HSPF Slider Value Persistence** (FIXED)
+**Issue**: HSPF slider position didn't restore correctly when switching modes
 - **Target f_113 = 12.5, Reference f_113 = 7.1**
-- **After Reference mode, Target slider shows 7.1 instead of 12.5** ❌
-- **Status**: ❌ **UNFIXED** - identified but never resolved
+- **Status**: ✅ **RESOLVED** - slider persistence working perfectly
+
+### **✅ Dropdown State Isolation** (FIXED)  
+**Issue**: Dropdown changes in Reference mode affected Target mode (state contamination)
+- **Problem**: refreshUI() missing dropdown value synchronization
+- **Status**: ✅ **RESOLVED** - dropdown.value = stateValue added to refreshUI()
+
+### **✅ S15 Reference Calculation Engine** (FIXED)
+**Issue**: Reference d_136 stuck at 301,986.05 regardless of S13 changes  
+- **Root Cause**: S15 used broken getReferenceValue() instead of getValue("ref_fieldId")
+- **Status**: ✅ **RESOLVED** - S15 now reads ref_d_113, ref_d_116 directly
+
+### **✅ AFUE Mode-Aware Publication** (FIXED)
+**Issue**: j_115 AFUE changes not published with ref_ prefix in Reference mode
+- **Root Cause**: Blur handler used direct StateManager.setValue() instead of ModeManager.setValue()
+- **Status**: ✅ **RESOLVED** - j_115 now uses mode-aware publication
+
+### **✅ Reference Default Alignment** (FIXED)
+**Issue**: Reference UI defaults didn't match calculation behavior (priming required)
+- **Fixed**: d_113="Electricity", d_116="No Cooling" align with e_10 baseline calculations
+- **Status**: ✅ **RESOLVED** - no priming needed for Reference mode
+
+---
+
+## 🎯 **REMAINING ISSUES**
+
+### **❓ Ventilation Reference Mode** (INVESTIGATION NEEDED)
+**Issue**: Ventilation calculations may not be fully dual-state compliant
+- **Pattern**: Similar to other S13 fixes (publication, state reading)
+- **Status**: 🔍 **PENDING INVESTIGATION**
+
+### **❓ j_116 User Editability** (IMPLEMENTATION NEEDED)  
+**Issue**: j_116 not user-editable when Gas/Oil + Cooling=true
+- **Expected**: j_116 should become editable for dedicated cooling COP
+- **Status**: 🔧 **PENDING IMPLEMENTATION**
 
 **Required Fix Pattern** (S10/S11 proven solution):
 ```javascript
