@@ -51,7 +51,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         d_116: "Cooling", // Cooling system (dropdown) - FIXED: was "AC"
         f_117: "18.0", // SEER coefficient (slider)
         d_118: "HRV", // Ventilation system (dropdown)
-        f_118: "0.85", // Heat recovery efficiency (slider)
+        f_118: "0.89", // Heat recovery efficiency (slider) - 89% default
         d_119: "No", // Free cooling (dropdown)
         f_119: "0.75", // Free cooling efficiency (slider)
         // Add other section-specific user-editable fields as needed
