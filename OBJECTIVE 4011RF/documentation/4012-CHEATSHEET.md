@@ -434,6 +434,175 @@ git checkout baa989f -- "OBJECTIVE 4011RF/sections/4011-Section12.js"
 
 ---
 
+## 🎯 **DUAL-ENGINE IMPLEMENTATION PATTERNS**
+
+There are **two proven approaches** for implementing dual-engine calculations. Both work, but have different reliability characteristics:
+
+### **🏆 PATTERN 1: TEMPORARY MODE SWITCHING (MOST RELIABLE)**
+
+**Used by**: S02 (proven working), S04 (function override variant)  
+**Best for**: Complex sections with many calculations, external dependencies, or separate calculation modules (like Cooling.js)
+
+```javascript
+function calculateReferenceModel() {
+  const originalMode = ModeManager.currentMode;
+  ModeManager.currentMode = "reference"; // Temporarily switch mode
+
+  try {
+    // 🎯 KEY ADVANTAGE: ALL existing functions become mode-aware automatically
+    // No need to modify individual calculation functions
+    const carbonStandard = ReferenceState.getValue("d_15"); // Reads Reference state
+    const externalValue = getModeAwareGlobalValue("i_41"); // Reads ref_i_41 automatically
+    
+    // All setFieldValue() calls automatically route to Reference state
+    setFieldValue("d_16", calculatedValue, "calculated"); // Stores with ref_ prefix
+    
+  } finally {
+    ModeManager.currentMode = originalMode; // CRITICAL: Always restore mode
+  }
+}
+
+function calculateTargetModel() {
+  const originalMode = ModeManager.currentMode;
+  ModeManager.currentMode = "target"; // Temporarily switch mode
+
+  try {
+    // Same functions work for Target calculations - no code duplication
+    const carbonStandard = TargetState.getValue("d_15"); // Reads Target state
+    const externalValue = getModeAwareGlobalValue("i_41"); // Reads i_41 automatically
+    
+    setFieldValue("d_16", calculatedValue, "calculated"); // Stores unprefixed
+    
+  } finally {
+    ModeManager.currentMode = originalMode; // CRITICAL: Always restore mode
+  }
+}
+```
+
+**🔥 CRITICAL ADVANTAGES**:
+- **Zero Code Duplication**: Same calculation functions work for both engines
+- **External Module Compatibility**: Cooling.js, other modules automatically become mode-aware
+- **Automatic State Routing**: All `setFieldValue()` calls route correctly based on current mode
+- **Future-Proof**: New calculations automatically inherit dual-state behavior
+
+### **⚖️ PATTERN 2: PARAMETER-BASED APPROACH (FUNCTIONAL BUT FRAGILE)**
+
+**Used by**: S13 (partially working), legacy sections  
+**Best for**: Simple sections with few calculations and no external dependencies
+
+```javascript
+function calculateReferenceModel() {
+  // Must pass isReferenceCalculation=true to EVERY function
+  const heatingResults = calculateHeatingSystem(true, copResults, tedValue);
+  const coolingResults = calculateCoolingSystem(true);
+  const ventilationResults = calculateVentilationEnergy(true);
+  
+  // Must manually handle state storage
+  setReferenceCalculatedValue("d_117", coolingResults.load);
+}
+
+function calculateTargetModel() {
+  // Must pass isReferenceCalculation=false (or omit) to EVERY function
+  const heatingResults = calculateHeatingSystem(false, copResults, tedValue);
+  const coolingResults = calculateCoolingSystem(false);
+  const ventilationResults = calculateVentilationEnergy(false);
+  
+  // Must manually handle state storage
+  setCalculatedValue("d_117", coolingResults.load);
+}
+
+// Every calculation function needs dual logic:
+function calculateCoolingSystem(isReferenceCalculation = false) {
+  const coolingType = isReferenceCalculation
+    ? getSectionValue("d_116", true)  // Reference state
+    : getFieldValue("d_116");         // Target state
+    
+  // Must duplicate state reading logic throughout function
+  const efficiency = isReferenceCalculation
+    ? getSectionValue("j_116", true)
+    : getSectionValue("j_116", false);
+}
+```
+
+**❌ DISADVANTAGES**:
+- **Massive Code Duplication**: Every function needs dual logic
+- **Parameter Passing Complexity**: Must remember to pass `isReferenceCalculation` everywhere
+- **External Module Issues**: Cooling.js doesn't know about `isReferenceCalculation` parameter
+- **Maintenance Nightmare**: Easy to forget parameter in one place and break state isolation
+
+### **🎯 RECOMMENDATION: USE PATTERN 1 (TEMPORARY MODE SWITCHING)**
+
+**Why Pattern 1 is Superior**:
+1. **Reliability**: Less prone to human error - mode switching is automatic
+2. **Maintainability**: Changes to calculation logic don't require dual implementations
+3. **External Module Support**: Works seamlessly with Cooling.js and other modules
+4. **Proven Track Record**: S02 has perfect state isolation using this pattern
+
+**When to Consider Pattern 2**:
+- Very simple sections with 1-2 calculation functions
+- No external dependencies or separate modules
+- Legacy sections where refactoring to Pattern 1 is too complex
+
+### **🔥 CRITICAL SUCCESS FACTORS FOR PATTERN 1**:
+
+1. **Always Use try/finally**: Mode MUST be restored even if calculations throw errors
+2. **Mode-Aware External Reading**: Use `getModeAwareGlobalValue()` for external dependencies
+3. **Sovereign State Reading**: Use `TargetState.getValue()` / `ReferenceState.getValue()` for internal fields
+4. **Single setFieldValue Function**: Must route based on `ModeManager.currentMode`
+
+### **🧊 EXTERNAL MODULE INTEGRATION (COOLING.JS PATTERN)**
+
+**CRITICAL INSIGHT**: S13's complexity comes from **shared calculation modules** like Cooling.js that need dual-state awareness.
+
+**❌ CURRENT S13 PROBLEM (Pattern 2 with External Modules)**:
+```javascript
+// S13 uses shared coolingState object that gets contaminated:
+function updateCoolingInputs() {
+  coolingState.ventilationMethod = getFieldValue("g_118"); // ❌ NOT mode-aware
+  // Both Target AND Reference calculations read same contaminated value
+}
+
+// Then both engines use the same contaminated data:
+function calculateReferenceModel() {
+  runIntegratedCoolingCalculations(); // Uses contaminated coolingState
+}
+function calculateTargetModel() {
+  runIntegratedCoolingCalculations(); // Uses same contaminated coolingState
+}
+```
+
+**✅ PATTERN 1 SOLUTION (Temporary Mode Switching)**:
+```javascript
+// setFieldValue() becomes mode-aware automatically:
+function updateCoolingInputs() {
+  // When called during calculateReferenceModel():
+  coolingState.ventilationMethod = ModeManager.getValue("g_118"); // Reads Reference state
+  
+  // When called during calculateTargetModel():
+  coolingState.ventilationMethod = ModeManager.getValue("g_118"); // Reads Target state
+}
+
+function calculateReferenceModel() {
+  const originalMode = ModeManager.currentMode;
+  ModeManager.currentMode = "reference";
+  
+  try {
+    runIntegratedCoolingCalculations(); // Automatically uses Reference values
+    // All Cooling.js interactions become mode-aware
+  } finally {
+    ModeManager.currentMode = originalMode;
+  }
+}
+```
+
+**🎯 WHY PATTERN 1 SOLVES THE g_118 ISSUE**:
+1. **Automatic Mode Propagation**: External modules inherit mode context
+2. **Zero External Module Changes**: Cooling.js doesn't need modification
+3. **Shared State Isolation**: coolingState gets correct values for each engine
+4. **Single Function Logic**: No need to duplicate cooling calculations
+
+---
+
 ## 📋 Pattern A Implementation Checklist
 
 ### 1. The Three Core Objects
