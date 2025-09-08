@@ -942,7 +942,9 @@ window.TEUI.SectionModules.sect13 = (function () {
     coolingState.buildingVolume = parseNum(getValue("d_105")) || 8000;
     coolingState.buildingArea = parseNum(getValue("h_15")) || 1427.2;
     coolingState.coolingLoad = getNumericValue("l_128") || 0; // Read mitigated cooling load from S14 - Note: May cause dependency loop issues if S14 reads S13 outputs
-    coolingState.ventilationMethod = getFieldValue("g_118") || "Constant"; // Default to Constant
+    // ✅ PATTERN 1 TEST: Use ModeManager.getValue() instead of getFieldValue()
+    // This will automatically read from correct state based on current mode
+    coolingState.ventilationMethod = ModeManager.getValue("g_118") || "Constant"; // Mode-aware reading
 
     // Calculate the intermediate A50 temperature needed for atmospheric calcs
     calculateA50Temp();
@@ -3120,9 +3122,12 @@ window.TEUI.SectionModules.sect13 = (function () {
 
   /**
    * REFERENCE MODEL ENGINE: Calculate all Column E values using Reference state
-   * ✅ EXPLICIT DATA FLOW: Use unified functions with explicit parameter passing
+   * ✅ PATTERN 1: Temporary mode switching (S02 proven pattern)
    */
   function calculateReferenceModel() {
+    const originalMode = ModeManager.currentMode;
+    ModeManager.currentMode = "reference"; // Temporarily switch mode
+    
     console.log("[Section13] Running Reference Model calculations...");
     try {
       // Helper function to get Reference values with proper fallback
@@ -3176,14 +3181,19 @@ window.TEUI.SectionModules.sect13 = (function () {
         "[Section13] Error in Reference Model calculations:",
         error,
       );
+    } finally {
+      ModeManager.currentMode = originalMode; // ✅ CRITICAL: Always restore mode
     }
   }
 
   /**
    * TARGET MODEL ENGINE: Calculate all Column H values using Application state
-   * ✅ EXPLICIT DATA FLOW: Pass results between calculation steps
+   * ✅ PATTERN 1: Temporary mode switching (S02 proven pattern)
    */
   function calculateTargetModel() {
+    const originalMode = ModeManager.currentMode;
+    ModeManager.currentMode = "target"; // Temporarily switch mode
+    
     console.log("[Section13] Running Target Model calculations...");
     try {
       // Run cooling physics *first* to update coolingState centrally
@@ -3222,6 +3232,8 @@ window.TEUI.SectionModules.sect13 = (function () {
       updateAllReferenceIndicators();
     } catch (error) {
       console.error("[Section13] Error in Target Model calculations:", error);
+    } finally {
+      ModeManager.currentMode = originalMode; // ✅ CRITICAL: Always restore mode
     }
     console.log("[Section13] Target Model calculations complete");
   }
