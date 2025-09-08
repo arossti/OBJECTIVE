@@ -54,6 +54,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         f_118: "0.89", // Heat recovery efficiency (decimal for calculations)
         d_119: "14.00", // ✅ FIXED: Per person ventilation rate (was incorrectly "No" - that's for d_119 free cooling)
         f_119: "0.75", // Free cooling efficiency (slider)
+        g_118: "Volume by Schedule", // ✅ FIXED: Target default should be Volume by Schedule (Excel baseline)
         j_115: "0.98", // AFUE for Gas/Oil systems
         j_116: "3.3", // ✅ ADDED: Dedicated cooling COP for Gas/Oil systems (Target default)
         // Add other section-specific user-editable fields as needed
@@ -122,6 +123,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         d_118: referenceValues.d_118 || "81", // ✅ Min. ERV/HRV Efficiency% (from ReferenceValues.js)
         f_118: referenceValues.f_118 || "0.60", // HRV efficiency (fallback)
         d_119: referenceValues.d_119 || "8.33", // ✅ Min. Vent. Rate Per Person l/sec (from ReferenceValues.js)
+        g_118: "Volume Constant", // ✅ FIXED: Reference default should be Volume Constant (building code baseline)
         l_118: referenceValues.l_118 || "3.50", // ✅ Min. Volumetric Vent. Rate (from ReferenceValues.js)
 
         // Free Cooling
@@ -135,6 +137,7 @@ window.TEUI.SectionModules.sect13 = (function () {
           j_115: this.state.j_115,
           d_118: this.state.d_118,
           d_119: this.state.d_119,
+          g_118: this.state.g_118, // ✅ DEBUG: Check if g_118 is properly initialized
           j_116: this.state.j_116,
           l_118: this.state.l_118,
         },
@@ -216,8 +219,11 @@ window.TEUI.SectionModules.sect13 = (function () {
   const ModeManager = {
     currentMode: "target",
     initialize: function () {
+      console.log("[S13 DEBUG] ModeManager.initialize() starting...");
       TargetState.initialize();
+      console.log("[S13 DEBUG] TargetState.initialize() completed");
       ReferenceState.initialize();
+      console.log("[S13 DEBUG] ReferenceState.initialize() completed");
 
       // MANDATORY: Listen for reference standard changes
       if (window.TEUI?.StateManager?.addListener) {
@@ -383,6 +389,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       const fieldsToSync = [
         "d_113",
         "f_113",
+        "g_118", // ✅ ADDED: Ventilation method dropdown
         "j_115",
         "d_116",
         "f_117",
@@ -2073,12 +2080,13 @@ window.TEUI.SectionModules.sect13 = (function () {
       // Listener for d_118 (Ventilation Efficiency) changes
       sm.addListener("d_118", calculateVentilationValues);
 
-      // Listener for g_118 (Ventilation Method) changes
-      sm.addListener("g_118", () => {
-        calculateVentilationValues(); // Recalculates d_120, h_120 etc.
-        calculateFreeCooling(); // Reads updated h_120, recalculates row 124
-        calculateMitigatedCED(); // Updates m_129 based on updated h_124/d_123
-      });
+      // ✅ REMOVED: g_118 StateManager listener (causes contamination)
+      // Dropdown handler already triggers calculateAll() properly with dual-engine
+      // sm.addListener("g_118", () => {
+      //   calculateVentilationValues(); // This was not mode-aware, causing contamination
+      //   calculateFreeCooling();
+      //   calculateMitigatedCED();
+      // });
 
       // Listener for d_119 (Per Person Rate) changes
       sm.addListener("d_119", calculateVentilationRates);
@@ -2779,7 +2787,8 @@ window.TEUI.SectionModules.sect13 = (function () {
     // console.log(`[S13 CalcVentRates] Calculated f_119: ${cfm}, h_119: ${m3hr}`); // Log calculated values
 
     // Now calculate d_120 (Volumetric Rate) as it depends on d_119 and g_118
-    const ventMethod = getFieldValue("g_118"); // This was likely causing issues, use getNumericValue/parseNum if needed
+    // ✅ FIXED: Use mode-aware reading for ventilation method
+    const ventMethod = getSectionValue("g_118", isReferenceCalculation);
     const ratePerPerson_d119 =
       window.TEUI.parseNumeric(
         isReferenceCalculation
@@ -2975,7 +2984,8 @@ window.TEUI.SectionModules.sect13 = (function () {
     let finalFreeCoolingLimit = 0;
     let potentialLimit = 0;
     let setbackFactor = 1.0;
-    const ventilationMethod = getFieldValue("g_118") || "Constant";
+    // ✅ FIXED: Use mode-aware reading for ventilation method in free cooling
+    const ventilationMethod = getSectionValue("g_118", isReferenceCalculation) || "Constant";
     const setbackValueStr = getFieldValue("k_120");
     const ventRateM3hr_h120 =
       window.TEUI.parseNumeric(getFieldValue("h_120")) || 0; // Get h_120 value used in limit calc
