@@ -2659,10 +2659,8 @@ window.TEUI.SectionModules.sect13 = (function () {
    * Calculate cooling system values
    */
   function calculateCoolingSystem(isReferenceCalculation = false) {
-    // ✅ DUAL-ENGINE: For Target calculations, use StateManager (authoritative source)
-    const coolingSystemType = isReferenceCalculation
-      ? getSectionValue("d_116", true)
-      : getFieldValue("d_116");
+    // ✅ PATTERN 1: Mode-aware reading (automatic with temporary mode switching)
+    const coolingSystemType = ModeManager.getValue("d_116") || "No Cooling";
     const heatingSystemType = isReferenceCalculation
       ? getSectionValue("d_113", true) // Reference reads Reference state
       : TargetState.getValue("d_113"); // Target reads Target state
@@ -2906,7 +2904,8 @@ window.TEUI.SectionModules.sect13 = (function () {
       summerBoostRawValue === "None" || summerBoostRawValue === ""
         ? 1.0
         : window.TEUI.parseNumeric(summerBoostRawValue) || 1.0;
-    const coolingSystem_d116 = getFieldValue("d_116");
+    // ✅ PATTERN 1: Mode-aware reading (automatic with temporary mode switching)
+    const coolingSystem_d116 = ModeManager.getValue("d_116") || "No Cooling";
     const baseConstant = 1.21;
     const sre_d118 =
       window.TEUI.parseNumeric(
