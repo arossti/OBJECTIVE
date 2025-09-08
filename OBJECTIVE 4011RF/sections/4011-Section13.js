@@ -2832,12 +2832,8 @@ window.TEUI.SectionModules.sect13 = (function () {
       setFieldValue("h_120", ventilationRateM3h_h120, "number-2dp-comma"); // m3/hr
     }
 
-    const sre_d118 =
-      window.TEUI.parseNumeric(
-        isReferenceCalculation
-          ? getSectionValue("d_118", true)
-          : getFieldValue("d_118"),
-      ) || 0;
+    // ✅ PATTERN 1: Mode-aware reading (automatic with temporary mode switching)
+    const sre_d118 = window.TEUI.parseNumeric(ModeManager.getValue("d_118")) || 0;
     // Commented out - m_118 is now handled by reference indicator system
     // setFieldValue('m_118', sre_d118 / 100, 'percent-0dp');
 
@@ -2857,12 +2853,8 @@ window.TEUI.SectionModules.sect13 = (function () {
   function calculateVentilationEnergy(isReferenceCalculation = false) {
     const ventRate = window.TEUI.parseNumeric(getFieldValue("d_120")) || 0;
     const hdd = getGlobalNumericValue("d_20");
-    const efficiency =
-      (window.TEUI.parseNumeric(
-        isReferenceCalculation
-          ? getSectionValue("d_118", true)
-          : getFieldValue("d_118"),
-      ) || 0) / 100;
+    // ✅ PATTERN 1: Mode-aware reading (automatic with temporary mode switching)
+    const efficiency = (window.TEUI.parseNumeric(ModeManager.getValue("d_118")) || 0) / 100;
     const heatingVentEnergy = (1.21 * ventRate * hdd * 24) / 1000;
     const recoveredEnergy = heatingVentEnergy * efficiency;
     const netHeatLoss = heatingVentEnergy - recoveredEnergy;
@@ -2907,12 +2899,8 @@ window.TEUI.SectionModules.sect13 = (function () {
     // ✅ PATTERN 1: Mode-aware reading (automatic with temporary mode switching)
     const coolingSystem_d116 = ModeManager.getValue("d_116") || "No Cooling";
     const baseConstant = 1.21;
-    const sre_d118 =
-      window.TEUI.parseNumeric(
-        isReferenceCalculation
-          ? getSectionValue("d_118", true)
-          : getFieldValue("d_118"),
-      ) / 100 || 0;
+    // ✅ PATTERN 1: Mode-aware reading (automatic with temporary mode switching)
+    const sre_d118 = (window.TEUI.parseNumeric(ModeManager.getValue("d_118")) || 0) / 100;
 
     // Logging removed
     // console.warn(`[S13 Debug CoolVent Inputs] d120: ${ventilationRateLs_d120.toFixed(2)}, d21: ${cdd_d21}, i63: ${occupiedHours_i63}, j63: ${totalHours_j63}, i122_factor: ${latentLoadFactor_i122.toFixed(2)}, l119_boost: ${summerBoostFactor.toFixed(2)}, d116_cool: ${coolingSystem_d116}, d118_sre: ${sre_d118.toFixed(2)}`);
