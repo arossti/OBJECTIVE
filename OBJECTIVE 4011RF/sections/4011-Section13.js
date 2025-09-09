@@ -399,6 +399,8 @@ window.TEUI.SectionModules.sect13 = (function () {
         "d_119",
         "l_118",
         "f_119",
+        "l_119", // ✅ ADDED: Summer Boost dropdown
+        "k_120", // ✅ ADDED: Unoccupied Setback slider
       ];
 
       fieldsToSync.forEach((fieldId) => {
@@ -431,7 +433,7 @@ window.TEUI.SectionModules.sect13 = (function () {
               display.textContent = numericValue.toFixed(1); // HSPF range format (e.g., "12.5")
             } else if (fieldId === "f_117") {
               display.textContent = numericValue.toFixed(1); // SEER range format (e.g., "18.0")
-            } else if (fieldId === "d_118" || fieldId === "f_119") {
+            } else if (fieldId === "d_118" || fieldId === "f_119" || fieldId === "k_120") {
               display.textContent = numericValue.toFixed(0) + "%"; // Percentage slider format (e.g., "89%")
             } else if (fieldId === "f_118") {
               display.textContent = (numericValue * 100).toFixed(0) + "%"; // Decimal efficiency format (e.g., "89%")
