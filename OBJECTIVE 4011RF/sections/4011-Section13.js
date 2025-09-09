@@ -57,6 +57,9 @@ window.TEUI.SectionModules.sect13 = (function () {
         g_118: "Volume by Schedule", // ✅ FIXED: Target default should be Volume by Schedule (Excel baseline)
         j_115: "0.98", // AFUE for Gas/Oil systems
         j_116: "3.3", // ✅ ADDED: Dedicated cooling COP for Gas/Oil systems (Target default)
+        l_118: "3.0", // ✅ ADDED: Volumetric ventilation rate (ACH)
+        l_119: "None", // ✅ ADDED: Summer Boost dropdown
+        k_120: "90", // ✅ ADDED: Unoccupied setback slider
         // Add other section-specific user-editable fields as needed
       };
     },
@@ -128,6 +131,8 @@ window.TEUI.SectionModules.sect13 = (function () {
 
         // Free Cooling
         f_119: referenceValues.f_119 || "0.50", // Free cooling efficiency (fallback)
+        l_119: "None", // ✅ ADDED: Summer Boost dropdown (Reference default is None)
+        k_120: "90", // ✅ ADDED: Unoccupied setback slider (Reference default matches Target)
       };
 
       console.log(
@@ -399,6 +404,8 @@ window.TEUI.SectionModules.sect13 = (function () {
         "d_119",
         "l_118",
         "f_119",
+        "l_119", // ✅ ADDED: Summer Boost dropdown for persistence
+        "k_120", // ✅ ADDED: Unoccupied setback slider for persistence
       ];
 
       fieldsToSync.forEach((fieldId) => {
@@ -431,7 +438,11 @@ window.TEUI.SectionModules.sect13 = (function () {
               display.textContent = numericValue.toFixed(1); // HSPF range format (e.g., "12.5")
             } else if (fieldId === "f_117") {
               display.textContent = numericValue.toFixed(1); // SEER range format (e.g., "18.0")
-            } else if (fieldId === "d_118" || fieldId === "f_119") {
+            } else if (
+              fieldId === "d_118" ||
+              fieldId === "f_119" ||
+              fieldId === "k_120"
+            ) {
               display.textContent = numericValue.toFixed(0) + "%"; // Percentage slider format (e.g., "89%")
             } else if (fieldId === "f_118") {
               display.textContent = (numericValue * 100).toFixed(0) + "%"; // Decimal efficiency format (e.g., "89%")
