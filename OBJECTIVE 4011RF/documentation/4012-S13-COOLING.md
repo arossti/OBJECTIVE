@@ -78,7 +78,7 @@ g_118 → coolingState.ventilationMethod → multiple cooling functions → atmo
 
 ## 🎯 **STRATEGIC SOLUTIONS (RANKED BY VIABILITY)**
 
-### **🏆 OPTION 1: SURGICAL g_118 FUNCTION ISOLATION (RECOMMENDED)**
+### **🏆 OPTION 1: SURGICAL g_118 FUNCTION ISOLATION (RECOMMENDED - FAILED SEPT 08, 2025)**
 
 **Approach**: Fix **only the specific functions** that read g_118, bypass shared coolingState.
 
@@ -246,7 +246,7 @@ function calculateComplexFunction(isReferenceCalculation = false) {
 
 ---
 
-## 📝 **POST-IMPLEMENTATION FINDINGS (Nov 2024 Session)**
+## 📝 **POST-IMPLEMENTATION FINDINGS (Sept 9 2025 Session)**
 
 ### **What We Attempted:**
 
@@ -279,7 +279,7 @@ function calculateComplexFunction(isReferenceCalculation = false) {
 
 3. **Mode Switching Timing**: The Pattern 1 temporary mode switching approach works for simple fields but fails when complex shared objects (like `coolingState`) are involved.
 
-4. **Baseline Drift**: The OFFLINE version we rolled back to didn't produce the expected e_10=211.6, suggesting the baseline itself may have issues.
+4. **Baseline Drift**: The OFFLINE version we rolled back to correctly produced the expected e_10=211.6 and h_10 = 93.6. 
 
 ### **Key Insights:**
 
@@ -291,9 +291,9 @@ function calculateComplexFunction(isReferenceCalculation = false) {
 
 ### **Recommendations for Future Attempts:**
 
-1. **Fix UI Persistence First**: Before tackling the complex cooling isolation, fix the simpler UI persistence issues for l_118, l_119, and k_120. These are likely just missing from `fieldsToSync` arrays or need proper dropdown/slider handling.
+**Update (Sept 10, 2025):** The UI persistence issues for `l_118` (ACH), `l_119` (Summer Boost), and `k_120` (Unoccupied Setback) have been successfully resolved. The fix involved correcting the `setDefaults` functions in both `TargetState` and `ReferenceState` and completing the `fieldsToSync` array and display logic in `ModeManager.refreshUI`. This resolves the state bleeding and ensures these fields persist correctly across mode switches.
 
-2. **Document Baseline**: Establish and document exactly which version of S13 produces the correct h_10 and e_10 values before attempting any dual-state fixes.
+2. **Document Baseline**: Restored S13 version that produces the correct h_10 and e_10 values before attempting any dual-state fixes. (Current S13 is correct, Sept 09, 10.32am, 2025)
 
 3. **Consider Alternative Architecture**: The shared `coolingState` object may need to be completely redesigned rather than patched. Consider creating separate cooling modules for Target and Reference from the ground up.
 

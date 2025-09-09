@@ -44,23 +44,22 @@ window.TEUI.SectionModules.sect13 = (function () {
       }
     },
     setDefaults: function () {
-      // S13-specific Target defaults - MUST match sectionRows values
+      // ✅ REFACTORED: Read defaults from the single source of truth (sectionRows)
       this.state = {
-        d_113: "Heatpump", // Primary heating system (dropdown)
-        f_113: "12.5", // HSPF coefficient (slider)
-        d_116: "Cooling", // Cooling system (dropdown) - FIXED: was "AC"
-        f_117: "18.0", // SEER coefficient (slider)
-        d_118: "89", // Heat recovery efficiency (slider) - 89% default
-        f_118: "0.89", // Heat recovery efficiency (decimal for calculations)
-        d_119: "14.00", // ✅ FIXED: Per person ventilation rate (was incorrectly "No" - that's for d_119 free cooling)
-        f_119: "0.75", // Free cooling efficiency (slider)
-        g_118: "Volume by Schedule", // ✅ FIXED: Target default should be Volume by Schedule (Excel baseline)
-        j_115: "0.98", // AFUE for Gas/Oil systems
-        j_116: "3.3", // ✅ ADDED: Dedicated cooling COP for Gas/Oil systems (Target default)
-        l_118: "3.0", // ✅ ADDED: Volumetric ventilation rate (ACH)
-        l_119: "None", // ✅ ADDED: Summer Boost dropdown
-        k_120: "90", // ✅ ADDED: Unoccupied setback slider
-        // Add other section-specific user-editable fields as needed
+        d_113: getFieldDefault("d_113") || "Heatpump",
+        f_113: getFieldDefault("f_113") || "12.5",
+        d_116: getFieldDefault("d_116") || "Cooling",
+        f_117: getFieldDefault("f_117") || "18.0",
+        d_118: getFieldDefault("d_118") || "89",
+        f_118: getFieldDefault("f_118") || "0.89",
+        d_119: getFieldDefault("d_119") || "14.00",
+        f_119: getFieldDefault("f_119") || "0.75",
+        g_118: getFieldDefault("g_118") || "Volume by Schedule",
+        j_115: getFieldDefault("j_115") || "0.98",
+        j_116: getFieldDefault("j_116") || "3.3",
+        l_118: getFieldDefault("l_118") || "3.0",
+        l_119: getFieldDefault("l_119") || "None",
+        k_120: getFieldDefault("k_120") || "90",
       };
     },
     saveState: function () {
@@ -99,76 +98,65 @@ window.TEUI.SectionModules.sect13 = (function () {
       const referenceValues =
         window.TEUI?.ReferenceValues?.[currentStandard] || {};
 
-      // TEMPORARY DEBUG: Verify ReferenceValues.js lookup
-      console.log(
-        `[S13 DEBUG] Loading reference standard: "${currentStandard}"`,
-      );
-      console.log(`[S13 DEBUG] Found reference values:`, {
-        f_113: referenceValues.f_113,
-        j_115: referenceValues.j_115,
-        d_118: referenceValues.d_118,
-        d_119: referenceValues.d_119,
-      });
-
-      // ✅ FIXED: Apply correct reference values from ReferenceValues.js based on d_13 selection
+      // ✅ REFACTORED: Initialize from sectionRows defaults, then apply selective overrides
       this.state = {
-        // Heating System
-        d_113: "Electricity", // ✅ FIXED: Reference default should be Electricity (matches calculation behavior)
-        f_113: referenceValues.f_113 || "7.1", // ✅ Min. HSPF if Heatpump (from ReferenceValues.js)
-        j_115: referenceValues.j_115 || "0.90", // ✅ Min. AFUE if Gas or Oil (from ReferenceValues.js)
-
-        // Cooling System
-        d_116: "No Cooling", // ✅ FIXED: Reference default should be No Cooling (matches e_10=274.8 baseline)
-        f_117: referenceValues.f_117 || "15.0", // SEER for cooling (fallback - not in ReferenceValues.js)
-        j_116: referenceValues.j_116 || "3.3", // ✅ Min. COPc if Dedicated Cooling (from ReferenceValues.js)
-
-        // Ventilation System
-        d_118: referenceValues.d_118 || "81", // ✅ Min. ERV/HRV Efficiency% (from ReferenceValues.js)
-        f_118: referenceValues.f_118 || "0.60", // HRV efficiency (fallback)
-        d_119: referenceValues.d_119 || "8.33", // ✅ Min. Vent. Rate Per Person l/sec (from ReferenceValues.js)
-        g_118: "Volume Constant", // ✅ FIXED: Reference default should be Volume Constant (building code baseline)
-        l_118: referenceValues.l_118 || "3.50", // ✅ Min. Volumetric Vent. Rate (from ReferenceValues.js)
-
-        // Free Cooling
-        f_119: referenceValues.f_119 || "0.50", // Free cooling efficiency (fallback)
-        l_119: "None", // ✅ ADDED: Summer Boost dropdown (Reference default is None)
-        k_120: "90", // ✅ ADDED: Unoccupied setback slider (Reference default matches Target)
+        // --- Foundation: Initialize from Target field definitions (sectionRows) ---
+        d_113: getFieldDefault("d_113") || "Heatpump",
+        f_113: getFieldDefault("f_113") || "12.5",
+        d_116: getFieldDefault("d_116") || "Cooling",
+        f_117: getFieldDefault("f_117") || "18.0",
+        d_118: getFieldDefault("d_118") || "89",
+        f_118: getFieldDefault("f_118") || "0.89",
+        d_119: getFieldDefault("d_119") || "14.00",
+        f_119: getFieldDefault("f_119") || "0.75",
+        g_118: getFieldDefault("g_118") || "Volume by Schedule",
+        j_115: getFieldDefault("j_115") || "0.98",
+        j_116: getFieldDefault("j_116") || "3.3",
+        l_118: getFieldDefault("l_118") || "3.0",
+        l_119: getFieldDefault("l_119") || "None",
+        k_120: getFieldDefault("k_120") || "90",
       };
 
-      console.log(
-        `S13: Reference defaults loaded from standard: ${currentStandard}`,
-        {
-          f_113: this.state.f_113,
-          j_115: this.state.j_115,
-          d_118: this.state.d_118,
-          d_119: this.state.d_119,
-          g_118: this.state.g_118, // ✅ DEBUG: Check if g_118 is properly initialized
-          j_116: this.state.j_116,
-          l_118: this.state.l_118,
-        },
-      );
+      // --- Selective Reference Overrides ---
+      // Apply correct reference values from ReferenceValues.js based on d_13 selection
+      this.state.d_113 = "Electricity"; // ✅ FIXED: Reference default should be Electricity
+      this.state.f_113 = referenceValues.f_113 || "7.1";
+      this.state.j_115 = referenceValues.j_115 || "0.90";
+      this.state.d_116 = "No Cooling"; // ✅ FIXED: Reference default should be No Cooling
+      this.state.f_117 = referenceValues.f_117 || "15.0";
+      this.state.j_116 = referenceValues.j_116 || "3.3";
+      this.state.d_118 = referenceValues.d_118 || "81";
+      this.state.f_118 = referenceValues.f_118 || "0.60";
+      this.state.d_119 = referenceValues.d_119 || "8.33";
+      this.state.g_118 = "Volume Constant"; // ✅ FIXED: Reference default should be Volume Constant
+      this.state.l_118 = referenceValues.l_118 || "3.50";
+      this.state.f_119 = referenceValues.f_119 || "0.50";
     },
     // MANDATORY: Include onReferenceStandardChange for d_13 changes
     onReferenceStandardChange: function () {
-      console.log("S13: Reference standard changed, updating defaults while preserving user modifications");
-      
+      console.log(
+        "S13: Reference standard changed, updating defaults while preserving user modifications",
+      );
+
       // ✅ S09 PATTERN: Selective update - preserve user-modified values
-      const currentStandard = window.TEUI?.StateManager?.getValue?.("d_13") || "OBC SB10 5.5-6 Z6";
-      const referenceValues = window.TEUI?.ReferenceValues?.[currentStandard] || {};
-      
+      const currentStandard =
+        window.TEUI?.StateManager?.getValue?.("d_13") || "OBC SB10 5.5-6 Z6";
+      const referenceValues =
+        window.TEUI?.ReferenceValues?.[currentStandard] || {};
+
       // Only update system defaults, preserve user-modified slider values
       // Users can set Reference HSPF to 10 for comparison even if standard default is 7.1
       if (!this.state.f_113_userModified) {
         this.state.f_113 = referenceValues.f_113 || "7.1";
       }
       if (!this.state.j_115_userModified) {
-        this.state.j_115 = referenceValues.j_115 || "0.90"; 
+        this.state.j_115 = referenceValues.j_115 || "0.90";
       }
       // Always update system type (this determines calculation methodology)
       this.state.d_113 = referenceValues.d_113 || "Gas";
-      
+
       this.saveState();
-      
+
       // Only refresh UI if currently in reference mode
       if (ModeManager.currentMode === "reference") {
         ModeManager.refreshUI();
@@ -1844,6 +1832,25 @@ window.TEUI.SectionModules.sect13 = (function () {
   //==========================================================================
   // ACCESSOR METHODS
   //==========================================================================
+
+  /**
+   * ✅ NEW HELPER: Get a field's default value from the single source of truth (sectionRows)
+   * This is part of the "Phase 5: Default Values Anti-Pattern" fix.
+   * @param {string} fieldId - The ID of the field to get the default for.
+   * @returns {string | null} The default value, or null if not found.
+   */
+  function getFieldDefault(fieldId) {
+    for (const row of Object.values(sectionRows)) {
+      if (row.cells) {
+        for (const cell of Object.values(row.cells)) {
+          if (cell.fieldId === fieldId && cell.value !== undefined) {
+            return cell.value;
+          }
+        }
+      }
+    }
+    return null; // Return null if no default value is found
+  }
 
   /**
    * Extract field definitions from the integrated layout
