@@ -915,6 +915,9 @@ window.TEUI.SectionModules.sect13 = (function () {
       function (id) {
         return null;
       };
+    
+    // 🔍 PHASE 2 DIAGNOSTIC: Track cooling state updates
+    console.log(`[S13DB] updateCoolingInputs called in ${ModeManager.currentMode} mode`);
 
     // Update state from StateManager
     // TODO: This value should eventually be dynamic, likely from Section 03 weather data
@@ -945,6 +948,9 @@ window.TEUI.SectionModules.sect13 = (function () {
     // ✅ PATTERN 1 TEST: Use ModeManager.getValue() instead of getFieldValue()
     // This will automatically read from correct state based on current mode
     coolingState.ventilationMethod = ModeManager.getValue("g_118") || "Constant"; // Mode-aware reading
+    
+    // 🔍 PHASE 2 DIAGNOSTIC: Track g_118 value assignment
+    console.log(`[S13DB] Set coolingState.ventilationMethod = "${coolingState.ventilationMethod}" (from ModeManager in ${ModeManager.currentMode} mode)`);
 
     // Calculate the intermediate A50 temperature needed for atmospheric calcs
     calculateA50Temp();
@@ -2789,6 +2795,9 @@ window.TEUI.SectionModules.sect13 = (function () {
     // Now calculate d_120 (Volumetric Rate) as it depends on d_119 and g_118
     // ✅ FIXED: Use mode-aware reading for ventilation method
     const ventMethod = getSectionValue("g_118", isReferenceCalculation);
+    
+    // 🔍 PHASE 2 DIAGNOSTIC: Track g_118 reading in calculateVentilationRates
+    console.log(`[S13DB] calculateVentilationRates: ventMethod="${ventMethod}" (isRef=${isReferenceCalculation}, mode=${ModeManager.currentMode})`);
     const ratePerPerson_d119 =
       window.TEUI.parseNumeric(
         isReferenceCalculation
@@ -2975,6 +2984,9 @@ window.TEUI.SectionModules.sect13 = (function () {
     let setbackFactor = 1.0;
     // ✅ FIXED: Use mode-aware reading for ventilation method in free cooling
     const ventilationMethod = getSectionValue("g_118", isReferenceCalculation) || "Constant";
+    
+    // 🔍 PHASE 2 DIAGNOSTIC: Track g_118 reading in calculateFreeCooling
+    console.log(`[S13DB] calculateFreeCooling: ventilationMethod="${ventilationMethod}" (isRef=${isReferenceCalculation}, mode=${ModeManager.currentMode})`);
     const setbackValueStr = getFieldValue("k_120");
     const ventRateM3hr_h120 =
       window.TEUI.parseNumeric(getFieldValue("h_120")) || 0; // Get h_120 value used in limit calc
@@ -3117,6 +3129,9 @@ window.TEUI.SectionModules.sect13 = (function () {
     
     console.log("[Section13] Running Reference Model calculations...");
     try {
+      // 🔍 PHASE 2 DIAGNOSTIC: Track Reference model g_118 before calculations
+      console.log(`[S13DB] Reference Model START: g_118="${ReferenceState.getValue("g_118")}" from ReferenceState`);
+      
       // Helper function to get Reference values with proper fallback
       const getRefValue = (fieldId) => {
         const refFieldId = `ref_${fieldId}`;
@@ -3183,6 +3198,9 @@ window.TEUI.SectionModules.sect13 = (function () {
     
     console.log("[Section13] Running Target Model calculations...");
     try {
+      // 🔍 PHASE 2 DIAGNOSTIC: Track Target model g_118 before cooling calculations
+      console.log(`[S13DB] Target Model START: g_118="${TargetState.getValue("g_118")}" from TargetState`);
+      
       // Run cooling physics *first* to update coolingState centrally
       runIntegratedCoolingCalculations();
 
