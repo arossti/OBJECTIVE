@@ -2831,9 +2831,13 @@ window.TEUI.SectionModules.sect13 = (function () {
           ? getSectionValue("d_119", true)
           : getFieldValue("d_119"),
       ) || 0;
-    // console.log(`[S13 CalcVentRates] Read d_119 as: ${ratePerPerson_d119}`); // Log value read
+    
     const volume = window.TEUI.parseNumeric(getFieldValue("d_105")) || 0;
     const ach = window.TEUI.parseNumeric(getFieldValue("l_118")) || 0;
+    
+    // 🔍 DEBUG: Log all input values for d_120 calculation
+    console.log(`🔍 [S13-VENT] calculateVentilationRates: ventMethod="${ventMethod}", ach(l_118)=${ach}, ratePerPerson(d_119)=${ratePerPerson_d119}, volume(d_105)=${volume}`);
+    console.log(`🔍 [S13-VENT] isReferenceCalculation=${isReferenceCalculation}`);
     const occupiedHours = window.TEUI.parseNumeric(getFieldValue("i_63")) || 0;
     const totalHours = window.TEUI.parseNumeric(getFieldValue("j_63")) || 8760;
     const occupants_d63 = window.TEUI.parseNumeric(getFieldValue("d_63")) || 0;
