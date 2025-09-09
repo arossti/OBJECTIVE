@@ -2475,6 +2475,24 @@ window.TEUI.SectionModules.sect13 = (function () {
     if (fieldId === "d_113") {
       handleHeatingSystemChangeForGhosting(newValue);
     }
+    
+    // 🔍 DEBUG: Special handling for ventilation method changes
+    if (fieldId === "g_118") {
+      console.log(`🔍 [S13-G118] Ventilation method changed to "${newValue}"`);
+      
+      // Check what l_118 value should be used for this method
+      const currentACH = ModeManager.getValue("l_118");
+      console.log(`🔍 [S13-G118] Current l_118 (ACH) value: "${currentACH}"`);
+      
+      // For Volume Constant, l_118 should be 3.0 by default
+      if (newValue === "Volume Constant") {
+        const expectedACH = getFieldDefault("l_118") || "3";
+        console.log(`🔍 [S13-G118] Volume Constant selected - expected l_118: "${expectedACH}", current: "${currentACH}"`);
+        if (currentACH !== expectedACH) {
+          console.log(`⚠️ [S13-G118] ACH MISMATCH: expected ${expectedACH}, got ${currentACH} - this may cause calculation drift`);
+        }
+      }
+    }
 
     // Recalculate and update display
     calculateAll();
@@ -2819,6 +2837,11 @@ window.TEUI.SectionModules.sect13 = (function () {
     const occupiedHours = window.TEUI.parseNumeric(getFieldValue("i_63")) || 0;
     const totalHours = window.TEUI.parseNumeric(getFieldValue("j_63")) || 8760;
     const occupants_d63 = window.TEUI.parseNumeric(getFieldValue("d_63")) || 0;
+    
+    // 🔍 DEBUG: Log all input values for d_120 calculation
+    console.log(`🔍 [S13-VENT] calculateVentilationValues: ventMethod="${ventMethod}", ach(l_118)=${ach}, ratePerPerson(d_119)=${ratePerPerson_d119}, volume(d_105)=${volume}`);
+    console.log(`🔍 [S13-VENT] Supporting values: occupants(d_63)=${occupants_d63}, occupiedHours(i_63)=${occupiedHours}, totalHours(j_63)=${totalHours}`);
+    
     let ventRateLs = 0;
 
     if (ventMethod === "Occupant Constant") {
@@ -2835,12 +2858,16 @@ window.TEUI.SectionModules.sect13 = (function () {
           : 0;
     } else if (ventMethod === "Volume Constant") {
       ventRateLs = volume > 0 ? (ach * volume) / 3.6 : 0;
+      console.log(`🔍 [S13-VENT] Volume Constant calculation: ventRateLs = (${ach} * ${volume}) / 3.6 = ${ventRateLs}`);
     } else {
       // Default to Volume Constant
       ventRateLs = volume > 0 ? (ach * volume) / 3.6 : 0;
+      console.log(`🔍 [S13-VENT] Default (Volume Constant) calculation: ventRateLs = (${ach} * ${volume}) / 3.6 = ${ventRateLs}`);
     }
 
     const ventilationRateLs_d120 = ventRateLs;
+    console.log(`✅ [S13-VENT] Final d_120 result: ${ventilationRateLs_d120} L/s (from method="${ventMethod}", ach=${ach}, volume=${volume})`);
+    
     const ventilationRateM3h_h120 = ventilationRateLs_d120 * 3.6;
 
     // Only update DOM for Target calculations
