@@ -2887,18 +2887,11 @@ window.TEUI.SectionModules.sect13 = (function () {
     
     // 🔍 PHASE 2 DIAGNOSTIC: Track g_118 reading in calculateVentilationRates
     console.log(`[S13DB] calculateVentilationRates: ventMethod="${ventMethod}" (isRef=${isReferenceCalculation}, mode=${ModeManager.currentMode}, d_119=${ratePerPerson})`);
-    const ratePerPerson_d119 =
-      window.TEUI.parseNumeric(
-        isReferenceCalculation
-          ? getSectionValue("d_119", true)
-          : getFieldValue("d_119"),
-      ) || 0;
+    const ratePerPerson_d119 = ratePerPerson; // Already calculated above
     // console.log(`[S13 CalcVentRates] Read d_119 as: ${ratePerPerson_d119}`); // Log value read
     const volume = window.TEUI.parseNumeric(getFieldValue("d_105")) || 0;
     const ach = window.TEUI.parseNumeric(
-      isReferenceCalculation 
-        ? getSectionValue("l_118", true)
-        : getFieldValue("l_118")
+      getSectionValue("l_118", isReferenceCalculation)
     ) || 0;
     const occupiedHours = window.TEUI.parseNumeric(getFieldValue("i_63")) || 0;
     const totalHours = window.TEUI.parseNumeric(getFieldValue("j_63")) || 8760;
@@ -2996,7 +2989,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     const occupancyFactor =
       totalHours_j63 > 0 ? occupiedHours_i63 / totalHours_j63 : 0;
     const latentLoadFactor_i122 = coolingState.latentLoadFactor;
-    const summerBoostRawValue = getFieldValue("l_119");
+    const summerBoostRawValue = getSectionValue("l_119", isReferenceCalculation);
     const summerBoostFactor =
       summerBoostRawValue === "None" || summerBoostRawValue === ""
         ? 1.0
@@ -3083,7 +3076,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     
     // 🔍 PHASE 2 DIAGNOSTIC: Track g_118 reading in calculateFreeCooling
     console.log(`[S13DB] calculateFreeCooling: ventilationMethod="${ventilationMethod}" (isRef=${isReferenceCalculation}, mode=${ModeManager.currentMode})`);
-    const setbackValueStr = getFieldValue("k_120");
+    const setbackValueStr = getSectionValue("k_120", isReferenceCalculation);
     const ventRateM3hr_h120 =
       window.TEUI.parseNumeric(getFieldValue("h_120")) || 0; // Get h_120 value used in limit calc
 
