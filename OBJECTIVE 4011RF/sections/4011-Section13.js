@@ -468,7 +468,7 @@ window.TEUI.SectionModules.sect13 = (function () {
   window.TEUI.sect13.ModeManager = ModeManager;
   window.TEUI.sect13.TargetState = TargetState;
   window.TEUI.sect13.ReferenceState = ReferenceState;
-  window.TEUI.sect13.coolingState = coolingState; // PHASE 2: Expose for context switching
+  // PHASE 2: coolingState will be exposed after it's defined
 
   //==========================================================================
   // HEADER CONTROLS INJECTION
@@ -693,6 +693,9 @@ window.TEUI.SectionModules.sect13 = (function () {
     A50_temp: 0, // Added for A50 temperature calculation
     ventilationMethod: "", // Added for g_118
   };
+  
+  // PHASE 2: Expose coolingState globally now that it's defined
+  window.TEUI.sect13.coolingState = coolingState;
 
   /** [Cooling Calc] Calculate latent load factor */
   function calculateLatentLoadFactor() {
