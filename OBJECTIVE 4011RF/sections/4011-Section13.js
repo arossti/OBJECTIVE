@@ -2176,7 +2176,10 @@ window.TEUI.SectionModules.sect13 = (function () {
       });
 
       // Listener for d_118 (Ventilation Efficiency) changes
-      sm.addListener("d_118", calculateVentilationValues);
+      sm.addListener("d_118", () => {
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
+      });
 
       // ✅ REMOVED: g_118 StateManager listener (causes contamination)
       // Dropdown handler already triggers calculateAll() properly with dual-engine
@@ -2187,10 +2190,22 @@ window.TEUI.SectionModules.sect13 = (function () {
       // });
 
       // Listener for d_119 (Per Person Rate) changes
-      sm.addListener("d_119", calculateVentilationRates);
+      sm.addListener("d_119", () => {
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
+      });
 
       // Listener for l_119 (Summer Boost) changes
-      sm.addListener("l_119", calculateCoolingVentilation);
+      sm.addListener("l_119", () => {
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
+      });
+
+      // ✅ ADDED: Listener for k_120 (Unoccupied Setback) changes
+      sm.addListener("k_120", () => {
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
+      });
 
       // --- Listeners for m_129 Dependencies --- Corrected in troubleshooting
       sm.addListener("d_129", calculateMitigatedCED); // d_129 from S14
@@ -2287,7 +2302,11 @@ window.TEUI.SectionModules.sect13 = (function () {
           }
         }
 
-        if (window.TEUI.StateManager) {
+        // ✅ FIX: Use mode-aware ModeManager instead of direct StateManager
+        if (ModeManager && typeof ModeManager.setValue === "function") {
+          ModeManager.setValue(fieldId, valueToStoreInState, "user-modified");
+        } else if (window.TEUI.StateManager) {
+          // Fallback to direct StateManager if ModeManager not available
           window.TEUI.StateManager.setValue(
             fieldId,
             valueToStoreInState,
@@ -2295,9 +2314,9 @@ window.TEUI.SectionModules.sect13 = (function () {
           );
         }
 
-        // Trigger calculations that depend on k_120
-        calculateFreeCooling();
-        calculateMitigatedCED();
+        // ✅ FIX: Trigger full calculation chain, not just individual functions
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
       }
     }
   }
