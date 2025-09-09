@@ -468,6 +468,7 @@ window.TEUI.SectionModules.sect13 = (function () {
   window.TEUI.sect13.ModeManager = ModeManager;
   window.TEUI.sect13.TargetState = TargetState;
   window.TEUI.sect13.ReferenceState = ReferenceState;
+  window.TEUI.sect13.coolingState = coolingState; // PHASE 2: Expose for context switching
 
   //==========================================================================
   // HEADER CONTROLS INJECTION
@@ -973,6 +974,87 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   // --- End of Integrated Cooling Logic ---
+
+  //==========================================================================
+  // PHASE 2: ISOLATED COOLING CONTEXT FOR DUAL-STATE
+  //==========================================================================
+  
+  /**
+   * Creates an isolated cooling context for Target or Reference calculations
+   * This prevents shared state contamination between modes
+   * @param {boolean} isReference - Whether this is for Reference calculations
+   * @returns {Object} Isolated cooling context with all necessary values
+   */
+  function createIsolatedCoolingContext(isReference = false) {
+    // First ensure coolingState has been initialized with updateCoolingInputs
+    if (!coolingState.atmPressure) {
+      updateCoolingInputs();
+    }
+    
+    // Start with a copy of the shared cooling constants and calculated values
+    const isolatedContext = {
+      // Physical constants (same for both modes)
+      nightTimeTemp: coolingState.nightTimeTemp,
+      coolingSeasonMeanRH: coolingState.coolingSeasonMeanRH,
+      groundTemp: coolingState.groundTemp,
+      airMass: coolingState.airMass,
+      specificHeatCapacity: coolingState.specificHeatCapacity,
+      latentHeatVaporization: coolingState.latentHeatVaporization,
+      atmPressure: coolingState.atmPressure || 101325,
+      
+      // Calculated atmospheric values (will be recalculated)
+      latentLoadFactor: 1.0,
+      pSatAvg: 0,
+      partialPressure: 0,
+      pSatIndoor: 0,
+      partialPressureIndoor: 0,
+      humidityRatioIndoor: 0,
+      humidityRatioAvg: 0,
+      humidityRatioDifference: 0,
+      wetBulbTemperature: 0,
+      A50_temp: 0,
+      freeCoolingLimit: 0,
+      daysActiveCooling: 120,
+      
+      // Building parameters (from external sources)
+      coolingSetTemp: coolingState.coolingSetTemp,
+      coolingDegreeDays: coolingState.coolingDegreeDays,
+      buildingVolume: coolingState.buildingVolume,
+      buildingArea: coolingState.buildingArea,
+      coolingLoad: coolingState.coolingLoad,
+    };
+    
+    // Read mode-specific user inputs
+    if (isReference) {
+      isolatedContext.ventilationMethod = ReferenceState.getValue("g_118") || "Volume Constant";
+      isolatedContext.perPersonRate = ReferenceState.getValue("d_119") || "8.33";
+      isolatedContext.achRate = ReferenceState.getValue("l_118") || "3.50";
+      isolatedContext.summerBoost = ReferenceState.getValue("l_119") || "None";
+      isolatedContext.unoccupiedSetback = ReferenceState.getValue("k_120") || "90";
+      isolatedContext.freeCoolingEfficiency = ReferenceState.getValue("f_119") || "0.50";
+      isolatedContext.hrvEfficiency = ReferenceState.getValue("d_118") || "81";
+    } else {
+      isolatedContext.ventilationMethod = TargetState.getValue("g_118") || "Volume by Schedule";
+      isolatedContext.perPersonRate = TargetState.getValue("d_119") || "14.00";
+      isolatedContext.achRate = TargetState.getValue("l_118") || "3";
+      isolatedContext.summerBoost = TargetState.getValue("l_119") || "None";
+      isolatedContext.unoccupiedSetback = TargetState.getValue("k_120") || "90";
+      isolatedContext.freeCoolingEfficiency = TargetState.getValue("f_119") || "0.75";
+      isolatedContext.hrvEfficiency = TargetState.getValue("d_118") || "89";
+    }
+    
+    // 🔍 PHASE 2 DIAGNOSTIC: Log context creation
+    console.log(`[S13DB] Created ${isReference ? 'Reference' : 'Target'} cooling context:`, {
+      ventilationMethod: isolatedContext.ventilationMethod,
+      perPersonRate: isolatedContext.perPersonRate,
+      achRate: isolatedContext.achRate,
+      summerBoost: isolatedContext.summerBoost,
+      unoccupiedSetback: isolatedContext.unoccupiedSetback,
+      hrvEfficiency: isolatedContext.hrvEfficiency
+    });
+    
+    return isolatedContext;
+  }
 
   //==========================================================================
   // REFERENCE INDICATOR CONFIGURATION
@@ -3196,12 +3278,25 @@ window.TEUI.SectionModules.sect13 = (function () {
     const originalMode = ModeManager.currentMode;
     ModeManager.currentMode = "target"; // Temporarily switch mode
     
+    // PHASE 2: Declare at function scope for finally block access
+    let originalCoolingStateValues;
+    
     console.log("[Section13] Running Target Model calculations...");
     try {
       // 🔍 PHASE 2 DIAGNOSTIC: Track Target model g_118 before cooling calculations
       console.log(`[S13DB] Target Model START: g_118="${TargetState.getValue("g_118")}" from TargetState`);
       
-      // Run cooling physics *first* to update coolingState centrally
+      // PHASE 2: Create isolated Target cooling context
+      const targetCoolingContext = createIsolatedCoolingContext(false);
+      
+      // Store the original coolingState values
+      originalCoolingStateValues = { ...coolingState };
+      
+      // Copy isolated context values into global coolingState
+      // This preserves the object reference while updating values
+      Object.assign(coolingState, targetCoolingContext);
+      
+      // Run cooling physics with isolated context
       runIntegratedCoolingCalculations();
 
       // Get external dependency values
@@ -3238,6 +3333,10 @@ window.TEUI.SectionModules.sect13 = (function () {
     } catch (error) {
       console.error("[Section13] Error in Target Model calculations:", error);
     } finally {
+      // PHASE 2: Restore original coolingState values
+      if (typeof originalCoolingStateValues !== 'undefined') {
+        Object.assign(coolingState, originalCoolingStateValues);
+      }
       ModeManager.currentMode = originalMode; // ✅ CRITICAL: Always restore mode
     }
     console.log("[Section13] Target Model calculations complete");
