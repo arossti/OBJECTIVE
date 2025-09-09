@@ -2160,14 +2160,24 @@ window.TEUI.SectionModules.sect15 = (function () {
       "ref_d_101", // Area air
       "d_102",
       "ref_d_102", // Area ground
+
+      // S13 Mechanical Loads (Independent Models: different HVAC systems)
       "d_113",
-      "ref_d_113", // Primary heating system
+      "ref_d_113", // M.1.0 Primary heating system
+      "f_113",
+      "ref_f_113", // HSPF Efficiency
       "d_114",
-      "ref_d_114", // Heating demand
+      "ref_d_114", // M.2.1Heating demand
+      "j_115",
+      "ref_j_115", // AFUE Efficiency
       "d_117",
-      "ref_d_117", // S07 Cooling load
+      "ref_d_117", // M.3.5
+      "m_121",
+      "ref_m _121", // V.2.3 Net Htg. Season Ventilation Loss
       "d_122",
-      "ref_d_122", // Additional gains
+      "ref_d_122", // V.3.1 Additional gains
+      "h_124",
+      "ref_h_124", // V.4.2 Free Cooling Limit
       "d_142",
       "ref_d_142", // Cost premium
 
@@ -2241,8 +2251,6 @@ window.TEUI.SectionModules.sect15 = (function () {
       "ref_m_19", // Billing period
       "m_43",
       "ref_m_43", // S06 Onsite renewable subtotal
-      "m_121",
-      "ref_m_121", // S13 Ventilation load
     ];
 
     const uniqueDependencies = [...new Set(dependencies)];

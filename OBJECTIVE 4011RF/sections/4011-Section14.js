@@ -1397,8 +1397,12 @@ window.TEUI.SectionModules.sect14 = (function () {
       "ref_k_103", // Additional gain factors
 
       // S13 Mechanical Loads (Independent Models: different HVAC systems)
-      "m_121",
-      "ref_m_121", // S13 ventilation load
+      "d_122",
+      "ref_d_122", // S13 V.3.1
+      "d_123",
+      "ref_d_123", // S13 V.3.3
+      "h_124",
+      "ref_h_124", // S13 V.4.2
     ];
 
     // Remove duplicates
