@@ -2362,6 +2362,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         if (fieldId === "l_118") {
           // console.log("[S13 DEBUG l_118] l_118 changed by user, explicitly calling S13.calculateAll().")
           calculateAll();
+          ModeManager.updateCalculatedDisplayValues(); // Ensure display updates
         }
         // ADDED: Explicitly trigger calculateAll after user modifies d_119 (Per Person Vent)
         if (fieldId === "d_119") {
@@ -3222,10 +3223,25 @@ window.TEUI.SectionModules.sect13 = (function () {
     const originalMode = ModeManager.currentMode;
     ModeManager.currentMode = "reference"; // Temporarily switch mode
     
+    // PHASE 2: Declare at function scope for finally block access
+    let originalCoolingStateValues;
+    
     console.log("[Section13] Running Reference Model calculations...");
     try {
       // 🔍 PHASE 2 DIAGNOSTIC: Track Reference model g_118 before calculations
       console.log(`[S13DB] Reference Model START: g_118="${ReferenceState.getValue("g_118")}" from ReferenceState`);
+      
+      // PHASE 2: Create isolated Reference cooling context
+      const referenceCoolingContext = createIsolatedCoolingContext(true);
+      
+      // Store the original coolingState values
+      originalCoolingStateValues = { ...coolingState };
+      
+      // Copy isolated context values into global coolingState
+      Object.assign(coolingState, referenceCoolingContext);
+      
+      // Run cooling physics with isolated context (skip update since we just set values)
+      runIntegratedCoolingCalculations(true);
       
       // Helper function to get Reference values with proper fallback
       const getRefValue = (fieldId) => {
@@ -3279,6 +3295,10 @@ window.TEUI.SectionModules.sect13 = (function () {
         error,
       );
     } finally {
+      // PHASE 2: Restore original coolingState values
+      if (typeof originalCoolingStateValues !== 'undefined') {
+        Object.assign(coolingState, originalCoolingStateValues);
+      }
       ModeManager.currentMode = originalMode; // ✅ CRITICAL: Always restore mode
     }
   }
