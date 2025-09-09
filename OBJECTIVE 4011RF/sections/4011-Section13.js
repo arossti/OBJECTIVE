@@ -961,8 +961,11 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /** [Cooling Calc] Orchestrates the internal cooling-related calculations */
-  function runIntegratedCoolingCalculations() {
-    updateCoolingInputs();
+  function runIntegratedCoolingCalculations(skipUpdate = false) {
+    // PHASE 2: Skip update if we're using an isolated context
+    if (!skipUpdate) {
+      updateCoolingInputs();
+    }
 
     // Ensure atmospheric & humidity are calculated BEFORE factors/limits that depend on them
     calculateAtmosphericValues();
@@ -2882,7 +2885,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     const ventMethod = getSectionValue("g_118", isReferenceCalculation);
     
     // 🔍 PHASE 2 DIAGNOSTIC: Track g_118 reading in calculateVentilationRates
-    console.log(`[S13DB] calculateVentilationRates: ventMethod="${ventMethod}" (isRef=${isReferenceCalculation}, mode=${ModeManager.currentMode})`);
+    console.log(`[S13DB] calculateVentilationRates: ventMethod="${ventMethod}" (isRef=${isReferenceCalculation}, mode=${ModeManager.currentMode}, d_119=${ratePerPerson})`);
     const ratePerPerson_d119 =
       window.TEUI.parseNumeric(
         isReferenceCalculation
@@ -2891,10 +2894,17 @@ window.TEUI.SectionModules.sect13 = (function () {
       ) || 0;
     // console.log(`[S13 CalcVentRates] Read d_119 as: ${ratePerPerson_d119}`); // Log value read
     const volume = window.TEUI.parseNumeric(getFieldValue("d_105")) || 0;
-    const ach = window.TEUI.parseNumeric(getFieldValue("l_118")) || 0;
+    const ach = window.TEUI.parseNumeric(
+      isReferenceCalculation 
+        ? getSectionValue("l_118", true)
+        : getFieldValue("l_118")
+    ) || 0;
     const occupiedHours = window.TEUI.parseNumeric(getFieldValue("i_63")) || 0;
     const totalHours = window.TEUI.parseNumeric(getFieldValue("j_63")) || 8760;
     const occupants_d63 = window.TEUI.parseNumeric(getFieldValue("d_63")) || 0;
+    
+    // 🔍 PHASE 2 DIAGNOSTIC: Track ACH value being used
+    console.log(`[S13DB] calculateVentilationRates: ACH=${ach} (isRef=${isReferenceCalculation})`);
     let ventRateLs = 0;
 
     if (ventMethod === "Occupant Constant") {
@@ -3299,8 +3309,8 @@ window.TEUI.SectionModules.sect13 = (function () {
       // This preserves the object reference while updating values
       Object.assign(coolingState, targetCoolingContext);
       
-      // Run cooling physics with isolated context
-      runIntegratedCoolingCalculations();
+      // Run cooling physics with isolated context (skip update since we just set values)
+      runIntegratedCoolingCalculations(true);
 
       // Get external dependency values
       const tedValue = window.TEUI.parseNumeric(getFieldValue("d_127")) || 0;
