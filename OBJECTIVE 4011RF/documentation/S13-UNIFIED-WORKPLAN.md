@@ -626,3 +626,50 @@ This consolidation preserves ALL insights while creating a clear, actionable pat
 ---
 
 **This consolidated workplan now includes complete breakthrough solutions. S13 HSPF persistence is solved, and Reference dependency flow should work correctly after S14 listener fixes.**
+
+---
+
+## 🔍 **LATEST BREAKTHROUGH: ATOMIC UPDATE TIMING ISSUE** (December 2024)
+
+### **✅ MAJOR SUCCESS: S14 Fallback Contamination Eliminated**
+**Issue**: Safari/Chrome calculation differences for h_10 values  
+**Root Cause**: S14 `getRefValue()` function had fallback contamination: `refValue || fallbackValue || domValue`  
+**Fix**: Eliminated Target fallback: `refValue || fallbackValue || 0`  
+**Result**: ✅ **Safari instantly fixed** - consistent calculation behavior across browsers
+
+### **🎯 CURRENT ISSUE: g_118 Dropdown State Synchronization**
+**Pattern Observed**:
+1. Initial load: h_10 = 93.6 ✅ (correct)
+2. Change g_118 to "Volume Constant": h_10 = 95.8 ❌ (wrong)  
+3. Cooling bump (d_116 toggle): h_10 = 93.6 ✅ (corrected)
+
+**Root Cause Analysis**:
+- **NOT S15 reading wrong values** - S15 listeners are correctly configured
+- **NOT calculation logic errors** - formulas are mathematically correct  
+- **NOT missing listeners** - dependency pairs are properly set up
+- **IS atomic update timing** - S13 publishes partial value sets during calculations
+
+### **🔧 ATOMIC UPDATE PROBLEM:**
+**When g_118 changes**:
+1. S13 starts dual-engine calculations
+2. S13 publishes d_117 (triggers S15 listener)
+3. S15 calculates with NEW d_117 but OLD m_121/d_122 values ❌
+4. S13 finishes, publishes m_121/d_122 (triggers S15 again)
+5. Multiple partial calculations create wrong intermediate results
+
+**Evidence**: Logs show S15 Reference calculations use "Volume Constant" but Target calculations still use "Volume by Schedule" - indicating state synchronization timing issue within S13 itself.
+
+### **📋 DEPENDENCY UNDERSTANDING CLARIFIED:**
+**Listener Scope Principle**: ✅ **Sections should ONLY listen for terms used in their own calculations**
+- **S14 listens**: `m_121`, `d_122` (values it consumes from S13)
+- **S15 listens**: `d_117`, `m_121`, `d_113`, `d_114` (values it consumes from S13)
+- **S15 does NOT listen**: `g_118`, `l_118`, `d_120` (S13 internal calculations)
+
+**This is architecturally correct** - the issue is S13's internal state synchronization during dropdown changes.
+
+### **🎯 NEXT FOCUS:**
+**Priority 1**: Fix S13 g_118 dropdown → internal state synchronization  
+**Priority 2**: Ensure S13 atomic publication of all output values  
+**Priority 3**: Test cooling bump elimination across both browsers
+
+**Foundation**: S14 contamination eliminated, S15 listeners correctly configured, calculation formulas verified correct.
