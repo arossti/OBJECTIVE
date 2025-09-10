@@ -84,16 +84,27 @@
 - ❌ **Dual cooling state objects**: Broke heating calculations  
 - ❌ **Direct state reading bypass**: Cooling calculations too interconnected
 
-**🔧 Suspected Current Fix Areas**:
-- **Line 859**: `getFieldValue("g_118")` → should use TargetState.getValue("g_118")
-- **Line 2638**: `getFieldValue("g_118")` → should use TargetState.getValue("g_118")  
-- **Line 2647**: `getFieldValue("l_118")` → should use TargetState.getValue("l_118")
+**🔬 HYPOTHESIS: Mixed Reading Pattern Issue** (September 10, 2025)
+**Discovery**: Inconsistent value reading methods within S13 ventilation calculations:
+- **✅ Working**: `ModeManager.getValue("g_118")` (mode-aware, line 946)
+- **❌ Suspected**: `getFieldValue("l_118")` (mode-agnostic, line 836)
 
-**⚠️ Complexity Warning**: Cooling calculations may require **fundamental architectural redesign** rather than incremental fixes, based on previous failed attempts.
+**Theory**: Mixed reading patterns create **partial state synchronization** where:
+- g_118 reads correctly from current state → "Volume Constant" ✅
+- l_118 reads from stale/global state → wrong ACH value ❌
+- Result: Inconsistent calculation inputs → wrong d_120 → wrong j_32 → wrong h_10
+
+**🧪 PROPOSED TEST (Single Field)**:
+Replace **line 836**: `getFieldValue("l_118")` → `ModeManager.getValue("l_118")`
+**Expected Result**: Eliminates cooling bump requirement for h_10 = 93.6
+
+**⚠️ CAUTION**: Test with single field first to validate hypothesis before broader changes
 
 **Next Steps**: 
-1. Attempt getFieldValue() violations fix (incremental approach)
-2. If cooling physics breaks, may require v4.012 framework approach for proper dual-state cooling
+1. **Document hypothesis** (completed)
+2. **Single field test** (l_118 fix only)
+3. **Validate result** before additional changes
+4. **If successful**: Apply pattern to remaining problematic fields
 
 ## 📋 **PENDING ISSUES** (Future Work)
 
