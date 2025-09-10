@@ -29,46 +29,78 @@
 
 ---
 
-## 🏆 **RESOLVED SUCCESS PATTERNS**
+## ✅ **COMPLETED BREAKTHROUGHS** (Do Not Retry)
 
-### **✅ HSPF Slider Value Persistence** (FIXED)
+### **✅ S14 Fallback Contamination Eliminated** (December 2024 - CRITICAL FIX)
+**Issue**: Safari worked correctly, Chrome had inconsistent h_10 values  
+**Root Cause**: S14 `getRefValue()` function: `refValue || fallbackValue || domValue` - fell back to Target DOM values when Reference values weren't ready  
+**Fix Applied**: Changed to `refValue || fallbackValue || 0` - eliminated Target fallback contamination  
+**Result**: ✅ **Both browsers now behave consistently** (both need cooling bump, but consistently)  
+**Impact**: Critical timing contamination eliminated from S13→S14→S15→S04→S01 chain
+
+### **✅ HSPF Slider Value Persistence** (COMPLETED)
 **Issue**: HSPF slider position didn't restore correctly when switching modes
-- **Target f_113 = 12.5, Reference f_113 = 7.1**
-- **Status**: ✅ **RESOLVED** - slider persistence working perfectly
+**Fix**: Proper element targeting using S10's proven pattern
+**Result**: Target f_113=12.5, Reference f_113=7.1 working perfectly
+**Status**: ✅ **COMPLETELY RESOLVED** - slider persistence working
 
-### **✅ Dropdown State Isolation** (FIXED)  
+### **✅ Dropdown State Isolation** (COMPLETED)  
 **Issue**: Dropdown changes in Reference mode affected Target mode (state contamination)
-- **Problem**: refreshUI() missing dropdown value synchronization
-- **Status**: ✅ **RESOLVED** - dropdown.value = stateValue added to refreshUI()
+**Fix**: Added dropdown.value = stateValue to refreshUI()
+**Status**: ✅ **COMPLETELY RESOLVED** - mode isolation working
 
-### **✅ S15 Reference Calculation Engine** (FIXED)
+### **✅ S15 Reference Calculation Engine** (COMPLETED)
 **Issue**: Reference d_136 stuck at 301,986.05 regardless of S13 changes  
-- **Root Cause**: S15 used broken getReferenceValue() instead of getValue("ref_fieldId")
-- **Status**: ✅ **RESOLVED** - S15 now reads ref_d_113, ref_d_116 directly
+**Fix**: S15 now reads ref_d_113, ref_d_116 directly instead of broken getReferenceValue()
+**Status**: ✅ **COMPLETELY RESOLVED** - S15 Reference calculations working
 
-### **✅ AFUE Mode-Aware Publication** (FIXED)
+### **✅ AFUE Mode-Aware Publication** (COMPLETED)
 **Issue**: j_115 AFUE changes not published with ref_ prefix in Reference mode
-- **Root Cause**: Blur handler used direct StateManager.setValue() instead of ModeManager.setValue()
-- **Status**: ✅ **RESOLVED** - j_115 now uses mode-aware publication
+**Fix**: Changed blur handler to use ModeManager.setValue() instead of direct StateManager.setValue()
+**Status**: ✅ **COMPLETELY RESOLVED** - j_115 mode-aware publication working
 
-### **✅ Reference Default Alignment** (FIXED)
+### **✅ Reference Default Alignment** (COMPLETED)
 **Issue**: Reference UI defaults didn't match calculation behavior (priming required)
-- **Fixed**: d_113="Electricity", d_116="No Cooling" align with e_10 baseline calculations
-- **Status**: ✅ **RESOLVED** - no priming needed for Reference mode
+**Fix**: Set d_113="Electricity", d_116="No Cooling" to align with e_10 baseline calculations
+**Status**: ✅ **COMPLETELY RESOLVED** - no priming needed for Reference mode
 
 ---
 
-## 🎯 **REMAINING ISSUES**
+## 🎯 **CURRENT FOCUS ISSUES** (Active Work)
 
-### **❓ Ventilation Reference Mode** (INVESTIGATION NEEDED)
-**Issue**: Ventilation calculations may not be fully dual-state compliant
-- **Pattern**: Similar to other S13 fixes (publication, state reading)
-- **Status**: 🔍 **PENDING INVESTIGATION**
+### **🚨 PRIORITY 1: g_118 Dropdown State Synchronization** (ACTIVE INVESTIGATION)
+**Issue**: g_118 "Volume Constant" change → h_10 = 95.8 (wrong) instead of 93.6 (correct)  
+**Pattern**: Both Safari and Chrome now consistently require "cooling bump" to reach correct h_10 = 93.6  
+**Evidence**: Logs show S13 Reference calculations use "Volume Constant" but Target calculations still use "Volume by Schedule"  
+
+**🔬 Root Cause Analysis**:
+- **NOT simple state reading issue** - Previous attempts at surgical g_118 fixes failed (September 2024)
+- **IS shared coolingState object contamination** - Both engines use same `coolingState.ventilationMethod`
+- **Complex cooling physics chain**: g_118 → atmospheric → humidity → thermal calculations deeply interconnected
+- **Atomic timing issue**: S13 publishes partial value sets during dual-engine calculations
+
+**🎯 Known Failed Approaches** (Do Not Retry):
+- ❌ **Surgical function isolation**: Broke cooling physics chain
+- ❌ **Dual cooling state objects**: Broke heating calculations  
+- ❌ **Direct state reading bypass**: Cooling calculations too interconnected
+
+**🔧 Suspected Current Fix Areas**:
+- **Line 859**: `getFieldValue("g_118")` → should use TargetState.getValue("g_118")
+- **Line 2638**: `getFieldValue("g_118")` → should use TargetState.getValue("g_118")  
+- **Line 2647**: `getFieldValue("l_118")` → should use TargetState.getValue("l_118")
+
+**⚠️ Complexity Warning**: Cooling calculations may require **fundamental architectural redesign** rather than incremental fixes, based on previous failed attempts.
+
+**Next Steps**: 
+1. Attempt getFieldValue() violations fix (incremental approach)
+2. If cooling physics breaks, may require v4.012 framework approach for proper dual-state cooling
+
+## 📋 **PENDING ISSUES** (Future Work)
 
 ### **❓ j_116 User Editability** (IMPLEMENTATION NEEDED)  
 **Issue**: j_116 not user-editable when Gas/Oil + Cooling=true
-- **Expected**: j_116 should become editable for dedicated cooling COP
-- **Status**: 🔧 **PENDING IMPLEMENTATION**
+**Expected**: j_116 should become editable for dedicated cooling COP
+**Status**: 🔧 **PENDING IMPLEMENTATION** (lower priority)
 
 **Required Fix Pattern** (S10/S11 proven solution):
 ```javascript
@@ -629,47 +661,378 @@ This consolidation preserves ALL insights while creating a clear, actionable pat
 
 ---
 
-## 🔍 **LATEST BREAKTHROUGH: ATOMIC UPDATE TIMING ISSUE** (December 2024)
+## ❌ **FAILED APPROACHES** (Do Not Retry)
 
-### **✅ MAJOR SUCCESS: S14 Fallback Contamination Eliminated**
-**Issue**: Safari/Chrome calculation differences for h_10 values  
-**Root Cause**: S14 `getRefValue()` function had fallback contamination: `refValue || fallbackValue || domValue`  
-**Fix**: Eliminated Target fallback: `refValue || fallbackValue || 0`  
-**Result**: ✅ **Safari instantly fixed** - consistent calculation behavior across browsers
+### **❌ Traffic Cop Pattern for S14/S15** (Sept 8 2025 - REGRESSION)
+**Attempted**: Added Traffic Cop coordination to S14 and S15 calculateAll() functions  
+**Result**: ❌ **BROKE heating system calculations** - Heatpump vs Electricity vs Gas/Oil all affected  
+**Lesson**: Traffic Cop prevents necessary listener-based recalculations, causing critical regression  
+**Conclusion**: Individual section listeners are needed for proper cross-section communication
 
-### **🎯 CURRENT ISSUE: g_118 Dropdown State Synchronization**
-**Pattern Observed**:
-1. Initial load: h_10 = 93.6 ✅ (correct)
-2. Change g_118 to "Volume Constant": h_10 = 95.8 ❌ (wrong)  
-3. Cooling bump (d_116 toggle): h_10 = 93.6 ✅ (corrected)
+### **❌ Completion Signal Approach** (Sept 8 2025 - REGRESSION)  
+**Attempted**: Replaced S15's individual field listeners with S13/S14 completion signals  
+**Result**: ❌ **BROKE all heating system calculations** - eliminated essential dependency responsiveness  
+**Lesson**: S15 must respond to individual field changes (d_117, m_121, d_113, d_114) immediately  
+**Conclusion**: Completion signals break the reactive calculation architecture
 
-**Root Cause Analysis**:
-- **NOT S15 reading wrong values** - S15 listeners are correctly configured
-- **NOT calculation logic errors** - formulas are mathematically correct  
-- **NOT missing listeners** - dependency pairs are properly set up
-- **IS atomic update timing** - S13 publishes partial value sets during calculations
+### **❌ Comprehensive S13 Refactor** (August 2024 - DOCUMENTED FAILURE)
+**Attempted**: Full dual-state refactor of entire S13 file  
+**Result**: ❌ **State object corruption, Excel parity loss, calculation chain breaks**  
+**Lesson**: S13 is too complex for comprehensive changes - incremental approach only  
+**Evidence**: ReferenceState.getValue("d_113") stuck returning "Gas" regardless of mode
 
-### **🔧 ATOMIC UPDATE PROBLEM:**
-**When g_118 changes**:
-1. S13 starts dual-engine calculations
-2. S13 publishes d_117 (triggers S15 listener)
-3. S15 calculates with NEW d_117 but OLD m_121/d_122 values ❌
-4. S13 finishes, publishes m_121/d_122 (triggers S15 again)
-5. Multiple partial calculations create wrong intermediate results
+### **❌ Surgical g_118 Function Isolation** (September 2024 - FAILED)
+**Attempted**: Fix only specific functions that read g_118, bypass shared coolingState object  
+**Approach**: Direct state reading to avoid `coolingState.ventilationMethod` contamination  
+**Result**: ❌ **Broke cooling physics chain** - cooling calculations too interconnected to isolate  
+**Evidence**: Atmospheric, humidity, thermal calculations all depend on shared cooling state  
+**Lesson**: **Cooling calculations require fundamental architectural redesign**, not surgical fixes
 
-**Evidence**: Logs show S15 Reference calculations use "Volume Constant" but Target calculations still use "Volume by Schedule" - indicating state synchronization timing issue within S13 itself.
+### **❌ Dual Cooling State Objects** (September 2024 - BROKE HEATING)
+**Attempted**: Create separate `targetCoolingState` and `referenceCoolingState` objects  
+**Result**: ❌ **Broke heating calculations** - lost atmospheric/humidity values when reassigning coolingState  
+**Lesson**: Cooling state is too interconnected with heating calculations to split cleanly
 
-### **📋 DEPENDENCY UNDERSTANDING CLARIFIED:**
-**Listener Scope Principle**: ✅ **Sections should ONLY listen for terms used in their own calculations**
-- **S14 listens**: `m_121`, `d_122` (values it consumes from S13)
-- **S15 listens**: `d_117`, `m_121`, `d_113`, `d_114` (values it consumes from S13)
-- **S15 does NOT listen**: `g_118`, `l_118`, `d_120` (S13 internal calculations)
+---
 
-**This is architecturally correct** - the issue is S13's internal state synchronization during dropdown changes.
+## 🔬 **CURRENT UNDERSTANDING: ATOMIC UPDATE TIMING ISSUE** (December 2024)
 
-### **🎯 NEXT FOCUS:**
-**Priority 1**: Fix S13 g_118 dropdown → internal state synchronization  
-**Priority 2**: Ensure S13 atomic publication of all output values  
-**Priority 3**: Test cooling bump elimination across both browsers
+### **🎯 Breakthrough Pattern Identified:**
+**Before S14 Fix**:
+- **Safari**: Correct timing → h_10 = 93.6 ✅  
+- **Chrome**: Fast execution → wrong values → h_10 ≠ 93.6 ❌
 
-**Foundation**: S14 contamination eliminated, S15 listeners correctly configured, calculation formulas verified correct.
+**After S14 Fix**:  
+- **Both Safari & Chrome**: Consistent behavior → both need "cooling bump" to reach h_10 = 93.6
+- **Progress**: Inconsistent → consistent (but still wrong until cooling bump)
+
+### **🔧 Root Cause: S13 Internal State Synchronization**
+**Evidence from Logs**:
+- **S13 Reference calculations**: Use "Volume Constant" ✅ (correct)
+- **S13 Target calculations**: Still use "Volume by Schedule" ❌ (wrong)  
+- **This proves**: g_118 dropdown change not properly synchronizing S13's internal Target state
+
+### **🎯 Fix Target: S13 getFieldValue() Violations**
+**Critical Lines Identified** (from detailed violations table):
+- **Line 859**: `getFieldValue("g_118")` → should use `TargetState.getValue("g_118")`
+- **Line 2638**: `getFieldValue("g_118")` → should use `TargetState.getValue("g_118")`  
+- **Line 2647**: `getFieldValue("l_118")` → should use `TargetState.getValue("l_118")`
+
+**Theory**: These violations cause S13 Target calculations to read stale DOM/StateManager values instead of current TargetState values after dropdown changes.
+
+---
+
+## 🧩 **COOLING COMPLEXITY ANALYSIS** (Historical Context)
+
+### **🔬 Why g_118 is Uniquely Complex:**
+**Unlike other S13 fields, g_118 affects a shared coolingState object that contains:**
+- **Atmospheric calculations** (pressure, temperature)
+- **Humidity calculations** (psychrometric properties)  
+- **Thermal calculations** (heat transfer coefficients)
+- **Ventilation method routing** (`coolingState.ventilationMethod`)
+
+**The Challenge**: Both Target and Reference engines share the same `coolingState` object, causing contamination when g_118 changes affect the shared `ventilationMethod` property.
+
+### **🔧 Architectural Implication:**
+**Based on previous failed attempts**, g_118 dual-state isolation may require **v4.012 framework approach** with tuple-based calculations rather than incremental fixes to the current shared cooling state architecture.
+
+**Current Strategy**: Attempt incremental getFieldValue() fixes first, but prepare for fundamental cooling architecture redesign if needed.
+
+## 📊 **IMPLEMENTATION ROADMAP**
+
+### **🎯 Immediate Next Steps:**
+1. **Fix S13 getFieldValue() violations** at lines 859, 2638, 2647
+2. **Test g_118 state synchronization** after fixes  
+3. **Validate cooling bump elimination** in both browsers
+4. **If incremental fixes fail**: Consider v4.012 framework approach for cooling architecture
+
+### **🏆 Success Metrics:**
+- **h_10 = 93.6 consistently** without cooling bump requirement
+- **g_118 changes only affect Target mode** when S13 in Target mode  
+- **State isolation maintained** across all S13 fields (rows 113-124)
+
+### **📋 Documentation Status:**
+- **✅ S15-FIX.md**: Moved to history (completed)
+- **✅ Workplan**: Reorganized with clear completed/active/failed sections
+- **✅ Progress**: S14 contamination fix documented as major breakthrough
+- **🎯 Focus**: Clear priority on g_118 atomic timing issue
+
+---
+
+**This unified workplan now provides a complete roadmap for completing S13 dual-state architecture with clear historical context and focused next steps.**
+- **Shared coolingState object**: `coolingState.ventilationMethod` used by both engines
+- **Contamination vector**: Target engine sets value, Reference engine inherits contaminated value
+- **Complex cooling interdependencies**: coolingState contains atmospheric, humidity, thermal calculations
+
+---
+
+## 🔬 **COOLING DEPENDENCY ANALYSIS**
+
+### **g_118 Direct Dependencies:**
+- **d_120** (Volumetric Ventilation Rate): Calculated in `calculateVentilationRates()`
+- **h_124** (Free Cooling Potential): Calculated in `calculateFreeCooling()`
+
+### **Cooling State Dependencies (Complex Chain):**
+```
+g_118 → coolingState.ventilationMethod → multiple cooling functions → atmospheric calculations → humidity calculations → thermal calculations
+```
+
+**The Challenge**: Cooling calculations are **deeply interconnected** - isolating one value breaks the entire cooling physics chain.
+
+### **Evidence from Detective Logging:**
+```
+[S13 DETECTIVE] calculateFreeCooling: mode=reference, ventMethod="Volume Constant"  ✅ CORRECT
+[S13 DETECTIVE] isReferenceCalculation=true, coolingState.ventilationMethod="Volume by Schedule"  ❌ CONTAMINATED!
+```
+
+**This proves**: Pattern 1 mode-aware reading works, but **shared coolingState object** gets contaminated.
+
+---
+
+## 🧪 **ATTEMPTED SOLUTIONS & LESSONS LEARNED**
+
+### **❌ ATTEMPT 1: Dual Cooling.js Modules (Over-engineered)**
+**Approach**: Create separate `Cooling.js` and `Cooling-Reference.js` modules
+**Result**: **Over-complex** - S13 has internalized cooling calculations, doesn't use external modules
+**Lesson**: Understand existing architecture before adding complexity
+
+### **❌ ATTEMPT 2: Isolated Cooling State Objects (Broke Heating)**
+**Approach**: Create `targetCoolingState` and `referenceCoolingState` objects
+**Result**: **Broke heating calculations** - reassigning `coolingState` reference lost calculated atmospheric/humidity values
+**Lesson**: Cooling state is too interconnected to isolate cleanly
+
+### **✅ ATTEMPT 3: Pattern 1 Framework (Partial Success)**
+**Approach**: Implement temporary mode switching in calculation engines
+**Result**: **Works for simple fields** (d_113, d_116, d_118) but **fails for complex shared objects**
+**Lesson**: Pattern 1 works when fields are read directly, fails when shared objects are involved
+
+---
+
+## 🎯 **STRATEGIC SOLUTIONS (RANKED BY VIABILITY)**
+
+### **🏆 OPTION 1: SURGICAL g_118 FUNCTION ISOLATION (RECOMMENDED - FAILED SEPT 08, 2025)**
+
+**Approach**: Fix **only the specific functions** that read g_118, bypass shared coolingState.
+
+**Implementation Strategy**:
+```javascript
+// ✅ SURGICAL: In calculateVentilationRates()
+const ventMethod = isReferenceCalculation 
+  ? ReferenceState.getValue("g_118") 
+  : TargetState.getValue("g_118");
+// Don't use coolingState.ventilationMethod
+
+// ✅ SURGICAL: In calculateFreeCooling()  
+const ventilationMethod = isReferenceCalculation
+  ? ReferenceState.getValue("g_118")
+  : TargetState.getValue("g_118");
+// Don't use coolingState.ventilationMethod
+```
+
+**Advantages**:
+- ✅ **Minimal risk**: Only touches g_118 reading, preserves all other cooling logic
+- ✅ **Surgical precision**: Fixes contamination vector without side effects
+- ✅ **Follows working pattern**: Same approach as d_113, d_116, d_118
+- ✅ **Preserves cooling complexity**: All atmospheric/humidity/thermal calculations untouched
+
+**Implementation Steps**:
+1. **Target-only test**: Implement surgical fix for Target engine only
+2. **Verify no regression**: Test heating systems, cooling systems still work
+3. **Add Reference support**: Extend fix to Reference engine
+4. **Complete testing**: Verify g_118 state isolation achieved
+
+### **⚖️ OPTION 2: TARGET-FIRST COOLING PATHWAY (YOUR SUGGESTION)**
+
+**Approach**: Implement isolated cooling **for Target calculations only** first, then tackle Reference.
+
+**Implementation Strategy**:
+```javascript
+// Phase 1: Target-only isolation
+function calculateTargetModel() {
+  const originalMode = ModeManager.currentMode;
+  ModeManager.currentMode = "target";
+  
+  // Create Target-specific cooling context
+  const targetCoolingContext = { ...coolingState };
+  targetCoolingContext.ventilationMethod = TargetState.getValue("g_118");
+  
+  // Use isolated context for Target calculations only
+  runTargetCoolingCalculations(targetCoolingContext);
+  
+  ModeManager.currentMode = originalMode;
+}
+```
+
+**Advantages**:
+- ✅ **Incremental approach**: Solve Target isolation first
+- ✅ **Lower risk**: Reference calculations unchanged initially  
+- ✅ **Test-driven**: Verify Target isolation before tackling Reference complexity
+
+### **❌ OPTION 3: COMPLETE COOLING REDESIGN (HIGH RISK)**
+
+**Approach**: Redesign entire cooling architecture with dual-state from ground up.
+
+**Why Not Recommended**:
+- ❌ **High complexity**: Cooling calculations are extremely interconnected
+- ❌ **Regression risk**: Could break working heating/cooling functionality  
+- ❌ **Time investment**: Weeks of work for one dropdown field
+- ❌ **Over-engineering**: Disproportionate effort for remaining issue
+
+---
+
+## 📋 **RECOMMENDED IMPLEMENTATION PLAN**
+
+### **Phase 1: Surgical g_118 Isolation (Target-First)**
+**Timeline**: 1-2 hours  
+**Risk**: Low  
+**Approach**: Fix g_118 reading in Target calculations only
+
+**Steps**:
+1. **Identify contamination points**: Functions that read `coolingState.ventilationMethod`
+2. **Replace with direct state reading**: Use `TargetState.getValue("g_118")` in Target calculations
+3. **Test Target isolation**: Verify g_118 Target changes don't affect Reference
+4. **Preserve Reference behavior**: Leave Reference calculations unchanged initially
+
+### **Phase 2: Reference g_118 Integration**
+**Timeline**: 1 hour  
+**Risk**: Medium  
+**Approach**: Extend fix to Reference calculations
+
+**Steps**:
+1. **Add Reference g_118 reading**: Use `ReferenceState.getValue("g_118")` in Reference calculations
+2. **Test complete isolation**: Verify both Target and Reference g_118 independence
+3. **Validate calculation accuracy**: Ensure no Excel parity regression
+
+### **Phase 3: Documentation & Completion**
+**Timeline**: 30 minutes  
+**Risk**: Low  
+**Approach**: Document success pattern and update workplans
+
+**Steps**:
+1. **Update 4012-CHEATSHEET.md**: Add g_118 surgical fix pattern
+2. **Update S13-UNIFIED-WORKPLAN.md**: Mark g_118 issue as resolved
+3. **Create success template**: Pattern for future complex shared object issues
+
+---
+
+## 🎯 **SUCCESS CRITERIA**
+
+### **Target Isolation Test:**
+- [ ] Target g_118 change → h_10 updates, e_10 stays stable ✅
+- [ ] Heating systems still work (Gas/Oil/Heatpump/Electricity) ✅
+- [ ] Cooling systems still work (Cooling/No Cooling) ✅
+- [ ] Ventilation efficiency still works (d_118 slider) ✅
+
+### **Complete Isolation Test:**
+- [ ] Reference g_118 change → e_10 updates, h_10 stays stable ✅
+- [ ] Both modes maintain independent g_118 values ✅
+- [ ] Excel parity maintained (h_10 ≈ 93.6 for Heatpump) ✅
+- [ ] No calculation regression in any S13 field ✅
+
+---
+
+## 📚 **ARCHITECTURAL INSIGHTS**
+
+### **Why g_118 is Different:**
+1. **Shared Object Dependency**: Unlike other fields, g_118 affects shared `coolingState` object
+2. **Complex Cooling Physics**: Cooling calculations involve atmospheric, humidity, thermal interdependencies
+3. **Multiple Usage Points**: g_118 affects multiple calculation chains (d_120, h_124, cooling ventilation)
+
+### **Pattern 1 Limitations:**
+- ✅ **Works for direct state reading**: Fields read directly from state objects
+- ❌ **Fails for shared objects**: When multiple engines share the same object reference
+- 🎯 **Solution**: **Surgical bypass of shared objects** for contamination-prone values
+
+### **Success Pattern for Complex Fields:**
+```javascript
+// ✅ SURGICAL PATTERN: Bypass shared objects for contamination-prone fields
+function calculateComplexFunction(isReferenceCalculation = false) {
+  // Read directly from state, bypass shared object
+  const contaminationProneValue = isReferenceCalculation
+    ? ReferenceState.getValue("fieldId")
+    : TargetState.getValue("fieldId");
+    
+  // Use direct value, not shared object property
+  // Keep all other shared object logic unchanged
+}
+```
+
+---
+
+## 🔧 **IMPLEMENTATION READINESS**
+
+**Current State**: Ready for **Option 1 (Surgical g_118 Isolation)**
+
+**Next Steps**:
+1. **Map exact g_118 usage points** in S13 functions
+2. **Implement Target-first surgical fix**
+3. **Test Target isolation thoroughly**  
+4. **Extend to Reference calculations**
+5. **Complete dual-state g_118 isolation**
+
+**Expected Outcome**: **Complete S13 dual-state compliance** with all fields (rows 113-124) having perfect state isolation.
+
+---
+
+**This represents the final piece of the S13 dual-state architecture puzzle.** 🧩
+
+---
+
+## 📝 **POST-IMPLEMENTATION FINDINGS (Sept 9 2025 Session)**
+
+### **What We Attempted:**
+
+#### **Phase 1: Surgical ACH Isolation**
+- **Implemented**: Replaced all `getFieldValue()` calls with `getSectionValue()` for l_118, d_119, l_119, k_120
+- **Result**: ❌ ACH contamination persisted, values still mixed between modes
+- **Why it Failed**: The contamination was happening at a deeper level than just the read operations
+
+#### **Phase 2: Isolated Cooling Contexts**
+- **Implemented**: Created `createIsolatedCoolingContext()` to separate Target and Reference cooling states
+- **Result**: ✅ Fixed ACH contamination BUT ❌ broke calculation accuracy
+- **Side Effects**: 
+  - h_10 drifted from expected 93.6 to 94.5 initially, then to 99.3
+  - e_10 showed unexpected value of 152.3
+  - Cooling calculations (j_116) showed wrong values (2.66 instead of 3.3)
+
+#### **Phase 3: Ventilation Handler Fixes**
+- **Implemented**: 
+  - Made k_120 handler use `ModeManager.setValue()` instead of direct StateManager
+  - Added missing StateManager listeners for k_120
+  - Changed all ventilation listeners to call `calculateAll()` instead of individual functions
+- **Result**: ❌ No improvement in state persistence, calculations further degraded
+- **Why it Failed**: The changes triggered calculation storms and interfered with the original flow
+
+### **Root Causes of Failure:**
+
+1. **Architectural Mismatch**: S13 was designed with shared state assumptions that are fundamentally incompatible with dual-state architecture. The cooling calculations are deeply interconnected through the shared `coolingState` object.
+
+2. **Calculation Chain Complexity**: Each fix created ripple effects through the calculation chain. Fixing one contamination point often exposed or created others.
+
+3. **Mode Switching Timing**: The Pattern 1 temporary mode switching approach works for simple fields but fails when complex shared objects (like `coolingState`) are involved.
+
+4. **Baseline Drift**: The OFFLINE version we rolled back to correctly produced the expected e_10=211.6 and h_10 = 93.6. 
+
+### **Key Insights:**
+
+1. **Shared Object Problem**: The fundamental issue is that both Target and Reference engines share the same `coolingState` object. Any attempt to isolate values within this shared context creates inconsistencies.
+
+2. **Whack-a-Mole Pattern**: We were fixing symptoms (individual field contaminations) rather than the root cause (shared state architecture).
+
+3. **Incremental Fixes Break**: Unlike other sections, S13's cooling calculations are so tightly coupled that incremental fixes tend to break more than they fix.
+
+### **Recommendations for Future Attempts:**
+
+**Update (Sept 10, 2025):** The UI persistence issues for `l_118` (ACH), `l_119` (Summer Boost), and `k_120` (Unoccupied Setback) have been successfully resolved. The fix involved correcting the `setDefaults` functions in both `TargetState` and `ReferenceState` and completing the `fieldsToSync` array and display logic in `ModeManager.refreshUI`. This resolves the state bleeding and ensures these fields persist correctly across mode switches.
+
+2. **Document Baseline**: Restored S13 version that produces the correct h_10 and e_10 values before attempting any dual-state fixes. (Current S13 is correct, Sept 09, 10.32am, 2025)
+
+3. **Consider Alternative Architecture**: The shared `coolingState` object may need to be completely redesigned rather than patched. Consider creating separate cooling modules for Target and Reference from the ground up.
+
+4. **Limit Scope**: Focus on one specific issue at a time (e.g., just l_118 persistence) and ensure it works completely before moving to the next.
+
+### **Why This Exceeds Current Context:**
+
+The complexity of S13 with its integrated cooling physics, atmospheric calculations, humidity calculations, and thermal interdependencies creates a web of dependencies that is difficult to untangle within a conversational debugging context. Each attempted fix revealed new layers of complexity and interdependency that weren't apparent from the initial analysis.
+
+The section appears to require a fundamental architectural redesign rather than surgical fixes to achieve true dual-state compliance.
