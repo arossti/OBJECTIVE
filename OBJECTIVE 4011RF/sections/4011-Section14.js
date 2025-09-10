@@ -962,7 +962,7 @@ window.TEUI.SectionModules.sect14 = (function () {
           window.TEUI?.StateManager?.getReferenceValue(fieldId);
         const domValue = getNumericValue(fieldId);
 
-        const finalValue = refValue || fallbackValue || domValue;
+        const finalValue = refValue || fallbackValue || 0; // ✅ FIXED: No Target fallback contamination
 
         // TEMPORARY DEBUG: Only log problematic values now that we know the issue
         if (!finalValue || isNaN(finalValue)) {
