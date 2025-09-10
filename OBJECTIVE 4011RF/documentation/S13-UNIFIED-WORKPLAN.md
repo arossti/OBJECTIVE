@@ -704,6 +704,12 @@ This consolidation preserves ALL insights while creating a clear, actionable pat
 **Result**: ❌ **Broke heating calculations** - lost atmospheric/humidity values when reassigning coolingState  
 **Lesson**: Cooling state is too interconnected with heating calculations to split cleanly
 
+### **❌ Comprehensive S10 Pattern Standardization** (September 10, 2024 - BROKE EXCEL PARITY)
+**Attempted**: Apply S10 proven pattern to all S13 field reading at once  
+**Result**: ❌ **Broke Excel parity** - e_10 = 152.3 instead of 211.6, fundamental calculation drift  
+**Lesson**: S13 complexity requires incremental, field-by-field testing to preserve Excel parity  
+**Evidence**: Broad changes alter core calculation behavior, violating "never assume calculation errors" principle
+
 ---
 
 ## 🔬 **CURRENT UNDERSTANDING: ATOMIC UPDATE TIMING ISSUE** (December 2024)
