@@ -2833,7 +2833,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       ) || 0;
     
     const volume = window.TEUI.parseNumeric(getFieldValue("d_105")) || 0;
-    const ach = window.TEUI.parseNumeric(getFieldValue("l_118")) || 0;
+    const ach = window.TEUI.parseNumeric(ModeManager.getValue("l_118")) || 0;
     
     // 🔍 DEBUG: Log all input values for d_120 calculation
     console.log(`🔍 [S13-VENT] calculateVentilationRates: ventMethod="${ventMethod}", ach(l_118)=${ach}, ratePerPerson(d_119)=${ratePerPerson_d119}, volume(d_105)=${volume}`);
@@ -2940,7 +2940,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     const occupancyFactor =
       totalHours_j63 > 0 ? occupiedHours_i63 / totalHours_j63 : 0;
     const latentLoadFactor_i122 = coolingState.latentLoadFactor;
-    const summerBoostRawValue = getFieldValue("l_119");
+    const summerBoostRawValue = ModeManager.getValue("l_119");
     const summerBoostFactor =
       summerBoostRawValue === "None" || summerBoostRawValue === ""
         ? 1.0
@@ -3024,7 +3024,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     let setbackFactor = 1.0;
     // ✅ FIXED: Use mode-aware reading for ventilation method in free cooling
     const ventilationMethod = getSectionValue("g_118", isReferenceCalculation) || "Constant";
-    const setbackValueStr = getFieldValue("k_120");
+    const setbackValueStr = ModeManager.getValue("k_120");
     const ventRateM3hr_h120 =
       window.TEUI.parseNumeric(getFieldValue("h_120")) || 0; // Get h_120 value used in limit calc
 
