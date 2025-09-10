@@ -1834,6 +1834,22 @@ window.TEUI.SectionModules.sect13 = (function () {
   //==========================================================================
 
   /**
+   * 🧪 TEST HELPER: Explicit parameter-based state reading (mirroring Reference mode success)
+   * This implements the same pattern that Reference mode uses successfully
+   * @param {string} fieldId - The ID of the field to get
+   * @param {boolean} isReferenceCalculation - True for Reference state, false for Target state
+   * @returns {string | null} The value from the specified state
+   */
+  function getSectionValue(fieldId, isReferenceCalculation = false) {
+    console.log(`🧪 [S13-TEST] getSectionValue: fieldId="${fieldId}", isReferenceCalculation=${isReferenceCalculation}`);
+    const value = isReferenceCalculation 
+      ? ReferenceState.getValue(fieldId)
+      : TargetState.getValue(fieldId);
+    console.log(`🧪 [S13-TEST] getSectionValue result: "${value}"`);
+    return value;
+  }
+
+  /**
    * ✅ NEW HELPER: Get a field's default value from the single source of truth (sectionRows)
    * This is part of the "Phase 5: Default Values Anti-Pattern" fix.
    * @param {string} fieldId - The ID of the field to get the default for.
@@ -2699,7 +2715,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     const coolingSystemType = ModeManager.getValue("d_116") || "No Cooling";
     const heatingSystemType = isReferenceCalculation
       ? getSectionValue("d_113", true) // Reference reads Reference state
-      : TargetState.getValue("d_113"); // Target reads Target state
+      : getSectionValue("d_113", false); // TEST: Use same pattern for Target state
     const coolingDemand_m129 =
       window.TEUI.parseNumeric(getFieldValue("m_129")) || 0;
     const copcool_hp_j113 =
