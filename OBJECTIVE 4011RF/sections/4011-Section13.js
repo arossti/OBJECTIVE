@@ -704,7 +704,16 @@ window.TEUI.SectionModules.sect13 = (function () {
   function createIsolatedCoolingContext(mode) {
     // For now, just return a clone of the old global object.
     // This ensures that calculations are not yet affected.
-    return { ...coolingState };
+    const context = { ...coolingState };
+    const isReference = mode === "reference";
+    const stateSource = isReference ? ReferenceState : TargetState;
+
+    // CHUNK 2 "SWITCH-ON":
+    // We now populate one property with a mode-aware value.
+    context.ventilationMethod = stateSource.getValue("g_118");
+
+    // ... all other properties remain cloned from the old global state for now ...
+    return context;
   }
 
   /** [Cooling Calc] Calculate latent load factor */
@@ -962,7 +971,8 @@ window.TEUI.SectionModules.sect13 = (function () {
     coolingState.coolingLoad = getNumericValue("l_128") || 0; // Read mitigated cooling load from S14 - Note: May cause dependency loop issues if S14 reads S13 outputs
     // ✅ PATTERN 1 TEST: Use ModeManager.getValue() instead of getFieldValue()
     // This will automatically read from correct state based on current mode
-    coolingState.ventilationMethod = ModeManager.getValue("g_118") || "Constant"; // Mode-aware reading
+    // CHUNK 2: Read from isolated context instead of global state
+    coolingState.ventilationMethod = coolingContext.ventilationMethod || "Constant";
 
     // Calculate the intermediate A50 temperature needed for atmospheric calcs
     calculateA50Temp(isReferenceCalculation, coolingContext);
