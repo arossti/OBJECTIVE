@@ -278,6 +278,31 @@ By following this chunked approach, we build a safety net at each step. We can v
 
 ---
 
+## 7. Critical Discovery: S03 Climate Data Issue (September 11, 2025)
+
+### **🔍 BREAKTHROUGH FINDING:**
+During testing, we discovered that the state mixing observed during location changes (S03 climate data propagation) **predates our S13 refactor work entirely**. This issue exists in the S13-OFFLINE.js baseline version and represents a separate architectural problem.
+
+### **Issue Separation:**
+- **S03 Climate Issue**: Climate data changes in Target mode contaminate Reference calculations across multiple sections
+- **S13 Cooling Issue**: Shared `coolingState` object between Target/Reference engines within S13 (our current refactor target)
+
+### **Strategic Decision:**
+**Continue with S13 refactor** to resolve the cooling state isolation issue, while documenting the S03 climate propagation issue as a separate item for future resolution.
+
+### **Why Continue S13 Refactor:**
+1. **Distinct Problems**: S13 cooling contamination is separate from S03 climate propagation
+2. **Clear Value**: Eliminating shared `coolingState` will improve S13's architectural soundness
+3. **Measurable Benefit**: Should eliminate "cooling bump" requirement for stable `h_10 = 93.6`
+4. **Focused Scope**: S13 refactor addresses internal cooling calculations, not upstream climate data
+
+### **Documentation Strategy:**
+- Mark S03 climate propagation as separate issue requiring future investigation
+- Continue S13 work with clear understanding that climate-related state mixing is upstream
+- Success criteria adjusted to focus on S13-internal cooling state isolation
+
+---
+
 ## Appendix A: Historical Context & Completed Work (`S13-UNIFIED-WORKPLAN.md`)
 
 *This section contains the full text of the `S13-UNIFIED-WORKPLAN.md` document. It serves as a comprehensive historical record of all previously completed breakthroughs, pending issues, and detailed analyses of failed attempts. It is preserved here as an "encyclopedia" to prevent the repetition of past mistakes.*

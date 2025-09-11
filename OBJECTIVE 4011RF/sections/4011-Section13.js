@@ -712,13 +712,31 @@ window.TEUI.SectionModules.sect13 = (function () {
     // We now populate one property with a mode-aware value.
     context.ventilationMethod = stateSource.getValue("g_118");
 
+    // CHUNK 3A "MICRO-STEP": 
+    // Add A50_temp - an internal calculated value, not an upstream dependency
+    // This will be calculated fresh for each context, avoiding shared state contamination
+    context.A50_temp = null; // Will be calculated by calculateA50Temp function
+
+    // CHUNK 3B "MICRO-STEP":
+    // Add pSatAvg - average saturation pressure, calculated internally
+    context.pSatAvg = null; // Will be calculated by calculateAtmosphericValues function
+
+    // CHUNK 3C "MICRO-STEP":
+    // Add humidityRatioAvg - calculated in calculateHumidityRatios
+    context.humidityRatioAvg = null; // Will be calculated by calculateHumidityRatios function
+
+    // CHUNK 3D "MICRO-STEP":
+    // Add humidityRatioDifference - calculated from humidityRatioAvg
+    context.humidityRatioDifference = null; // Will be calculated by calculateHumidityRatios function
+
     // ... all other properties remain cloned from the old global state for now ...
     return context;
   }
 
   /** [Cooling Calc] Calculate latent load factor */
   function calculateLatentLoadFactor(isReferenceCalculation, coolingContext) {
-    const hDiff = coolingState.humidityRatioDifference;
+    // CHUNK 3D: Read from context instead of global state
+    const hDiff = coolingContext.humidityRatioDifference;
     const LHV = coolingState.latentHeatVaporization;
     const Cp = coolingState.specificHeatCapacity;
     const Tdiff = coolingState.nightTimeTemp - coolingState.coolingSetTemp;
@@ -744,16 +762,18 @@ window.TEUI.SectionModules.sect13 = (function () {
 
   /** [Cooling Calc] Calculate atmospheric values */
   function calculateAtmosphericValues(isReferenceCalculation, coolingContext) {
-    const t_outdoor = coolingState.A50_temp;
+    // CHUNK 3A: Read from context instead of global state
+    const t_outdoor = coolingContext.A50_temp;
     const outdoorRH = coolingState.coolingSeasonMeanRH;
     const t_indoor = coolingState.coolingSetTemp;
     const indoorRH_percent =
       window.TEUI.parseNumeric(getFieldValue("d_59")) || 45;
     const indoorRH = indoorRH_percent / 100;
 
-    coolingState.pSatAvg =
+    // CHUNK 3B: Write to context instead of global state
+    coolingContext.pSatAvg =
       610.94 * Math.exp((17.625 * t_outdoor) / (t_outdoor + 243.04));
-    coolingState.partialPressure = coolingState.pSatAvg * outdoorRH;
+    coolingState.partialPressure = coolingContext.pSatAvg * outdoorRH;
 
     coolingState.pSatIndoor =
       610.94 * Math.exp((17.625 * t_indoor) / (t_indoor + 243.04));
@@ -764,7 +784,8 @@ window.TEUI.SectionModules.sect13 = (function () {
   function calculateHumidityRatios(isReferenceCalculation, coolingContext) {
     const atmPressure = coolingState.atmPressure || 101325;
     const pPartialIndoor = coolingState.partialPressureIndoor;
-    const pSatAvgOutdoor = coolingState.pSatAvg; // Get Saturation Pressure Outdoor (A56)
+    // CHUNK 3B: Read from context instead of global state
+    const pSatAvgOutdoor = coolingContext.pSatAvg; // Get Saturation Pressure Outdoor (A56)
 
     // Calculate Indoor Humidity Ratio (A61)
     if (atmPressure - pPartialIndoor === 0) {
@@ -783,20 +804,23 @@ window.TEUI.SectionModules.sect13 = (function () {
     const pPartialOutdoor_forA62 = pSatAvgOutdoor * outdoorRH_forA62;
 
     if (atmPressure - pSatAvgOutdoor === 0) {
-      // Check denominator using pSatAvgOutdoor (A56)
+      // CHUNK 3B: Check denominator using pSatAvgOutdoor from context (A56)
       console.warn(
         "Cooling Calc: Division by zero prevented in outdoor humidity ratio.",
       );
-      coolingState.humidityRatioAvg = 0;
+      // CHUNK 3C: Write to context instead of global state
+      coolingContext.humidityRatioAvg = 0;
     } else {
       // Use the partial pressure based on 70% RH (pPartialOutdoor_forA62)
-      coolingState.humidityRatioAvg =
-        (0.62198 * pPartialOutdoor_forA62) / (atmPressure - pSatAvgOutdoor); // USE pSatAvgOutdoor (A56) in denominator
+      // CHUNK 3C: Write to context instead of global state
+      coolingContext.humidityRatioAvg =
+        (0.62198 * pPartialOutdoor_forA62) / (atmPressure - pSatAvgOutdoor); // CHUNK 3B: USE pSatAvgOutdoor from context (A56) in denominator
     }
 
     // Calculate Difference (A63)
-    coolingState.humidityRatioDifference =
-      coolingState.humidityRatioAvg - coolingState.humidityRatioIndoor;
+    // CHUNK 3D: Write to context instead of global state
+    coolingContext.humidityRatioDifference =
+      coolingContext.humidityRatioAvg - coolingState.humidityRatioIndoor;
   }
 
   /** [Cooling Calc] Calculate free cooling capacity limit (Potential Annual Sensible kWh) */
@@ -917,8 +941,9 @@ window.TEUI.SectionModules.sect13 = (function () {
   /** [Cooling Calc] Calculate the intermediate temperature A50 based on Excel logic */
   function calculateA50Temp(isReferenceCalculation, coolingContext) {
     // Based on Excel E64 = E60 - (E60 - (E60 - (100 - E59)/5)) * (0.1 + 0.9 * (E59 / 100))
-    const E60 = coolingState.nightTimeTemp;
-    const E59 = (coolingState.coolingSeasonMeanRH || 0.5585) * 100; // Use state value or default
+    // CHUNK 3A: Read from context instead of global state
+    const E60 = coolingContext.nightTimeTemp;
+    const E59 = (coolingContext.coolingSeasonMeanRH || 0.5585) * 100; // Use context value or default
 
     const term1 = (100 - E59) / 5;
     const term2 = E60 - term1;
@@ -926,7 +951,8 @@ window.TEUI.SectionModules.sect13 = (function () {
     const term4 = 0.1 + 0.9 * (E59 / 100);
     const A50 = E60 - term3 * term4;
 
-    coolingState.A50_temp = A50;
+    // CHUNK 3A: Write to context instead of global state
+    coolingContext.A50_temp = A50;
     return A50;
   }
 
