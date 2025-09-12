@@ -1057,36 +1057,40 @@ window.TEUI.SectionModules.sect13 = (function () {
         return null;
       };
 
-    // Update state from StateManager
+    // FINAL SWITCH: Update isolated context instead of global state
     // TODO: This value should eventually be dynamic, likely from Section 03 weather data
-    coolingState.nightTimeTemp = 20.43; // Hardcoded default: Summer Mean Overnight Temp (See COOLING-TARGET.csv A3/A49)
+    coolingContext.nightTimeTemp = 20.43; // Hardcoded default: Summer Mean Overnight Temp (See COOLING-TARGET.csv A3/A49)
 
     // TODO: This value should eventually be dynamic, likely from Section 03 weather data or user input
-    coolingState.coolingSeasonMeanRH = 0.5585; // Default A4 (55.85%) NOT A57 (70%) used elsewhere
+    coolingContext.coolingSeasonMeanRH = 0.5585; // Default A4 (55.85%) NOT A57 (70%) used elsewhere
 
     // Fetch elevation
     // TODO: Should be dynamic from weather data lookup in Section 03
     const projectElevation = parseNum(getValue("l_22")) || 80; // Read from Sec 03, fallback to 80m
     const seaLevelPressure = 101325; // E13
-    coolingState.atmPressure =
+    // FINAL SWITCH: Update isolated context instead of global state
+    coolingContext.atmPressure =
       seaLevelPressure * Math.exp(-projectElevation / 8434); // E15 logic
 
     // Check for user override for cooling setpoint in l_24, otherwise use h_24
     const coolingSetTempOverride_l24 = parseNum(getValue("l_24"));
     if (coolingSetTempOverride_l24 && !isNaN(coolingSetTempOverride_l24)) {
-      coolingState.coolingSetTemp = coolingSetTempOverride_l24;
+      // FINAL SWITCH: Update isolated context instead of global state
+      coolingContext.coolingSetTemp = coolingSetTempOverride_l24;
     } else {
-      coolingState.coolingSetTemp = parseNum(getValue("h_24")) || 24; // Fallback to h_24 or default 24
+      // FINAL SWITCH: Update isolated context instead of global state
+      coolingContext.coolingSetTemp = parseNum(getValue("h_24")) || 24; // Fallback to h_24 or default 24
     }
 
-    coolingState.coolingDegreeDays = parseNum(getValue("d_21")) || 196;
-    coolingState.buildingVolume = parseNum(getValue("d_105")) || 8000;
-    coolingState.buildingArea = parseNum(getValue("h_15")) || 1427.2;
-    coolingState.coolingLoad = getNumericValue("l_128") || 0; // Read mitigated cooling load from S14 - Note: May cause dependency loop issues if S14 reads S13 outputs
+    // FINAL SWITCH: Update isolated context instead of global state
+    coolingContext.coolingDegreeDays = parseNum(getValue("d_21")) || 196;
+    coolingContext.buildingVolume = parseNum(getValue("d_105")) || 8000;
+    coolingContext.buildingArea = parseNum(getValue("h_15")) || 1427.2;
+    coolingContext.coolingLoad = getNumericValue("l_128") || 0; // Read mitigated cooling load from S14 - Note: May cause dependency loop issues if S14 reads S13 outputs
     // ✅ PATTERN 1 TEST: Use ModeManager.getValue() instead of getFieldValue()
     // This will automatically read from correct state based on current mode
-    // CHUNK 2: Read from isolated context instead of global state
-    coolingState.ventilationMethod =
+    // FINAL SWITCH: Update isolated context instead of global state
+    coolingContext.ventilationMethod =
       coolingContext.ventilationMethod || "Constant";
 
     // Calculate the intermediate A50 temperature needed for atmospheric calcs
