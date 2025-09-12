@@ -761,6 +761,15 @@ window.TEUI.SectionModules.sect13 = (function () {
     // Add atmPressure - atmospheric pressure constant
     context.atmPressure = 101325; // Pa - standard atmospheric pressure
 
+    // CHUNK 3M "MICRO-STEP":
+    // Add pressure calculations - partial pressures for indoor/outdoor
+    context.partialPressure = null; // Will be calculated by calculateAtmosphericValues
+    context.partialPressureIndoor = null; // Will be calculated by calculateAtmosphericValues
+
+    // CHUNK 3N "MICRO-STEP":
+    // Add pSatIndoor - indoor saturation pressure
+    context.pSatIndoor = null; // Will be calculated by calculateAtmosphericValues
+
     // ... all other properties remain cloned from the old global state for now ...
     return context;
   }
@@ -810,18 +819,22 @@ window.TEUI.SectionModules.sect13 = (function () {
     // CHUNK 3B: Write to context instead of global state
     coolingContext.pSatAvg =
       610.94 * Math.exp((17.625 * t_outdoor) / (t_outdoor + 243.04));
-    coolingState.partialPressure = coolingContext.pSatAvg * outdoorRH;
+    // CHUNK 3M: Write to context instead of global state
+    coolingContext.partialPressure = coolingContext.pSatAvg * outdoorRH;
 
-    coolingState.pSatIndoor =
+    // CHUNK 3N: Write to context instead of global state
+    coolingContext.pSatIndoor =
       610.94 * Math.exp((17.625 * t_indoor) / (t_indoor + 243.04));
-    coolingState.partialPressureIndoor = coolingState.pSatIndoor * indoorRH;
+    // CHUNK 3M & 3N: Write to context instead of global state
+    coolingContext.partialPressureIndoor = coolingContext.pSatIndoor * indoorRH;
   }
 
   /** [Cooling Calc] Calculate humidity ratios */
   function calculateHumidityRatios(isReferenceCalculation, coolingContext) {
     // CHUNK 3L: Read from context instead of global state
     const atmPressure = coolingContext.atmPressure || 101325;
-    const pPartialIndoor = coolingState.partialPressureIndoor;
+    // CHUNK 3M: Read from context instead of global state
+    const pPartialIndoor = coolingContext.partialPressureIndoor;
     // CHUNK 3B: Read from context instead of global state
     const pSatAvgOutdoor = coolingContext.pSatAvg; // Get Saturation Pressure Outdoor (A56)
 
