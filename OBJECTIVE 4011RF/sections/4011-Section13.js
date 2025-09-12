@@ -729,6 +729,18 @@ window.TEUI.SectionModules.sect13 = (function () {
     // Add humidityRatioDifference - calculated from humidityRatioAvg
     context.humidityRatioDifference = null; // Will be calculated by calculateHumidityRatios function
 
+    // CHUNK 3E "MICRO-STEP":
+    // Add latentHeatVaporization - physics constant used in cooling calculations
+    context.latentHeatVaporization = 2501000; // J/kg - physics constant
+
+    // CHUNK 3F "MICRO-STEP":
+    // Add specificHeatCapacity - physics constant used in multiple cooling functions
+    context.specificHeatCapacity = 1005; // J/kg·K - physics constant
+
+    // CHUNK 3G "MICRO-STEP":
+    // Add nightTimeTemp - temperature calculation dependency
+    context.nightTimeTemp = coolingState.nightTimeTemp; // Copy from global state initially
+
     // ... all other properties remain cloned from the old global state for now ...
     return context;
   }
@@ -737,9 +749,12 @@ window.TEUI.SectionModules.sect13 = (function () {
   function calculateLatentLoadFactor(isReferenceCalculation, coolingContext) {
     // CHUNK 3D: Read from context instead of global state
     const hDiff = coolingContext.humidityRatioDifference;
-    const LHV = coolingState.latentHeatVaporization;
-    const Cp = coolingState.specificHeatCapacity;
-    const Tdiff = coolingState.nightTimeTemp - coolingState.coolingSetTemp;
+    // CHUNK 3E: Read from context instead of global state
+    const LHV = coolingContext.latentHeatVaporization;
+    // CHUNK 3F: Read from context instead of global state
+    const Cp = coolingContext.specificHeatCapacity;
+    // CHUNK 3G: Read from context instead of global state
+    const Tdiff = coolingContext.nightTimeTemp - coolingState.coolingSetTemp;
 
     // Check for division by zero or invalid inputs
     if (
@@ -841,9 +856,11 @@ window.TEUI.SectionModules.sect13 = (function () {
       const ventFlowRateM3s = ventFlowRateM3hr / 3600;
       const massFlowRateKgS = ventFlowRateM3s * coolingState.airMass; // kg/s
 
-      const Cp = coolingState.specificHeatCapacity; // J/kg·K
+      // CHUNK 3F: Read from context instead of global state
+      const Cp = coolingContext.specificHeatCapacity; // J/kg·K
       const T_indoor = coolingState.coolingSetTemp; // °C
-      const T_outdoor_night = coolingState.nightTimeTemp; // °C
+      // CHUNK 3G: Read from context instead of global state
+      const T_outdoor_night = coolingContext.nightTimeTemp; // °C
       const coolingDays =
         window.TEUI.parseNumeric(getFieldValue("m_19")) || 120;
 
@@ -928,7 +945,8 @@ window.TEUI.SectionModules.sect13 = (function () {
   /** [Cooling Calc] Calculate wet bulb temperature (Approximation) */
   function calculateWetBulbTemperature(isReferenceCalculation, coolingContext) {
     // Note: This is an approximation, potentially from COOLING-TARGET.csv E64
-    const tdb = coolingState.nightTimeTemp;
+    // CHUNK 3G: Read from context instead of global state
+    const tdb = coolingContext.nightTimeTemp;
     const rh = coolingState.coolingSeasonMeanRH * 100;
     const twbSimple =
       tdb - (tdb - (tdb - (100 - rh) / 5)) * (0.1 + 0.9 * (rh / 100));
@@ -3231,6 +3249,9 @@ window.TEUI.SectionModules.sect13 = (function () {
     const originalMode = ModeManager.currentMode;
     ModeManager.currentMode = "reference"; // Temporarily switch mode
     
+    // CHUNK 3E-3G FIX: Create isolated context for Reference model
+    const referenceCoolingContext = createIsolatedCoolingContext("reference");
+    
     console.log("[Section13] Running Reference Model calculations...");
     try {
       // Helper function to get Reference values with proper fallback
@@ -3261,9 +3282,12 @@ window.TEUI.SectionModules.sect13 = (function () {
       );
       const ventilationRatesResults = calculateVentilationRates(true);
       const ventilationEnergyResults = calculateVentilationEnergy(true);
-      const coolingVentilationResults = calculateCoolingVentilation(true);
-      const freeCoolingResults = { h_124: calculateFreeCooling(true) };
-      const coolingResults = calculateCoolingSystem(true);
+      // CHUNK 3E-3G FIX: Pass the reference context to calculateCoolingVentilation
+      const coolingVentilationResults = calculateCoolingVentilation(true, referenceCoolingContext);
+      // CHUNK 3E-3G FIX: Pass the reference context to calculateFreeCooling
+      const freeCoolingResults = { h_124: calculateFreeCooling(true, referenceCoolingContext) };
+      // CHUNK 3E-3G FIX: Pass the reference context to calculateCoolingSystem
+      const coolingResults = calculateCoolingSystem(true, referenceCoolingContext);
       const mitigatedResults = calculateMitigatedCED(true);
 
       // Store Reference Model results with ref_ prefix for downstream sections
