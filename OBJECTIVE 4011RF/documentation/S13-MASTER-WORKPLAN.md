@@ -333,11 +333,21 @@ During testing, we discovered that the state mixing observed during location cha
 - `coolingDegreeDays`, `buildingVolume`, `buildingArea`, `coolingLoad` (upstream dependencies)
 - `wetBulbTemperature`, `calculatedPotentialFreeCooling` (derived calculations)
 
-### **📊 ESTIMATED REMAINING EFFORT:**
-- **High Priority**: ~6-8 more micro-steps (Chunks 3E-3L)
-- **Medium Priority**: ~4-6 micro-steps (Chunks 3M-3R)
-- **Lower Priority**: ~4-6 micro-steps (Chunks 3S-3X)
-- **Total Remaining**: ~15-20 micro-steps to complete cooling state isolation
+### **📊 CURRENT PROGRESS UPDATE (September 11, 2025 - Evening):**
+- ✅ **Chunks 1, 2, 3A-3N**: Successfully completed (16 properties isolated)
+- ✅ **Listener architecture fixes**: Calculation storm avoidance implemented
+- ✅ **Slider UX patterns**: Documented and implemented for optimal user experience
+- 🔄 **Remaining Chunk O work**: ~6-8 properties still need isolation from global state
+
+### **🎯 REMAINING CHUNK O WORK:**
+**Critical properties still using global `coolingState`:**
+- `freeCoolingLimit` (line 883 - read)
+- `calculatedPotentialFreeCooling` (line 929 - write)  
+- `coolingLoad` (line 949 - read)
+- `wetBulbTemperature` (lines 996-997 - write/return)
+- Initialization writes in `updateCoolingInputs` (lines 1033-1050)
+
+**Estimated Effort**: ~4-6 more micro-steps to complete cooling state isolation
 
 ### **🎯 NEXT SESSION STRATEGY:**
 1. **Continue proven micro-step pattern** (3E, 3F, 3G...)
@@ -357,6 +367,25 @@ During testing, we discovered that the state mixing observed during location cha
 - **`d_118` listener**: Only logs change, calculations handled by slider handlers
 
 **Architecture Principle**: **Listeners should be passive observers, UI handlers should trigger calculations**
+
+### **🎛️ SLIDER INTERACTION PATTERNS (September 11, 2025)**
+
+**Two distinct patterns for optimal UX:**
+
+#### **Pattern 1: Cross-Section Sliders (Efficiency-First)**
+- **Example**: `d_97` (S11 Thermal Bridging %)
+- **Behavior**: Calculations only on `change` event (thumb release)
+- **Rationale**: Cross-section dependencies make immediate calculations expensive
+- **Implementation**: `input` event → display updates only, `change` event → calculations
+
+#### **Pattern 2: Section-Internal Sliders (Immediate Feedback)**
+- **Example**: `d_118` (S13 Ventilation Efficiency %)
+- **Behavior**: Immediate calculations on `input` event (during dragging)
+- **Rationale**: Users benefit from real-time feedback within the section
+- **Implementation**: `input` event → display updates + immediate calculations
+- **Trade-off**: Higher compute overhead, but better UX for focused work
+
+**Key Insight**: Users typically work with one input at a time, so the compute overhead of immediate feedback is acceptable for section-internal sliders where the UX benefit is significant.
 
 ---
 
