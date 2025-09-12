@@ -770,6 +770,18 @@ window.TEUI.SectionModules.sect13 = (function () {
     // Add pSatIndoor - indoor saturation pressure
     context.pSatIndoor = null; // Will be calculated by calculateAtmosphericValues
 
+    // CHUNK 3O "FINAL ISOLATION":
+    // Add remaining critical properties to complete cooling state isolation
+    context.freeCoolingLimit = null; // Will be calculated by calculateFreeCoolingLimit
+    context.calculatedPotentialFreeCooling = null; // Will be calculated by calculateFreeCoolingLimit
+    context.wetBulbTemperature = null; // Will be calculated by calculateWetBulbTemperature
+    
+    // Initialize from proper sources (not just copying from global state)
+    context.coolingLoad = window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("l_128")) || 0;
+    context.coolingDegreeDays = window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("d_21")) || 196;
+    context.buildingVolume = window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("d_105")) || 8000;
+    context.buildingArea = window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("h_15")) || 1427.2;
+
     // ... all other properties remain cloned from the old global state for now ...
     return context;
   }
@@ -880,7 +892,8 @@ window.TEUI.SectionModules.sect13 = (function () {
   function calculateFreeCoolingLimit(isReferenceCalculation, coolingContext) {
     // Add recursion protection
     if (window.TEUI.sect13.calculatingFreeCooling) {
-      return coolingState.freeCoolingLimit || 0; // Return cached value if already calculating
+      // CHUNK 3O: Read from context instead of global state
+      return coolingContext.freeCoolingLimit || 0; // Return cached value if already calculating
     }
     window.TEUI.sect13.calculatingFreeCooling = true;
 
@@ -926,7 +939,8 @@ window.TEUI.SectionModules.sect13 = (function () {
       potentialLimit = dailySensibleCoolingKWh * coolingDays;
 
       // Store this sensible-only potential limit
-      coolingState.calculatedPotentialFreeCooling = potentialLimit;
+      // CHUNK 3O: Write to context instead of global state
+      coolingContext.calculatedPotentialFreeCooling = potentialLimit;
     } catch (error) {
       console.error(
         "[S13 Error] Error during calculateFreeCoolingLimit:",
@@ -946,7 +960,8 @@ window.TEUI.SectionModules.sect13 = (function () {
     coolingContext,
   ) {
     // Keep signature for now
-    const coolingLoad = coolingState.coolingLoad; // Annual kWh load (m_129)
+    // CHUNK 3O: Read from context instead of global state
+    const coolingLoad = coolingContext.coolingLoad; // Annual kWh load (m_129)
     // Get cooling days from m_19, default to 120
     const coolingDays = window.TEUI.parseNumeric(getFieldValue("m_19")) || 120;
     const freeCoolingLimit = currentFreeCoolingLimit; // Annual kWh free cooling (h_124)
@@ -993,8 +1008,9 @@ window.TEUI.SectionModules.sect13 = (function () {
       tdb - (tdb - (tdb - (100 - rh) / 5)) * (0.1 + 0.9 * (rh / 100));
     const twbCorrected =
       tdb - (tdb - (tdb - (100 - rh) / 5)) * (0.3 + 0.7 * (rh / 100));
-    coolingState.wetBulbTemperature = (twbSimple + twbCorrected) / 2;
-    return coolingState.wetBulbTemperature;
+    // CHUNK 3O: Write to context instead of global state
+    coolingContext.wetBulbTemperature = (twbSimple + twbCorrected) / 2;
+    return coolingContext.wetBulbTemperature;
   }
 
   /** [Cooling Calc] Calculate the intermediate temperature A50 based on Excel logic */
