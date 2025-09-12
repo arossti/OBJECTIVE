@@ -356,7 +356,7 @@ During testing, we discovered that the state mixing observed during location cha
 
 ---
 
-## 🔍 September 12, 2025 Debugging: g_118 State Contamination Analysis
+## 🔍 September 12, 2025 Debugging: g_118 State Contamination Analysis - BREAKTHROUGH FINDINGS
 
 ### **🎯 Expected Behavior vs. Observed Behavior**
 
@@ -370,39 +370,53 @@ During testing, we discovered that the state mixing observed during location cha
 - **Observed**: Target mode `g_118` change → **BOTH `h_10` AND `e_10` change** (state mixing)
 - **Impact**: Target mode changes contaminate Reference calculations (e_10: 211 → 270)
 
-### **🔬 Root Cause Analysis: What We've Discovered**
+### **🔬 BREAKTHROUGH DISCOVERY: Dual Event Handler Pattern is SYSTEMIC**
 
-#### **✅ CONFIRMED: Isolated Cooling Context Architecture Works**
-- **Context Creation**: Both Target and Reference models create isolated cooling contexts ✅
-- **Context Passing**: All cooling functions receive `coolingContext` parameter ✅  
-- **Context Usage**: Functions read `ventilationMethod` from isolated context ✅
-- **Debug Evidence**: Logs show `hasContext=true` for both models ✅
+#### **🚨 CRITICAL FINDING: ALL S13 Dropdowns Have Dual Processing**
+**Evidence from comprehensive logs:**
+- **d_113**: `[FieldManager] Routed d_113=Electricity` + `[S13] Dropdown change: d_113="Electricity"`
+- **d_116**: `[FieldManager] Routed d_116=No Cooling` + `[S13] Dropdown change: d_116="No Cooling"`  
+- **g_118**: `[FieldManager] Routed g_118=Volume Constant` + `[S13] Dropdown change: g_118="Volume Constant"`
 
-#### **🚨 IDENTIFIED: State Object Cross-Contamination at Source**
-**Critical Evidence from Debug Logs:**
+**BUT**: Only g_118 causes state contamination despite identical dual processing pattern.
+
+#### **🔍 REVISED ROOT CAUSE: Shared CoolingState Object Timing**
+
+**The Real Contamination Mechanism:**
 ```
-Line 1035-1036: Target g_118 change to "Volume Constant"
-🔍 [S13-CONTEXT] ReferenceState.g_118="Volume Constant", TargetState.g_118="Volume Constant"
-
-Line 1474: After Target change back to "Volume by Schedule"  
-🔍 [S13-CONTEXT] ReferenceState.g_118="Volume Constant", TargetState.g_118="Volume by Schedule"
+Line 10309: TargetState.g_118="Volume Constant", ReferenceState.g_118="Volume Constant"  ❌ INITIAL CONTAMINATION
+Line 10376: TargetState.g_118="Volume by Schedule", ReferenceState.g_118="Volume Constant" ✅ CORRECTED AFTER CALCULATIONS
 ```
 
-**The Smoking Gun**: When Target mode `g_118` changes, **BOTH TargetState AND ReferenceState get contaminated** with the same value, despite using `ModeManager.setValue()`.
+**Key Insight**: The contamination is **TEMPORARY and SELF-CORRECTING**. It happens because:
 
-#### **🔍 Contamination Vector Analysis**
+1. **g_118 change affects shared `coolingState.ventilationMethod`**
+2. **Both state objects get temporarily synchronized** 
+3. **Calculation engines run and restore proper isolation**
+4. **Final state shows correct isolation**
 
-**Working Dropdowns (d_113, d_116):**
-- Use same `handleDropdownChange()` → `ModeManager.setValue()` pattern
-- Achieve perfect state isolation
-- No cross-contamination observed
+**Why d_113/d_116 don't have this issue**: They don't affect shared cooling calculation objects.
 
-**Broken Dropdown (g_118):**
-- Uses identical `handleDropdownChange()` → `ModeManager.setValue()` pattern  
-- **BUT shows cross-contamination in state objects**
-- Evidence: Duplicate state saves in logs suggest double-processing
+#### **🎯 CRITICAL INVESTIGATION NEEDED**
 
-**Theory**: `g_118` dropdown may be triggering **multiple event handlers** or **duplicate ModeManager.setValue() calls**, causing the second call to contaminate the opposite state.
+**The Mystery**: Why does `ModeManager.setValue()` work perfectly for d_113, d_116, d_118 but contaminate both states for g_118?
+
+**Evidence Comparison:**
+- **d_113 (WORKING)**: `ModeManager.setValue("d_113", "Gas", "user-modified")` → Only TargetState.d_113 changes
+- **d_116 (WORKING)**: `ModeManager.setValue("d_116", "No Cooling", "user-modified")` → Only TargetState.d_116 changes  
+- **g_118 (BROKEN)**: `ModeManager.setValue("g_118", "Volume Constant", "user-modified")` → BOTH TargetState.g_118 AND ReferenceState.g_118 change
+
+**Required Investigation When Resuming:**
+
+1. **ModeManager.setValue() Deep Trace**: Add logging inside ModeManager.setValue() to track exactly what happens when g_118 vs d_113 is processed
+2. **State Mutation Logging**: Add logging to TargetState.setValue() and ReferenceState.setValue() to catch what's writing to both states
+3. **Hidden Listener Detection**: Search for any g_118-specific StateManager listeners that might be causing cross-contamination
+4. **Cooling Object Dependencies**: Check if g_118 changes trigger additional state writes through the cooling calculation chain
+5. **Compare Field Processing**: Trace why identical `ModeManager.setValue()` calls work for d_113 but contaminate both states for g_118
+
+**CONFIRMED**: g_118 has a **unique contamination vector** that causes Target mode changes to incorrectly write the same value to BOTH TargetState and ReferenceState simultaneously. This violates state isolation and is the root cause of the cross-contamination issue.
+
+**Key Difference**: d_113, d_116, d_118 maintain perfect state isolation with identical dual event handler patterns, proving the issue is g_118-specific, not systemic.
 
 ### **🔧 Diagnostic Action Plan**
 
@@ -427,14 +441,46 @@ Line 1474: After Target change back to "Volume by Schedule"
 - **State objects remain independent** → TargetState ≠ ReferenceState for `g_118`
 - **Perfect dual-state isolation** → matches behavior of d_113, d_116, d_118
 
-### **🧪 Explicit Testing Protocol**
-1. **Baseline**: Note initial `e_10` and `h_10` values after fresh initialization
-2. **Target Test**: Change Target `g_118` → verify only `h_10` changes
-3. **Reference Test**: Change Reference `g_118` → verify only `e_10` changes
-4. **Independence Test**: Verify state objects maintain separate values
-5. **Regression Test**: Verify other dropdowns (d_113, d_116) still work correctly
+### **🧪 EXPLICIT TESTING PROTOCOL (CRITICAL - PREVENT USER/SYSTEM CONFUSION)**
 
-**This focused diagnostic approach should identify and eliminate the final state contamination issue in S13's dual-state architecture.**
+**IMPORTANT**: These tests measure **system behavior**, not user intention. Record what the system does, not what you intended.
+
+#### **Phase 1: Baseline Documentation**
+1. **Fresh Page Load**: Note initial values
+   - `h_10` (Target TEUI): ___
+   - `e_10` (Reference TEUI): ___
+   - **DO NOT make any changes yet**
+
+#### **Phase 2: State Isolation Test (Target Mode)**
+1. **Ensure in Target mode** (blue toggle)
+2. **Change g_118**: "Volume by Schedule" → "Volume Constant"
+3. **Record system response** (not your intention):
+   - Does `h_10` change? YES/NO: ___
+   - Does `e_10` change? YES/NO: ___
+   - **Expected**: Only `h_10` should change, `e_10` should remain stable
+   - **If e_10 changes**: STATE CONTAMINATION CONFIRMED
+
+#### **Phase 3: State Isolation Test (Reference Mode)**
+1. **Switch to Reference mode** (red toggle)  
+2. **Change g_118**: Current value → Different value
+3. **Record system response**:
+   - Does `e_10` change? YES/NO: ___
+   - Does `h_10` change? YES/NO: ___
+   - **Expected**: Only `e_10` should change, `h_10` should remain stable
+   - **If h_10 changes**: STATE CONTAMINATION CONFIRMED
+
+#### **Phase 4: Compare with Working Dropdowns**
+1. **Test d_113** (heating system) using same protocol
+2. **Test d_116** (cooling system) using same protocol
+3. **Document differences**: What makes g_118 behave differently?
+
+#### **Phase 5: State Object Inspection**
+1. **Open browser console**
+2. **Type**: `window.TEUI.sect13.TargetState.getValue("g_118")`
+3. **Type**: `window.TEUI.sect13.ReferenceState.getValue("g_118")`
+4. **Record values**: Are they different as expected?
+
+**KEY PRINCIPLE**: Record what the system actually does, not what it should do. This will help identify the exact contamination mechanism.
 
 ---
 
