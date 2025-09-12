@@ -1413,7 +1413,9 @@ window.TEUI.SectionModules.sect14 = (function () {
       sm.addListener(key, () => {
         // ✅ DEBUG: Log critical S13 dependency changes
         if (["d_122", "ref_d_122", "m_121", "ref_m_121"].includes(key)) {
-          console.log(`[S14 LISTENER] 🔥 ${key} changed - triggering calculateAll() + UI update`);
+          console.log(
+            `[S14 LISTENER] 🔥 ${key} changed - triggering calculateAll() + UI update`,
+          );
         }
         calculateAll();
         ModeManager.updateCalculatedDisplayValues();
@@ -1438,7 +1440,9 @@ window.TEUI.SectionModules.sect14 = (function () {
       updateReferenceIndicator();
     });
 
-    console.log(`[Section14] ✅ Added comprehensive listeners for ${uniqueDependencies.length} dependencies + ${climateFields.length * 2} climate fields`);
+    console.log(
+      `[Section14] ✅ Added comprehensive listeners for ${uniqueDependencies.length} dependencies + ${climateFields.length * 2} climate fields`,
+    );
   }
 
   /**

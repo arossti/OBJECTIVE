@@ -1395,13 +1395,14 @@ window.TEUI.SectionModules.sect15 = (function () {
       const i80 = ref_i80; // Use Reference values for Reference calculations
 
       // ✅ FIX: Use direct ref_d_113 instead of broken getReferenceValue()
-      const primaryHeating = window.TEUI?.StateManager?.getValue("ref_d_113") || "Electricity";
-      
+      const primaryHeating =
+        window.TEUI?.StateManager?.getValue("ref_d_113") || "Electricity";
+
       // 🔍 CRITICAL DEBUG: Confirm S15 Reference engine now reads correct heating system (commented out for clean logs)
       // console.log(`[S15 REF DEBUG] FIXED: Reading ref_d_113 directly = "${primaryHeating}"`);
       const d114 = parseFloat(getRefValue("d_114")) || 0;
-      
-      // 🔍 DEBUG: Log S15 Reference calculation inputs (commented out for clean logs)  
+
+      // 🔍 DEBUG: Log S15 Reference calculation inputs (commented out for clean logs)
       // console.log(`[S15 REF DEBUG] d_114 calculation: ref_d_114=${window.TEUI?.StateManager?.getValue("ref_d_114")}, parsed=${d114}, heating=${primaryHeating}`);
 
       const g101 = parseFloat(getRefValue("g_101")) || 0;
@@ -1472,15 +1473,16 @@ window.TEUI.SectionModules.sect15 = (function () {
       //   `✅ S15 Reference Model: Additional fuel variables declared for cost calculations`,
       // );
 
-      // Get cooling type for d117 logic  
+      // Get cooling type for d117 logic
       // ✅ FIX: Use direct ref_d_116 instead of broken getReferenceValue()
-      const coolingType_d116 = window.TEUI?.StateManager?.getValue("ref_d_116") || "No Cooling";
+      const coolingType_d116 =
+        window.TEUI?.StateManager?.getValue("ref_d_116") || "No Cooling";
       let d117_actual_val = parseFloat(getRefValue("d_117")) || 0;
       let d117_effective = d117_actual_val;
       if (coolingType_d116 === "No Cooling") {
         d117_effective = 0;
       }
-      
+
       // 🔍 DEBUG: Log cooling system logic for d_136 calculation (commented out for clean logs)
       // console.log(`[S15 REF DEBUG] Cooling logic: ref_d_116="${coolingType_d116}", ref_d_117=${d117_actual_val}, effective=${d117_effective}`);
 

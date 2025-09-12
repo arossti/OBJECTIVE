@@ -86,14 +86,24 @@ window.TEUI.SectionModules.sect12 = (function () {
       // This fixes S15 warnings: ref_g_101, ref_d_101, ref_i_104 missing
       if (window.TEUI?.StateManager) {
         const referenceFields = [
-          "d_103", "g_103", "d_105", "d_108", "g_109", // User input fields
+          "d_103",
+          "g_103",
+          "d_105",
+          "d_108",
+          "g_109", // User input fields
           // Note: Calculated fields (g_101, d_101, i_104) will be published by calculation engines
         ];
         referenceFields.forEach((fieldId) => {
           const value = this.state[fieldId];
           if (value !== null && value !== undefined) {
-            window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "default");
-            console.log(`[S12 REF DEFAULTS] Published ref_${fieldId}=${value} to StateManager`);
+            window.TEUI.StateManager.setValue(
+              `ref_${fieldId}`,
+              value,
+              "default",
+            );
+            console.log(
+              `[S12 REF DEFAULTS] Published ref_${fieldId}=${value} to StateManager`,
+            );
           }
         });
       }
