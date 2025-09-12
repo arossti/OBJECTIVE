@@ -2319,9 +2319,9 @@ window.TEUI.SectionModules.sect13 = (function () {
           );
         }
 
-        // Trigger calculations that depend on k_120
-        calculateFreeCooling();
-        calculateMitigatedCED();
+        // CHUNK 3H-3K FIX: Use calculateAll() instead of direct function calls
+        // This ensures proper cooling context is created and passed
+        calculateAll();
       }
     }
   }
