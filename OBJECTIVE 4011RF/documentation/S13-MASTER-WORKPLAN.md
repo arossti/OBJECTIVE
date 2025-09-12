@@ -356,6 +356,88 @@ During testing, we discovered that the state mixing observed during location cha
 
 ---
 
+## 🔍 September 12, 2025 Debugging: g_118 State Contamination Analysis
+
+### **🎯 Expected Behavior vs. Observed Behavior**
+
+#### **✅ WORKING: Other S13 Dropdowns (d_113, d_116) Show Perfect State Isolation**
+- **d_113 (Heating System)**: Target mode changes → only `h_10` changes, `e_10` stable ✅
+- **d_116 (Cooling System)**: Target mode changes → only `h_10` changes, `e_10` stable ✅
+- **d_118 (Ventilation Efficiency)**: Target mode changes → only `h_10` changes, `e_10` stable ✅
+
+#### **❌ BROKEN: g_118 (Ventilation Method) Shows Cross-Contamination**
+- **Expected**: Target mode `g_118` change → only `h_10` changes, `e_10` remains stable
+- **Observed**: Target mode `g_118` change → **BOTH `h_10` AND `e_10` change** (state mixing)
+- **Impact**: Target mode changes contaminate Reference calculations (e_10: 211 → 270)
+
+### **🔬 Root Cause Analysis: What We've Discovered**
+
+#### **✅ CONFIRMED: Isolated Cooling Context Architecture Works**
+- **Context Creation**: Both Target and Reference models create isolated cooling contexts ✅
+- **Context Passing**: All cooling functions receive `coolingContext` parameter ✅  
+- **Context Usage**: Functions read `ventilationMethod` from isolated context ✅
+- **Debug Evidence**: Logs show `hasContext=true` for both models ✅
+
+#### **🚨 IDENTIFIED: State Object Cross-Contamination at Source**
+**Critical Evidence from Debug Logs:**
+```
+Line 1035-1036: Target g_118 change to "Volume Constant"
+🔍 [S13-CONTEXT] ReferenceState.g_118="Volume Constant", TargetState.g_118="Volume Constant"
+
+Line 1474: After Target change back to "Volume by Schedule"  
+🔍 [S13-CONTEXT] ReferenceState.g_118="Volume Constant", TargetState.g_118="Volume by Schedule"
+```
+
+**The Smoking Gun**: When Target mode `g_118` changes, **BOTH TargetState AND ReferenceState get contaminated** with the same value, despite using `ModeManager.setValue()`.
+
+#### **🔍 Contamination Vector Analysis**
+
+**Working Dropdowns (d_113, d_116):**
+- Use same `handleDropdownChange()` → `ModeManager.setValue()` pattern
+- Achieve perfect state isolation
+- No cross-contamination observed
+
+**Broken Dropdown (g_118):**
+- Uses identical `handleDropdownChange()` → `ModeManager.setValue()` pattern  
+- **BUT shows cross-contamination in state objects**
+- Evidence: Duplicate state saves in logs suggest double-processing
+
+**Theory**: `g_118` dropdown may be triggering **multiple event handlers** or **duplicate ModeManager.setValue() calls**, causing the second call to contaminate the opposite state.
+
+### **🔧 Diagnostic Action Plan**
+
+#### **Phase 1: Track State Contamination Source (15 minutes)**
+1. **Add state mutation logging** to `TargetState.setValue()` and `ReferenceState.setValue()`
+2. **Track ModeManager.setValue() calls** for `g_118` specifically
+3. **Identify duplicate calls** or incorrect mode switching during dropdown handling
+
+#### **Phase 2: Compare Working vs. Broken Patterns (15 minutes)**
+1. **Audit d_113 dropdown setup** vs. `g_118` dropdown setup
+2. **Check for duplicate event listeners** on `g_118` dropdown element
+3. **Verify dropdown HTML structure** matches working dropdowns
+
+#### **Phase 3: Implement Targeted Fix (30 minutes)**
+1. **Remove duplicate event handlers** if found
+2. **Add state isolation guards** to prevent cross-contamination
+3. **Test fix** with Target mode `g_118` changes → verify only `h_10` changes
+
+### **🎯 Success Criteria for Fix**
+- **Target mode `g_118` change** → only `h_10` changes, `e_10` stable
+- **Reference mode `g_118` change** → only `e_10` changes, `h_10` stable  
+- **State objects remain independent** → TargetState ≠ ReferenceState for `g_118`
+- **Perfect dual-state isolation** → matches behavior of d_113, d_116, d_118
+
+### **🧪 Explicit Testing Protocol**
+1. **Baseline**: Note initial `e_10` and `h_10` values after fresh initialization
+2. **Target Test**: Change Target `g_118` → verify only `h_10` changes
+3. **Reference Test**: Change Reference `g_118` → verify only `e_10` changes
+4. **Independence Test**: Verify state objects maintain separate values
+5. **Regression Test**: Verify other dropdowns (d_113, d_116) still work correctly
+
+**This focused diagnostic approach should identify and eliminate the final state contamination issue in S13's dual-state architecture.**
+
+---
+
 ## 🌅 TOMORROW'S WORK PLAN: September 12, 2025
 
 ### **🎯 PRIMARY OBJECTIVE: "IT'S ALIVE" MOMENT**

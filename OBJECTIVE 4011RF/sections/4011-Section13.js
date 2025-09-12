@@ -716,6 +716,14 @@ window.TEUI.SectionModules.sect13 = (function () {
     // CHUNK 2 "SWITCH-ON":
     // We now populate one property with a mode-aware value.
     context.ventilationMethod = stateSource.getValue("g_118");
+    
+    // 🔍 CRITICAL DEBUG: Track what values we're reading for context creation
+    console.log(`🔍 [S13-CONTEXT] Creating ${mode} context: g_118="${context.ventilationMethod}" from ${mode === "reference" ? "ReferenceState" : "TargetState"}`);
+    if (mode === "reference") {
+      console.log(`🔍 [S13-CONTEXT] ReferenceState.g_118="${ReferenceState.getValue("g_118")}", TargetState.g_118="${TargetState.getValue("g_118")}"`);
+    } else {
+      console.log(`🔍 [S13-CONTEXT] TargetState.g_118="${TargetState.getValue("g_118")}", ReferenceState.g_118="${ReferenceState.getValue("g_118")}"`);
+    }
 
     // CHUNK 3A "MICRO-STEP":
     // Add A50_temp - an internal calculated value, not an upstream dependency
@@ -3045,7 +3053,7 @@ window.TEUI.SectionModules.sect13 = (function () {
   /**
    * Calculate ventilation rates based on method (g_118) and per-person rate (d_119)
    */
-  function calculateVentilationRates(isReferenceCalculation = false) {
+  function calculateVentilationRates(isReferenceCalculation = false, coolingContext = null) {
     // ✅ FIXED: Use mode-aware reading instead of getNumericValue
     const ratePerPerson =
       window.TEUI.parseNumeric(
@@ -3060,8 +3068,8 @@ window.TEUI.SectionModules.sect13 = (function () {
     // console.log(`[S13 CalcVentRates] Calculated f_119: ${cfm}, h_119: ${m3hr}`); // Log calculated values
 
     // Now calculate d_120 (Volumetric Rate) as it depends on d_119 and g_118
-    // ✅ FIXED: Use mode-aware reading for ventilation method
-    const ventMethod = getSectionValue("g_118", isReferenceCalculation);
+    // ✅ CONTEXT FIX: Read ventilation method from isolated cooling context
+    const ventMethod = coolingContext ? coolingContext.ventilationMethod : getSectionValue("g_118", isReferenceCalculation);
     const ratePerPerson_d119 =
       window.TEUI.parseNumeric(
         isReferenceCalculation
@@ -3077,7 +3085,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       `🔍 [S13-VENT] calculateVentilationRates: ventMethod="${ventMethod}", ach(l_118)=${ach}, ratePerPerson(d_119)=${ratePerPerson_d119}, volume(d_105)=${volume}`,
     );
     console.log(
-      `🔍 [S13-VENT] isReferenceCalculation=${isReferenceCalculation}`,
+      `🔍 [S13-VENT] isReferenceCalculation=${isReferenceCalculation}, hasContext=${!!coolingContext}`,
     );
     const occupiedHours = window.TEUI.parseNumeric(getFieldValue("i_63")) || 0;
     const totalHours = window.TEUI.parseNumeric(getFieldValue("j_63")) || 8760;
@@ -3459,7 +3467,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         copResults,
         tedValueRef,
       );
-      const ventilationRatesResults = calculateVentilationRates(true);
+      const ventilationRatesResults = calculateVentilationRates(true, referenceCoolingContext);
       const ventilationEnergyResults = calculateVentilationEnergy(true);
       // CHUNK 3E-3G FIX: Pass the reference context to calculateCoolingVentilation
       const coolingVentilationResults = calculateCoolingVentilation(
@@ -3528,7 +3536,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         copResults,
         tedValue,
       );
-      const ventilationRatesResults = calculateVentilationRates(false);
+      const ventilationRatesResults = calculateVentilationRates(false, targetCoolingContext);
       const ventilationEnergyResults = calculateVentilationEnergy(false);
       const coolingVentilationResults = calculateCoolingVentilation(
         false,
