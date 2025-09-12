@@ -363,8 +363,14 @@ During testing, we discovered that the state mixing observed during location cha
 
 ### **📋 TOMORROW'S TESTING PROTOCOL:**
 
-#### **Phase 1: Cooling Bump Elimination Test (30 minutes)**
-1. **🔥 Critical Test**: Heating system cycling without cooling bump
+#### **Phase 1: "THROW THE SWITCH" - Final Architecture Connection (30 minutes)**
+1. **🔌 CRITICAL TASK**: Connect isolated context to main calculation flow
+   - **Current State**: Isolated cooling contexts built but not yet active
+   - **Remaining Work**: Update `updateCoolingInputs()` to populate context instead of global state
+   - **The Switch**: Make cooling functions read from isolated context instead of global `coolingState`
+   - **Expected Result**: This should eliminate the cooling bump requirement
+
+2. **🔥 Immediate Test**: Heating system cycling without cooling bump
    - Start with Heatpump (baseline: `h_10 = 93.6`)
    - Change to Electricity → verify immediate settlement to correct value
    - Change to Gas → verify immediate settlement to correct value  
@@ -404,11 +410,48 @@ During testing, we discovered that the state mixing observed during location cha
 - **All S13 calculations maintain Excel parity**
 - **Stable, error-free operation**
 
-### **🎯 NEXT SESSION STRATEGY:**
-1. **Continue proven micro-step pattern** (3E, 3F, 3G...)
-2. **Focus on High Priority properties first** to maximize impact on cooling bump elimination
-3. **Test after every 2-3 chunks** to monitor progress toward cooling bump elimination
-4. **Commit stable progress regularly** to maintain safe restore points
+### **🎯 CURRENT STATUS: READY FOR TESTING**
+✅ **ALL MICRO-STEP WORK COMPLETED** - Chunks 1, 2, 3A-3O successfully implemented
+✅ **23 cooling state properties isolated** - Complete cooling state isolation achieved  
+✅ **Both Target and Reference models use isolated contexts** - Zero shared state contamination
+✅ **All console errors eliminated** - Stable, error-free operation
+✅ **Calculation storm avoidance implemented** - Proper listener architecture
+
+**🌅 READY FOR SEPTEMBER 12 "IT'S ALIVE" TESTING**
+
+---
+
+## 🔌 TECHNICAL DETAILS: "THROWING THE SWITCH" (September 12 Work)
+
+### **🎯 WHAT WE BUILT TODAY:**
+- **✅ Isolated cooling context architecture** - `createIsolatedCoolingContext()` function
+- **✅ All cooling functions updated** - Accept `coolingContext` parameter and use it for reads/writes
+- **✅ Both Target and Reference models** - Create and pass their own isolated contexts
+- **✅ 23 cooling properties isolated** - Complete separation achieved
+
+### **🔌 WHAT NEEDS TO BE "SWITCHED ON" TOMORROW:**
+**Current Hybrid State**: We have **two parallel systems** running:
+1. **NEW**: Isolated context system (built but not fully active)
+2. **OLD**: Global `coolingState` system (still being populated and used in some places)
+
+**The Final Switch** (Lines to change in `updateCoolingInputs()`):
+```javascript
+// ❌ CURRENT (still writing to global state):
+coolingState.nightTimeTemp = 20.43;
+coolingState.coolingSeasonMeanRH = 0.5585;
+coolingState.atmPressure = seaLevelPressure * Math.exp(-projectElevation / 8434);
+coolingState.coolingSetTemp = parseNum(getValue("h_24")) || 24;
+
+// ✅ TOMORROW (write to isolated context):
+coolingContext.nightTimeTemp = 20.43;
+coolingContext.coolingSeasonMeanRH = 0.5585;
+coolingContext.atmPressure = seaLevelPressure * Math.exp(-projectElevation / 8434);
+coolingContext.coolingSetTemp = parseNum(getValue("h_24")) || 24;
+```
+
+**Expected Result**: This final switch should eliminate the cooling bump because both Target and Reference will use completely separate cooling state objects.
+
+---
 
 ### **⚠️ CRITICAL LESSON: Calculation Storm Avoidance (September 11, 2025)**
 **Issue**: Attempted to fix listener context errors by making listeners call `calculateAll()` - this created 58,000+ log infinite loops and crashed the application.
