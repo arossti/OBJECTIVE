@@ -354,6 +354,56 @@ During testing, we discovered that the state mixing observed during location cha
 
 **📊 FINAL STATUS**: Complete cooling state isolation achieved - this should eliminate the cooling bump requirement and provide perfect state isolation between Target and Reference calculation engines.
 
+---
+
+## 🌅 TOMORROW'S WORK PLAN: September 12, 2025
+
+### **🎯 PRIMARY OBJECTIVE: "IT'S ALIVE" MOMENT**
+**Test if the cooling bump has been eliminated and complete S13 dual-state architecture**
+
+### **📋 TOMORROW'S TESTING PROTOCOL:**
+
+#### **Phase 1: Cooling Bump Elimination Test (30 minutes)**
+1. **🔥 Critical Test**: Heating system cycling without cooling bump
+   - Start with Heatpump (baseline: `h_10 = 93.6`)
+   - Change to Electricity → verify immediate settlement to correct value
+   - Change to Gas → verify immediate settlement to correct value  
+   - Change to Oil → verify immediate settlement to correct value
+   - **Return to Heatpump → verify immediate `h_10 = 93.6` WITHOUT cooling bump**
+
+2. **🧊 Cooling Controls Test**: Perfect state isolation
+   - Test `g_118` ventilation method changes in Target mode
+   - Verify Reference mode changes have ZERO impact on Target `h_10`
+   - Test `d_118` ventilation efficiency slider fluidity
+
+#### **Phase 2: Complete Dual-State Validation (30 minutes)**
+3. **🔄 Mode Switching Test**: UI toggle behavior
+   - Switch Target ↔ Reference multiple times
+   - Verify UI shows correct values for each mode
+   - Verify no calculation triggers during mode switching
+
+4. **📊 Excel Parity Validation**: Calculation accuracy
+   - Verify all S13 calculations match Excel methodology
+   - Test complex scenarios (Gas+Cooling, Oil+Cooling, etc.)
+   - Confirm S01 `h_10` totals remain accurate
+
+#### **Phase 3: Success Documentation or Issue Resolution (30 minutes)**
+5. **✅ If Tests Pass**: Document success and complete S13 refactor
+   - Update S13-MASTER-WORKPLAN.md with victory status
+   - Create success summary for CTO review
+   - Plan next section refactor (S06 or S07)
+
+6. **🔧 If Issues Remain**: Targeted debugging
+   - Use established micro-step approach for any remaining issues
+   - Maintain architectural gains achieved
+   - Document specific issues for focused resolution
+
+### **🎉 SUCCESS CRITERIA:**
+- **No cooling bump required** for `h_10 = 93.6` settlement
+- **Perfect state isolation** between Target and Reference modes
+- **All S13 calculations maintain Excel parity**
+- **Stable, error-free operation**
+
 ### **🎯 NEXT SESSION STRATEGY:**
 1. **Continue proven micro-step pattern** (3E, 3F, 3G...)
 2. **Focus on High Priority properties first** to maximize impact on cooling bump elimination
