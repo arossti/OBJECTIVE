@@ -63,3 +63,40 @@ This refactor will be considered complete and successful when the following cond
 2.  **"Cooling Bump" Eliminated**: The `h_10` value settles on its correct final value after a single calculation pass. The need to trigger a second calculation (the "cooling bump") is permanently gone.
 3.  **Full Architectural Compliance**: Section 13 is now a textbook implementation of "Pattern 1" as defined in the `4012-CHEATSHEET.md`, making it robust, maintainable, and consistent with the project's best practices.
 
+## 5. Calculation Parity Workplan
+
+**Status**: Pattern 1 implementation complete - **state isolation achieved!** ✅  
+**Issue**: Calculation values don't match expected Excel parity  
+**Target**: h_10 = 90.9 (No Cooling), h_10 = 93.6 (Cooling ON)  
+**Current**: h_10 = 103.3+ (calculations drift from expected values)
+
+### **Phase 1: Diagnose Calculation Drift**
+
+1. **Compare cooling load calculations** between S13-CONTEXT.js (working) and current S13
+2. **Verify cooling state isolation** - ensure Target/Reference don't share coolingState object
+3. **Check if DOM updates** are triggering properly through updateTargetModelDOMValues()
+4. **Validate upstream dependencies** (d_127, m_129, l_128) are being read correctly
+
+### **Phase 2: Restore Calculation Accuracy**
+
+1. **Audit cooling physics functions** - ensure calculateAtmosphericValues, calculateLatentLoadFactor match CONTEXT
+2. **Check coolingState vs isolated context** - Pattern 1 may need isolated cooling contexts per mode
+3. **Verify ventilation method calculations** - g_118 method logic must match Excel exactly
+4. **Test fuel impact calculations** - Oil/Gas emissions must trigger correctly on AFUE/volume changes
+
+### **Phase 3: Validation & Testing**
+
+1. **Excel baseline comparison** - All S13 calculations must match Excel codebase exactly
+2. **Mode isolation verification** - Target/Reference calculations must remain independent
+3. **Dependency chain testing** - Upstream changes must propagate correctly to S01 totals
+4. **Performance optimization** - Remove any remaining calculation stickiness/delays
+
+### **Success Criteria for Calculation Parity**
+
+- ✅ **State isolation maintained** (already achieved)
+- 🎯 **h_10 = 90.9** when d_116 = "No Cooling"  
+- 🎯 **h_10 = 93.6** when d_116 = "Cooling" with default settings
+- 🎯 **e_10 = 211** for Reference model baseline
+- 🎯 **S01 totals match** expected Excel values
+- 🎯 **All ventilation changes** trigger immediate recalculations
+
