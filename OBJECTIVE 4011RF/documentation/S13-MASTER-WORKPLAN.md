@@ -380,22 +380,24 @@ During testing, we discovered that the state mixing observed during location cha
 
 **BUT**: Only g_118 causes state contamination despite identical dual processing pattern.
 
-#### **🔍 REVISED ROOT CAUSE: Shared CoolingState Object Timing**
+#### **🔍 CONFIRMED STATE CONTAMINATION PATTERN**
 
-**The Real Contamination Mechanism:**
+**Phase 1-3 Test Results:**
+- **Baseline**: e_10=211, h_10=93.6 ✅
+- **Target g_118 change**: "Volume by Schedule" → "Volume Constant"
+  - **Result**: e_10 changed to 270.9, h_10 changed to 90.9 ❌ **STATE CONTAMINATION CONFIRMED**
+- **Reference g_118 change**: "Volume Constant" → "Volume by Schedule"  
+  - **Result**: h_10 changed from 90.9 to 100.3 ❌ **STATE CONTAMINATION CONFIRMED**
+
+**Critical Evidence from Logs:**
 ```
-Line 10309: TargetState.g_118="Volume Constant", ReferenceState.g_118="Volume Constant"  ❌ INITIAL CONTAMINATION
-Line 10376: TargetState.g_118="Volume by Schedule", ReferenceState.g_118="Volume Constant" ✅ CORRECTED AFTER CALCULATIONS
+Line 1407: TargetState.g_118="Volume Constant", ReferenceState.g_118="Volume Constant"  ❌ BOTH CONTAMINATED
+Line 1478: ReferenceState.g_118="Volume by Schedule", TargetState.g_118="Volume Constant" ❌ CROSS-CONTAMINATION
 ```
 
-**Key Insight**: The contamination is **TEMPORARY and SELF-CORRECTING**. It happens because:
+**The Contamination Mechanism**: Target mode changes write to BOTH states, Reference mode changes write to BOTH states. This is **bidirectional state mixing**, not isolated state management.
 
-1. **g_118 change affects shared `coolingState.ventilationMethod`**
-2. **Both state objects get temporarily synchronized** 
-3. **Calculation engines run and restore proper isolation**
-4. **Final state shows correct isolation**
-
-**Why d_113/d_116 don't have this issue**: They don't affect shared cooling calculation objects.
+**Why d_113/d_116 don't have this issue**: Unknown - requires investigation of what makes g_118 unique.
 
 #### **🎯 CRITICAL INVESTIGATION NEEDED**
 
@@ -414,9 +416,107 @@ Line 10376: TargetState.g_118="Volume by Schedule", ReferenceState.g_118="Volume
 4. **Cooling Object Dependencies**: Check if g_118 changes trigger additional state writes through the cooling calculation chain
 5. **Compare Field Processing**: Trace why identical `ModeManager.setValue()` calls work for d_113 but contaminate both states for g_118
 
-**CONFIRMED**: g_118 has a **unique contamination vector** that causes Target mode changes to incorrectly write the same value to BOTH TargetState and ReferenceState simultaneously. This violates state isolation and is the root cause of the cross-contamination issue.
+**CONFIRMED**: g_118 has **bidirectional state contamination** where:
+- **Target mode changes** → Write to BOTH TargetState AND ReferenceState  
+- **Reference mode changes** → Write to BOTH ReferenceState AND TargetState
+- **Result**: Perfect state isolation is violated in both directions
 
-**Key Difference**: d_113, d_116, d_118 maintain perfect state isolation with identical dual event handler patterns, proving the issue is g_118-specific, not systemic.
+**Key Difference**: d_113, d_116, d_118 maintain perfect state isolation with identical dual event handler patterns, proving the contamination mechanism is g_118-specific, not systemic.
+
+## 🚨 **CRITICAL HANDOFF DOCUMENTATION: The g_118 State Contamination Issue**
+
+### **📋 ISSUE SUMMARY FOR FUTURE AGENTS**
+
+**Problem**: The g_118 (Ventilation Method) dropdown in Section 13 violates dual-state architecture by causing **bidirectional state contamination** where Target mode changes affect Reference calculations and vice versa.
+
+**Impact**: This prevents achieving perfect state isolation, which is the core architectural goal of the TEUI dual-engine system.
+
+**Duration**: This issue has persisted through **multiple debugging sessions over several days** and **hundreds of hours of investigation**.
+
+### **🔍 CONFIRMED EVIDENCE**
+
+#### **Working vs. Broken Comparison:**
+- ✅ **d_113 (Heating System)**: Perfect state isolation - Target changes only affect Target calculations
+- ✅ **d_116 (Cooling System)**: Perfect state isolation - Target changes only affect Target calculations  
+- ✅ **d_118 (Ventilation Efficiency)**: Perfect state isolation - Target changes only affect Target calculations
+- ❌ **g_118 (Ventilation Method)**: **STATE CONTAMINATION** - Target changes affect BOTH Target AND Reference calculations
+
+#### **Specific Contamination Pattern:**
+**Phase 2 Test (Target Mode):**
+- Baseline: e_10=211, h_10=93.6
+- Target g_118 change: "Volume by Schedule" → "Volume Constant"  
+- **CONTAMINATION**: e_10 changed to 270.9, h_10 changed to 90.9
+- **Expected**: Only h_10 should change, e_10 should remain stable
+
+**Phase 3 Test (Reference Mode):**
+- Reference g_118 change: "Volume Constant" → "Volume by Schedule"
+- **CONTAMINATION**: h_10 changed from 90.9 to 100.3
+- **Expected**: Only e_10 should change, h_10 should remain stable
+
+### **🔬 TECHNICAL INVESTIGATION FINDINGS**
+
+#### **What We've Confirmed:**
+1. **Dual Event Handler Pattern**: ALL S13 dropdowns (d_113, d_116, g_118) show dual processing by both FieldManager and Section handlers
+2. **State Object Separation**: TargetState and ReferenceState are confirmed separate objects (not shared references)
+3. **Isolated Cooling Context**: 23 cooling properties successfully isolated in separate contexts
+4. **ModeManager Pattern**: g_118 uses identical `ModeManager.setValue()` pattern as working dropdowns
+
+#### **What Makes g_118 Unique:**
+- **Affects Cooling Calculations**: g_118 changes trigger complex cooling calculation chains
+- **Shared Object Dependencies**: g_118 interacts with cooling physics calculations that other dropdowns don't
+- **Cross-Engine Impact**: Changes affect both Target and Reference calculation engines simultaneously
+
+#### **Failed Investigation Approaches:**
+1. **Dual Handler Elimination**: Attempted to remove FieldManager handlers - didn't resolve contamination
+2. **Diagnostic Logging**: Added extensive logging to trace contamination - created log spam without clear resolution
+3. **Direct State Writes**: Attempted to bypass normal setValue() chain - didn't address root cause
+4. **Cooling Context Isolation**: Completed isolated context implementation - contamination persists at state level
+
+### **🎯 ARCHITECTURAL CONTEXT**
+
+#### **Why This Matters:**
+- **Core Project Goal**: Achieve perfect dual-state isolation across all 15 sections
+- **g_118 is the Last Holdout**: All other S13 fields work correctly
+- **Cascade Effect**: g_118 contamination affects downstream cooling calculations (d_116 also breaks)
+- **Excel Parity**: State contamination prevents accurate building code compliance calculations
+
+#### **What Works (Don't Break):**
+- ✅ **Isolated Cooling Context Architecture**: 23 cooling properties properly isolated
+- ✅ **Other S13 Dropdowns**: d_113, d_116, d_118 maintain perfect state isolation
+- ✅ **Dual-Engine Calculations**: Both Target and Reference models calculate correctly when isolated
+- ✅ **StateManager Publication**: Cross-section communication works via ref_ prefix
+
+### **🔧 INVESTIGATION RECOMMENDATIONS FOR NEXT AGENT**
+
+#### **Focus Areas:**
+1. **Hidden StateManager Listeners**: Search for any g_118-specific listeners that might cause cross-writes
+2. **Calculation Chain Analysis**: Trace how g_118 changes flow through cooling calculations differently than d_113/d_116
+3. **Timing Investigation**: Check if contamination happens during specific calculation phases
+4. **Reference Override Logic**: Examine if ReferenceState.setDefaults() g_118 override interacts with user changes
+
+#### **Debugging Strategy:**
+1. **Start Simple**: Add minimal logging to just ModeManager.setValue() for g_118
+2. **Compare Patterns**: Trace identical operations for working d_113 vs broken g_118
+3. **Isolation Test**: Temporarily disable cooling calculations to see if contamination persists
+4. **State Inspection**: Use browser console to inspect state objects during contamination
+
+#### **Success Criteria:**
+- **Target g_118 change** → Only h_10 changes, e_10 remains stable
+- **Reference g_118 change** → Only e_10 changes, h_10 remains stable
+- **State Independence**: TargetState.g_118 ≠ ReferenceState.g_118 after changes
+- **No Cascade Failures**: d_116 cooling system continues working properly
+
+### **⚠️ CRITICAL NOTES FOR NEXT AGENT**
+
+1. **Don't Modify Working Code**: d_113, d_116, d_118 work perfectly - don't change their patterns
+2. **Preserve Cooling Context**: The isolated cooling context architecture is sound - keep it
+3. **Focus on g_118 Only**: This is a field-specific issue, not a systemic architecture problem
+4. **Test Incrementally**: Make small changes and test immediately - don't accumulate complexity
+5. **State Isolation is Non-Negotiable**: Any solution must maintain perfect Target/Reference separation
+
+**This issue represents the final piece of S13's dual-state architecture puzzle. Solving it will complete the section's transformation and serve as a template for the remaining sections.**
+
+**Next Session Priority**: Identify what makes g_118 unique compared to other S13 dropdowns that work correctly.
 
 ### **🔧 Diagnostic Action Plan**
 

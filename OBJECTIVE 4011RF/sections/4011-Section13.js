@@ -66,17 +66,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       localStorage.setItem("S13_TARGET_STATE", JSON.stringify(this.state));
     },
     setValue: function (fieldId, value, source = "user") {
-      // 🔍 CRITICAL DEBUG: Track if TargetState.setValue somehow affects ReferenceState
-      if (fieldId === "g_118") {
-        console.log(`🔍 [S13-TARGETSTATE] setValue g_118="${value}" - BEFORE: ReferenceState.g_118="${ReferenceState.getValue("g_118")}"`);
-      }
-      
       this.state[fieldId] = value;
-      
-      if (fieldId === "g_118") {
-        console.log(`🔍 [S13-TARGETSTATE] setValue g_118="${value}" - AFTER: ReferenceState.g_118="${ReferenceState.getValue("g_118")}"`);
-      }
-      
       // ✅ FIXED: Save state for any user action (user or user-modified)
       if (source === "user" || source === "user-modified") {
         this.saveState();
@@ -375,22 +365,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       return this.getCurrentState().getValue(fieldId);
     },
     setValue: function (fieldId, value, source = "user") {
-      // 🔍 CRITICAL DEBUG: Track which state object we're writing to
-      const targetState = this.getCurrentState();
-      const stateName = this.currentMode === "target" ? "TargetState" : "ReferenceState";
-      
-      if (fieldId === "g_118") {
-        console.log(`🔍 [S13-MODEMANAGER] setValue g_118="${value}" in ${this.currentMode} mode → writing to ${stateName}`);
-        console.log(`🔍 [S13-MODEMANAGER] BEFORE: TargetState.g_118="${TargetState.getValue("g_118")}", ReferenceState.g_118="${ReferenceState.getValue("g_118")}"`);
-        console.log(`🔍 [S13-MODEMANAGER] State object identity: TargetState === ReferenceState?`, TargetState === ReferenceState);
-        console.log(`🔍 [S13-MODEMANAGER] State object .state identity: TargetState.state === ReferenceState.state?`, TargetState.state === ReferenceState.state);
-      }
-      
-      targetState.setValue(fieldId, value, source);
-      
-      if (fieldId === "g_118") {
-        console.log(`🔍 [S13-MODEMANAGER] AFTER: TargetState.g_118="${TargetState.getValue("g_118")}", ReferenceState.g_118="${ReferenceState.getValue("g_118")}"`);
-      }
+      this.getCurrentState().setValue(fieldId, value, source);
 
       // ✅ S10 SUCCESS PATTERN: Mode-aware StateManager publication
       if (this.currentMode === "target") {
