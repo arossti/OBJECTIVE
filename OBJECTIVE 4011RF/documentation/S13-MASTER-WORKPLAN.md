@@ -345,6 +345,19 @@ During testing, we discovered that the state mixing observed during location cha
 3. **Test after every 2-3 chunks** to monitor progress toward cooling bump elimination
 4. **Commit stable progress regularly** to maintain safe restore points
 
+### **⚠️ CRITICAL LESSON: Calculation Storm Avoidance (September 11, 2025)**
+**Issue**: Attempted to fix listener context errors by making listeners call `calculateAll()` - this created 58,000+ log infinite loops and crashed the application.
+
+**Root Cause**: Listeners calling `calculateAll()` creates circular dependencies:
+- `g_118` change → `calculateAll()` → triggers `m_129` listener → `calculateAll()` → infinite loop
+
+**Solution Applied**: **Surgical listener approach**:
+- **`m_129` listener**: Only updates `coolingState.coolingLoad`, no function calls
+- **`d_116` listener**: Only logs change, calculations handled by dropdown handlers  
+- **`d_118` listener**: Only logs change, calculations handled by slider handlers
+
+**Architecture Principle**: **Listeners should be passive observers, UI handlers should trigger calculations**
+
 ---
 
 ## Appendix A: Historical Context & Completed Work (`S13-UNIFIED-WORKPLAN.md`)
