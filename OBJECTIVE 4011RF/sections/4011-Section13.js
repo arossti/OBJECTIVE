@@ -2214,11 +2214,16 @@ window.TEUI.SectionModules.sect13 = (function () {
         console.log(
           "[Section13] 📡 🧊 d_116 (COOLING SYSTEM) listener triggered!",
         );
-        calculateCoolingSystem();
+        // PROPER FIX: Let the dropdown change handler trigger proper calculations
+        // This listener just logs the change - calculations handled by dropdown handler
       });
 
       // Listener for d_118 (Ventilation Efficiency) changes
-      sm.addListener("d_118", calculateVentilationValues);
+      sm.addListener("d_118", () => {
+        // PROPER FIX: Let the slider change handler trigger proper calculations
+        // This listener just logs the change - calculations handled by slider handler
+        console.log("[Section13] 📡 🌬️ d_118 (VENTILATION EFFICIENCY) listener triggered!");
+      });
 
       // ✅ REMOVED: g_118 StateManager listener (causes contamination)
       // Dropdown handler already triggers calculateAll() properly with dual-engine
@@ -2277,12 +2282,11 @@ window.TEUI.SectionModules.sect13 = (function () {
       }); // TED (from S14, for d_114)
       // Listener for m_129 (CED Mitigated) from S14 to update S13 coolingState
       sm.addListener("m_129", () => {
+        // PROPER FIX: Just update the local state, let normal calculation flow handle the rest
         coolingState.coolingLoad =
           window.TEUI.parseNumeric(getFieldValue("m_129")) || 0;
-        calculateCoolingSystem(); // Maybe recalculate cooling system loads?
-        // Re-calculate days active cooling AFTER load is updated
-        calculateDaysActiveCooling(coolingState.freeCoolingLimit);
-        setFieldValue("m_124", coolingState.daysActiveCooling, "integer");
+        // The cooling calculations will be triggered by the normal dependency flow
+        // when S14 changes trigger downstream recalculations
       });
       // ✅ REMOVED: d_113 ghosting listener - handled by dropdown change now
       console.log("[Section13] ✅ ALL LISTENERS ATTACHED SUCCESSFULLY");
