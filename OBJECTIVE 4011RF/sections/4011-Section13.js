@@ -2205,6 +2205,46 @@ window.TEUI.SectionModules.sect13 = (function () {
         f113Slider.hasSliderListener = true;
       }
 
+      // ✅ FIX: Add direct d_118 slider handler (same pattern as f_113)
+      const d118Slider = document.querySelector('input[type="range"][data-field-id="d_118"]');
+      if (d118Slider && !d118Slider.hasSliderListener) {
+        // Input event for live feedback AND immediate calculations during dragging
+        d118Slider.addEventListener("input", function () {
+          const efficiencyValue = parseFloat(this.value);
+          if (isNaN(efficiencyValue)) return;
+
+          // Update display immediately (live feedback)
+          const displaySpan = this.parentElement.querySelector(".slider-value");
+          if (displaySpan) {
+            displaySpan.textContent = efficiencyValue.toFixed(0) + "%";
+          }
+
+          // ✅ RESTORE FLUID BEHAVIOR: Immediate calculations during dragging
+          ModeManager.setValue("d_118", efficiencyValue.toString(), "user-modified");
+          calculateAll();
+          ModeManager.updateCalculatedDisplayValues();
+
+          console.log(`[S13] d_118 input (live): ${efficiencyValue}% - with calculations`);
+        });
+
+        // Change event for final calculations (after thumb release)
+        d118Slider.addEventListener("change", function () {
+          const efficiencyValue = parseFloat(this.value);
+          if (isNaN(efficiencyValue)) return;
+
+          console.log(`[S13] d_118 change (final): ${efficiencyValue}% - triggering calculations`);
+
+          // ✅ DUAL-STATE: Update via ModeManager (handles state isolation)
+          ModeManager.setValue("d_118", efficiencyValue.toString(), "user-modified");
+          
+          // ✅ CALCULATIONS: Only after thumb release
+          calculateAll();
+          ModeManager.updateCalculatedDisplayValues();
+        });
+
+        d118Slider.hasSliderListener = true;
+      }
+
       // ✅ PERFORMANCE FIX: Remove StateManager listener that causes calculation storms
       // Direct slider event handlers (input/change) provide better performance control
       // sm.addListener("f_113", calculateCOPValues); // REMOVED - causes storms in Reference mode
@@ -2220,9 +2260,8 @@ window.TEUI.SectionModules.sect13 = (function () {
 
       // Listener for d_118 (Ventilation Efficiency) changes
       sm.addListener("d_118", () => {
-        // PROPER FIX: Let the slider change handler trigger proper calculations
-        // This listener just logs the change - calculations handled by slider handler
         console.log("[Section13] 📡 🌬️ d_118 (VENTILATION EFFICIENCY) listener triggered!");
+        // Note: Direct slider handlers now provide the immediate calculation flow
       });
 
       // ✅ REMOVED: g_118 StateManager listener (causes contamination)
