@@ -757,6 +757,10 @@ window.TEUI.SectionModules.sect13 = (function () {
     // Add coolingSeasonMeanRH - cooling season humidity ratio
     context.coolingSeasonMeanRH = coolingState.coolingSeasonMeanRH; // Copy from global state initially
 
+    // CHUNK 3L "MICRO-STEP":
+    // Add atmPressure - atmospheric pressure constant
+    context.atmPressure = 101325; // Pa - standard atmospheric pressure
+
     // ... all other properties remain cloned from the old global state for now ...
     return context;
   }
@@ -815,7 +819,8 @@ window.TEUI.SectionModules.sect13 = (function () {
 
   /** [Cooling Calc] Calculate humidity ratios */
   function calculateHumidityRatios(isReferenceCalculation, coolingContext) {
-    const atmPressure = coolingState.atmPressure || 101325;
+    // CHUNK 3L: Read from context instead of global state
+    const atmPressure = coolingContext.atmPressure || 101325;
     const pPartialIndoor = coolingState.partialPressureIndoor;
     // CHUNK 3B: Read from context instead of global state
     const pSatAvgOutdoor = coolingContext.pSatAvg; // Get Saturation Pressure Outdoor (A56)
