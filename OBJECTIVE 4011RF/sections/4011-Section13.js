@@ -66,7 +66,17 @@ window.TEUI.SectionModules.sect13 = (function () {
       localStorage.setItem("S13_TARGET_STATE", JSON.stringify(this.state));
     },
     setValue: function (fieldId, value, source = "user") {
+      // 🔍 CRITICAL DEBUG: Track if TargetState.setValue somehow affects ReferenceState
+      if (fieldId === "g_118") {
+        console.log(`🔍 [S13-TARGETSTATE] setValue g_118="${value}" - BEFORE: ReferenceState.g_118="${ReferenceState.getValue("g_118")}"`);
+      }
+      
       this.state[fieldId] = value;
+      
+      if (fieldId === "g_118") {
+        console.log(`🔍 [S13-TARGETSTATE] setValue g_118="${value}" - AFTER: ReferenceState.g_118="${ReferenceState.getValue("g_118")}"`);
+      }
+      
       // ✅ FIXED: Save state for any user action (user or user-modified)
       if (source === "user" || source === "user-modified") {
         this.saveState();
@@ -365,7 +375,22 @@ window.TEUI.SectionModules.sect13 = (function () {
       return this.getCurrentState().getValue(fieldId);
     },
     setValue: function (fieldId, value, source = "user") {
-      this.getCurrentState().setValue(fieldId, value, source);
+      // 🔍 CRITICAL DEBUG: Track which state object we're writing to
+      const targetState = this.getCurrentState();
+      const stateName = this.currentMode === "target" ? "TargetState" : "ReferenceState";
+      
+      if (fieldId === "g_118") {
+        console.log(`🔍 [S13-MODEMANAGER] setValue g_118="${value}" in ${this.currentMode} mode → writing to ${stateName}`);
+        console.log(`🔍 [S13-MODEMANAGER] BEFORE: TargetState.g_118="${TargetState.getValue("g_118")}", ReferenceState.g_118="${ReferenceState.getValue("g_118")}"`);
+        console.log(`🔍 [S13-MODEMANAGER] State object identity: TargetState === ReferenceState?`, TargetState === ReferenceState);
+        console.log(`🔍 [S13-MODEMANAGER] State object .state identity: TargetState.state === ReferenceState.state?`, TargetState.state === ReferenceState.state);
+      }
+      
+      targetState.setValue(fieldId, value, source);
+      
+      if (fieldId === "g_118") {
+        console.log(`🔍 [S13-MODEMANAGER] AFTER: TargetState.g_118="${TargetState.getValue("g_118")}", ReferenceState.g_118="${ReferenceState.getValue("g_118")}"`);
+      }
 
       // ✅ S10 SUCCESS PATTERN: Mode-aware StateManager publication
       if (this.currentMode === "target") {
@@ -1117,7 +1142,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     calculateHumidityRatios(isReferenceCalculation, coolingContext);
 
     // Now calculate factors/limits that use the results
-    coolingState.latentLoadFactor = calculateLatentLoadFactor(
+    coolingContext.latentLoadFactor = calculateLatentLoadFactor(
       isReferenceCalculation,
       coolingContext,
     );
@@ -3203,7 +3228,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       window.TEUI.parseNumeric(getFieldValue("j_63")) || 8760;
     const occupancyFactor =
       totalHours_j63 > 0 ? occupiedHours_i63 / totalHours_j63 : 0;
-    const latentLoadFactor_i122 = coolingState.latentLoadFactor;
+    const latentLoadFactor_i122 = coolingContext?.latentLoadFactor || coolingState.latentLoadFactor;
     const summerBoostRawValue = ModeManager.getValue("l_119");
     const summerBoostFactor =
       summerBoostRawValue === "None" || summerBoostRawValue === ""
@@ -3283,7 +3308,7 @@ window.TEUI.SectionModules.sect13 = (function () {
   ) {
     // Add recursion protection
     if (window.TEUI.sect13.freeCalculationInProgress) {
-      return coolingState.freeCoolingLimit || 0;
+      return coolingContext?.freeCoolingLimit || 0;
     }
     window.TEUI.sect13.freeCalculationInProgress = true;
 
@@ -3356,7 +3381,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         setFieldValue("m_124", "TBD", "raw"); // Set display to TBD
       }
 
-      coolingState.freeCoolingLimit = finalFreeCoolingLimit; // Keep local state consistent
+      coolingContext.freeCoolingLimit = finalFreeCoolingLimit; // Keep context state consistent
     } catch (error) {
       console.error("[S13 Error] Error during calculateFreeCooling:", error);
       finalFreeCoolingLimit = 0;
