@@ -741,6 +741,22 @@ window.TEUI.SectionModules.sect13 = (function () {
     // Add nightTimeTemp - temperature calculation dependency
     context.nightTimeTemp = coolingState.nightTimeTemp; // Copy from global state initially
 
+    // CHUNK 3H "MICRO-STEP":
+    // Add coolingSetTemp - cooling setpoint temperature
+    context.coolingSetTemp = coolingState.coolingSetTemp; // Copy from global state initially
+
+    // CHUNK 3I "MICRO-STEP":
+    // Add humidityRatioIndoor - indoor humidity calculation
+    context.humidityRatioIndoor = null; // Will be calculated by calculateHumidityRatios function
+
+    // CHUNK 3J "MICRO-STEP":
+    // Add airMass - air density physics constant
+    context.airMass = 1.204; // kg/m³ - physics constant
+
+    // CHUNK 3K "MICRO-STEP":
+    // Add coolingSeasonMeanRH - cooling season humidity ratio
+    context.coolingSeasonMeanRH = coolingState.coolingSeasonMeanRH; // Copy from global state initially
+
     // ... all other properties remain cloned from the old global state for now ...
     return context;
   }
@@ -753,8 +769,8 @@ window.TEUI.SectionModules.sect13 = (function () {
     const LHV = coolingContext.latentHeatVaporization;
     // CHUNK 3F: Read from context instead of global state
     const Cp = coolingContext.specificHeatCapacity;
-    // CHUNK 3G: Read from context instead of global state
-    const Tdiff = coolingContext.nightTimeTemp - coolingState.coolingSetTemp;
+    // CHUNK 3G & 3H: Read from context instead of global state
+    const Tdiff = coolingContext.nightTimeTemp - coolingContext.coolingSetTemp;
 
     // Check for division by zero or invalid inputs
     if (
@@ -779,8 +795,10 @@ window.TEUI.SectionModules.sect13 = (function () {
   function calculateAtmosphericValues(isReferenceCalculation, coolingContext) {
     // CHUNK 3A: Read from context instead of global state
     const t_outdoor = coolingContext.A50_temp;
-    const outdoorRH = coolingState.coolingSeasonMeanRH;
-    const t_indoor = coolingState.coolingSetTemp;
+    // CHUNK 3K: Read from context instead of global state
+    const outdoorRH = coolingContext.coolingSeasonMeanRH;
+    // CHUNK 3H: Read from context instead of global state
+    const t_indoor = coolingContext.coolingSetTemp;
     const indoorRH_percent =
       window.TEUI.parseNumeric(getFieldValue("d_59")) || 45;
     const indoorRH = indoorRH_percent / 100;
@@ -807,9 +825,11 @@ window.TEUI.SectionModules.sect13 = (function () {
       console.warn(
         "Cooling Calc: Division by zero prevented in indoor humidity ratio.",
       );
-      coolingState.humidityRatioIndoor = 0;
+      // CHUNK 3I: Write to context instead of global state
+      coolingContext.humidityRatioIndoor = 0;
     } else {
-      coolingState.humidityRatioIndoor =
+      // CHUNK 3I: Write to context instead of global state
+      coolingContext.humidityRatioIndoor =
         (0.62198 * pPartialIndoor) / (atmPressure - pPartialIndoor);
     }
 
@@ -833,9 +853,9 @@ window.TEUI.SectionModules.sect13 = (function () {
     }
 
     // Calculate Difference (A63)
-    // CHUNK 3D: Write to context instead of global state
+    // CHUNK 3D & 3I: Write to context instead of global state
     coolingContext.humidityRatioDifference =
-      coolingContext.humidityRatioAvg - coolingState.humidityRatioIndoor;
+      coolingContext.humidityRatioAvg - coolingContext.humidityRatioIndoor;
   }
 
   /** [Cooling Calc] Calculate free cooling capacity limit (Potential Annual Sensible kWh) */
@@ -854,11 +874,13 @@ window.TEUI.SectionModules.sect13 = (function () {
       const ventFlowRateM3hr =
         window.TEUI.parseNumeric(getFieldValue("h_120")) || 0;
       const ventFlowRateM3s = ventFlowRateM3hr / 3600;
-      const massFlowRateKgS = ventFlowRateM3s * coolingState.airMass; // kg/s
+      // CHUNK 3J: Read from context instead of global state
+      const massFlowRateKgS = ventFlowRateM3s * coolingContext.airMass; // kg/s
 
       // CHUNK 3F: Read from context instead of global state
       const Cp = coolingContext.specificHeatCapacity; // J/kg·K
-      const T_indoor = coolingState.coolingSetTemp; // °C
+      // CHUNK 3H: Read from context instead of global state
+      const T_indoor = coolingContext.coolingSetTemp; // °C
       // CHUNK 3G: Read from context instead of global state
       const T_outdoor_night = coolingContext.nightTimeTemp; // °C
       const coolingDays =
@@ -947,7 +969,8 @@ window.TEUI.SectionModules.sect13 = (function () {
     // Note: This is an approximation, potentially from COOLING-TARGET.csv E64
     // CHUNK 3G: Read from context instead of global state
     const tdb = coolingContext.nightTimeTemp;
-    const rh = coolingState.coolingSeasonMeanRH * 100;
+    // CHUNK 3K: Read from context instead of global state
+    const rh = coolingContext.coolingSeasonMeanRH * 100;
     const twbSimple =
       tdb - (tdb - (tdb - (100 - rh) / 5)) * (0.1 + 0.9 * (rh / 100));
     const twbCorrected =
