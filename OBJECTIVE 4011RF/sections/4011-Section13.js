@@ -2203,9 +2203,24 @@ window.TEUI.SectionModules.sect13 = (function () {
       const sm = window.TEUI.StateManager; // Alias for brevity
       console.log("[Section13] 🔗 Attaching StateManager listeners...");
 
-      // ✅ REMOVED: StateManager listener for d_113 - dropdown handler already covers this
-      // Dropdown changes are now handled exclusively by handleDropdownChange()
-      // to prevent dual-listener contamination
+      // ✅ CRITICAL FIX: Add StateManager listener for d_113 to eliminate "cooling bump" requirement
+      // This ensures complete calculation cycle + downstream updates (A7 proven pattern)
+      sm.addListener("d_113", (newValue, oldValue) => {
+        console.log(`[S13] Target d_113 → ${newValue}`);
+        
+        // ✅ PATTERN 2: Run dual-engine calculations for proper Target/Reference state handling
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues(); // ✅ CRITICAL: Update DOM after calculations
+        if (
+          window.TEUI &&
+          window.TEUI.StateManager &&
+          typeof window.TEUI.StateManager.updateTEUICalculations === "function"
+        ) {
+          window.TEUI.StateManager.updateTEUICalculations(
+            "S13_d113_fuel_switch",
+          );
+        }
+      });
 
       // ✅ Reference mode d_113 changes are now handled by ReferenceState.setValue()
       // When user changes dropdowns in Reference mode, ReferenceState.setValue() triggers
