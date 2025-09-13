@@ -134,7 +134,8 @@ This refactor will be considered complete and successful when the following cond
 
 **Starting Point Options**:
 - **Option A**: Pre-context S13 (OFFLINE) - known calculation accuracy in Target mode
-- **Option B**: S13-CONTEXT - known state isolation + calculation accuracy
+- **Option B**: S13-CONTEXT - partial state isolation + calculation accuracy with context-dependent state objects (still state mixing at g_118 however)
+- **Option C**: S13.js - Our working file which demonstrates state isolation at the expense of cooling calculation accuracy and parity, and DOM stickiness and several other bugs... a good example of what we hope to acheive, but which was refactored too hastily and broke parity with excel calculations. Probably better to rename and reference only as needed per this ENDGAME strategy noted above. 
 
 **Methodology**: Careful, incremental refactor with validation after each edit:
 
