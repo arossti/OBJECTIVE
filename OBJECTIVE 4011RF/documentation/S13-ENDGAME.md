@@ -132,29 +132,39 @@ This refactor will be considered complete and successful when the following cond
 
 ### **Phase 2: Progressive S13 Refactor with Continuous Validation**
 
-**Starting Point Options**:
-- **Option A**: Pre-context S13 (OFFLINE) - known calculation accuracy in Target mode
-- **Option B**: S13-CONTEXT - partial state isolation + calculation accuracy with context-dependent state objects (still state mixing at g_118 however)
-- **Option C**: S13.js - Our working file which demonstrates state isolation at the expense of cooling calculation accuracy and parity, and DOM stickiness and several other bugs... a good example of what we hope to acheive, but which was refactored too hastily and broke parity with excel calculations. Probably better to rename and reference only as needed per this ENDGAME strategy noted above. 
+**Selected Baseline**: **S13-CONTEXT (current Section13.js)** - CHOSEN as optimal starting point
 
-**Methodology**: Careful, incremental refactor with validation after each edit:
+**Why CONTEXT was selected**:
+- ✅ **State isolation achieved** - g_118 contamination resolved with Pattern 1 architecture
+- ✅ **"Cooling bump" eliminated** - Added A7 dual calculation triggers (h_10 = 93.4 vs target 93.6)
+- ✅ **Functional baseline established** - Stable heating system switching with automatic convergence
+- ✅ **Comprehensive architecture** - Full dual-state implementation with temporary mode switching
+- ✅ **Known foundation** - Build upon proven state isolation rather than starting from scratch
 
-1. **Baseline Establishment**:
-   - Start with chosen baseline file (OFFLINE or CONTEXT)
-   - Verify initial calculation parity with Excel
-   - Document exact h_10, e_10 values as reference points
+**Alternative Options (preserved for reference)**:
+- **Option A**: S13-OFFLINE - Pre-context with calculation accuracy in Target mode only
+- **Option B**: S13-A7-TARGET-CORRECT - Legacy system with known calculation accuracy, good for comparison
+- **Option C**: S13-AGGRESSIVE - Failed aggressive refactor documented as cautionary example
 
-2. **Incremental Architecture Updates**:
-   - Apply Pattern 1 concepts ONE function at a time
-   - Validate calculation parity after each function modification
-   - Maintain UI and DOM update functionality throughout
-   - Test S01 flow after each significant change
+**Methodology**: Focus on calibration and fine-tuning rather than major refactor:
 
-3. **Continuous Quality Assurance**:
-   - Check calculation parity after each edit (like Chunk methodology)
-   - Troubleshoot errors immediately as they appear
-   - Never proceed to next change until current change is validated
-   - Maintain both state isolation AND calculation accuracy
+1. **Section-by-Section Excel Calibration (S02-S12)**:
+   - Verify each section's Target defaults match Excel baseline values exactly
+   - Ensure Reference defaults align with building code standards
+   - Confirm calculation flow S14 → S15 → S04 → S01 produces expected totals
+   - Rule out any upstream calculation drift affecting S13 inputs
+
+2. **S13 Fine-Tuning (Current CONTEXT Baseline)**:
+   - Current status: h_10 = 93.4 (target 93.6) - 99% accurate ✅
+   - Focus on minor calculation precision rather than major refactor
+   - Preserve working state isolation and cooling bump elimination
+   - Address remaining 0.2 difference through targeted adjustments
+
+3. **Continuous Validation**:
+   - Test each section calibration for Excel parity
+   - Verify S13 changes don't break state isolation
+   - Maintain functional baseline while improving accuracy
+   - Document any changes that affect calculation results
 
 ### **Phase 3: Final Integration & Validation**
 
