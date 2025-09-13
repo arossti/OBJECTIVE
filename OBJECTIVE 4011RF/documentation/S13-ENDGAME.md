@@ -100,3 +100,74 @@ This refactor will be considered complete and successful when the following cond
 - 🎯 **S01 totals match** expected Excel values
 - 🎯 **All ventilation changes** trigger immediate recalculations
 
+## 6. September 14, 2025 GOAL: Methodical Rebuild Strategy
+
+**Assessment**: The Pattern 1 refactor successfully achieved state isolation but broke calculation parity by moving too fast. We need a more careful, progressive approach that maintains both architectural integrity AND calculation accuracy.
+
+### **The New Path Forward**
+
+**Philosophy**: Build the final S13 refactor on solid foundations with continuous validation, just as we carefully constructed the CONTEXT version step-by-step with Chunk A, B, C methodology.
+
+### **Phase 1: Establish Known Calculation Baseline**
+
+**Objective**: Calibrate all 4011RF sections to match Excel defaults in both Reference and Target modes.
+
+1. **Section-by-Section Excel Alignment**:
+   - Verify S14 and S15 Target calculations match Excel exactly
+   - Ensure S04 and S01 downstream flow produces expected totals
+   - Confirm Reference states across all sections match Excel baseline values
+   - Rule out any unexpected values in Reference states
+
+2. **Target Flow Validation**:
+   - S14 → S15 → S04 → S01 calculation chain verification
+   - Known good: S13 Target state isolation (current working file)
+   - Known issue: S13 Target calculation accuracy needs work
+
+3. **Reference Flow Validation**:
+   - Ensure all Reference calculations use proper building code defaults
+   - Verify Reference state isolation is maintained across all sections
+   - Confirm no unexpected contamination in any Reference calculations
+
+**Success Criteria Phase 1**: All sections except S13 show perfect Excel parity in both modes.
+
+### **Phase 2: Progressive S13 Refactor with Continuous Validation**
+
+**Starting Point Options**:
+- **Option A**: Pre-context S13 (OFFLINE) - known calculation accuracy in Target mode
+- **Option B**: S13-CONTEXT - known state isolation + calculation accuracy
+
+**Methodology**: Careful, incremental refactor with validation after each edit:
+
+1. **Baseline Establishment**:
+   - Start with chosen baseline file (OFFLINE or CONTEXT)
+   - Verify initial calculation parity with Excel
+   - Document exact h_10, e_10 values as reference points
+
+2. **Incremental Architecture Updates**:
+   - Apply Pattern 1 concepts ONE function at a time
+   - Validate calculation parity after each function modification
+   - Maintain UI and DOM update functionality throughout
+   - Test S01 flow after each significant change
+
+3. **Continuous Quality Assurance**:
+   - Check calculation parity after each edit (like Chunk methodology)
+   - Troubleshoot errors immediately as they appear
+   - Never proceed to next change until current change is validated
+   - Maintain both state isolation AND calculation accuracy
+
+### **Phase 3: Final Integration & Validation**
+
+1. **Complete S13 Integration**: Ensure final S13 has both perfect state isolation and Excel parity
+2. **Full System Testing**: Verify entire 4011RF system works with new S13
+3. **Performance Optimization**: Address any remaining calculation stickiness
+4. **Documentation**: Update all documentation to reflect final architecture
+
+### **Key Learnings Applied**
+
+- ✅ **State isolation architecture** - we know this works from current S13
+- ✅ **Calculation accuracy** - we know this works from OFFLINE/CONTEXT versions  
+- ✅ **Progressive methodology** - build incrementally with continuous validation
+- ✅ **Known baselines** - start from proven calculation foundations
+
+**Target Completion**: September 14, 2025 - Final S13 with both perfect state isolation AND Excel calculation parity.
+
