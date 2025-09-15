@@ -221,23 +221,7 @@ window.TEUI.SectionModules.sect01 = (function () {
         .t3-tag { color: #333; }
         .cost-indicator { display: inline; font-size: 0.75rem; font-weight: bold; color: #555; margin-left: 5px; }
         .ref-cost { color: #8B0000; opacity: 0.9; }
-        /* Modern minimalist pass/fail indicators */
-        .status-pass { 
-          color: #28a745; 
-          font-size: 1.2rem; 
-          font-weight: bold; 
-          margin-right: 4px; 
-          display: inline-block; 
-        }
-        .status-fail { 
-          color: #dc3545; 
-          font-size: 1.2rem; 
-          font-weight: bold; 
-          margin-right: 4px; 
-          display: inline-block; 
-        }
-        /* Legacy checkmark class for backward compatibility */
-        .checkmark { color: green; font-size: 1.2rem; display: inline-block; margin-right: 5px; }
+        /* Note: checkmark/warning styles now defined globally in 4011-styles.css */
         .linear-gauge-container { width: 92%; height: 12px; background-color: #f1f1f1; border-radius: 6px; overflow: hidden; margin: 6px 0 6px auto; position: relative; margin-right: 20px; }
         .linear-gauge-bar { height: 100%; width: 0%; background-color: #5bc0de; transition: width 1s ease-in-out; border-radius: 6px; }
         .gauge-excellent { background-color: #28a745; }
@@ -672,13 +656,13 @@ window.TEUI.SectionModules.sect01 = (function () {
       showCheckmark = numericPercent <= 100; // Pass if 100% or under, fail if over 100%
     }
 
-    // Update the display with clean CSS classes
+    // Update the display using standard checkmark/warning classes (matches S10/S11/S13)
     if (percentageValue === "N/A") {
       percentSpan.innerHTML = "N/A";
     } else if (showCheckmark) {
-      percentSpan.innerHTML = `<span class="status-pass">✓</span>${percentageValue}`;
+      percentSpan.innerHTML = `<span class="checkmark">✓</span>${percentageValue}`;
     } else {
-      percentSpan.innerHTML = `<span class="status-fail">✕</span>${percentageValue}`;
+      percentSpan.innerHTML = `<span class="warning">✗</span>${percentageValue}`;
     }
   }
 
@@ -1271,6 +1255,7 @@ window.TEUI.SectionModules.sect01 = (function () {
       styleElement.textContent = customCSS;
     }
   }
+
 
   function removeToggleIcon() {
     const toggleIcon = document.querySelector(

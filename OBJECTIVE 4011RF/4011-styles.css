@@ -1961,6 +1961,23 @@ body.viewing-reference-inputs .reference-input-display-locked select {
 
 /* END CLEAN RULES - Proper CSS cascade without conflicts */
 
+/* =============== GLOBAL PASS/FAIL INDICATORS =============== */
+/* Standard checkmark/warning styles used across all sections */
+.checkmark { 
+  color: #28a745; 
+  font-weight: bold; 
+  font-size: 1.2rem; 
+  margin-right: 5px; 
+  display: inline-block;
+}
+.warning { 
+  color: #dc3545; 
+  font-weight: bold; 
+  font-size: 1.2rem; 
+  margin-right: 5px; 
+  display: inline-block;
+}
+
 /* =============== ELEGANT USER INPUT BEHAVIOR (OBC Matrix Pattern) =============== */
 /* EXACT COPY from working OBC Matrix styles */
 
