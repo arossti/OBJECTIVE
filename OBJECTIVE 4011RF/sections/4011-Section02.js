@@ -842,10 +842,10 @@ window.TEUI.SectionModules.sect02 = (function () {
 
     // Store Reference values for downstream consumption
     const referenceResults = {
-      h_12: ReferenceState.getValue("h_12"), // 2020 reporting year
+      h_12: ReferenceState.getValue("h_12"), // Reference reporting year
       h_13: ReferenceState.getValue("h_13"), // ✅ CRITICAL FIX: Service life (was missing!)
       d_12: ReferenceState.getValue("d_12"), // ✅ CONTAMINATION FIX: Major Occupancy (was missing!)
-      d_13: ReferenceState.getValue("d_13"), // OBC SB10 5.5-6 Z5 (2010)
+      d_13: ReferenceState.getValue("d_13"), // Reference building code standard
       d_14: ReferenceState.getValue("d_14"), // ✅ CONTAMINATION FIX: Actual/Target Use (was missing!)
       d_15: ReferenceState.getValue("d_15"), // Carbon standard
       h_15: ReferenceState.getValue("h_15"), // Building area
@@ -1753,9 +1753,9 @@ window.TEUI.SectionModules.sect02 = (function () {
         l_15: getFieldDefault("l_15") || "180.00",
         l_16: getFieldDefault("l_16") || "1.5000",
 
-        // 2. Apply Reference-specific overrides
-        d_13: "OBC SB10 5.5-6 Z5 (2010)", // Reference building code - earlier standard
-        h_12: "2020", // Reporting Period - Reference uses 2020
+        // 2. Apply Reference State overrides
+        d_13: "OBC SB10 5.5-6 Z6", // Reference building code - same standard as Target
+        h_12: "2022", // Reporting Period - same as Target
       };
       console.log(
         `S02: Reference defaults set from field definitions with overrides - overriding any localStorage empties`,
