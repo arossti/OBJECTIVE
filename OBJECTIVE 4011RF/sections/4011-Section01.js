@@ -397,27 +397,42 @@ window.TEUI.SectionModules.sect01 = (function () {
       }
     }
 
-    // Calculate T.2 Annual Carbon Percentage (m_8)
-    let annualCarbonPercent = 0;
+    // ========================================
+    // M_8 and M_10 CALCULATION: Simple relationship to j_8/j_10
+    // m_8 = 100% - j_8 (remaining percentage of reference)
+    // m_10 = 100% - j_10 (remaining percentage of reference)
+    // ========================================
+    
+    // Corrected calculations for j_8 and j_10 (reduction percentages)
+    let annualCarbonReduction = 0;
     if (e_8 !== 0) {
       const valueToUse = useType === "Utility Bills" && !isNaN(k_8) ? k_8 : h_8;
-      annualCarbonPercent = Math.round((valueToUse / e_8) * 100);
+      annualCarbonReduction = Math.round((1 - valueToUse / e_8) * 100); // REDUCTION percentage
     }
 
-    // Calculate T.3 TEUI Percentage (m_10)
-    let teuiPercent = 0;
+    let teuiReduction = 0;
     if (e_10 !== 0) {
-      const valueToUse =
-        useType === "Utility Bills" && !isNaN(k_10) ? k_10 : h_10;
-      teuiPercent = Math.round((valueToUse / e_10) * 100);
+      const valueToUse = useType === "Utility Bills" && !isNaN(k_10) ? k_10 : h_10;
+      teuiReduction = Math.round((1 - valueToUse / e_10) * 100); // REDUCTION percentage
     }
+    
+    // Calculate m_8 and m_10 as complement of j_8 and j_10
+    const m_8_result = 100 - annualCarbonReduction; // Remaining % of reference
+    const m_10_result = 100 - teuiReduction; // Remaining % of reference
+
+    // Format the percentage values (move outside StateManager block to fix scoping)
+    const m_6_formatted = typeof m_6_result === "number" ? 
+      window.TEUI?.formatNumber?.(m_6_result, "percent-0dp") ?? `${Math.round(m_6_result * 100)}%` : 
+      m_6_result;
+    const m_8_formatted = `${m_8_result}%`;
+    const m_10_formatted = `${m_10_result}%`;
 
     // Update percentages in StateManager
     if (window.TEUI?.StateManager) {
       const currentJ8 = window.TEUI.StateManager.getValue("j_8");
       const currentJ10 = window.TEUI.StateManager.getValue("j_10");
-      const newJ8 = `${annualCarbonPercent}%`;
-      const newJ10 = `${teuiPercent}%`;
+      const newJ8 = `${annualCarbonReduction}%`;
+      const newJ10 = `${teuiReduction}%`;
 
       if (currentJ8 !== newJ8) {
         window.TEUI.StateManager.setValue("j_8", newJ8, "calculated");
@@ -426,25 +441,25 @@ window.TEUI.SectionModules.sect01 = (function () {
         window.TEUI.StateManager.setValue("j_10", newJ10, "calculated");
       }
       
-      // Update m_6 (Lifetime Carbon %) in StateManager and display
-      const m_6_formatted = typeof m_6_result === "number" ? 
-        window.TEUI?.formatNumber?.(m_6_result, "percent-0dp") ?? `${Math.round(m_6_result * 100)}%` : 
-        m_6_result;
-      
       const currentM6 = window.TEUI.StateManager.getValue("m_6");
+      const currentM8 = window.TEUI.StateManager.getValue("m_8");
+      const currentM10 = window.TEUI.StateManager.getValue("m_10");
+      
       if (currentM6 !== m_6_formatted) {
         window.TEUI.StateManager.setValue("m_6", m_6_formatted, "calculated");
       }
+      if (currentM8 !== m_8_formatted) {
+        window.TEUI.StateManager.setValue("m_8", m_8_formatted, "calculated");
+      }
+      if (currentM10 !== m_10_formatted) {
+        window.TEUI.StateManager.setValue("m_10", m_10_formatted, "calculated");
+      }
     }
     
-    // Update m_6 display with checkmark/X logic
-    updatePercentageFieldWithCheckmark("m_6", typeof m_6_result === "number" ? 
-      window.TEUI?.formatNumber?.(m_6_result, "percent-0dp") ?? `${Math.round(m_6_result * 100)}%` : 
-      m_6_result);
-    
-    // Update m_8 and m_10 displays with checkmark/X logic
-    updatePercentageFieldWithCheckmark("m_8", `${annualCarbonPercent}%`);
-    updatePercentageFieldWithCheckmark("m_10", `${teuiPercent}%`);
+    // Update all percentage displays with checkmark/X logic
+    updatePercentageFieldWithCheckmark("m_6", m_6_formatted);
+    updatePercentageFieldWithCheckmark("m_8", m_8_formatted);
+    updatePercentageFieldWithCheckmark("m_10", m_10_formatted);
 
     // Update explanation text for Target columns
     updateExplanationText("h_6", h_6, e_6);
@@ -462,6 +477,11 @@ window.TEUI.SectionModules.sect01 = (function () {
       const reduction = 1 - targetValue / referenceValue;
       const reductionPercent = Math.round(reduction * 100);
       const explanationText = `Targeted (Design) ${reductionPercent}% Reduction`;
+
+      // Debug logging to trace the calculation
+      if (fieldId === "h_6") {
+        console.log(`🔍 [S01] h_6 explanation: target=${targetValue}, ref=${referenceValue}, reduction=${reduction}, percent=${reductionPercent}%`);
+      }
 
       const explanationSpan = document.querySelector(
         `[data-field-id="${fieldId}"] .key-explanation`,
@@ -751,6 +771,9 @@ window.TEUI.SectionModules.sect01 = (function () {
       targetServiceLife > 0
         ? Math.round((embodiedCarbon / targetServiceLife + h_8) * 10) / 10
         : 0;
+
+    // Debug logging for T.1 Lifetime Carbon
+    console.log(`🔍 [S01] T.1 Calculation: e_6=${e_6} (ref), h_6=${h_6} (target) → reduction should be ${Math.round((1 - h_6/e_6) * 100)}%`);
 
     // ========================================
     // COLUMN K (ACTUAL): Excel-compliant calculations (Utility Bills mode only)
