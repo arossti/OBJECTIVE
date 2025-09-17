@@ -736,7 +736,49 @@ window.TEUI.StateManager.setValue(
 - **Verify StateManager listener pattern**: Compare with ARCHIVE for proper event handling
 - **Fix timing race conditions**: Remove direct DOM handlers causing calculation storms
 
-### **Phase 8: refreshUI Mode Persistence Compliance (CRITICAL UI ISOLATION)**
+### **Phase 8: Systematic Downstream Contamination Audit (CRITICAL)**
+- **🚨 DISCOVERY**: Contamination can come from ANY downstream section reading wrong values, not just the upstream section where changes are made
+- **Systematic audit required**: ALL sections consuming external data must read correct Target vs Reference values
+- **Detection commands**:
+  ```bash
+  # Find sections reading climate data incorrectly
+  grep -n "getGlobalNumericValue.*d_20\|getGlobalNumericValue.*d_21" sections/4011-Section*.js
+  
+  # Find Reference calculations with fallback contamination
+  grep -n "ref_d_20.*||.*d_20\|ref_d_21.*||.*d_21" sections/4011-Section*.js
+  
+  # Find sections missing dual climate listeners  
+  grep -L "addListener.*d_20.*addListener.*ref_d_20" sections/4011-Section*.js
+  ```
+
+#### **MANDATORY Downstream Reading Patterns:**
+
+**✅ CORRECT: Reference calculations read ONLY ref_ values**
+```javascript
+if (isReferenceCalculation) {
+  const hdd = getGlobalNumericValue("ref_d_20") || 0;  // No fallback to d_20
+  const cdd = getGlobalNumericValue("ref_d_21") || 0;  // No fallback to d_21
+}
+```
+
+**❌ CONTAMINATION: Fallback patterns cause silent mixing**
+```javascript
+// ANTI-PATTERN: Silent contamination via fallbacks
+const hdd = getGlobalNumericValue("ref_d_20") || getGlobalNumericValue("d_20") || 0;
+```
+
+**✅ CORRECT: Dual listeners for both Target and Reference updates**
+```javascript
+// Target climate changes
+StateManager.addListener("d_20", calculateAll);
+StateManager.addListener("d_21", calculateAll);
+
+// Reference climate changes  
+StateManager.addListener("ref_d_20", calculateAll);
+StateManager.addListener("ref_d_21", calculateAll);
+```
+
+### **Phase 9: refreshUI Mode Persistence Compliance (CRITICAL UI ISOLATION)**
 - **🚨 COMPREHENSIVE UI PERSISTENCE AUDIT**: All user input fields must persist correctly across mode switches
 - **Scan for incomplete refreshUI implementations**: `grep -A 20 "refreshUI.*function" sections/4011-SectionXX.js`
 

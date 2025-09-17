@@ -1126,14 +1126,14 @@ window.TEUI.SectionModules.sect11 = (function () {
       let hdd, heatgainMultiplier;
       if (type === "air") {
         if (isReferenceCalculation) {
-          // Reference calculations: read ref_ prefixed climate data
-          const ref_hdd = getGlobalNumericValue("ref_d_20");
-          const global_hdd = getGlobalNumericValue("d_20");
-          hdd = ref_hdd || global_hdd || 0;
+          // ✅ FIXED: Reference calculations read ONLY ref_ values (no fallbacks)
+          const ref_hdd = getGlobalNumericValue("ref_d_20") || 0;
+          hdd = ref_hdd;
+          console.log(`[S11] 🔵 REF CLIMATE READ: d_20=${hdd}`);
 
-          const ref_cdd = getGlobalNumericValue("ref_d_21");
-          const global_cdd = getGlobalNumericValue("d_21");
-          heatgainMultiplier = (ref_cdd || global_cdd || 0) * 24;
+          const ref_cdd = getGlobalNumericValue("ref_d_21") || 0;
+          heatgainMultiplier = ref_cdd * 24;
+          console.log(`[S11] 🔵 REF CLIMATE READ: d_21=${ref_cdd}`);
 
           // 🔍 S11 REFERENCE CONTAMINATION TRACKER
           // console.log(`🔍 S11 REFERENCE: HDD=${hdd} (ref_d_20=${ref_hdd}, global_d_20=${global_hdd})`);
@@ -1142,9 +1142,11 @@ window.TEUI.SectionModules.sect11 = (function () {
           // ✅ FIXED: Target calculations read unprefixed climate data (Pattern A)
           const hdd_value = getGlobalNumericValue("d_20") || 0;
           hdd = hdd_value;
+          console.log(`[S11] 🎯 TGT CLIMATE READ: d_20=${hdd}`);
 
           const cdd_value = getGlobalNumericValue("d_21") || 0;
           heatgainMultiplier = cdd_value * 24;
+          console.log(`[S11] 🎯 TGT CLIMATE READ: d_21=${cdd_value}`);
 
           // 🚨 S11 TARGET CONTAMINATION TRACKER
           // console.log(`🚨 S11 TARGET: HDD=${hdd} (target_d_20=${target_hdd}, global_d_20=${global_hdd})`);
