@@ -19,7 +19,7 @@ This plan avoids the pitfalls of the abandoned **IT-DEPENDS** branch (field-leve
 - **setTimeout Anti-Pattern**: Race condition workarounds using setTimeout violate CTO guidance [[memory:5204274]]
 - **Cascade Amplification**: Single field change triggers 7+ calculation engines (S09→S10→S15→S04→S01)
 - **Performance Degradation**: 2000ms delays unacceptable for user experience
-- **🚨 KNOWN ISSUE (Sept 17, 2025)**: S12 climate listener initialization failure causing state contamination in S03 location changes. This is NOT a race condition but a section initialization timing issue. S12 listeners for d_20/d_21 changes are defined but not firing, causing S12 to read stale climate values while S11 correctly reads updated values. This demonstrates the need for deterministic initialization ordering that the orchestrator will provide.
+- **🚨 KNOWN ISSUE (Sept 17, 2025)**: S12 StateManager listener firing failure causing state contamination in S03 location changes. **ROOT CAUSE IDENTIFIED**: StateManager.setValue() with "calculated" state may not trigger addListener() callbacks, only registerDependency() callbacks. S12 listeners for d_20/d_21 are properly initialized but never fire when S03 publishes calculated climate values. Evidence: S11 works perfectly (reads updated values), S12 consistently reads stale values despite identical listener patterns. **ARCHITECTURAL IMPLICATION**: This reveals a fundamental StateManager limitation where calculated value changes don't propagate via listeners, requiring orchestrator-based coordination instead of listener-based reactivity.
 
 **Current Architecture Compatibility:**
 - ✅ **Section Autonomy Preserved**: Each section's `TargetState`/`ReferenceState` objects remain intact
