@@ -557,7 +557,7 @@ window.TEUI.SectionModules.sect03 = (function () {
     const city = stateObject.getValue("h_19") || "Alexandria";
     const timeframe = stateObject.getValue("h_20") || "Present";
     
-    console.log(`[S03] Getting climate data for: ${city}, ${province} (${timeframe})`);
+    // console.log(`[S03] Getting climate data for: ${city}, ${province} (${timeframe})`);
     
     const cityData = ClimateDataService.getCityData(province, city);
 
@@ -586,7 +586,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       l_22: cityData["Elev ASL (m)"] || "80"
     };
     
-    console.log(`[S03] Climate values for ${city}:`, climateValues);
+    // console.log(`[S03] Climate values for ${city}:`, climateValues);
     return climateValues;
   }
 
@@ -1105,7 +1105,7 @@ window.TEUI.SectionModules.sect03 = (function () {
     const provinceValue = e?.target?.value;
     if (!provinceValue) return;
 
-    console.log("Section03: Province selected:", provinceValue);
+    console.log(`[S03] 🌍 PROVINCE CHANGE: ${provinceValue} in ${ModeManager.currentMode.toUpperCase()} mode`);
     
     // Update state using ModeManager (handles mode-aware StateManager sync)
     ModeManager.setValue("d_19", provinceValue, "user-modified");
@@ -1687,6 +1687,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         TargetState.setValue(key, value, "calculated");
         // CRITICAL: Publish to StateManager so downstream sections can access
         window.TEUI.StateManager.setValue(key, value.toString(), "calculated");
+        console.log(`[S03] 🎯 TARGET ENGINE: Set ${key}=${value} (from ${TargetState.getValue("h_19")}, ${TargetState.getValue("d_19")})`);
       });
       
       // ✅ STEP 3: Run calculations that depend on climate data
@@ -1715,6 +1716,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       // ✅ STEP 2: Update ReferenceState with the new climate data
       Object.entries(climateValues).forEach(([key, value]) => {
         ReferenceState.setValue(key, value, "calculated");
+        console.log(`[S03] 🔵 REFERENCE ENGINE: Set ${key}=${value} (from ${ReferenceState.getValue("h_19")}, ${ReferenceState.getValue("d_19")})`);
       });
       
       // Force Reference mode temporarily for other calculations
@@ -2048,7 +2050,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       // Add new listener - ✅ PHASE 3: Simplified to match h_21 working pattern
       newCityDropdown.addEventListener("change", function () {
         const selectedCity = this.value;
-        console.log("Section03: City selected:", selectedCity);
+        console.log(`[S03] 🏙️ CITY CHANGE: ${selectedCity} in ${ModeManager.currentMode.toUpperCase()} mode`);
         ModeManager.setValue("h_19", selectedCity, "user-modified");
         calculateAll(); // ✅ Let the engines handle climate data updates
       });
