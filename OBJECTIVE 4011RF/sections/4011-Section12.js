@@ -1852,13 +1852,15 @@ window.TEUI.SectionModules.sect12 = (function () {
     // ✅ FIX: Read climate data based on calculation type (S03 canonical pattern)
     let d20_hdd, d21_cdd;
     if (isReferenceCalculation) {
-      // ✅ PATTERN A: Clean external dependencies via getGlobalNumericValue
-      d20_hdd = getGlobalNumericValue("d_20");
-      d21_cdd = getGlobalNumericValue("d_21");
+      // ✅ FIXED: Reference calculations read ONLY ref_ prefixed values
+      d20_hdd = getGlobalNumericValue("ref_d_20");
+      d21_cdd = getGlobalNumericValue("ref_d_21");
+      console.log(`[S12] 🔵 REF CLIMATE READ: d_20=${d20_hdd}, d_21=${d21_cdd}`);
     } else {
-      // ✅ PATTERN A: Clean external dependencies via getGlobalNumericValue
+      // ✅ PATTERN A: Target calculations read unprefixed values
       d20_hdd = getGlobalNumericValue("d_20");
       d21_cdd = getGlobalNumericValue("d_21");
+      console.log(`[S12] 🎯 TGT CLIMATE READ: d_20=${d20_hdd}, d_21=${d21_cdd}`);
     }
 
     const d101_areaAir = volumeResults.d_101;
@@ -1916,15 +1918,11 @@ window.TEUI.SectionModules.sect12 = (function () {
     // ✅ FIX: Read climate data based on calculation type (S03 canonical pattern)
     let d20_hdd, d21_cdd, d22_gfHDD, h22_gfCDD;
     if (isReferenceCalculation) {
-      // ✅ CRITICAL FIX: Read Reference climate values from S03
-      d20_hdd =
-        getGlobalNumericValue("ref_d_20") || getGlobalNumericValue("d_20") || 0;
-      d21_cdd =
-        getGlobalNumericValue("ref_d_21") || getGlobalNumericValue("d_21") || 0;
-      d22_gfHDD =
-        getGlobalNumericValue("ref_d_22") || getGlobalNumericValue("d_22") || 0;
-      h22_gfCDD =
-        getGlobalNumericValue("ref_h_22") || getGlobalNumericValue("h_22") || 0;
+      // ✅ FIXED: Reference calculations read ONLY ref_ prefixed values (no fallbacks)
+      d20_hdd = getGlobalNumericValue("ref_d_20") || 0;
+      d21_cdd = getGlobalNumericValue("ref_d_21") || 0;
+      d22_gfHDD = getGlobalNumericValue("ref_d_22") || 0;
+      h22_gfCDD = getGlobalNumericValue("ref_h_22") || 0;
 
       // [S12DB] Debug Reference climate reading
       console.log(
