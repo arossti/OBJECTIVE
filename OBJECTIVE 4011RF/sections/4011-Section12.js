@@ -2622,11 +2622,7 @@ window.TEUI.SectionModules.sect12 = (function () {
       "d_96", // Interior Floor Area (Used for d_106)
       // Section 11 Thermal Bridge Penalty
       "d_97",
-      // Section 3 Climate Data
-      "d_20", // HDD
-      "d_21", // CDD
-      "d_22", // GF HDD
-      "h_22", // GF CDD
+      // Section 3 Climate Data (removed d_20, d_21, d_22, h_22 - have explicit listeners)
       "j_19", // Climate Zone (for N-Factor)
       "h_21", // Capacitance Setting (for k_104)
     ];
