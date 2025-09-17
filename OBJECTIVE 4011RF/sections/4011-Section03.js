@@ -296,8 +296,8 @@ window.TEUI.SectionModules.sect03 = (function () {
         }
       });
 
-      // Update climate data and calculations for current selections
-      updateWeatherData();
+      // ✅ PHASE 3: Climate data now handled by calculation engines
+      // No need to call updateWeatherData() - calculateAll() handles it
 
       // console.log(`S03: UI refreshed for ${this.currentMode} mode`);
     },
@@ -540,6 +540,55 @@ window.TEUI.SectionModules.sect03 = (function () {
       return provinceNames[abbr] || abbr;
     },
   };
+
+  //==========================================================================
+  // CLIMATE DATA PROCESSING - Pure Functions for Dual-State Architecture
+  //==========================================================================
+
+  /**
+   * ✅ PHASE 1: Pure climate data function for dual-state architecture
+   * Fetches and calculates climate data based on the provided state object.
+   * This function is pure; it reads from a state object but does not modify it.
+   * @param {object} stateObject - Either TargetState or ReferenceState
+   * @returns {object} An object containing all calculated climate values
+   */
+  function getClimateDataForState(stateObject) {
+    const province = stateObject.getValue("d_19") || "ON";
+    const city = stateObject.getValue("h_19") || "Alexandria";
+    const timeframe = stateObject.getValue("h_20") || "Present";
+    
+    console.log(`[S03] Getting climate data for: ${city}, ${province} (${timeframe})`);
+    
+    const cityData = ClimateDataService.getCityData(province, city);
+
+    if (!cityData) {
+      console.warn(`S03: No climate data for ${city}, ${province}`);
+      return {
+        d_20: "N/A",
+        d_21: "N/A", 
+        j_19: "6.0",
+        d_23: "-24",
+        d_24: "34",
+        l_22: "80"
+      };
+    }
+
+    // Choose values based on timeframe
+    const hdd = timeframe === "Future" ? cityData.HDD18_2021_2050 : cityData.HDD18;
+    const cdd = timeframe === "Future" ? cityData.CDD24_2021_2050 : cityData.CDD24;
+
+    const climateValues = {
+      d_20: (hdd !== null && hdd !== undefined && hdd !== 666) ? hdd : "N/A",
+      d_21: (cdd !== null && cdd !== undefined && cdd !== 666) ? cdd : "N/A",
+      j_19: determineClimateZone(hdd),
+      d_23: cityData.January_2_5 || "-24",
+      d_24: cityData.July_2_5_Tdb || "34", 
+      l_22: cityData["Elev ASL (m)"] || "80"
+    };
+    
+    console.log(`[S03] Climate values for ${city}:`, climateValues);
+    return climateValues;
+  }
 
   //==========================================================================
   // PART 1: CONSOLIDATED FIELD DEFINITIONS AND LAYOUT
@@ -1050,28 +1099,22 @@ window.TEUI.SectionModules.sect03 = (function () {
   }
 
   /**
-   * Handle province selection change - Using ClimateDataService
+   * Handle province selection change - ✅ PHASE 3: Simplified for dual-state architecture
    */
   function handleProvinceChange(e) {
     const provinceValue = e?.target?.value;
     if (!provinceValue) return;
 
     console.log("Section03: Province selected:", provinceValue);
-
-    // Set province value in DualState (automatically handles current mode)
-    DualState.setValue("d_19", provinceValue, "user");
-
-    // ✅ PATTERN A: Sync to global StateManager in a mode-aware way
-    if (window.TEUI?.StateManager) {
-      const key = ModeManager.currentMode === "reference" ? "ref_d_19" : "d_19";
-      window.TEUI.StateManager.setValue(key, provinceValue, "user-modified");
-      console.log(
-        `S03: Synced province change "${provinceValue}" to StateManager key "${key}"`,
-      );
-    }
-
-    // Update city dropdown for this province
+    
+    // Update state using ModeManager (handles mode-aware StateManager sync)
+    ModeManager.setValue("d_19", provinceValue, "user-modified");
+    
+    // Update city dropdown for this province (UI only)
     updateCityDropdown(provinceValue);
+    
+    // Note: calculateAll() will be called by the city dropdown's auto-selection
+    // If city doesn't auto-select, we would add calculateAll() here
   }
 
   /**
@@ -1132,8 +1175,11 @@ window.TEUI.SectionModules.sect03 = (function () {
   }
 
   /**
-   * Update weather data based on selected city/province - Using ClimateDataService
+   * ❌ PHASE 4: DEPRECATED - This function has been replaced by climate data integration
+   * in calculateTargetModel() and calculateReferenceModel() for perfect state isolation.
+   * Keeping commented for reference during testing phase.
    */
+  /*
   function updateWeatherData() {
     // Get province and city values from DualState (automatically uses current mode)
     const provinceValue =
@@ -1225,6 +1271,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       `S03: Weather data updated for ${cityValue}, ${provinceValue} (${timeframe})`,
     );
   }
+  */ // End of deprecated updateWeatherData() function
 
   /**
    * Determine climate zone based on HDD
@@ -1624,7 +1671,7 @@ window.TEUI.SectionModules.sect03 = (function () {
 
   /**
    * TARGET MODEL ENGINE: Calculate all values using Target state
-   * This is the original calculateAll() function renamed
+   * ✅ PHASE 2: Integrated climate data fetch for perfect state isolation
    */
   function calculateTargetModel() {
     // Ensure Target engine always uses Target state regardless of UI mode
@@ -1632,23 +1679,24 @@ window.TEUI.SectionModules.sect03 = (function () {
     try {
       ModeManager.currentMode = "target";
 
-      // Dependencies: d_19, h_19 -> d_23, d_24; h_20 -> future flag; d_12 -> critical flag
+      // ✅ STEP 1: Get climate data based on TargetState location
+      const climateValues = getClimateDataForState(TargetState);
 
-      // Calculate base setpoints (depend on d_12, which might be set by StateManager init or user)
+      // ✅ STEP 2: Update both local state AND StateManager immediately
+      Object.entries(climateValues).forEach(([key, value]) => {
+        TargetState.setValue(key, value, "calculated");
+        // CRITICAL: Publish to StateManager so downstream sections can access
+        window.TEUI.StateManager.setValue(key, value.toString(), "calculated");
+      });
+      
+      // ✅ STEP 3: Run calculations that depend on climate data
       calculateHeatingSetpoint();
       calculateCoolingSetpoint_h24();
-
-      // Calculate temperature conversions (depend on d_23, d_24, h_23)
       calculateTemperatures();
-
-      // Calculate Ground Facing values (depend on d_20, d_21 from weather)
       calculateGroundFacing();
-
-      // Calculate cooling dependents (depend on h_24, l_24)
       updateCoolingDependents();
-
-      // Update critical occupancy flag (depends on d_12)
       updateCriticalOccupancyFlag();
+
     } finally {
       // Restore prior UI mode
       ModeManager.currentMode = originalMode;
@@ -1657,78 +1705,38 @@ window.TEUI.SectionModules.sect03 = (function () {
 
   /**
    * REFERENCE MODEL ENGINE: Calculate all values using Reference state
-   * ✅ CRITICAL FIX: Uses Reference state values directly, not current DOM selections
-   * Stores results with ref_ prefix for downstream sections (S15, S14, etc.)
+   * ✅ PHASE 2: Integrated climate data fetch for perfect state isolation
    */
   function calculateReferenceModel() {
-    // console.log("[Section03] Running Reference Model calculations...");
-
     try {
-      // ✅ CRITICAL FIX: Calculate Reference climate using Reference state values ONLY
-      // This prevents contamination from Target mode DOM selections
-      const refProvince = ReferenceState.getValue("d_19") || "ON";
-      const refCity = ReferenceState.getValue("h_19") || "Alexandria";
-      const refTimeframe = ReferenceState.getValue("h_20") || "Present";
-
-      // Get Reference climate data directly from ClimateDataService
-      const refCityData = ClimateDataService.getCityData(refProvince, refCity);
-
-      if (refCityData) {
-        // Update Reference climate values using Reference location data
-        const refHddValue =
-          refTimeframe === "Future"
-            ? refCityData.HDD18_2021_2050
-            : refCityData.HDD18;
-        const refCddValue =
-          refTimeframe === "Future"
-            ? refCityData.CDD24_2021_2050
-            : refCityData.CDD24;
-
-        // Store Reference climate values in Reference state
-        ReferenceState.setValue("d_20", refHddValue || "N/A", "calculated");
-        ReferenceState.setValue("d_21", refCddValue || "N/A", "calculated");
-        ReferenceState.setValue(
-          "d_23",
-          refCityData.January_2_5 || "-24",
-          "calculated",
-        );
-        ReferenceState.setValue(
-          "d_24",
-          refCityData.July_2_5_Tdb || "34",
-          "calculated",
-        );
-        ReferenceState.setValue(
-          "l_22",
-          refCityData["Elev ASL (m)"] || "80",
-          "calculated",
-        );
-
-        // Calculate Reference climate zone
-        const refClimateZone = determineClimateZone(refHddValue);
-        ReferenceState.setValue("j_19", refClimateZone, "calculated");
-      }
-
-      // Force Reference mode temporarily for setpoint calculations
+      // ✅ STEP 1: Get climate data based on ReferenceState location
+      const climateValues = getClimateDataForState(ReferenceState);
+      
+      // ✅ STEP 2: Update ReferenceState with the new climate data
+      Object.entries(climateValues).forEach(([key, value]) => {
+        ReferenceState.setValue(key, value, "calculated");
+      });
+      
+      // Force Reference mode temporarily for other calculations
       const originalMode = ModeManager.currentMode;
       ModeManager.currentMode = "reference";
 
-      // Run setpoint calculations using Reference state values
+      // ✅ STEP 3: Run calculations that depend on climate data
       calculateHeatingSetpoint();
       calculateCoolingSetpoint_h24();
       calculateTemperatures();
       calculateGroundFacing();
       updateCoolingDependents();
-
+      
       // Restore original mode
       ModeManager.currentMode = originalMode;
 
-      // Store Reference results for downstream consumption
+      // ✅ STEP 4: Store all Reference results for downstream sections
       storeReferenceResults();
+
     } catch (error) {
       console.error("Error during Section 03 calculateReferenceModel:", error);
     }
-
-    // console.log("[Section03] Reference Model calculations complete");
   }
 
   /**
@@ -1739,15 +1747,22 @@ window.TEUI.SectionModules.sect03 = (function () {
 
     // Get Reference state climate values and store with ref_ prefix
     const referenceResults = {
-      h_23: ReferenceState.getValue("h_23"), // Reference heating setpoint
-      d_23: ReferenceState.getValue("d_23"), // Reference coldest day
-      d_24: ReferenceState.getValue("d_24"), // Reference hottest day
-      h_24: ReferenceState.getValue("h_24"), // Reference cooling setpoint
+      // Location identifiers
+      d_19: ReferenceState.getValue("d_19"), // Province
+      h_19: ReferenceState.getValue("h_19"), // City
+      h_20: ReferenceState.getValue("h_20"), // Timeframe
+      // Climate data
       d_20: ReferenceState.getValue("d_20"), // Reference HDD
       d_21: ReferenceState.getValue("d_21"), // Reference CDD
+      j_19: ReferenceState.getValue("j_19"), // Reference climate zone
+      d_23: ReferenceState.getValue("d_23"), // Reference coldest day
+      d_24: ReferenceState.getValue("d_24"), // Reference hottest day
+      l_22: ReferenceState.getValue("l_22"), // Elevation
+      // Calculated values
+      h_23: ReferenceState.getValue("h_23"), // Reference heating setpoint
+      h_24: ReferenceState.getValue("h_24"), // Reference cooling setpoint
       d_22: ReferenceState.getValue("d_22"), // Reference GF HDD
       h_22: ReferenceState.getValue("h_22"), // Reference GF CDD
-      j_19: ReferenceState.getValue("j_19"), // Reference climate zone
     };
 
     // Store with ref_ prefix for downstream sections
@@ -2030,23 +2045,12 @@ window.TEUI.SectionModules.sect03 = (function () {
       const newCityDropdown = cityDropdown.cloneNode(true);
       cityDropdown.parentNode.replaceChild(newCityDropdown, cityDropdown);
 
-      // Add new listener
+      // Add new listener - ✅ PHASE 3: Simplified to match h_21 working pattern
       newCityDropdown.addEventListener("change", function () {
         const selectedCity = this.value;
         console.log("Section03: City selected:", selectedCity);
-        DualState.setValue("h_19", selectedCity, "user");
-
-        // ✅ PATTERN A: Sync to global StateManager in a mode-aware way
-        if (window.TEUI?.StateManager) {
-          const key =
-            ModeManager.currentMode === "reference" ? "ref_h_19" : "h_19";
-          window.TEUI.StateManager.setValue(key, selectedCity, "user-modified");
-          console.log(
-            `S03: Synced city change "${selectedCity}" to StateManager key "${key}"`,
-          );
-        }
-
-        updateWeatherData();
+        ModeManager.setValue("h_19", selectedCity, "user-modified");
+        calculateAll(); // ✅ Let the engines handle climate data updates
       });
     }
 
@@ -2060,12 +2064,12 @@ window.TEUI.SectionModules.sect03 = (function () {
         timeframeDropdown,
       );
 
-      // Add new listener
+      // Add new listener - ✅ PHASE 3: Simplified to match h_21 working pattern
       newTimeframeDropdown.addEventListener("change", function () {
         const selectedTimeframe = this.value;
         console.log("S03: Timeframe selected:", selectedTimeframe);
-        DualState.setValue("h_20", selectedTimeframe, "user");
-        updateWeatherData(); // This will update HDD/CDD values based on Present/Future
+        ModeManager.setValue("h_20", selectedTimeframe, "user-modified");
+        calculateAll(); // ✅ Let the engines handle climate data updates
       });
     }
 
@@ -2136,10 +2140,8 @@ window.TEUI.SectionModules.sect03 = (function () {
       console.warn("S03: FieldManager.initializeSliders not available");
     }
 
-    // Initial update if province and city already selected
-    if (provinceDropdown?.value && cityDropdown?.value) {
-      updateWeatherData();
-    }
+    // ✅ PHASE 3: Initial climate data handled by calculateAll() in onSectionRendered
+    // No need for explicit updateWeatherData() call here
 
     // --- StateManager Listeners ---
     if (window.TEUI && window.TEUI.StateManager) {
@@ -2386,7 +2388,6 @@ window.TEUI.SectionModules.sect03 = (function () {
     onSectionRendered: onSectionRendered,
 
     // Utility functions
-    updateWeatherData: updateWeatherData,
     showWeatherData: showWeatherData,
     calculateAll: calculateAll,
 
