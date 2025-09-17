@@ -2589,6 +2589,7 @@ window.TEUI.SectionModules.sect12 = (function () {
 
   function addStateManagerListeners() {
     if (!window.TEUI?.StateManager) return;
+    console.log("[S12] 🚀 INITIALIZING CLIMATE LISTENERS");
     const externalDependencies = [
       // Section 11 Inputs influencing U-Values (g_101, g_102) and Areas (d_101, d_102)
       "d_85",
@@ -2742,7 +2743,7 @@ window.TEUI.SectionModules.sect12 = (function () {
     window.TEUI.StateManager.addListener("g_109", () => calculateAll()); // Measured ACH50
 
     s12ListenersAdded = true;
-    // console.log("[S12 DEBUG] StateManager listeners HAVE BEEN ADDED."); // REMOVE DEBUG LOG
+    console.log("[S12] ✅ CLIMATE LISTENERS ADDED - Ready for d_20/d_21 changes");
   }
 
   /**
