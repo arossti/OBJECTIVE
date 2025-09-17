@@ -2697,29 +2697,39 @@ window.TEUI.SectionModules.sect12 = (function () {
       updateAllReferenceIndicators();
     });
 
+    // ✅ CRITICAL: Listen for Target climate data changes to trigger recalculation
+    window.TEUI.StateManager.addListener("d_20", (newValue) => {
+      console.log(`[S12] Target HDD changed: d_20=${newValue} → triggering calculations`);
+      calculateAll();
+    });
+    window.TEUI.StateManager.addListener("d_21", (newValue) => {
+      console.log(`[S12] Target CDD changed: d_21=${newValue} → triggering calculations`);
+      calculateAll();
+    });
+    window.TEUI.StateManager.addListener("d_22", (newValue) => {
+      console.log(`[S12] Target GF HDD changed: d_22=${newValue} → triggering calculations`);
+      calculateAll();
+    });
+    window.TEUI.StateManager.addListener("h_22", (newValue) => {
+      console.log(`[S12] Target GF CDD changed: h_22=${newValue} → triggering calculations`);
+      calculateAll();
+    });
+
     // ✅ CRITICAL: Listen for Reference climate data changes to trigger recalculation
     window.TEUI.StateManager.addListener("ref_d_20", (newValue) => {
-      console.log(
-        `[S12DEBUG] Reference HDD changed: ref_d_20=${newValue} → triggering Reference calculations`,
-      );
+      console.log(`[S12] Reference HDD changed: ref_d_20=${newValue} → triggering calculations`);
       calculateAll();
     });
     window.TEUI.StateManager.addListener("ref_d_21", (newValue) => {
-      console.log(
-        `[S12DEBUG] Reference CDD changed: ref_d_21=${newValue} → triggering Reference calculations`,
-      );
+      console.log(`[S12] Reference CDD changed: ref_d_21=${newValue} → triggering calculations`);
       calculateAll();
     });
     window.TEUI.StateManager.addListener("ref_d_22", (newValue) => {
-      console.log(
-        `[S12DEBUG] Reference GF HDD changed: ref_d_22=${newValue} → triggering Reference calculations`,
-      );
+      console.log(`[S12] Reference GF HDD changed: ref_d_22=${newValue} → triggering calculations`);
       calculateAll();
     });
     window.TEUI.StateManager.addListener("ref_h_22", (newValue) => {
-      console.log(
-        `[S12DEBUG] Reference GF CDD changed: ref_h_22=${newValue} → triggering Reference calculations`,
-      );
+      console.log(`[S12] Reference GF CDD changed: ref_h_22=${newValue} → triggering calculations`);
       calculateAll();
     });
 
