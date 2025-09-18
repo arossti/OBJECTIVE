@@ -1828,8 +1828,9 @@ window.TEUI.SectionModules.sect15 = (function () {
         "calculated",
       );
       */
+      // ✅ FIXED: Pattern A compliance - no target_ prefixes
       window.TEUI.StateManager?.setValue(
-        "target_h_10",
+        "h_10",
         teui_h136.toString(),
         "calculated",
       );

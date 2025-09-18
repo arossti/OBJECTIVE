@@ -1161,11 +1161,9 @@ window.TEUI.SectionModules.sect11 = (function () {
       } else {
         // ground
         if (isReferenceCalculation) {
-          // Reference calculations: read ref_ prefixed climate data
-          hdd =
-            getGlobalNumericValue("ref_d_22") ||
-            getGlobalNumericValue("d_22") ||
-            0;
+          // ✅ FIXED: Reference calculations read ONLY ref_ values (no fallbacks)
+          hdd = getGlobalNumericValue("ref_d_22") || 0;
+          console.log(`[S11] 🔵 REF CLIMATE READ: d_22=${hdd}`);
         } else {
           // ✅ FIXED: Target calculations read unprefixed climate data (Pattern A)
           hdd = getGlobalNumericValue("d_22") || 0;
