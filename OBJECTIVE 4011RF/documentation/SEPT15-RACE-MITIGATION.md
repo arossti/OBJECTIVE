@@ -1,6 +1,48 @@
 # 🚦 TEUI Race Condition Mitigation Plan  
 _Incremental Migration Guide to Topological Orchestration_
 
+## 🚨 **CRITICAL INSTRUCTIONS FOR NEW AGENTS**
+
+**⚠️ MANDATORY READING BEFORE ANY CODE CHANGES:**
+
+1. **📖 READ README.md COMPLETELY** - Understand the 12-month refined dual-state architecture
+2. **📋 STUDY 4012-CHEATSHEET.md** - Master Pattern A dual-state compliance requirements  
+3. **🔍 REVIEW THIS DOCUMENT** - Understand the specific StateManager limitation we're solving
+
+**🚫 ABSOLUTELY FORBIDDEN:**
+- ❌ **Modifying existing calculation logic** (Excel parity achieved over 12 months)
+- ❌ **Changing dual-state architecture** (TargetState/ReferenceState objects are proven)
+- ❌ **Adding new antipatterns** (target_ prefixes, fallback contamination, etc.)
+- ❌ **Bypassing Traffic Cop** (window.sectionCalculationInProgress protection)
+- ❌ **Breaking StateManager patterns** (setValue/getValue established workflows)
+
+**✅ REQUIRED APPROACH:**
+- ✅ **Work ABOVE section level** - orchestrator coordinates, sections remain unchanged
+- ✅ **Preserve all existing functionality** - this is optimization, not replacement
+- ✅ **Follow exact implementation plan** - no improvisation or "better" ideas
+- ✅ **Test incrementally** - verify no regressions after each step
+
+**🎯 REMEMBER**: This codebase has **Excel calculation parity** and **perfect dual-state isolation**. The ONLY issue is StateManager listener propagation for calculated values. **DO NOT FIX WHAT ISN'T BROKEN.**
+
+### **🏆 CURRENT CODEBASE STATUS (Sept 18, 2025)**
+
+**✅ WHAT'S WORKING PERFECTLY:**
+- **Dual-State Architecture**: All sections use Pattern A (TargetState/ReferenceState objects)
+- **Excel Calculation Parity**: 12 months of refinement for regulatory compliance
+- **S03 Climate Data**: Perfect state isolation (Target≠Reference locations work correctly)
+- **Traffic Cop Protection**: Prevents infinite calculation loops
+- **Pattern B Elimination**: Zero target_ prefixed antipatterns across S01-S15
+- **StateManager Storage**: setValue/getValue works perfectly for data persistence
+
+**❌ SINGLE REMAINING ISSUE:**
+- **Listener Propagation**: StateManager calculated values don't trigger addListener() callbacks
+- **Symptom**: S03 publishes d_20=7100, downstream sections read stale d_20=4600
+- **Impact**: Prevents automatic recalculation cascade when climate data changes
+
+**🎯 ORCHESTRATOR MISSION**: Solve the listener propagation issue WITHOUT changing any working architecture.
+
+---
+
 ## Objective
 
 Stabilize cross-section race conditions by introducing a **dependency-ordered orchestrator** that works **above the section level**.  
@@ -19,13 +61,33 @@ This plan avoids the pitfalls of the abandoned **IT-DEPENDS** branch (field-leve
 - **setTimeout Anti-Pattern**: Race condition workarounds using setTimeout violate CTO guidance [[memory:5204274]]
 - **Cascade Amplification**: Single field change triggers 7+ calculation engines (S09→S10→S15→S04→S01)
 - **Performance Degradation**: 2000ms delays unacceptable for user experience
-- **🚨 KNOWN ISSUE (Sept 17, 2025)**: S12 StateManager listener firing failure causing state contamination in S03 location changes. **ROOT CAUSE IDENTIFIED**: StateManager.setValue() with "calculated" state may not trigger addListener() callbacks, only registerDependency() callbacks. S12 listeners for d_20/d_21 are properly initialized but never fire when S03 publishes calculated climate values. Evidence: S11 works perfectly (reads updated values), S12 consistently reads stale values despite identical listener patterns. **ARCHITECTURAL IMPLICATION**: This reveals a fundamental StateManager limitation where calculated value changes don't propagate via listeners, requiring orchestrator-based coordination instead of listener-based reactivity.
+- **🚨 ROOT CAUSE CONFIRMED (Sept 18, 2025)**: StateManager architectural limitation definitively identified through systematic testing. **VERIFIED**: StateManager.setValue() with "calculated" state does NOT trigger wildcard or addListener() callbacks, only registerDependency() callbacks. **EVIDENCE**: S03 publishes climate data perfectly (d_20=7100 verified stored in StateManager), but Calculator.js wildcard listener never fires despite explicit logging. **PATTERN B CLEANUP**: Eliminated all target_ prefixed antipatterns across S03, S11, S15, S05 (21 violations reduced to 0). **ARCHITECTURAL CONCLUSION**: Perfect dual-state architecture achieved at section level - remaining state contamination is StateManager infrastructure limitation requiring orchestrator-based coordination to replace listener-based reactivity for calculated value propagation.
 
 **Current Architecture Compatibility:**
 - ✅ **Section Autonomy Preserved**: Each section's `TargetState`/`ReferenceState` objects remain intact
 - ✅ **Traffic Cop Coexistence**: Orchestrator works above existing Traffic Cop recursion protection
 - ✅ **Dual-State Support**: Can handle both Target and Reference dependency chains separately
 - ✅ **Incremental Migration**: Can coexist with current `Calculator.calculateAll()` system
+
+### **🎯 HOW ORCHESTRATOR SOLVES THE STATEMANAGER LIMITATION**
+
+**Current Broken Chain (Sept 18, 2025):**
+```
+S03 publishes d_20=7100 → StateManager stores ✅ → Listeners don't fire ❌ → S12 reads stale d_20=4600 ❌
+```
+
+**Orchestrator Solution:**
+```
+User changes S03 → Orchestrator.runAll() → S03.calculateAll() → S12.calculateAll() → S15.calculateAll() → S01.calculateAll()
+```
+
+**Why This Works:**
+1. **Deterministic Order**: S03 always runs before S12, S15, S01 regardless of listener failures
+2. **Fresh Data Guarantee**: Each section reads current StateManager values when its turn comes
+3. **No Listener Dependency**: Calculated value propagation via execution order, not event firing
+4. **Immediate Fix**: Works with existing section code - no architectural rewrites needed
+
+**Implementation Benefit**: The orchestrator **bypasses the StateManager listener limitation entirely** by ensuring sections execute in dependency order, guaranteeing fresh data availability.
 
 ### **🎯 S13 PARALLEL DEVELOPMENT STRATEGY**
 
