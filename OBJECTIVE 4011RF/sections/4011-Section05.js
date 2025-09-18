@@ -857,13 +857,13 @@ window.TEUI.SectionModules.sect05 = (function () {
 
       window.TEUI.StateManager.setValue("ref_d_41", d_41_result, "calculated");
     } else {
-      // ✅ TARGET MODE: Compare Target operational vs Reference baseline (standard pattern)
-      const target_d_38 = window.TEUI.StateManager.getValue("d_38") || 0;
+      // ✅ FIXED: Pattern A compliance - no target_ prefixes
+      const d_38 = window.TEUI.StateManager.getValue("d_38") || 0;
       const ref_d_38 = window.TEUI.StateManager.getValue("ref_d_38") || 0;
-      const target_h_13 = getGlobalNumericValue("h_13") || 50;
+      const h_13 = getGlobalNumericValue("h_13") || 50;
 
       // Standard avoided emissions: Reference baseline minus Target performance
-      d_41_result = (ref_d_38 - target_d_38) * target_h_13;
+      d_41_result = (ref_d_38 - d_38) * h_13;
 
       window.TEUI.StateManager.setValue("d_41", d_41_result, "calculated");
     }
