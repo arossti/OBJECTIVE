@@ -111,14 +111,21 @@ S03 publishes d_20=7100 → StateManager stores ✅ → Listeners don't fire ❌
 
 **Orchestrator Solution:**
 ```
-User changes S03 → Orchestrator.runAll() → S03.calculateAll() → S12.calculateAll() → S15.calculateAll() → S01.calculateAll()
+User changes S03 → Orchestrator.runAll() → Complete Calculator.js chain:
+S02→S03→S08→S09→S12→S10→S11→S07→S13→S06→S14→S04→S05→S15→S01
 ```
 
 **Why This Works:**
-1. **Deterministic Order**: S03 always runs before S12, S15, S01 regardless of listener failures
-2. **Fresh Data Guarantee**: Each section reads current StateManager values when its turn comes
-3. **No Listener Dependency**: Calculated value propagation via execution order, not event firing
-4. **Immediate Fix**: Works with existing section code - no architectural rewrites needed
+1. **Proven Dependency Order**: Uses 12-month refined Calculator.js `calcOrder` array
+2. **Fresh Data Guarantee**: Each section reads current StateManager values when its turn comes  
+3. **Complete Chain Coverage**: Solves S12→S15 Reference value propagation immediately
+4. **No Listener Dependency**: Calculated value propagation via execution order, not event firing
+5. **Immediate Fix**: Works with existing section code - no architectural rewrites needed
+
+**Real Data Flow Solved:**
+```
+S03 publishes d_20=7100 → S12 calculates ref_g_101 → S15 reads fresh ref_g_101 → S01 gets correct TEUI
+```
 
 **Implementation Benefit**: The orchestrator **bypasses the StateManager listener limitation entirely** by ensuring sections execute in dependency order, guaranteeing fresh data availability.
 
@@ -164,13 +171,38 @@ User changes S03 → Orchestrator.runAll() → S03.calculateAll() → S12.calcul
   2. Perform **topological sort** of sections on startup.
   3. Provide a `runAll()` method that executes each section in sorted order.
 - Keep `Traffic Cop` inside sections unchanged (still prevents intra-section storms).
-- Test on a **small subset** (e.g., S10 → S11 → S01 chain).
+- Test on the **complete Calculator.js chain** (all 15 sections in proven dependency order).
 
 **🎯 IMPLEMENTATION NOTES:**
-- **Coexistence**: Orchestrator `runAll()` can initially call existing `Calculator.calculateAll()` as fallback
-- **Gradual Registration**: Start with 3-section chain, expand incrementally
+- **Complete Chain Registration**: Register all 15 sections using proven Calculator.js dependency order
+- **Calculator.js Integration**: Orchestrator mirrors existing `calcOrder` array for validated dependencies
 - **Traffic Cop Integration**: Orchestrator should respect existing `window.sectionCalculationInProgress` flag
 - **Dual-State Awareness**: Track both Target and Reference dependency chains separately
+
+**📊 PROVEN CALCULATOR.JS DEPENDENCY ORDER:**
+```javascript
+const calcOrder = [
+  "sect02", // Building Info (foundation data)
+  "sect03", // Climate (publishes d_20=7100 that downstream needs)
+  "sect08", // IAQ 
+  "sect09", // Internal Gains → feeds S14
+  "sect12", // Volume Metrics → feeds S14 (defines areas for S10, S11)
+  "sect10", // Radiant Gains → feeds S14 (i_80 for S15)
+  "sect11", // Transmission Losses → feeds S14
+  "sect07", // Water Use → feeds S15 (k_51)
+  "sect13", // Mechanical Loads → feeds S14 (d_117, m_121)
+  "sect06", // Renewable Energy → feeds S15 (m_43)
+  "sect14", // TEDI Summary (consumes S9,S10,S11,S12,S13)
+  "sect04", // Energy Totals (consumes many inputs)
+  "sect05", // Emissions (consumes S04 outputs)
+  "sect15", // TEUI Summary (consumes S14, S04 and others)
+  "sect01", // Key Values Dashboard (consumes S15, S05)
+];
+```
+
+**🔍 SECTION CATEGORIES:**
+- **Calculator Sections** (S02-S13): Generate calculated values for consumption
+- **Consumer Sections** (S14,S04,S05,S15,S01): Consume calculated values, perform unit conversions/intensity calculations
 
 ---
 
@@ -228,14 +260,38 @@ Now orchestrator guarantees `S05.calculateAll()` runs before `S02.calculateAll()
 
 ---
 
-### **Phase 5 — Full Adoption** 🎯 **STRATEGIC SEQUENCING**
-- Gradually migrate all sections in **stability order**:
-  1. **S10 → S11 → S01** (clean linear chain, well-documented dependencies)
-  2. **S12 → S14 → S15** (volume metrics chain, known calculation flow)  
-  3. **S09 → S10** (internal gains to radiant gains)
-  4. **S02 → S03** (building info to climate, foundational data)
-  5. **S04 → S05** (energy to emissions, straightforward dependency)
-  6. **S13** (most complex - migrate last when orchestrator proven stable)
+### **Phase 5 — Full Adoption** 🎯 **COMPLETE CHAIN IMPLEMENTATION**
+- **Register ALL sections** using proven Calculator.js dependency order:
+  ```javascript
+  // COMPLETE ORCHESTRATOR REGISTRATION (mirrors Calculator.js calcOrder)
+  const sectionRegistrations = [
+    { id: "sect02", dependsOn: [], outputs: ["h_15", "d_85-d_95", "d_12", "d_63"] },
+    { id: "sect03", dependsOn: ["sect02"], outputs: ["d_20", "d_21", "d_23", "d_24", "j_19"] },
+    { id: "sect08", dependsOn: ["sect02"], outputs: ["d_56-d_58"] },
+    { id: "sect09", dependsOn: ["sect02", "sect03"], outputs: ["i_71", "k_71"] },
+    { id: "sect12", dependsOn: ["sect02", "sect03"], outputs: ["g_101", "g_102", "d_104", "i_101-i_104"] },
+    { id: "sect10", dependsOn: ["sect09", "sect12"], outputs: ["i_80", "i_81"] },
+    { id: "sect11", dependsOn: ["sect10", "sect12"], outputs: ["i_98", "i_97"] },
+    { id: "sect07", dependsOn: ["sect02"], outputs: ["k_51"] },
+    { id: "sect13", dependsOn: ["sect11", "sect12"], outputs: ["d_117", "m_121"] },
+    { id: "sect06", dependsOn: ["sect02"], outputs: ["m_43"] },
+    { id: "sect14", dependsOn: ["sect09", "sect10", "sect11", "sect12", "sect13"], outputs: ["h_126", "h_130"] },
+    { id: "sect04", dependsOn: ["sect07"], outputs: ["f_32", "j_32"] },
+    { id: "sect05", dependsOn: ["sect04"], outputs: ["emissions_totals"] },
+    { id: "sect15", dependsOn: ["sect14", "sect04", "sect06", "sect07"], outputs: ["h_136", "d_144"] },
+    { id: "sect01", dependsOn: ["sect15", "sect05"], outputs: ["dashboard_values"] }
+  ];
+  ```
+
+**🔍 SECTION TYPE CLARIFICATION:**
+- **Calculator Sections** (S02-S13): Primary calculation engines generating raw values
+- **Consumer Sections** (S14,S04,S05,S15,S01): Consume calculated values + perform conversions/intensities
+  - S14: TEDI calculations (energy/area intensities)
+  - S04: Energy totals aggregation  
+  - S05: Emissions calculations (energy × factors)
+  - S15: TEUI calculations (energy/area intensities)
+  - S01: Dashboard display (percentage calculations, unit conversions)
+
 - Remove legacy `addListener` hacks once orchestrator dependencies are stable.
 
 **🚨 S13 SPECIAL HANDLING:**
@@ -309,11 +365,11 @@ Orchestrator.registerSection("S02", {
    - `topoSort()`  
    - `runAll()`  
 
-2. Prototype with **S10 → S11 → S01 chain**.  
+2. Register **complete Calculator.js chain** using proven `calcOrder` dependencies.
 
-3. Validate outputs match current implementation under stress.  
+3. Validate orchestrator produces identical results to current `Calculator.calculateAll()`.
 
-4. Expand rollout section by section until all cross-section listeners are replaced.  
+4. Replace individual section listeners with orchestrator coordination systematically.  
 
 ---
 
@@ -529,15 +585,15 @@ The orchestrator should integrate with existing Clock.js performance measurement
 - **Enables Incremental Migration**: Can coexist with current system during rollout
 
 ### **S13 Parallel Development Strategy:**
-1. **Orchestrator Track**: Start with S10→S11→S01 chain (clean, well-documented dependencies)
-2. **S13 Track**: Continue cooling calculation fixes in isolation
-3. **Mutual Benefits**: Orchestrator reduces external storms that may be complicating S13 work
-4. **Risk Mitigation**: If S13 continues struggling, orchestrator provides clean external interface
+1. **Orchestrator Track**: Implement complete Calculator.js chain (immediate StateManager propagation fix)
+2. **S13 Track**: Continue cooling calculation fixes in isolation  
+3. **Mutual Benefits**: Orchestrator eliminates external calculation storms affecting S13 work
+4. **Risk Mitigation**: Complete orchestrator provides stable foundation regardless of S13 status
 
 ### **Migration Priority:**
-- **Phase 1**: Orchestrator prototype with simple 3-section chain
-- **Phase 2-4**: Migrate stable sections while S13 work continues  
-- **Phase 5**: Migrate S13 last, when orchestrator is proven and may actually simplify S13 completion
+- **Phase 1**: Complete orchestrator with full Calculator.js chain registration
+- **Phase 2-4**: Replace individual listeners with orchestrator coordination
+- **Phase 5**: Optimize and enhance orchestrator performance (runloop, batching, etc.)
 
 **Bottom Line**: The orchestrator solves cross-section coordination problems that exist regardless of S13's internal state. Starting it now provides immediate benefits and creates a better environment for completing S13 work.
 
@@ -550,7 +606,7 @@ The orchestrator should integrate with existing Clock.js performance measurement
 - [ ] **QC Monitor Integration**: Enable `?qc=true` monitoring for orchestrator development
 - [ ] **Timeout Audit**: `grep -r "setTimeout" sections/` - eliminate race condition usage
 - [ ] **Performance Baseline**: Document current 2000ms delays using Clock.js
-- [ ] **S10→S11→S01 Registration**: Start with clean 3-section dependency chain
+- [ ] **Complete Chain Registration**: Register all 15 sections using Calculator.js `calcOrder` dependencies
 
 ### **Phase 2: Core Migration (Week 2-3)** 
 - [ ] **QC-Assisted Listener Documentation**: Use QCMonitor to catalog all `StateManager.addListener()` calls per section
