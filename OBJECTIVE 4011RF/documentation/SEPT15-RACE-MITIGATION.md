@@ -102,32 +102,48 @@ This plan avoids the pitfalls of the abandoned **IT-DEPENDS** branch (field-leve
 - ✅ **Dual-State Support**: Can handle both Target and Reference dependency chains separately
 - ✅ **Incremental Migration**: Can coexist with current `Calculator.calculateAll()` system
 
-### **🎯 HOW ORCHESTRATOR SOLVES THE STATEMANAGER LIMITATION**
+### **🎯 UNDERSTANDING THE STATEMANAGER LIMITATION**
+
+**Technical Root Cause** _(From README.md lines 460-491)_:
+```javascript
+// BY DESIGN: StateManager.setValue(..., 'calculated') does NOT trigger registerDependency recalculations
+// This prevents infinite calculation loops
+StateManager.setValue("i_39", calculatedValue, "calculated"); // ← Doesn't trigger dependents
+
+// INTENDED SOLUTION: Use addListener for cross-section calculated field propagation
+StateManager.addListener("i_39", function(newValue) {
+  // Manual listener callback triggers dependent calculations
+  calculateDependentField();
+});
+```
 
 **Current Broken Chain (Sept 18, 2025):**
 ```
-S03 publishes d_20=7100 → StateManager stores ✅ → Listeners don't fire ❌ → S12 reads stale d_20=4600 ❌
+S03 calculates d_20=7100 → StateManager.setValue(d_20, "7100", "calculated") → Listeners should fire → But don't ❌
 ```
 
-**Orchestrator Solution:**
-```
-User changes S03 → Orchestrator.runAll() → Complete Calculator.js chain:
-S02→S03→S08→S09→S12→S10→S11→S07→S13→S06→S14→S04→S05→S15→S01
-```
+**Why Listeners Don't Fire:**
+- StateManager **intentionally suppresses** listener triggers for calculated values (lines 415-417 in StateManager.js)
+- **Purpose**: Prevent infinite calculation loops
+- **Problem**: Also prevents legitimate cross-section propagation
 
-**Why This Works:**
-1. **Proven Dependency Order**: Uses 12-month refined Calculator.js `calcOrder` array
-2. **Fresh Data Guarantee**: Each section reads current StateManager values when its turn comes  
-3. **Complete Chain Coverage**: Solves S12→S15 Reference value propagation immediately
-4. **No Listener Dependency**: Calculated value propagation via execution order, not event firing
-5. **Immediate Fix**: Works with existing section code - no architectural rewrites needed
+**Three Implementation Approaches:**
 
-**Real Data Flow Solved:**
-```
-S03 publishes d_20=7100 → S12 calculates ref_g_101 → S15 reads fresh ref_g_101 → S01 gets correct TEUI
-```
+**Approach A: Fix StateManager Listener Mechanism** _(Surgical Fix)_
+- Modify StateManager to trigger listeners for calculated values under controlled conditions
+- Preserve loop protection while enabling cross-section propagation
+- **Scope**: StateManager.js modification only
 
-**Implementation Benefit**: The orchestrator **bypasses the StateManager listener limitation entirely** by ensuring sections execute in dependency order, guaranteeing fresh data availability.
+**Approach B: Replace Listener System with Orchestrator** _(Architectural Change)_
+- Replace broken listener propagation with deterministic execution order
+- Use Calculator.js `calcOrder` dependencies for proven sequence
+- **Scope**: Replace calculation triggers, preserve section autonomy
+
+**Approach C: Smart Reactive System** _(Human-Optimized Pattern)_ ⭐ **NEW**
+- Batch human-speed changes with single calculation passes
+- Eliminate listener chaos while preserving reactive behavior
+- Use requestAnimationFrame for CTO-approved timing coordination
+- **Scope**: Replace chaotic listeners, preserve proven calculation order
 
 ### **🎯 S13 PARALLEL DEVELOPMENT STRATEGY**
 
@@ -164,20 +180,26 @@ S03 publishes d_20=7100 → S12 calculates ref_g_101 → S15 reads fresh ref_g_1
 
 ## Migration Roadmap
 
-### **Phase 1 — Orchestrator Prototype** ⭐ **PRIORITY START**
+### **Phase 1 — Orchestrator Prototype** ⭐ **CRITICAL: REPLACE, DON'T ADD**
 - Create a new file: `4012-Orchestrator.js`.
 - Responsibilities:
   1. Store **section-level dependency declarations**.
   2. Perform **topological sort** of sections on startup.
-  3. Provide a `runAll()` method that executes each section in sorted order.
+  3. **REPLACE** Calculator.js triggers with orchestrator coordination.
 - Keep `Traffic Cop` inside sections unchanged (still prevents intra-section storms).
-- Test on the **complete Calculator.js chain** (all 15 sections in proven dependency order).
+- **CRITICAL**: Orchestrator **replaces** broken listener propagation, doesn't run alongside it.
 
-**🎯 IMPLEMENTATION NOTES:**
-- **Complete Chain Registration**: Register all 15 sections using proven Calculator.js dependency order
-- **Calculator.js Integration**: Orchestrator mirrors existing `calcOrder` array for validated dependencies
-- **Traffic Cop Integration**: Orchestrator should respect existing `window.sectionCalculationInProgress` flag
-- **Dual-State Awareness**: Track both Target and Reference dependency chains separately
+**🚨 IMPLEMENTATION REQUIREMENTS:**
+- **Replace Calculator.js Triggers**: Modify existing calculation trigger points to use orchestrator
+- **NO Parallel Execution**: Orchestrator replaces broken listener system, doesn't add to it
+- **NO setTimeout Usage**: Violates CTO guidance - use event-driven coordination instead
+- **Preserve Traffic Cop**: Respect existing `window.sectionCalculationInProgress` flag
+- **Fix Root Cause**: Address StateManager listener propagation limitation directly
+
+**⚠️ ANTI-PATTERN WARNING:**
+- ❌ **Creating parallel calculation systems** causes calculation storms and infinite recursion
+- ❌ **Adding orchestrator alongside Calculator.js** creates competing execution paths  
+- ❌ **Using setTimeout for coordination** violates established architectural principles
 
 **📊 PROVEN CALCULATOR.JS DEPENDENCY ORDER:**
 ```javascript
@@ -510,7 +532,154 @@ This allows you to:
 
 ---
 
-## Appendix D — Advanced Performance Strategies _(From Performance Optimization Guide)_
+## Appendix D — Smart Reactive System Design _(Human-Optimized Calculation Pattern)_
+
+### **🎭 THE VAUDEVILLE PROBLEM: Why Calculation Storms Are Inevitable**
+
+**Current System Architecture Analysis:**
+
+**Multiple Competing Trigger Mechanisms:**
+1. **Calculator.js Wildcard Listener**: `addListener("*")` triggers on EVERY field change
+2. **Individual Section Listeners**: 40+ listeners across sections (S01: j_32, h_136; S10: j_19, i_71; S12: d_20, d_21...)
+3. **setTimeout Debouncing**: S01 uses `setTimeout(() => calculateAll(), delay)` for race protection
+4. **SectionIntegrator Forced Updates**: Additional update triggers for cross-section coordination
+
+**The Chaos Pattern:**
+```
+User changes d_20 in S03 →
+├── Wildcard listener fires → Calculator.recalculateDirtyFields() → All sections calculate
+├── S11's d_20 listener fires → S11.calculateAll() 
+├── S12's d_20 listener fires → S12.calculateAll()
+└── S13's listener chain fires → S13.calculateAll()
+
+Each calculateAll() stores calculated values →
+├── h_136 gets calculated → S01's h_136 listener fires → S01.runAllCalculations()
+├── i_98 gets calculated → S10's i_98 listener fires → S10.calculateAll()  
+└── Multiple setTimeout delays create timing chaos → CALCULATION STORM
+```
+
+### **🎯 HUMAN-SPEED OPTIMIZATION INSIGHT**
+
+**Key Performance Reality:**
+- **Human interaction speed**: 1 field change per ~1000ms
+- **Complete calculation cycle**: ~700ms  
+- **UI refresh time**: Often <400ms
+
+**Strategic Implication**: We have **plenty of time** between human interactions for complete recalculation cycles!
+
+### **🚦 SMART REACTIVE SOLUTION: "Run-Once-When-Changed" Pattern**
+
+**Core Concept**: Batch all changes within an animation frame into a single calculation pass
+
+```javascript
+// SMART REACTIVE IMPLEMENTATION
+const SmartReactiveCalculator = {
+  needsRecalculation: false,
+  scheduledUpdate: null,
+  
+  // Replace ALL existing listeners with this single entry point
+  onAnyFieldChange(fieldId, value, source) {
+    // 1. Store the change immediately (preserve StateManager as source of truth)
+    window.TEUI.StateManager.setValue(fieldId, value, source);
+    
+    // 2. Schedule single calculation pass (human-speed batching)
+    if (!this.needsRecalculation) {
+      this.needsRecalculation = true;
+      this.scheduledUpdate = requestAnimationFrame(() => {
+        // 3. Run complete calculation pass using proven order
+        this.runCompleteCalculationPass();
+        this.needsRecalculation = false;
+        this.scheduledUpdate = null;
+      });
+    }
+    // Multiple rapid changes (impossible for humans) get batched automatically
+  },
+  
+  runCompleteCalculationPass() {
+    // Use existing proven Calculator.js calcOrder sequence
+    // This guarantees fresh data propagation without listener chaos
+    if (!window.sectionCalculationInProgress) {
+      window.TEUI.Calculator.calculateAll(); // Proven 15-section sequence
+    }
+  }
+};
+```
+
+### **🎪 BENEFITS: From Vaudeville Chaos to Orchestra Precision**
+
+**Eliminates Multiple Trigger Sources:**
+- ✅ **Replaces**: Wildcard listener chaos
+- ✅ **Replaces**: 40+ individual section listeners  
+- ✅ **Replaces**: setTimeout debouncing anti-patterns
+- ✅ **Replaces**: SectionIntegrator forced updates
+
+**Preserves Proven Architecture:**
+- ✅ **Uses**: Existing Calculator.js `calcOrder` sequence
+- ✅ **Preserves**: Traffic Cop protection patterns
+- ✅ **Maintains**: StateManager as single source of truth
+- ✅ **Keeps**: Dual-state section autonomy
+
+**Human-Optimized Performance:**
+- ✅ **Reactive**: Every change triggers updates (user expectation)
+- ✅ **Efficient**: Single calculation pass per interaction
+- ✅ **Fast**: <700ms total response time (feels immediate to humans)
+- ✅ **Predictable**: Deterministic execution order eliminates timing issues
+
+### **🔧 INTEGRATION WITH EXISTING PATTERNS**
+
+**User Interaction Flows:**
+
+1. **Dropdown Change** (e.g., S03 location change):
+   ```
+   User selects Toronto → 
+   SmartReactiveCalculator.onAnyFieldChange("d_19", "Toronto", "user-modified") →
+   requestAnimationFrame → Calculator.calculateAll() →
+   S03 calculates fresh d_20=7100 → S12 reads fresh d_20=7100 ✅
+   ```
+
+2. **Slider Adjustment** (e.g., S11 thermal bridge %):
+   ```
+   User drags TB% to 30% →
+   SmartReactiveCalculator.onAnyFieldChange("d_97", "30", "user-modified") →
+   requestAnimationFrame → Calculator.calculateAll() →
+   S12 gets fresh TB% → S15 gets fresh U-values → S01 shows updated TEUI ✅
+   ```
+
+3. **Mode Toggle** (Reference ↔ Target):
+   ```
+   User toggles mode → UI refresh only (no calculation trigger) →
+   Display switches to show pre-calculated values ✅
+   ```
+
+### **🎯 DEPENDENCY.JS INTEGRATION QUESTION**
+
+**Minimum Required Calculations vs Full Recalculation:**
+
+**Option 1: Full Recalculation** _(Simpler, Human-Optimized)_
+- Every change triggers complete Calculator.js sequence
+- **Pros**: Guaranteed consistency, simple implementation, <700ms acceptable for humans
+- **Cons**: Some unnecessary calculations for isolated changes
+
+**Option 2: Dependency-Aware Selective** _(Complex, Machine-Optimized)_  
+- Use Dependency.js to calculate only affected fields
+- **Pros**: Minimal calculations, theoretical performance optimization
+- **Cons**: Complex dependency tracking, risk of missing propagation chains
+
+**Recommendation for Human-Speed System**: **Full recalculation** is simpler and perfectly acceptable given human interaction timing.
+
+### **🚦 IMPLEMENTATION COMPARISON**
+
+| Approach | Complexity | Risk | Performance | Human UX |
+|----------|------------|------|-------------|----------|
+| **A: Fix StateManager** | Low | Low | Same | Same |
+| **B: Full Orchestrator** | High | High | Better | Better |
+| **C: Smart Reactive** | Medium | Medium | Good | Excellent |
+
+**Smart Reactive** hits the **sweet spot**: Better than A, simpler than B, optimized for human interaction patterns.
+
+---
+
+## Appendix E — Advanced Performance Strategies _(From Performance Optimization Guide)_
 
 ### **🚀 Future Phase: Runloop Architecture** 
 
@@ -601,12 +770,25 @@ The orchestrator should integrate with existing Clock.js performance measurement
 
 ## 📋 **CONSOLIDATED IMPLEMENTATION CHECKLIST** _(Replaces Performance Optimization Guide)_
 
-### **Phase 1: Foundation (Week 1)**
+### **Phase 1: Foundation (Week 1)** 
+**Choose Implementation Approach:**
+
+**Option A: StateManager Surgical Fix**
+- [ ] **Analyze StateManager.setValue()**: Understand why calculated values don't trigger listeners
+- [ ] **Surgical Modification**: Enable calculated value listener triggers with loop protection
+- [ ] **Test d_20 Propagation**: Verify S03→S11 fresh data flow
+
+**Option B: Full Orchestrator** _(Requires CTO Review)_
 - [ ] **Create 4012-Orchestrator.js** with enhanced skeleton (Appendix A)
-- [ ] **QC Monitor Integration**: Enable `?qc=true` monitoring for orchestrator development
-- [ ] **Timeout Audit**: `grep -r "setTimeout" sections/` - eliminate race condition usage
-- [ ] **Performance Baseline**: Document current 2000ms delays using Clock.js
-- [ ] **Complete Chain Registration**: Register all 15 sections using Calculator.js `calcOrder` dependencies
+- [ ] **Replace Calculator.js Triggers**: Modify existing calculation trigger points
+- [ ] **Complete Chain Registration**: Register all 15 sections using proven dependencies
+
+**Option C: Smart Reactive System** ⭐ **RECOMMENDED**
+- [ ] **Create SmartReactiveCalculator**: Single entry point for all field changes
+- [ ] **Replace Listener Chaos**: Remove wildcard + individual listeners, use requestAnimationFrame batching
+- [ ] **Preserve Calculator.js**: Use existing `calcOrder` sequence for proven execution order
+- [ ] **QC Monitor Integration**: Enable `?qc=true` monitoring for development
+- [ ] **Timeout Audit**: `grep -r "setTimeout" sections/` - eliminate anti-pattern usage
 
 ### **Phase 2: Core Migration (Week 2-3)** 
 - [ ] **QC-Assisted Listener Documentation**: Use QCMonitor to catalog all `StateManager.addListener()` calls per section
