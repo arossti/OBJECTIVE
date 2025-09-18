@@ -1181,20 +1181,14 @@ window.TEUI.SectionModules.sect11 = (function () {
 
         if (isReferenceCalculation) {
           // Reference calculations: read ref_ prefixed climate data
-          heatgainMultiplier =
-            capacitanceFactor_i21 *
-            (getGlobalNumericValue("ref_h_22") ||
-              getGlobalNumericValue("h_22") ||
-              0) *
-            24;
+          const ref_h22 = getGlobalNumericValue("ref_h_22") || 0;
+          heatgainMultiplier = capacitanceFactor_i21 * ref_h22 * 24;
+          console.log(`[S11] 🔵 REF CLIMATE READ: h_22=${ref_h22}`);
         } else {
-          // Target calculations: read target_ prefixed climate data
-          heatgainMultiplier =
-            capacitanceFactor_i21 *
-            (getGlobalNumericValue("target_h_22") ||
-              getGlobalNumericValue("h_22") ||
-              0) *
-            24;
+          // ✅ FIXED: Target calculations read unprefixed climate data (Pattern A)
+          const h22_value = getGlobalNumericValue("h_22") || 0;
+          heatgainMultiplier = capacitanceFactor_i21 * h22_value * 24;
+          console.log(`[S11] 🎯 TGT CLIMATE READ: h_22=${h22_value}`);
         }
       }
 
