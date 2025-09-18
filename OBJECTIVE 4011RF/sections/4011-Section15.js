@@ -1742,11 +1742,12 @@ window.TEUI.SectionModules.sect15 = (function () {
       const d102 = getNumericValue("d_102"); // Total Area Exposed to Ground (Ag)
       const g102 = getNumericValue("g_102"); // U-Val. for Ag
 
-      // ✅ FIX: Read temperature data using target_ prefixes for Target calculations
-      const h23 = getNumericValue("target_h_23") || getNumericValue("h_23"); // Tset Heating
-      const d23 = getNumericValue("target_d_23") || getNumericValue("d_23"); // Coldest Days Temp
-      const d24 = getNumericValue("target_d_24") || getNumericValue("d_24"); // Hottest Days Temp
-      const h24 = getNumericValue("target_h_24") || getNumericValue("h_24"); // Tset Cooling
+      // ✅ FIXED: Read temperature data using Pattern A (unprefixed for Target)
+      const h23 = getNumericValue("h_23") || 0; // Tset Heating (from S03)
+      const d23 = getNumericValue("d_23") || 0; // Coldest Days Temp (from S03)
+      const d24 = getNumericValue("d_24") || 0; // Hottest Days Temp (from S03)
+      const h24 = getNumericValue("h_24") || 0; // Tset Cooling (from S03)
+      console.log(`[S15] 🎯 TGT S03 CLIMATE READ: h_23=${h23}, d_23=${d23}, d_24=${d24}, h_24=${h24}`);
 
       const d65 = getNumericValue("d_65"); // Plug Loads W/m2
       const d66 = getNumericValue("d_66"); // Lighting Loads W/m2
