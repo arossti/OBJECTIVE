@@ -41,6 +41,39 @@ _Incremental Migration Guide to Topological Orchestration_
 
 **🎯 ORCHESTRATOR MISSION**: Solve the listener propagation issue WITHOUT changing any working architecture.
 
+### **🧪 MANDATORY TESTING PROTOCOL**
+
+**⚠️ CRITICAL: HUMAN-AGENT COLLABORATION REQUIRED**
+
+**Testing Resources Available:**
+1. **🔍 QC Monitor (Section 18)**: Comprehensive violation detection and analysis
+   - Enable via `?qc=true` URL parameter
+   - Generate reports via Section 18 → "Generate QC Report" button
+   - Copy reports to Logs.md for agent analysis
+2. **📊 Console Logging**: Real-time calculation flow monitoring
+   - Filter by section prefixes: `[S03]`, `[S12]`, etc.
+   - Track state changes, listener firing, calculation execution
+3. **⏱️ Performance Monitoring (Clock.js)**: Timing analysis for optimization validation
+
+**🚫 AGENT MUST NEVER:**
+- ❌ **Implement multiple phases without testing** - Each phase requires human validation
+- ❌ **Assume changes work without verification** - QC reports reveal hidden issues
+- ❌ **Proceed without human approval** - Complex architecture requires collaborative validation
+
+**✅ REQUIRED WORKFLOW:**
+1. **Implement single orchestrator component** (e.g., basic registerSection function)
+2. **STOP and request human testing** - Generate QC report, check console logs
+3. **Wait for human feedback** - Confirm no regressions, validate improvements
+4. **Only then proceed** to next component/phase
+
+**🎯 TESTING VALIDATION CRITERIA:**
+- **QC Report**: Violation count should decrease, no new violation types
+- **Console Logs**: Should show orchestrator coordination working
+- **Functional Testing**: Human verifies S03 location changes propagate correctly
+- **Performance**: Clock.js should show timing improvements
+
+**REMEMBER**: The human has 12 months of testing experience with this codebase and can detect subtle regressions that automated testing might miss.
+
 ---
 
 ## Objective
