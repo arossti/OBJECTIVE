@@ -1186,8 +1186,9 @@ window.TEUI.SectionModules.sect02 = (function () {
       window.TEUI.StateManager.addListener("i_41", calculateAndRefresh);
       window.TEUI.StateManager.addListener("ref_i_41", calculateAndRefresh);
 
-      // Add listener for occupancy changes (d_12) to update critical flag
+      // Add listeners for occupancy changes to update critical flag
       window.TEUI.StateManager.addListener("d_12", updateCriticalOccupancyFlag);
+      window.TEUI.StateManager.addListener("ref_d_12", updateCriticalOccupancyFlag);
     }
   }
 
@@ -1803,6 +1804,9 @@ window.TEUI.SectionModules.sect02 = (function () {
       // ✅ CRITICAL FIX: UI toggle is for DISPLAY ONLY - values are already calculated
       this.refreshUI(); // Update input fields from state
       this.updateCalculatedDisplayValues(); // Update calculated fields from StateManager
+      
+      // ✅ CRITICAL FIX: Update critical occupancy flag when mode changes
+      updateCriticalOccupancyFlag();
 
       // ❌ REMOVED: calculateAll() - this is a UI action, not a data change
     },
