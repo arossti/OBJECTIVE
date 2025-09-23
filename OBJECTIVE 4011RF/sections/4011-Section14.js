@@ -1044,14 +1044,9 @@ window.TEUI.SectionModules.sect14 = (function () {
         "calculated",
       );
 
-      // m_129: CED Mitigated (kWh/yr)
-      const ref_cedMitigated_m129 =
-        ref_cedCoolingUnmitigated_d129 - h124 - d123;
-      window.TEUI?.StateManager?.setValue(
-        "ref_m_129",
-        ref_cedMitigated_m129.toString(),
-        "calculated",
-      );
+      // ✅ PHASE 3: ref_m_129 now calculated by S13 (hybrid architecture)
+      // S13 calculates ref_m_129 for immediate use in Reference d_117, publishes to S14 for display
+      // S14 no longer calculates ref_m_129 to prevent conflicts
 
       // d_130: CEDI Cooling Load W/m2 Unmitigated
       const ref_cediCoolingWm2_d130 =
@@ -1062,9 +1057,10 @@ window.TEUI.SectionModules.sect14 = (function () {
         "calculated",
       );
 
-      // h_130: CEDI Mitigated W/m2
+      // h_130: CEDI Mitigated W/m2 (depends on S13's ref_m_129)
+      const ref_m129_fromS13 = parseFloat(window.TEUI?.StateManager?.getValue("ref_m_129")) || 0;
       const ref_cediMitigated_h130 =
-        area > 0 ? ((ref_cedMitigated_m129 / 8760) * 1000) / area : 0;
+        area > 0 ? ((ref_m129_fromS13 / 8760) * 1000) / area : 0;
       window.TEUI?.StateManager?.setValue(
         "ref_h_130",
         ref_cediMitigated_h130.toString(),
@@ -1184,10 +1180,9 @@ window.TEUI.SectionModules.sect14 = (function () {
         area > 0 ? cedCoolingUnmitigated_d129 / area : 0;
       setCalculatedValue("h_129", cediUnmitigated_h129);
 
-      // m_129: CED Mitigated (kWh/yr)
-      // Calculate using the fetched values
-      const cedMitigated_m129 = cedCoolingUnmitigated_d129 - h124 - d123;
-      setCalculatedValue("m_129", cedMitigated_m129);
+      // ✅ PHASE 3: m_129 now calculated by S13 (hybrid architecture)
+      // S13 calculates m_129 for immediate use in d_117, publishes to S14 for display
+      // S14 no longer calculates m_129 to prevent conflicts
 
       // Set d_129 display value now
       setCalculatedValue("d_129", cedCoolingUnmitigated_d129);
@@ -1197,9 +1192,10 @@ window.TEUI.SectionModules.sect14 = (function () {
         area > 0 ? ((cedCoolingUnmitigated_d129 / 8760) * 1000) / area : 0;
       setCalculatedValue("d_130", cediCoolingWm2_d130, "W/m2");
 
-      // h_130: CEDI Mitigated W/m2
+      // h_130: CEDI Mitigated W/m2 (depends on S13's m_129)
+      const m129_fromS13 = getNumericValue("m_129"); // Read from S13 via StateManager
       const cediMitigated_h130 =
-        area > 0 ? ((cedMitigated_m129 / 8760) * 1000) / area : 0;
+        area > 0 ? ((m129_fromS13 / 8760) * 1000) / area : 0;
       setCalculatedValue("h_130", cediMitigated_h130, "W/m2");
 
       // d_131: TEL Heatloss (Total Envelope Heatloss)
