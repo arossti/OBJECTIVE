@@ -2369,14 +2369,17 @@ window.TEUI.SectionModules.sect13 = (function () {
         ModeManager.updateCalculatedDisplayValues();
       };
 
-      // Add listeners for climate/gain/loss data changes from other sections
-      console.log("[Section13] 🔗 Attaching CRITICAL upstream listeners...");
-      sm.addListener("d_20", calculateAndRefresh); // HDD
-      sm.addListener("d_21", calculateAndRefresh); // CDD
-      sm.addListener("d_23", calculateAndRefresh); // Coldest Day Temp
-      sm.addListener("d_24", calculateAndRefresh); // Hottest Day Temp
-      sm.addListener("h_23", calculateAndRefresh); // Heating Setpoint
-      sm.addListener("h_24", calculateAndRefresh); // Cooling Setpoint
+      // ✅ CRITICAL FIX: Use registerDependency for calculated values from S03
+      // addListener doesn't fire for calculated values - use registerDependency instead
+      console.log("[Section13] 🔗 Registering CRITICAL upstream dependencies...");
+      
+      // Register S13 as dependent on S03 climate values (these fire for calculated values)
+      sm.registerDependency("d_20", "d_114"); // HDD affects heating calculations
+      sm.registerDependency("d_21", "d_117"); // CDD affects cooling calculations  
+      sm.registerDependency("d_23", "d_114"); // Coldest temp affects heating
+      sm.registerDependency("d_24", "d_117"); // Hottest temp affects cooling
+      sm.registerDependency("h_23", "d_114"); // Heating setpoint affects heating
+      sm.registerDependency("h_24", "d_117"); // Cooling setpoint affects cooling
       sm.addListener("i_104", () => {
         console.log(
           "[Section13] 📡 🔥 i_104 (TRANSMISSION LOSS) listener triggered - S11 thermal bridges changed!",

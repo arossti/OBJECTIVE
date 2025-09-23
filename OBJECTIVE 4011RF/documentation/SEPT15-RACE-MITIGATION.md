@@ -96,6 +96,8 @@ This plan avoids the pitfalls of the abandoned **IT-DEPENDS** branch (field-leve
 - **Performance Degradation**: 2000ms delays unacceptable for user experience
 - **🚨 ROOT CAUSE CONFIRMED (Sept 18, 2025)**: StateManager architectural limitation definitively identified through systematic testing. **VERIFIED**: StateManager.setValue() with "calculated" state does NOT trigger wildcard or addListener() callbacks, only registerDependency() callbacks. **EVIDENCE**: S03 publishes climate data perfectly (d_20=7100 verified stored in StateManager), but Calculator.js wildcard listener never fires despite explicit logging. **PATTERN B CLEANUP**: Eliminated all target_ prefixed antipatterns across S03, S11, S15, S05 (21 violations reduced to 0). **ARCHITECTURAL CONCLUSION**: Perfect dual-state architecture achieved at section level - remaining state contamination is StateManager infrastructure limitation requiring orchestrator-based coordination to replace listener-based reactivity for calculated value propagation.
 
+**🔧 S13 LISTENER FIX ATTEMPTED (Sept 22, 2025)**: Applied surgical fix to S13 climate listeners. **PROBLEM**: S13 used addListener() for S03 calculated values (d_23, h_23, etc.) which never fire due to StateManager limitation. **FIX ATTEMPTED**: Replaced addListener() with registerDependency() calls for S03 climate values. **RESULT**: Partial improvement but "cooling bump" still required - indicates deeper architectural issue beyond simple listener mechanism. **CONCLUSION**: Confirms need for complete orchestrator solution rather than piecemeal listener fixes. S13 represents the complexity that requires systematic orchestrator coordination as outlined in this document.
+
 **Current Architecture Compatibility:**
 - ✅ **Section Autonomy Preserved**: Each section's `TargetState`/`ReferenceState` objects remain intact
 - ✅ **Traffic Cop Coexistence**: Orchestrator works above existing Traffic Cop recursion protection
@@ -314,7 +316,7 @@ Now orchestrator guarantees `S05.calculateAll()` runs before `S02.calculateAll()
   - S15: TEUI calculations (energy/area intensities)
   - S01: Dashboard display (percentage calculations, unit conversions)
 
-- Remove legacy `addListener` hacks once orchestrator dependencies are stable.
+- Remove legacy `addListener` hacks once orchestrator dependencies are stable.  
 
 **🚨 S13 SPECIAL HANDLING:**
 - **Current Status**: Month-long refactoring struggle with cooling calculations
@@ -328,7 +330,7 @@ Now orchestrator guarantees `S05.calculateAll()` runs before `S02.calculateAll()
 
 1. **Parity tests**: Compare pre-migration vs orchestrator-driven outputs for a given input set.  
 2. **Stress tests**: Rapid slider changes and mass input updates should yield identical results in both modes.  
-3. **Cold start tests**: Ensure orchestrator populates all calculated fields correctly on initial load.
+3. **Cold start tests**: Ensure orchestrator populates all calculated fields correctly on initial load.  
 
 **🧪 CODEBASE-SPECIFIC TEST SCENARIOS:**
 4. **Dual-State Isolation**: Verify Target/Reference calculations remain completely separate under orchestrator
@@ -451,20 +453,20 @@ const Orchestrator = (function () {
     const startTime = performance.now();
     
     try {
-      const order = topoSort();
-      console.log("Orchestrator execution order:", order);
+    const order = topoSort();
+    console.log("Orchestrator execution order:", order);
       
-      order.forEach(id => {
-        try {
+    order.forEach(id => {
+      try {
           const sectionStart = performance.now();
           console.log(`[Orchestrator] Executing section ${id}`);
-          sections[id].calculate();
+        sections[id].calculate();
           const sectionEnd = performance.now();
           console.log(`[Orchestrator] ${id} completed in ${(sectionEnd - sectionStart).toFixed(1)}ms`);
-        } catch (err) {
-          console.error(`[${id}] Orchestrator error:`, err);
-        }
-      });
+      } catch (err) {
+        console.error(`[${id}] Orchestrator error:`, err);
+      }
+    });
     } finally {
       // 📊 TOTAL PERFORMANCE LOGGING
       const totalTime = performance.now() - startTime;
@@ -934,6 +936,201 @@ const Orchestrator = (function () {
 - **Automated documentation** of orchestrator development progress
 - **Violation trend analysis** over time
 - **Performance improvement tracking**
+
+---
+
+---
+
+## Appendix F — CTO Strategic Insights & Revised Approach _(Post-Week Analysis Sept 22, 2025)_
+
+### **🎯 CRITICAL REALIZATION: Target Works, Reference Doesn't**
+
+**Key Insight from Week Away**: **Race conditions don't exist in Target modeling** - they emerged with Reference implementation.
+
+**Strategic Implication**: If Target modeling works perfectly, Reference should use **identical patterns**.
+
+### **🧠 CTO FEEDBACK: Classic Directed Graph Problem**
+
+**CTO Quote**: *"😵‍💫 — if I'm getting it right, multiple nodes in the dependency graph are triggered multiple times to recalculate, because something up the chain triggers it, or is not yet updated and stale by the time that one runs. The problem is a classic directed graph, used by compilers, make, etc. tell it to handle it that way and it should figure it out. I can't tell if the proposed orchestrator is that or close to it but it only needs that. Maybe the traffic cop and single-order dependencies with listeners is the trap, especially with cycles in the graph"*
+
+### **🔍 ROOT CAUSE ANALYSIS: The Trap Identified**
+
+**Why Target Works:**
+- **Single execution path**: User input → section calculateAll() → StateManager storage
+- **No listener chains**: Target calculations don't (verify this, they may) trigger other Target calculations  
+- **Clean data flow**: Each section reads fresh Target data when needed
+
+**Why Reference Breaks:**
+- **Dual listener chains**: Both Target AND Reference listeners firing
+- **Cross-contamination**: Reference calculations triggering Target listeners (and vice versa)
+- **Timing chaos**: `ref_` prefixed values not propagating through listener system properly
+
+**The Trap**: **"Traffic cop and single-order dependencies with listeners"** creates competing trigger mechanisms that fight each other.
+
+### **🚦 CTO'S SOLUTION: Pure Dependency Graph**
+
+**Classic Compiler/Make Pattern** (What CTO Wants):
+```javascript
+// PURE DEPENDENCY GRAPH (No Listeners, No Traffic Cop Chaos)
+const CalculationGraph = {
+  nodes: new Map(), // Each calculation as a node
+  edges: new Map(), // Dependencies between calculations
+  
+  addCalculation(id, calculateFn, dependencies = []) {
+    this.nodes.set(id, { 
+      id, 
+      calculate: calculateFn, 
+      dependencies,
+      visited: false,
+      result: null 
+    });
+    
+    // Add edges for dependencies
+    dependencies.forEach(dep => {
+      if (!this.edges.has(dep)) this.edges.set(dep, new Set());
+      this.edges.get(dep).add(id);
+    });
+  },
+  
+  executeAll() {
+    // Classic topological sort - each node runs exactly once
+    const sorted = this.topologicalSort();
+    sorted.forEach(nodeId => {
+      const node = this.nodes.get(nodeId);
+      if (node && !node.visited) {
+        node.result = node.calculate();
+        node.visited = true;
+      }
+    });
+    
+    // Reset for next execution
+    this.nodes.forEach(node => node.visited = false);
+  }
+};
+```
+
+### **🎯 REVISED STRATEGIC APPROACH**
+
+**Priority 1: Reference Pattern Matching** _(Immediate Fix)_
+- **Goal**: Make Reference modeling use identical patterns to working Target modeling
+- **Method**: Copy exact Target trigger mechanisms, data flow, timing sequences
+- **Risk**: Low - proven Target patterns work
+- **Timeline**: Days, not weeks
+
+**Priority 2: Classic Dependency Graph** _(Strategic Fix)_  
+- **Goal**: Replace listener chaos with pure dependency graph execution
+- **Method**: Use existing Dependency.js graph + topological execution
+- **Risk**: Medium - architectural change but CTO-approved pattern
+- **Timeline**: Weeks
+
+### **🔧 IMPLEMENTATION STRATEGY**
+
+**Phase 1A: Reference Pattern Audit**
+- [ ] **Document Target Success Patterns**: How does Target modeling avoid race conditions?
+- [ ] **Audit Reference Differences**: Where does Reference modeling deviate from Target patterns?
+- [ ] **Pattern Matching Fix**: Make Reference use identical trigger/flow patterns as Target
+
+**Phase 1B: Dependency Graph Implementation**  
+- [ ] **Use Existing Dependency.js**: Leverage existing graph infrastructure in README.md
+- [ ] **Classic Topological Sort**: Implement compiler-style execution (each node runs once)
+- [ ] **Replace Listener Chaos**: Single graph execution replaces multiple competing triggers
+
+### **🚨 KEY ARCHITECTURAL INSIGHT**
+
+**The Problem**: Not the calculations themselves, but **how they're triggered**
+**The Solution**: Classic directed graph execution (exactly what CTO described)
+**The Benefit**: Each calculation runs **exactly once** in **correct dependency order**
+
+### **📊 DEPENDENCY GRAPH RESOURCES AVAILABLE**
+
+**README.md References**:
+- Lines 1104-1122: Programmatic dependency graph access
+- `window.TEUI.StateManager.exportDependencyGraph("target")`
+- `window.TEUI.StateManager.exportDependencyGraph("reference")`
+
+**Dependency.js Infrastructure**:
+- Visual dependency graph already implemented
+- Graph data structures already exist
+- Topological relationships already mapped
+
+**Strategic Advantage**: Don't need Excel export - **existing graph infrastructure** provides foundation for CTO's directed graph solution.
+
+### **🔧 ENHANCED DEPENDENCY GRAPH: Formula Integration**
+
+**Current State**: Dependency graph shows field relationships but not the underlying formulas
+
+**Enhancement Opportunity**: Add formula/equation display to node information panels
+
+**Current Node Information** (when clicking nodes):
+- Field ID and current value
+- Dependencies list (what it depends on)  
+- Dependents list (what depends on it)
+- Group/section information
+
+**Proposed Enhancement**: **Formula Display Integration**
+
+```javascript
+// FORMULA INTEGRATION CONCEPT
+showNodeInfo(node) {
+  // ... existing code ...
+  
+  // NEW: Add formula information if available
+  const formula = getFormulaForField(node.id);
+  if (formula) {
+    value.innerHTML += `<br><strong>Formula:</strong> <code>${formula}</code>`;
+  }
+  
+  // NEW: Add Excel cell reference
+  value.innerHTML += `<br><strong>Excel Cell:</strong> ${node.id.toUpperCase()}`;
+}
+
+function getFormulaForField(fieldId) {
+  // Source 1: Check Calculator.js FormulaRegistry (lines 161-198)
+  if (window.TEUI?.Calculator?.FormulaRegistry?.[fieldId]) {
+    return extractFormulaText(window.TEUI.Calculator.FormulaRegistry[fieldId]);
+  }
+  
+  // Source 2: Check section-specific formula comments
+  // Many sections have formula comments like:
+  // "D127 (TED Targeted): =(I97+I98+I103+M121)-I80"
+  // "H135: =D135/H15" 
+  const sectionFormulas = getSectionFormulaComments(fieldId);
+  if (sectionFormulas) return sectionFormulas;
+  
+  // Source 3: Check registerDependencies() calls for implicit formulas
+  // e.g., registerDependency("d_135", "h_135") + registerDependency("h_15", "h_135") 
+  // implies h_135 = d_135 / h_15
+  return inferFormulaFromDependencies(fieldId);
+}
+```
+
+**Formula Sources Available:**
+1. **Calculator.js FormulaRegistry** (lines 161-198): Explicit formula functions
+2. **Section registerDependencies()** (S14 lines 879-932, S15 lines 1200-1318): Formula comments
+3. **Excel Formula Comments**: Many sections document Excel formulas in dependency registration
+4. **FORMULAE.csv in ARCHIVE**: Complete Excel formula export before JavaScript conversion - shows original Excel format alongside converted JS format
+
+**Implementation Benefits:**
+- ✅ **Educational**: Users understand calculation relationships
+- ✅ **Debugging**: Developers can trace formula logic
+- ✅ **Validation**: Compare displayed formulas against Excel reference
+- ✅ **Documentation**: Self-documenting dependency relationships
+
+**Example Enhanced Node Info Panel:**
+```
+Field: h_136 (TEUI Target)
+Current Value: 93.6 kWh/m²/yr
+Excel Formula: =D136/H15
+JavaScript: targetEnergy / conditionedArea
+Excel Cell: H136
+Dependencies: d_136, h_15
+Dependents: h_10 (dashboard display)
+Formula Source: FORMULAE.csv + Section 15 registerDependencies()
+```
+
+**Dual Format Display**: Show both Excel format (from FORMULAE.csv) and JavaScript implementation for complete understanding
+
+This enhancement would make the dependency graph a **comprehensive calculation reference** tool, perfect for CTO review and developer understanding.
 
 ---
 
