@@ -2379,27 +2379,17 @@ window.TEUI.SectionModules.sect13 = (function () {
       sm.addListener("d_20", calculateAndRefresh); // HDD - needed for heating calculations
       sm.addListener("d_21", calculateAndRefresh); // CDD - needed for cooling calculations
       // Removed: d_23, d_24, h_23, h_24 - S13 doesn't directly use these (S11/S12 handle them)
-      sm.addListener("i_104", () => {
-        console.log(
-          "[Section13] 📡 🔥 i_104 (TRANSMISSION LOSS) listener triggered - S11 thermal bridges changed!",
-        );
-        calculateAndRefresh();
-      }); // Total Trans Loss
-      sm.addListener("k_104", calculateAndRefresh); // Total Ground Loss
-      sm.addListener("i_71", () => {
-        console.log(
-          "[Section13] 📡 🔥 i_71 (OCCUPANT GAINS) listener triggered - S10 gains factor changed!",
-        );
-        calculateAndRefresh();
-      }); // Total Occ Gains
-      sm.addListener("i_79", calculateAndRefresh); // Total App Gains
-      sm.addListener("d_127", () => {
-        console.log(
-          "[Section13] 📡 🔥 d_127 (TED) listener triggered - S14 energy demand changed!",
-        );
-        // ✅ PATTERN 2: Run dual-engine calculations for proper Target/Reference state handling
-        calculateAndRefresh();
-      }); // TED (from S14, for d_114)
+      // ✅ S11/S12 ENVELOPE & GAINS LISTENERS: Target/Reference Pairs
+      const upstreamDependencies = [
+        "i_104", "k_104",  // S11 Envelope losses
+        "i_71", "i_79",    // S09/S10 Internal gains  
+        "d_127"            // S14 TED
+      ];
+      
+      upstreamDependencies.forEach(fieldId => {
+        sm.addListener(fieldId, calculateAndRefresh);
+        sm.addListener(`ref_${fieldId}`, calculateAndRefresh);
+      });
       // Listener for m_129 (CED Mitigated) from S14 to update S13 coolingState
       sm.addListener("m_129", () => {
         // PROPER FIX: Just update the local state, let normal calculation flow handle the rest
