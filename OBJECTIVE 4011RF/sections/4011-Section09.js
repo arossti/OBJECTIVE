@@ -264,6 +264,7 @@ window.TEUI.SectionModules.sect09 = (function () {
         "h_66",
         "i_66",
         "k_66",
+        "d_65", // ✅ CRITICAL FIX: Include plug load density for Reference mode DOM updates
         "d_67",
         "h_67",
         "i_67",
@@ -295,7 +296,9 @@ window.TEUI.SectionModules.sect09 = (function () {
         if (value !== undefined && value !== null) {
           // Format value for display based on field type
           let formatType = "number";
-          if (
+          if (fieldId === "d_65" || fieldId === "d_67") {
+            formatType = "number-1dp"; // Density values with 1 decimal place
+          } else if (
             fieldId.startsWith("h_") ||
             fieldId.startsWith("i_") ||
             fieldId.startsWith("k_")
@@ -332,6 +335,7 @@ window.TEUI.SectionModules.sect09 = (function () {
         "h_66",
         "i_66",
         "k_66",
+        "d_65", // ✅ CRITICAL FIX: Include plug load density for Reference mode DOM updates
         "d_67",
         "h_67",
         "i_67",
@@ -364,7 +368,9 @@ window.TEUI.SectionModules.sect09 = (function () {
         if (value !== undefined && value !== null) {
           // Format value for display based on field type
           let formatType = "number";
-          if (
+          if (fieldId === "d_65" || fieldId === "d_67") {
+            formatType = "number-1dp"; // Density values with 1 decimal place
+          } else if (
             fieldId.startsWith("h_") ||
             fieldId.startsWith("i_") ||
             fieldId.startsWith("k_")
@@ -1944,13 +1950,29 @@ window.TEUI.SectionModules.sect09 = (function () {
         activityWatts *
         annualHours) /
       1000;
-    // ✅ PLUG LOADS: Calculate density based on occupancy type (following equipment loads pattern)
-    const isResidentialOrCare =
-      buildingType === "C-Residential" ||
-      buildingType === "B1-Detention" ||
-      buildingType === "B2-Care and Treatment" ||
-      buildingType === "B3-Detention Care & Treatment";
-    const plugLoadDensity = isResidentialOrCare ? 5 : 7;
+    // ✅ PLUG LOADS: Complete Excel formula implementation
+    // Excel: =IF(ISNUMBER(SEARCH("PH",D13)), 2.1, IF(OR(D12="C - Residential", D12="B1 - Detention", D12="B2 - Care and Treatment", D12="B3 - Detention, Care and Treatment"), 5, 7))
+    
+    // Get building standard (d_13) based on calculation mode
+    const buildingStandard = window.TEUI.StateManager.getValue(isReference ? "ref_d_13" : "d_13") || "";
+    
+    let plugLoadDensity;
+    
+    // Priority 1: Check for Passive House standards (contains "PH") → 2.1 W/m²
+    if (buildingStandard.includes("PH")) {
+      plugLoadDensity = 2.1;
+    } 
+    // Priority 2: Check for residential/care occupancies → 5 W/m²
+    else {
+      const isResidentialOrCare =
+        buildingType === "C-Residential" ||
+        buildingType === "B1-Detention" ||
+        buildingType === "B2-Care and Treatment" ||
+        buildingType === "B3-Detention Care & Treatment"; // ✅ Fixed: matches S02 dropdown values
+      
+      plugLoadDensity = isResidentialOrCare ? 5 : 7;
+    }
+    
     state.setValue("d_65", plugLoadDensity.toString());
     
     const plugEnergy = (plugLoadDensity * conditionedArea * annualHours) / 1000;
