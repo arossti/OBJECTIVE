@@ -3787,10 +3787,16 @@ window.TEUI.SectionModules.sect13 = (function () {
     isReferenceCalculation = false,
     coolingContext,
   ) {
-    // Use global parser directly
-    const d129 = window.TEUI.parseNumeric(getFieldValue("d_129")) || 0;
-    const h124 = window.TEUI.parseNumeric(getFieldValue("h_124")) || 0;
-    const d123 = window.TEUI.parseNumeric(getFieldValue("d_123")) || 0;
+    // ✅ PHASE 2: Read mode-aware values (Target or Reference)
+    const d129 = isReferenceCalculation
+      ? window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("ref_d_129")) || 0
+      : window.TEUI.parseNumeric(getFieldValue("d_129")) || 0;
+    const h124 = isReferenceCalculation  
+      ? window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("ref_h_124")) || 0
+      : window.TEUI.parseNumeric(getFieldValue("h_124")) || 0;
+    const d123 = isReferenceCalculation
+      ? window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("ref_d_123")) || 0
+      : window.TEUI.parseNumeric(getFieldValue("d_123")) || 0;
 
     // Logging removed
     // console.warn(`[S13 Debug MitigatedCED Inputs] Unmitigated(d129): ${d129.toFixed(2)}, FreeCooling(h124): ${h124.toFixed(2)}, VentRecovery(d123): ${d123.toFixed(2)}`);
