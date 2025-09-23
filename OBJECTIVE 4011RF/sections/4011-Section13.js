@@ -2357,10 +2357,15 @@ window.TEUI.SectionModules.sect13 = (function () {
       // Listener for l_119 (Summer Boost) changes
       sm.addListener("l_119", calculateCoolingVentilation);
 
-      // --- Listeners for m_129 Dependencies --- Corrected in troubleshooting
-      sm.addListener("d_129", calculateMitigatedCED); // d_129 from S14
-      sm.addListener("h_124", calculateMitigatedCED); // h_124 from S13 (Free Cooling)
-      sm.addListener("d_123", calculateMitigatedCED); // d_123 from S13 (Vent Recovery)
+      // --- Listeners for m_129 Dependencies --- Target & Reference Support
+      sm.addListener("d_129", calculateMitigatedCED); // d_129 from S14 (Target)
+      sm.addListener("h_124", calculateMitigatedCED); // h_124 from S13 (Free Cooling - Target)
+      sm.addListener("d_123", calculateMitigatedCED); // d_123 from S13 (Vent Recovery - Target)
+      
+      // ✅ PHASE 1: Add missing Reference listeners for m_129 calculation
+      sm.addListener("ref_d_129", calculateMitigatedCED); // d_129 from S14 (Reference)
+      sm.addListener("ref_h_124", calculateMitigatedCED); // h_124 from S13 (Free Cooling - Reference)
+      sm.addListener("ref_d_123", calculateMitigatedCED); // d_123 from S13 (Vent Recovery - Reference)
       // -----------------------------------------
 
       // Helper function for external dependency changes - DUAL-STATE PATTERN COMPLIANT
