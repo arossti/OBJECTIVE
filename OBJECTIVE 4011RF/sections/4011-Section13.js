@@ -2357,11 +2357,8 @@ window.TEUI.SectionModules.sect13 = (function () {
       // Listener for l_119 (Summer Boost) changes
       sm.addListener("l_119", calculateCoolingVentilation);
 
-      // --- Listeners for m_129 Dependencies --- Corrected in troubleshooting
-      sm.addListener("d_129", calculateMitigatedCED); // d_129 from S14
-      sm.addListener("h_124", calculateMitigatedCED); // h_124 from S13 (Free Cooling)
-      sm.addListener("d_123", calculateMitigatedCED); // d_123 from S13 (Vent Recovery)
-      // -----------------------------------------
+      // ✅ REMOVED: m_129 calculation moved to S14 - these listeners no longer needed
+      // S14 now handles m_129 calculation and has its own listeners for h_124, d_123
 
       // Helper function for external dependency changes - DUAL-STATE PATTERN COMPLIANT
       const calculateAndRefresh = () => {
@@ -2395,13 +2392,22 @@ window.TEUI.SectionModules.sect13 = (function () {
         // ✅ PATTERN 2: Run dual-engine calculations for proper Target/Reference state handling
         calculateAndRefresh();
       }); // TED (from S14, for d_114)
-      // Listener for m_129 (CED Mitigated) from S14 to update S13 coolingState
+      // ✅ CRITICAL: Listen for m_129 from S14 for d_117 cooling load calculation
       sm.addListener("m_129", () => {
-        // PROPER FIX: Just update the local state, let normal calculation flow handle the rest
+        console.log("[S13] m_129 changed from S14 - recalculating d_117 cooling load");
+        // Update local cooling state for internal calculations
         coolingState.coolingLoad =
           window.TEUI.parseNumeric(getFieldValue("m_129")) || 0;
-        // The cooling calculations will be triggered by the normal dependency flow
-        // when S14 changes trigger downstream recalculations
+        // Recalculate cooling system (which includes d_117) with new m_129 value
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
+      });
+      
+      // ✅ ADDED: Listen for ref_m_129 from S14 for Reference mode d_117 calculation
+      sm.addListener("ref_m_129", () => {
+        console.log("[S13] ref_m_129 changed from S14 - recalculating Reference d_117 cooling load");
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
       });
       // ✅ REMOVED: d_113 ghosting listener - handled by dropdown change now
       console.log("[Section13] ✅ ALL LISTENERS ATTACHED SUCCESSFULLY");
@@ -2955,8 +2961,10 @@ window.TEUI.SectionModules.sect13 = (function () {
     const heatingSystemType = isReferenceCalculation
       ? getSectionValue("d_113", true) // Reference reads Reference state
       : TargetState.getValue("d_113"); // Target reads Target state
-    const coolingDemand_m129 =
-      window.TEUI.parseNumeric(getFieldValue("m_129")) || 0;
+    // ✅ UPDATED: Read m_129 from S14 with proper mode awareness
+    const coolingDemand_m129 = isReferenceCalculation
+      ? window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("ref_m_129")) || 0
+      : window.TEUI.parseNumeric(getFieldValue("m_129")) || 0;
     const copcool_hp_j113 =
       window.TEUI.parseNumeric(getFieldValue("j_113")) || 0;
     // ✅ FIXED: Read dedicated cooling COP from j_116 field (mode-aware)
@@ -2972,8 +2980,11 @@ window.TEUI.SectionModules.sect13 = (function () {
     let isCoolingActive = coolingSystemType === "Cooling";
 
     console.log(
-      `[Section13] 🧊 COOLING CALC: mode=${isReferenceCalculation ? "REF" : "TGT"}, coolingSystemType="${coolingSystemType}", heatingType="${heatingSystemType}", isCoolingActive=${isCoolingActive}, coolingDemand=${coolingDemand_m129}`,
+      `[Section13] 🧊 COOLING CALC: mode=${isReferenceCalculation ? "REF" : "TGT"}, coolingSystemType="${coolingSystemType}", heatingType="${heatingSystemType}", isCoolingActive=${isCoolingActive}, coolingDemand(m129)=${coolingDemand_m129}`,
     );
+
+    // ✅ EXCEL FORMULA IMPLEMENTATION: D117=IF(D116="No Cooling", 0, IF(D113="Heatpump", M129/J113, IF(D116="Cooling", M129/J116)))
+    // This implements the exact Excel logic for cooling electrical load calculation
 
     if (isCoolingActive) {
       if (heatingSystemType === "Heatpump") {
@@ -3495,7 +3506,8 @@ window.TEUI.SectionModules.sect13 = (function () {
         true,
         referenceCoolingContext,
       );
-      const mitigatedResults = calculateMitigatedCED(true);
+      // ✅ REMOVED: m_129 calculation moved to S14
+      const mitigatedResults = {};
 
       // Store Reference Model results with ref_ prefix for downstream sections
       storeReferenceResults(
@@ -3561,10 +3573,8 @@ window.TEUI.SectionModules.sect13 = (function () {
         false,
         targetCoolingContext,
       );
-      const mitigatedResults = calculateMitigatedCED(
-        false,
-        targetCoolingContext,
-      );
+      // ✅ REMOVED: m_129 calculation moved to S14
+      const mitigatedResults = {};
 
       // Update DOM with Target calculation results
       updateTargetModelDOMValues(
@@ -3776,35 +3786,14 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /**
-   * Calculate Mitigated CED (m_129)
+   * ✅ REMOVED: m_129 calculation moved to S14 where it belongs
+   * S13 no longer calculates m_129 - this is now S14's responsibility
+   * S13 provides h_124 and d_123 inputs that S14 uses for its m_129 calculation
    */
-  function calculateMitigatedCED(
-    isReferenceCalculation = false,
-    coolingContext,
-  ) {
-    // Use global parser directly
-    const d129 = window.TEUI.parseNumeric(getFieldValue("d_129")) || 0;
-    const h124 = window.TEUI.parseNumeric(getFieldValue("h_124")) || 0;
-    const d123 = window.TEUI.parseNumeric(getFieldValue("d_123")) || 0;
-
-    // Logging removed
-    // console.warn(`[S13 Debug MitigatedCED Inputs] Unmitigated(d129): ${d129.toFixed(2)}, FreeCooling(h124): ${h124.toFixed(2)}, VentRecovery(d123): ${d123.toFixed(2)}`);
-
-    let m129_calculated = d129 - h124 - d123;
-    const m129 = Math.max(0, m129_calculated); // Clamp to zero
-
-    // Logging removed
-    // console.warn(`[S13 Debug MitigatedCED Output] MitigatedLoad(m129): ${m129.toFixed(2)}`);
-
-    // Only update DOM for Target calculations
-    if (!isReferenceCalculation) {
-      setFieldValue("m_129", m129, "number-2dp-comma");
-    }
-
-    // Return calculated value for Reference engine storage
-    return {
-      m_129: m129,
-    };
+  function calculateMitigatedCED_REMOVED() {
+    // This function is no longer used - m_129 calculation moved to S14
+    console.warn("[S13] calculateMitigatedCED is deprecated - m_129 now calculated by S14");
+    return {};
   }
 
   //==========================================================================
