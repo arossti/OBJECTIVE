@@ -1904,11 +1904,18 @@ window.TEUI.SectionModules.sect09 = (function () {
         activityWatts *
         annualHours) /
       1000;
-    const plugEnergy =
-      (window.TEUI.parseNumeric(state.getValue("d_65")) *
-        conditionedArea *
-        annualHours) /
-      1000;
+    // ✅ PLUG LOADS: Calculate density based on occupancy type (following equipment loads pattern)
+    console.log(`[S09 DEBUG] buildingType="${buildingType}", isReference=${isReference}`);
+    const isResidentialOrCare =
+      buildingType === "C-Residential" ||
+      buildingType === "B1-Detention" ||
+      buildingType === "B2-Care and Treatment" ||
+      buildingType === "B3-Detention Care & Treatment";
+    const plugLoadDensity = isResidentialOrCare ? 5 : 7;
+    console.log(`[S09 DEBUG] isResidentialOrCare=${isResidentialOrCare}, plugLoadDensity=${plugLoadDensity}`);
+    state.setValue("d_65", plugLoadDensity.toString());
+    
+    const plugEnergy = (plugLoadDensity * conditionedArea * annualHours) / 1000;
     const lightingEnergy =
       (window.TEUI.parseNumeric(state.getValue("d_66")) *
         conditionedArea *
@@ -1945,6 +1952,7 @@ window.TEUI.SectionModules.sect09 = (function () {
       h_64: occupantEnergy,
       i_64: occupantEnergy * heatingRatio,
       k_64: occupantEnergy * coolingRatio,
+      d_65: plugLoadDensity, // ✅ Include calculated plug load density
       h_65: plugEnergy,
       i_65: plugEnergy * heatingRatio,
       k_65: plugEnergy * coolingRatio,
@@ -2750,7 +2758,6 @@ window.TEUI.SectionModules.sect09 = (function () {
     // Section-specific utility functions - OPTIONAL
     calculateAll: calculateAll,
     calculateOccupantEnergy: calculateOccupantEnergy,
-    calculatePlugLoads: calculatePlugLoads,
     calculateLightingLoads: calculateLightingLoads,
     calculateEquipmentLoads: calculateEquipmentLoads,
     calculateTotals: calculateTotals,
