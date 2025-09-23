@@ -2369,17 +2369,11 @@ window.TEUI.SectionModules.sect13 = (function () {
         ModeManager.updateCalculatedDisplayValues();
       };
 
-      // ✅ CRITICAL FIX: Use registerDependency for calculated values from S03
-      // addListener doesn't fire for calculated values - use registerDependency instead
-      console.log("[Section13] 🔗 Registering CRITICAL upstream dependencies...");
-      
-      // Register S13 as dependent on S03 climate values (these fire for calculated values)
-      sm.registerDependency("d_20", "d_114"); // HDD affects heating calculations
-      sm.registerDependency("d_21", "d_117"); // CDD affects cooling calculations  
-      sm.registerDependency("d_23", "d_114"); // Coldest temp affects heating
-      sm.registerDependency("d_24", "d_117"); // Hottest temp affects cooling
-      sm.registerDependency("h_23", "d_114"); // Heating setpoint affects heating
-      sm.registerDependency("h_24", "d_117"); // Cooling setpoint affects cooling
+      // ✅ SIMPLIFIED: Only essential S03 climate values that S13 actually needs
+      console.log("[Section13] 🔗 Attaching essential S03 climate listeners...");
+      sm.addListener("d_20", calculateAndRefresh); // HDD - needed for heating calculations
+      sm.addListener("d_21", calculateAndRefresh); // CDD - needed for cooling calculations
+      // Removed: d_23, d_24, h_23, h_24 - S13 doesn't directly use these (S11/S12 handle them)
       sm.addListener("i_104", () => {
         console.log(
           "[Section13] 📡 🔥 i_104 (TRANSMISSION LOSS) listener triggered - S11 thermal bridges changed!",
