@@ -616,8 +616,25 @@ window.TEUI.SectionModules.sect09 = (function () {
    * Set calculated value in both ModeManager (internal state) and StateManager (Target mode backward compatibility)
    */
   function setCalculatedValue(fieldId, rawValue, formatType = "number") {
-    const valueToStore = String(rawValue);
+    // Ensure rawValue is numeric for calculations where appropriate
+    const numericValue =
+      typeof rawValue === "string"
+        ? window.TEUI.parseNumeric(rawValue)
+        : rawValue;
 
+    // Determine appropriate format type based on field ID
+    let determinedFormatType = formatType;
+    if (fieldId === "d_65" || fieldId === "d_67") {
+      determinedFormatType = "number-1dp"; // Equipment/plug density with 1 decimal
+    } else if (fieldId.startsWith("l_") && fieldId !== "l_12") {
+      determinedFormatType = "percent-0dp"; // Percentages
+    } else if (fieldId.startsWith("h_") || fieldId.startsWith("i_") || fieldId.startsWith("k_")) {
+      determinedFormatType = "number-2dp-comma"; // Energy values with commas
+    }
+
+    const valueToStore = String(numericValue);
+
+    // Update appropriate state object
     if (ModeManager.currentMode === "reference") {
       ReferenceState.setValue(fieldId, valueToStore);
     } else {
@@ -634,6 +651,29 @@ window.TEUI.SectionModules.sect09 = (function () {
           valueToStore,
           "calculated",
         );
+      }
+    }
+
+    // ✅ CRITICAL FIX: Update DOM like S12 does
+    if (ModeManager.currentMode === "target") {
+      // Only update DOM in Target mode - Reference mode uses updateCalculatedDisplayValues()
+      const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+      if (element) {
+        // Format value using global formatter
+        const formattedValue = window.TEUI?.formatNumber
+          ? window.TEUI.formatNumber(numericValue, determinedFormatType)
+          : valueToStore;
+
+        if (element.tagName === "SELECT" || element.tagName === "INPUT") {
+          element.value = formattedValue;
+        } else {
+          element.textContent = formattedValue;
+        }
+        element.classList.add("calculated-value");
+        element.classList.remove("user-input", "editable", "PendingValue");
+        element.removeAttribute("contenteditable");
+      } else {
+        console.warn("DOM element not found for calculated field:", fieldId);
       }
     }
   }
@@ -1905,14 +1945,12 @@ window.TEUI.SectionModules.sect09 = (function () {
         annualHours) /
       1000;
     // ✅ PLUG LOADS: Calculate density based on occupancy type (following equipment loads pattern)
-    console.log(`[S09 DEBUG] buildingType="${buildingType}", isReference=${isReference}`);
     const isResidentialOrCare =
       buildingType === "C-Residential" ||
       buildingType === "B1-Detention" ||
       buildingType === "B2-Care and Treatment" ||
       buildingType === "B3-Detention Care & Treatment";
     const plugLoadDensity = isResidentialOrCare ? 5 : 7;
-    console.log(`[S09 DEBUG] isResidentialOrCare=${isResidentialOrCare}, plugLoadDensity=${plugLoadDensity}`);
     state.setValue("d_65", plugLoadDensity.toString());
     
     const plugEnergy = (plugLoadDensity * conditionedArea * annualHours) / 1000;
@@ -1939,7 +1977,7 @@ window.TEUI.SectionModules.sect09 = (function () {
     }
     const equipmentEnergy =
       (equipmentDensity * conditionedArea * annualHours) / 1000;
-    state.setValue("d_67", equipmentDensity.toFixed(2));
+    state.setValue("d_67", equipmentDensity.toString()); // ✅ Use consistent formatting via setCalculatedValue
 
     // --- Heating/Cooling Splits ---
     const { heatingRatio, coolingRatio } =
