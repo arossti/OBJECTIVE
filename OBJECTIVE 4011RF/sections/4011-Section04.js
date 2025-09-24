@@ -2520,11 +2520,21 @@ window.TEUI.SectionModules.sect04 = (function () {
 
       // ✅ CRITICAL: React to Reference mode reporting year changes from S02 (affects emission factors)
       window.TEUI.StateManager.addListener("ref_h_12", () => {
-        console.log(
-          `[S04] Reporting year changed (Reference), updating emission factors: ref_h_12`,
-        );
-        calculateReferenceModel(); // Reference emission factors depend on Reference year
+        calculateAll();
         ModeManager.updateCalculatedDisplayValues();
+      });
+
+      // ✅ EXTERNAL DEPENDENCIES: Clean Target/Reference pairs for upstream values
+      const externalDependencies = [
+        "d_113", "d_51",   // S13/S07 system types
+        "e_51", "h_115", "k_54", "f_115",  // S07/S13 fuel quantities
+        "d_60", "d_63",   // S08 offsets, S09 occupants  
+        "d_43", "i_43"    // S06 renewables
+      ];
+      
+      externalDependencies.forEach(fieldId => {
+        window.TEUI.StateManager.addListener(fieldId, () => { calculateAll(); ModeManager.updateCalculatedDisplayValues(); });
+        window.TEUI.StateManager.addListener(`ref_${fieldId}`, () => { calculateAll(); ModeManager.updateCalculatedDisplayValues(); });
       });
 
       // React to conditioned area changes (affects energy intensity)
