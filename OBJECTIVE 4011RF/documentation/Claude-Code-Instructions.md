@@ -32,7 +32,14 @@ TEUI 4.0/
 
 1. **README.md** (166KB) - Complete project history & architecture
 2. **S13-ENDGAME.md** - Current workplan with strategic approach
-3. **4012-CHEATSHEET.md** - Architectural patterns (if exists)
+3. **Logs.md** - Console logs for forensic analysis (manually updated by human)
+4. **4012-CHEATSHEET.md** - Architectural patterns (if exists)
+
+### 🔍 Logs.md Workflow
+- **Manual Process**: Human copies/pastes console logs from browser into `Logs.md`
+- **Not Automatic**: Agents cannot access browser console directly
+- **Agent Action**: Request logs from human, then analyze `Logs.md` content
+- **Use Case**: Forensic debugging, calculation sequence analysis, error tracking
 
 ## 🔧 Git Workflow
 
