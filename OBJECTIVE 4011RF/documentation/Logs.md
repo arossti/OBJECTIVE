@@ -1946,40 +1946,40 @@ calculateAll @ 4011-Calculator.js:509
  [S13] REF HEATING: system=Electricity, ted=251391.1974742337, afue=0.9, cop=1
  [S13 REF DEBUG] About to calculate with heating system: Electricity
  [S13 REF DEBUG] Will S13 publish ref_d_113=Electricity?
-4011-Section13.js:3096 🔍 [S13-VENT] calculateVentilationRates: ventMethod="Volume Constant", ach(l_118)=3.5, ratePerPerson(d_119)=8.33, volume(d_105)=8000
-4011-Section13.js:3099 🔍 [S13-VENT] isReferenceCalculation=true, hasContext=true
-4011-Section13.js:3107 🔍 [S13-VENT] calculateVentilationValues: ventMethod="Volume Constant", ach(l_118)=3.5, ratePerPerson(d_119)=8.33, volume(d_105)=8000
-4011-Section13.js:3110 🔍 [S13-VENT] Supporting values: occupants(d_63)=126, occupiedHours(i_63)=4380, totalHours(j_63)=8760
-4011-Section13.js:3130 🔍 [S13-VENT] Volume Constant calculation: ventRateLs = (3.5 * 8000) / 3.6 = 7777.777777777777
-4011-Section13.js:3142 ✅ [S13-VENT] Final d_120 result: 7777.777777777777 L/s (from method="Volume Constant", ach=3.5, volume=8000)
-4011-Section13.js:2974 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="No Cooling", heatingType="Electricity", isCoolingActive=false, coolingDemand=9572.242304946165
-4011-Section13.js:3734 [S13 CONTAMINATION DEBUG] storeReferenceResults called during reference mode
-4011-Section13.js:3737 [S13 CONTAMINATION DEBUG] Reference heating system: Electricity
-4011-Section13.js:3740 [S13 CONTAMINATION DEBUG] Target heating system: Heatpump
-4011-Section13.js:3743 [S13 CONTAMINATION DEBUG] Reference h_115 (gas volume): 0
-4011-Section13.js:3746 [S13 CONTAMINATION DEBUG] Reference f_115 (oil volume): 0
-4011-Section13.js:3758 [S13 CONTAMINATION DEBUG] Writing ref_f_115 = 0
-4011-Section13.js:3758 [S13 CONTAMINATION DEBUG] Writing ref_h_115 = 0
-4011-Section13.js:3770 [Section13] Reference results stored with ref_ prefix for downstream sections
-4011-Section13.js:3773 [S13 DEBUG] Total Reference results stored: 34
-4011-Section13.js:3512 [Section13] Reference Model calculations complete
-4011-Section13.js:3400 [Section13] ✅ Reference Model complete
-4011-Section13.js:3402 [Section13] 🔄 Starting Target Model calculations...
-4011-Section13.js:721 🔍 [S13-CONTEXT] Creating target context: g_118="Volume by Schedule" from TargetState
-4011-Section13.js:725 🔍 [S13-CONTEXT] TargetState.g_118="Volume by Schedule", ReferenceState.g_118="Volume Constant"
-4011-Section13.js:3533 [Section13] Running Target Model calculations...
-4011-Section13.js:2870 [S13] TGT HEATING: system=Heatpump, ted=119171.54500166589, afue=0.98, cop=3.663540445486518
-4011-Section13.js:3096 🔍 [S13-VENT] calculateVentilationRates: ventMethod="Volume by Schedule", ach(l_118)=3, ratePerPerson(d_119)=14, volume(d_105)=8000
-4011-Section13.js:3099 🔍 [S13-VENT] isReferenceCalculation=false, hasContext=true
-4011-Section13.js:3107 🔍 [S13-VENT] calculateVentilationValues: ventMethod="Volume by Schedule", ach(l_118)=3, ratePerPerson(d_119)=14, volume(d_105)=8000
-4011-Section13.js:3110 🔍 [S13-VENT] Supporting values: occupants(d_63)=126, occupiedHours(i_63)=4380, totalHours(j_63)=8760
-4011-Section13.js:3142 ✅ [S13-VENT] Final d_120 result: 3333.333333333333 L/s (from method="Volume by Schedule", ach=3, volume=8000)
-4011-Section13.js:2974 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=9572.242304946165
-4011-Section13.js:3036 [Section13] 🧊 COOLING RESULTS: d_117=3593.80399917213, j_116=2.663540445486518, l_116=0, l_114=5978.438305774035
-24011-Section14.js:1413 [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
-4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
-4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "93.42863573628563" (state: calculated)
-4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
+ 🔍 [S13-VENT] calculateVentilationRates: ventMethod="Volume Constant", ach(l_118)=3.5, ratePerPerson(d_119)=8.33, volume(d_105)=8000
+ 🔍 [S13-VENT] isReferenceCalculation=true, hasContext=true
+ 🔍 [S13-VENT] calculateVentilationValues: ventMethod="Volume Constant", ach(l_118)=3.5, ratePerPerson(d_119)=8.33, volume(d_105)=8000
+ 🔍 [S13-VENT] Supporting values: occupants(d_63)=126, occupiedHours(i_63)=4380, totalHours(j_63)=8760
+ 🔍 [S13-VENT] Volume Constant calculation: ventRateLs = (3.5 * 8000) / 3.6 = 7777.777777777777
+ ✅ [S13-VENT] Final d_120 result: 7777.777777777777 L/s (from method="Volume Constant", ach=3.5, volume=8000)
+ [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="No Cooling", heatingType="Electricity", isCoolingActive=false, coolingDemand=9572.242304946165
+ [S13 CONTAMINATION DEBUG] storeReferenceResults called during reference mode
+ [S13 CONTAMINATION DEBUG] Reference heating system: Electricity
+ [S13 CONTAMINATION DEBUG] Target heating system: Heatpump
+ [S13 CONTAMINATION DEBUG] Reference h_115 (gas volume): 0
+ [S13 CONTAMINATION DEBUG] Reference f_115 (oil volume): 0
+ [S13 CONTAMINATION DEBUG] Writing ref_f_115 = 0
+ [S13 CONTAMINATION DEBUG] Writing ref_h_115 = 0
+ [Section13] Reference results stored with ref_ prefix for downstream sections
+ [S13 DEBUG] Total Reference results stored: 34
+ [Section13] Reference Model calculations complete
+ [Section13] ✅ Reference Model complete
+ [Section13] 🔄 Starting Target Model calculations...
+ 🔍 [S13-CONTEXT] Creating target context: g_118="Volume by Schedule" from TargetState
+ 🔍 [S13-CONTEXT] TargetState.g_118="Volume by Schedule", ReferenceState.g_118="Volume Constant"
+ [Section13] Running Target Model calculations...
+ [S13] TGT HEATING: system=Heatpump, ted=119171.54500166589, afue=0.98, cop=3.663540445486518
+ 🔍 [S13-VENT] calculateVentilationRates: ventMethod="Volume by Schedule", ach(l_118)=3, ratePerPerson(d_119)=14, volume(d_105)=8000
+ 🔍 [S13-VENT] isReferenceCalculation=false, hasContext=true
+ 🔍 [S13-VENT] calculateVentilationValues: ventMethod="Volume by Schedule", ach(l_118)=3, ratePerPerson(d_119)=14, volume(d_105)=8000
+ 🔍 [S13-VENT] Supporting values: occupants(d_63)=126, occupiedHours(i_63)=4380, totalHours(j_63)=8760
+ ✅ [S13-VENT] Final d_120 result: 3333.333333333333 L/s (from method="Volume by Schedule", ach=3, volume=8000)
+ [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=9572.242304946165
+ [Section13] 🧊 COOLING RESULTS: d_117=3593.80399917213, j_116=2.663540445486518, l_116=0, l_114=5978.438305774035
+2 [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
+ [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
+ [StateManager] 🎯 h_10 setValue: "93.42863573628563" (state: calculated)
+ [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -1996,9 +1996,9 @@ calculateAll @ 4011-Section13.js:3403
 (anonymous) @ 4011-Calculator.js:513
 calculateAll @ 4011-Calculator.js:509
 (anonymous) @ index.html:1077
-4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
-4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "93.42863573628563" (state: calculated)
-4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
+ [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
+ [StateManager] 🎯 h_10 setValue: "93.42863573628563" (state: calculated)
+ [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -2015,10 +2015,10 @@ calculateAll @ 4011-Section13.js:3403
 (anonymous) @ 4011-Calculator.js:513
 calculateAll @ 4011-Calculator.js:509
 (anonymous) @ index.html:1077
-24011-Section14.js:1413 [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
-4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
-4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "93.42863573628563" (state: calculated)
-4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
+2 [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
+ [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
+ [StateManager] 🎯 h_10 setValue: "93.42863573628563" (state: calculated)
+ [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -2034,9 +2034,9 @@ calculateAll @ 4011-Section13.js:3403
 (anonymous) @ 4011-Calculator.js:513
 calculateAll @ 4011-Calculator.js:509
 (anonymous) @ index.html:1077
-4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
-4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "93.42863573628563" (state: calculated)
-4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
+ [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
+ [StateManager] 🎯 h_10 setValue: "93.42863573628563" (state: calculated)
+ [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -2052,11 +2052,11 @@ calculateAll @ 4011-Section13.js:3403
 (anonymous) @ 4011-Calculator.js:513
 calculateAll @ 4011-Calculator.js:509
 (anonymous) @ index.html:1077
-4011-Section13.js:3588 [Section13] Target Model calculations complete
-4011-Section13.js:3404 [Section13] ✅ Target Model complete
-4011-Section13.js:3431 [Section13] ⏭️ Skipping Reference value re-write - triggered in target mode
-4011-Section13.js:3437 [Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE
-4011-Section06.js:513 🟢 [S06-TAR] Storing d_43 = 0 (from d_44=0, d_45=0, d_46=0)
+ [Section13] Target Model calculations complete
+ [Section13] ✅ Target Model complete
+ [Section13] ⏭️ Skipping Reference value re-write - triggered in target mode
+ [Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE
+ 🟢 [S06-TAR] Storing d_43 = 0 (from d_44=0, d_45=0, d_46=0)
 4011-Section06.js:508 🔵 [S06-REF] Storing ref_d_43 = 0 (from d_44=0, d_45=0, d_46=0)
 4011-Section04.js:1577 [S04] Starting dual-engine Excel-compliant calculations
 4011-Section04.js:1018 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 133341.34892282684, K32: 6800.408795064169
@@ -2088,7 +2088,7 @@ calculateAll @ 4011-Calculator.js:509
 4011-Section01.js:794 🔍 [S01] T.1 Calculation: e_6=23.8 (ref), h_6=11.7 (target) → reduction should be 51%
 4011-Section01.js:886 🔍 [S01DB] UPDATING h_10: 93.4 (from j_32=133341.34892282684, area=1427.2)
 4011-Section01.js:498 🔍 [S01] h_6 explanation: target=11.7, ref=23.8, reduction=0.5084033613445378, percent=51%
-4011-Clock.js:59 🕐 [CLOCK] ⭐ INITIALIZATION COMPLETE: 631ms (all calculations finalized)
+4011-Clock.js:59 🕐 [CLOCK] ⭐ INITIALIZATION COMPLETE: 629ms (all calculations finalized)
 4011-Section01.js:1191 ✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10
 4011-Section03.js:2095 Section03: City selected: Attawapiskat
 4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
@@ -2102,10 +2102,10 @@ calculateAll @ 4011-Calculator.js:509
 4011-Section11.js:1132 [S11] 🔵 REF CLIMATE READ: d_20=4600
 4011-Section11.js:1136 [S11] 🔵 REF CLIMATE READ: d_21=196
 4011-Section11.js:1132 [S11] 🔵 REF CLIMATE READ: d_20=4600
- [S11] 🔵 REF CLIMATE READ: d_21=196
- [S11] 🔵 REF CLIMATE READ: d_20=4600
- [S11] 🔵 REF CLIMATE READ: d_21=196
- [S11] 🔵 REF CLIMATE READ: d_20=4600
+4011-Section11.js:1136 [S11] 🔵 REF CLIMATE READ: d_21=196
+4011-Section11.js:1132 [S11] 🔵 REF CLIMATE READ: d_20=4600
+4011-Section11.js:1136 [S11] 🔵 REF CLIMATE READ: d_21=196
+4011-Section11.js:1132 [S11] 🔵 REF CLIMATE READ: d_20=4600
  [S11] 🔵 REF CLIMATE READ: d_21=196
  [S11] 🔵 REF CLIMATE READ: d_20=4600
  [S11] 🔵 REF CLIMATE READ: d_21=196
@@ -2152,50 +2152,6 @@ calculateAll @ 4011-Calculator.js:509
  [S10DISPLAY] Display (target) m_78 = 75.00
  [S10DISPLAY] Display (target) i_73 = 375.00
  [S10DISPLAY] Display (target) i_74 = 106.29
-4011-Section10.js:448 [S10DISPLAY] Display (target) i_75 = 294.68
-4011-Section10.js:448 [S10DISPLAY] Display (target) i_76 = 11,247.66
-4011-Section10.js:448 [S10DISPLAY] Display (target) i_77 = 2,603.07
-4011-Section10.js:448 [S10DISPLAY] Display (target) i_78 = 0.00
-4011-Section10.js:448 [S10DISPLAY] Display (target) i_79 = 14,626.70
-4011-Section10.js:448 [S10DISPLAY] Display (target) k_73 = 0.00
-4011-Section10.js:448 [S10DISPLAY] Display (target) k_74 = 0.00
-4011-Section10.js:448 [S10DISPLAY] Display (target) k_75 = 0.00
-4011-Section10.js:448 [S10DISPLAY] Display (target) k_76 = 0.00
-4011-Section10.js:448 [S10DISPLAY] Display (target) k_77 = 130.15
-4011-Section10.js:448 [S10DISPLAY] Display (target) k_78 = 0.00
-4011-Section10.js:448 [S10DISPLAY] Display (target) k_79 = 130.15
-4011-Section10.js:448 [S10DISPLAY] Display (target) j_73 = 2.56%
-4011-Section10.js:448 [S10DISPLAY] Display (target) j_74 = 0.73%
-4011-Section10.js:448 [S10DISPLAY] Display (target) j_75 = 2.01%
-4011-Section10.js:448 [S10DISPLAY] Display (target) j_76 = 76.90%
-4011-Section10.js:448 [S10DISPLAY] Display (target) j_77 = 17.80%
-4011-Section10.js:448 [S10DISPLAY] Display (target) j_78 = 0.00%
-4011-Section10.js:448 [S10DISPLAY] Display (target) j_79 = 100.00%
-4011-Section10.js:448 [S10DISPLAY] Display (target) l_73 = 0.00%
-4011-Section10.js:448 [S10DISPLAY] Display (target) l_74 = 0.00%
-4011-Section10.js:448 [S10DISPLAY] Display (target) l_75 = 0.00%
-4011-Section10.js:448 [S10DISPLAY] Display (target) l_76 = 0.00%
-4011-Section10.js:448 [S10DISPLAY] Display (target) l_77 = 100.00%
-4011-Section10.js:448 [S10DISPLAY] Display (target) l_78 = 0.00%
-4011-Section10.js:448 [S10DISPLAY] Display (target) l_79 = 100.00%
- [S10DISPLAY] Display (target) e_80 = 114,698.95
- [S10DISPLAY] Display (target) e_81 = 114,698.95
- [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
- [S10DISPLAY] Display (target) g_80 = 40.00%
- [S10DISPLAY] Display (target) g_81 = 95.18%
- [S10DISPLAY] Display (target) i_80 = 45,879.58
- [S10DISPLAY] Display (target) i_81 = 109,167.67
- [S10DISPLAY] Display (target) i_82 = 68,819.37
- S10: Target utilization factor dependency i_97 changed.
- [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
- [S10DISPLAY] Display (target) m_73 = 50.00
- [S10DISPLAY] Display (target) m_74 = 1.31
- [S10DISPLAY] Display (target) m_75 = 76.94
- [S10DISPLAY] Display (target) m_76 = 70.74
- [S10DISPLAY] Display (target) m_77 = 25.86
- [S10DISPLAY] Display (target) m_78 = 75.00
- [S10DISPLAY] Display (target) i_73 = 375.00
- [S10DISPLAY] Display (target) i_74 = 106.29
  [S10DISPLAY] Display (target) i_75 = 294.68
  [S10DISPLAY] Display (target) i_76 = 11,247.66
  [S10DISPLAY] Display (target) i_77 = 2,603.07
@@ -2228,6 +2184,50 @@ calculateAll @ 4011-Calculator.js:509
  [S10DISPLAY] Display (target) g_80 = 40.00%
  [S10DISPLAY] Display (target) g_81 = 95.18%
  [S10DISPLAY] Display (target) i_80 = 45,879.58
+ [S10DISPLAY] Display (target) i_81 = 109,167.67
+ [S10DISPLAY] Display (target) i_82 = 68,819.37
+ S10: Target utilization factor dependency i_97 changed.
+ [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+ [S10DISPLAY] Display (target) m_73 = 50.00
+ [S10DISPLAY] Display (target) m_74 = 1.31
+ [S10DISPLAY] Display (target) m_75 = 76.94
+ [S10DISPLAY] Display (target) m_76 = 70.74
+ [S10DISPLAY] Display (target) m_77 = 25.86
+ [S10DISPLAY] Display (target) m_78 = 75.00
+ [S10DISPLAY] Display (target) i_73 = 375.00
+ [S10DISPLAY] Display (target) i_74 = 106.29
+ [S10DISPLAY] Display (target) i_75 = 294.68
+ [S10DISPLAY] Display (target) i_76 = 11,247.66
+ [S10DISPLAY] Display (target) i_77 = 2,603.07
+ [S10DISPLAY] Display (target) i_78 = 0.00
+ [S10DISPLAY] Display (target) i_79 = 14,626.70
+ [S10DISPLAY] Display (target) k_73 = 0.00
+4011-Section10.js:448 [S10DISPLAY] Display (target) k_74 = 0.00
+4011-Section10.js:448 [S10DISPLAY] Display (target) k_75 = 0.00
+4011-Section10.js:448 [S10DISPLAY] Display (target) k_76 = 0.00
+4011-Section10.js:448 [S10DISPLAY] Display (target) k_77 = 130.15
+4011-Section10.js:448 [S10DISPLAY] Display (target) k_78 = 0.00
+4011-Section10.js:448 [S10DISPLAY] Display (target) k_79 = 130.15
+4011-Section10.js:448 [S10DISPLAY] Display (target) j_73 = 2.56%
+4011-Section10.js:448 [S10DISPLAY] Display (target) j_74 = 0.73%
+4011-Section10.js:448 [S10DISPLAY] Display (target) j_75 = 2.01%
+4011-Section10.js:448 [S10DISPLAY] Display (target) j_76 = 76.90%
+4011-Section10.js:448 [S10DISPLAY] Display (target) j_77 = 17.80%
+4011-Section10.js:448 [S10DISPLAY] Display (target) j_78 = 0.00%
+4011-Section10.js:448 [S10DISPLAY] Display (target) j_79 = 100.00%
+4011-Section10.js:448 [S10DISPLAY] Display (target) l_73 = 0.00%
+4011-Section10.js:448 [S10DISPLAY] Display (target) l_74 = 0.00%
+4011-Section10.js:448 [S10DISPLAY] Display (target) l_75 = 0.00%
+4011-Section10.js:448 [S10DISPLAY] Display (target) l_76 = 0.00%
+4011-Section10.js:448 [S10DISPLAY] Display (target) l_77 = 100.00%
+4011-Section10.js:448 [S10DISPLAY] Display (target) l_78 = 0.00%
+4011-Section10.js:448 [S10DISPLAY] Display (target) l_79 = 100.00%
+4011-Section10.js:448 [S10DISPLAY] Display (target) e_80 = 114,698.95
+4011-Section10.js:448 [S10DISPLAY] Display (target) e_81 = 114,698.95
+4011-Section10.js:415 [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+4011-Section10.js:448 [S10DISPLAY] Display (target) g_80 = 40.00%
+4011-Section10.js:448 [S10DISPLAY] Display (target) g_81 = 95.18%
+4011-Section10.js:448 [S10DISPLAY] Display (target) i_80 = 45,879.58
  [S10DISPLAY] Display (target) i_81 = 109,167.67
  [S10DISPLAY] Display (target) i_82 = 68,819.37
  [Section13] 📡 🔥 d_127 (TED) listener triggered - S14 energy demand changed!
@@ -2392,10 +2392,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -2448,10 +2448,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -2504,10 +2504,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -2560,10 +2560,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -2615,10 +2615,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -2634,9 +2634,9 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
-4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
-4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "93.42863573628563" (state: calculated)
-4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
+ [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
+ [StateManager] 🎯 h_10 setValue: "93.42863573628563" (state: calculated)
+ [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -2655,10 +2655,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -2674,23 +2674,23 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
-4011-Section13.js:3770 [Section13] Reference results stored with ref_ prefix for downstream sections
-4011-Section13.js:3773 [S13 DEBUG] Total Reference results stored: 34
-4011-Section13.js:3512 [Section13] Reference Model calculations complete
-4011-Section13.js:3400 [Section13] ✅ Reference Model complete
-4011-Section13.js:3402 [Section13] 🔄 Starting Target Model calculations...
-4011-Section13.js:721 🔍 [S13-CONTEXT] Creating target context: g_118="Volume by Schedule" from TargetState
-4011-Section13.js:725 🔍 [S13-CONTEXT] TargetState.g_118="Volume by Schedule", ReferenceState.g_118="Volume Constant"
-4011-Section13.js:3533 [Section13] Running Target Model calculations...
-4011-Section13.js:2870 [S13] TGT HEATING: system=Heatpump, ted=126064.99542741108, afue=0.98, cop=3.663540445486518
-4011-Section13.js:3096 🔍 [S13-VENT] calculateVentilationRates: ventMethod="Volume by Schedule", ach(l_118)=3, ratePerPerson(d_119)=14, volume(d_105)=8000
-4011-Section13.js:3099 🔍 [S13-VENT] isReferenceCalculation=false, hasContext=true
-4011-Section13.js:3107 🔍 [S13-VENT] calculateVentilationValues: ventMethod="Volume by Schedule", ach(l_118)=3, ratePerPerson(d_119)=14, volume(d_105)=8000
-4011-Section13.js:3110 🔍 [S13-VENT] Supporting values: occupants(d_63)=126, occupiedHours(i_63)=4380, totalHours(j_63)=8760
-4011-Section13.js:3142 ✅ [S13-VENT] Final d_120 result: 3333.333333333333 L/s (from method="Volume by Schedule", ach=3, volume=8000)
-4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
-4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "93.42863573628563" (state: calculated)
-4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
+ [Section13] Reference results stored with ref_ prefix for downstream sections
+ [S13 DEBUG] Total Reference results stored: 34
+ [Section13] Reference Model calculations complete
+ [Section13] ✅ Reference Model complete
+ [Section13] 🔄 Starting Target Model calculations...
+ 🔍 [S13-CONTEXT] Creating target context: g_118="Volume by Schedule" from TargetState
+ 🔍 [S13-CONTEXT] TargetState.g_118="Volume by Schedule", ReferenceState.g_118="Volume Constant"
+ [Section13] Running Target Model calculations...
+ [S13] TGT HEATING: system=Heatpump, ted=126064.99542741108, afue=0.98, cop=3.663540445486518
+ 🔍 [S13-VENT] calculateVentilationRates: ventMethod="Volume by Schedule", ach(l_118)=3, ratePerPerson(d_119)=14, volume(d_105)=8000
+ 🔍 [S13-VENT] isReferenceCalculation=false, hasContext=true
+ 🔍 [S13-VENT] calculateVentilationValues: ventMethod="Volume by Schedule", ach(l_118)=3, ratePerPerson(d_119)=14, volume(d_105)=8000
+ 🔍 [S13-VENT] Supporting values: occupants(d_63)=126, occupiedHours(i_63)=4380, totalHours(j_63)=8760
+ ✅ [S13-VENT] Final d_120 result: 3333.333333333333 L/s (from method="Volume by Schedule", ach=3, volume=8000)
+ [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
+ [StateManager] 🎯 h_10 setValue: "93.42863573628563" (state: calculated)
+ [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -2710,10 +2710,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -2729,9 +2729,9 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
-4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
-4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "93.42863573628563" (state: calculated)
-4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
+ [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
+ [StateManager] 🎯 h_10 setValue: "93.42863573628563" (state: calculated)
+ [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -2751,10 +2751,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -2770,9 +2770,9 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
-4011-Section10.js:2667 S10: Target listener triggered by m_121, recalculating all.
-4011-Section10.js:1819 [S10 DEBUG] calculateAll() triggered in target mode - running both engines
-4011-Section10.js:2040 [S10REF] Utilization calc: ref_i_71=110562.1692, ref_i_79=10060.174319999998, totalGains=120622.34352
+ S10: Target listener triggered by m_121, recalculating all.
+ [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+ [S10REF] Utilization calc: ref_i_71=110562.1692, ref_i_79=10060.174319999998, totalGains=120622.34352
  [S10REF] Using utilization method: NRC 40%
  [S10REF] Final calc: utilizationFactor=0.4, usableGains=48248.937408
  [S10REF] Complete: g_80=0.4, g_81=0.9966231765247549, i_80=48248.937408, i_81=120215.02315876257
@@ -2801,32 +2801,32 @@ calculateAll @ 4011-Section03.js:1696
  [S10DISPLAY] Display (target) j_73 = 2.56%
  [S10DISPLAY] Display (target) j_74 = 0.73%
  [S10DISPLAY] Display (target) j_75 = 2.01%
- [S10DISPLAY] Display (target) j_76 = 76.90%
- [S10DISPLAY] Display (target) j_77 = 17.80%
- [S10DISPLAY] Display (target) j_78 = 0.00%
- [S10DISPLAY] Display (target) j_79 = 100.00%
- [S10DISPLAY] Display (target) l_73 = 0.00%
- [S10DISPLAY] Display (target) l_74 = 0.00%
- [S10DISPLAY] Display (target) l_75 = 0.00%
- [S10DISPLAY] Display (target) l_76 = 0.00%
- [S10DISPLAY] Display (target) l_77 = 100.00%
- [S10DISPLAY] Display (target) l_78 = 0.00%
- [S10DISPLAY] Display (target) l_79 = 100.00%
- [S10DISPLAY] Display (target) e_80 = 114,698.95
- [S10DISPLAY] Display (target) e_81 = 114,698.95
- [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
- [S10DISPLAY] Display (target) g_80 = 40.00%
- [S10DISPLAY] Display (target) g_81 = 97.18%
- [S10DISPLAY] Display (target) i_80 = 45,879.58
- [S10DISPLAY] Display (target) i_81 = 111,463.23
- [S10DISPLAY] Display (target) i_82 = 68,819.37
- S10: Target utilization factor dependency m_121 changed.
- [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
- [S10DISPLAY] Display (target) m_73 = 50.00
- [S10DISPLAY] Display (target) m_74 = 1.31
- [S10DISPLAY] Display (target) m_75 = 76.94
- [S10DISPLAY] Display (target) m_76 = 70.74
- [S10DISPLAY] Display (target) m_77 = 25.86
+4011-Section10.js:448 [S10DISPLAY] Display (target) j_76 = 76.90%
+4011-Section10.js:448 [S10DISPLAY] Display (target) j_77 = 17.80%
+4011-Section10.js:448 [S10DISPLAY] Display (target) j_78 = 0.00%
+4011-Section10.js:448 [S10DISPLAY] Display (target) j_79 = 100.00%
+4011-Section10.js:448 [S10DISPLAY] Display (target) l_73 = 0.00%
+4011-Section10.js:448 [S10DISPLAY] Display (target) l_74 = 0.00%
+4011-Section10.js:448 [S10DISPLAY] Display (target) l_75 = 0.00%
+4011-Section10.js:448 [S10DISPLAY] Display (target) l_76 = 0.00%
+4011-Section10.js:448 [S10DISPLAY] Display (target) l_77 = 100.00%
+4011-Section10.js:448 [S10DISPLAY] Display (target) l_78 = 0.00%
+4011-Section10.js:448 [S10DISPLAY] Display (target) l_79 = 100.00%
+4011-Section10.js:448 [S10DISPLAY] Display (target) e_80 = 114,698.95
+4011-Section10.js:448 [S10DISPLAY] Display (target) e_81 = 114,698.95
+4011-Section10.js:415 [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+4011-Section10.js:448 [S10DISPLAY] Display (target) g_80 = 40.00%
+4011-Section10.js:448 [S10DISPLAY] Display (target) g_81 = 97.18%
+4011-Section10.js:448 [S10DISPLAY] Display (target) i_80 = 45,879.58
+4011-Section10.js:448 [S10DISPLAY] Display (target) i_81 = 111,463.23
+4011-Section10.js:448 [S10DISPLAY] Display (target) i_82 = 68,819.37
+4011-Section10.js:2688 S10: Target utilization factor dependency m_121 changed.
+4011-Section10.js:341 [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+4011-Section10.js:448 [S10DISPLAY] Display (target) m_73 = 50.00
+4011-Section10.js:448 [S10DISPLAY] Display (target) m_74 = 1.31
+4011-Section10.js:448 [S10DISPLAY] Display (target) m_75 = 76.94
+4011-Section10.js:448 [S10DISPLAY] Display (target) m_76 = 70.74
+4011-Section10.js:448 [S10DISPLAY] Display (target) m_77 = 25.86
  [S10DISPLAY] Display (target) m_78 = 75.00
  [S10DISPLAY] Display (target) i_73 = 375.00
  [S10DISPLAY] Display (target) i_74 = 106.29
@@ -2885,10 +2885,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -2925,10 +2925,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -2991,10 +2991,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -3009,10 +3009,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -3049,10 +3049,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -3067,10 +3067,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -3107,10 +3107,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -3125,10 +3125,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -3165,10 +3165,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -3183,10 +3183,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -3240,10 +3240,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -3258,10 +3258,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -3298,10 +3298,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -3316,10 +3316,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -3360,10 +3360,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -3378,10 +3378,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -3419,10 +3419,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -3437,10 +3437,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -3501,10 +3501,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -3519,10 +3519,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -3582,10 +3582,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -3600,10 +3600,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -3620,8 +3620,8 @@ calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
  [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
-4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "99.83827098587324" (state: calculated)
-4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
+ [StateManager] 🎯 h_10 setValue: "99.83827098587324" (state: calculated)
+ [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -3663,10 +3663,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -3681,10 +3681,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -3700,9 +3700,9 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
-4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
-4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "99.83827098587324" (state: calculated)
-4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
+ [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
+ [StateManager] 🎯 h_10 setValue: "99.83827098587324" (state: calculated)
+ [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -3737,10 +3737,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -3755,10 +3755,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -3774,8 +3774,8 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
-4011-Section04.js:1018 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 347966.051518286, K32: 17746.268627432586
-4011-Section04.js:1668 [S04] Reference model calculations complete
+ [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 347966.051518286, K32: 17746.268627432586
+ [S04] Reference model calculations complete
 4011-Section04.js:1674 [S04DB] storeReference: ref_j_32=347966.051518286, ref_k_32=17746.268627432586 | current target j_32=142489.1803510383, k_32=7266.948197902952
 4011-Section04.js:493 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:501 [S04DB] displayContext mode=target j_32=142489.1803510383 ref_j_32=347966.051518286 k_32=7266.948197902952 ref_k_32=17746.268627432586
@@ -3810,10 +3810,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -3828,10 +3828,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -3868,10 +3868,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -3886,10 +3886,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -3905,10 +3905,10 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
-2 [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
- [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
- [StateManager] 🎯 h_10 setValue: "99.83827098587324" (state: calculated)
- [StateManager] h_10 setValue stack trace:
+24011-Section14.js:1414 [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
+4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
+4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "99.83827098587324" (state: calculated)
+4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -3927,10 +3927,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -3945,10 +3945,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -3964,9 +3964,9 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
- [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
- [StateManager] 🎯 h_10 setValue: "99.83827098587324" (state: calculated)
- [StateManager] h_10 setValue stack trace:
+4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
+4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "99.83827098587324" (state: calculated)
+4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -3985,10 +3985,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -4003,10 +4003,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -4055,8 +4055,8 @@ calculateAll @ 4011-Section03.js:1696
  [S13 CONTAMINATION DEBUG] Writing ref_h_115 = 0
  [Section13] Reference results stored with ref_ prefix for downstream sections
  [S13 DEBUG] Total Reference results stored: 34
-4011-Section13.js:3512 [Section13] Reference Model calculations complete
-4011-Section13.js:3400 [Section13] ✅ Reference Model complete
+ [Section13] Reference Model calculations complete
+ [Section13] ✅ Reference Model complete
 4011-Section13.js:3402 [Section13] 🔄 Starting Target Model calculations...
 4011-Section13.js:721 🔍 [S13-CONTEXT] Creating target context: g_118="Volume by Schedule" from TargetState
 4011-Section13.js:725 🔍 [S13-CONTEXT] TargetState.g_118="Volume by Schedule", ReferenceState.g_118="Volume Constant"
@@ -4069,7 +4069,7 @@ calculateAll @ 4011-Section03.js:1696
 4011-Section13.js:3142 ✅ [S13-VENT] Final d_120 result: 3333.333333333333 L/s (from method="Volume by Schedule", ach=3, volume=8000)
 4011-Section13.js:2974 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=9572.242304946165
 4011-Section13.js:3036 [Section13] 🧊 COOLING RESULTS: d_117=3593.80399917213, j_116=2.663540445486518, l_116=0, l_114=5978.438305774035
-24011-Section14.js:1413 [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
+24011-Section14.js:1414 [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
 4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
 4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "99.83827098587324" (state: calculated)
 4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
@@ -4092,10 +4092,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -4110,10 +4110,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -4151,10 +4151,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -4169,10 +4169,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -4188,7 +4188,7 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
-24011-Section14.js:1413 [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
+24011-Section14.js:1414 [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
 4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
 4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "99.83827098587324" (state: calculated)
 4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
@@ -4210,10 +4210,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -4228,10 +4228,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -4248,8 +4248,8 @@ calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
 4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
- [StateManager] 🎯 h_10 setValue: "99.83827098587324" (state: calculated)
- [StateManager] h_10 setValue stack trace:
+4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "99.83827098587324" (state: calculated)
+4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -4268,10 +4268,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -4286,10 +4286,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -4334,10 +4334,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -4375,10 +4375,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -4439,10 +4439,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -4502,10 +4502,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -4565,10 +4565,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -4621,10 +4621,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -4676,10 +4676,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -4716,10 +4716,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -4826,10 +4826,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -4889,10 +4889,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -4952,10 +4952,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -4971,9 +4971,9 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
- [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
- [StateManager] 🎯 h_10 setValue: "96.23130973521098" (state: calculated)
- [StateManager] h_10 setValue stack trace:
+4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
+4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "96.23130973521098" (state: calculated)
+4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -5008,10 +5008,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -5027,24 +5027,24 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
- [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 347966.051518286, K32: 17746.268627432586
- [S04] Reference model calculations complete
- [S04DB] storeReference: ref_j_32=347966.051518286, ref_k_32=17746.268627432586 | current target j_32=137341.32525409313, k_32=7004.407587958749
- [S04] 🔄 Updating calculated display values for target mode
- [S04DB] displayContext mode=target j_32=137341.32525409313 ref_j_32=347966.051518286 k_32=7004.407587958749 ref_k_32=17746.268627432586
- [S04 DEBUG] Target mode - j_32: 137341.32525409313
- [S04 DEBUG] Target mode - k_32: 7004.407587958749
- [S04 DEBUG] Target mode - l_27: 51
- [S04] Calculated display values updated for target mode
- [S04] Dual-engine calculations completed successfully
- [S04] 🔄 Updating calculated display values for target mode
- [S04DB] displayContext mode=target j_32=137341.32525409313 ref_j_32=347966.051518286 k_32=7004.407587958749 ref_k_32=17746.268627432586
- [S04 DEBUG] Target mode - j_32: 137341.32525409313
- [S04 DEBUG] Target mode - k_32: 7004.407587958749
- [S04 DEBUG] Target mode - l_27: 51
- [S04] Calculated display values updated for target mode
- [StateManager] 🎯 h_10 setValue: "96.23130973521098" (state: calculated)
- [StateManager] h_10 setValue stack trace:
+4011-Section04.js:1018 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 347966.051518286, K32: 17746.268627432586
+4011-Section04.js:1668 [S04] Reference model calculations complete
+4011-Section04.js:1674 [S04DB] storeReference: ref_j_32=347966.051518286, ref_k_32=17746.268627432586 | current target j_32=137341.32525409313, k_32=7004.407587958749
+4011-Section04.js:493 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:501 [S04DB] displayContext mode=target j_32=137341.32525409313 ref_j_32=347966.051518286 k_32=7004.407587958749 ref_k_32=17746.268627432586
+4011-Section04.js:582 [S04 DEBUG] Target mode - j_32: 137341.32525409313
+4011-Section04.js:582 [S04 DEBUG] Target mode - k_32: 7004.407587958749
+4011-Section04.js:582 [S04 DEBUG] Target mode - l_27: 51
+4011-Section04.js:617 [S04] Calculated display values updated for target mode
+4011-Section04.js:1599 [S04] Dual-engine calculations completed successfully
+4011-Section04.js:493 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:501 [S04DB] displayContext mode=target j_32=137341.32525409313 ref_j_32=347966.051518286 k_32=7004.407587958749 ref_k_32=17746.268627432586
+4011-Section04.js:582 [S04 DEBUG] Target mode - j_32: 137341.32525409313
+4011-Section04.js:582 [S04 DEBUG] Target mode - k_32: 7004.407587958749
+4011-Section04.js:582 [S04 DEBUG] Target mode - l_27: 51
+4011-Section04.js:617 [S04] Calculated display values updated for target mode
+4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "96.23130973521098" (state: calculated)
+4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -5063,10 +5063,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -5082,9 +5082,9 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
- [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
- [StateManager] 🎯 h_10 setValue: "96.23130973521098" (state: calculated)
- [StateManager] h_10 setValue stack trace:
+4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
+4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "96.23130973521098" (state: calculated)
+4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -5103,10 +5103,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -5122,8 +5122,8 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
- [Section13] 🧊 COOLING RESULTS: d_117=5712.144102226995, j_116=2.663540445486518, l_116=0, l_114=9502.382744501881
-2 [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
+4011-Section13.js:3036 [Section13] 🧊 COOLING RESULTS: d_117=5712.144102226995, j_116=2.663540445486518, l_116=0, l_114=9502.382744501881
+24011-Section14.js:1414 [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
  [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
  [StateManager] 🎯 h_10 setValue: "96.23130973521098" (state: calculated)
  [StateManager] h_10 setValue stack trace:
@@ -5146,10 +5146,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -5187,10 +5187,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -5251,10 +5251,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -5314,10 +5314,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -5377,10 +5377,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -5433,10 +5433,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -5452,24 +5452,24 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
-4011-Section04.js:1018 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 347966.051518286, K32: 17746.268627432586
-4011-Section04.js:1668 [S04] Reference model calculations complete
-4011-Section04.js:1674 [S04DB] storeReference: ref_j_32=347966.051518286, ref_k_32=17746.268627432586 | current target j_32=144607.52045409314, k_32=7374.98354315875
-4011-Section04.js:493 [S04] 🔄 Updating calculated display values for target mode
-4011-Section04.js:501 [S04DB] displayContext mode=target j_32=144607.52045409314 ref_j_32=347966.051518286 k_32=7374.98354315875 ref_k_32=17746.268627432586
-4011-Section04.js:582 [S04 DEBUG] Target mode - j_32: 144607.52045409314
-4011-Section04.js:582 [S04 DEBUG] Target mode - k_32: 7374.98354315875
-4011-Section04.js:582 [S04 DEBUG] Target mode - l_27: 51
-4011-Section04.js:617 [S04] Calculated display values updated for target mode
-4011-Section04.js:1599 [S04] Dual-engine calculations completed successfully
-4011-Section04.js:493 [S04] 🔄 Updating calculated display values for target mode
-4011-Section04.js:501 [S04DB] displayContext mode=target j_32=144607.52045409314 ref_j_32=347966.051518286 k_32=7374.98354315875 ref_k_32=17746.268627432586
-4011-Section04.js:582 [S04 DEBUG] Target mode - j_32: 144607.52045409314
-4011-Section04.js:582 [S04 DEBUG] Target mode - k_32: 7374.98354315875
-4011-Section04.js:582 [S04 DEBUG] Target mode - l_27: 51
-4011-Section04.js:617 [S04] Calculated display values updated for target mode
-4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "101.32253395045764" (state: calculated)
-4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
+ [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 347966.051518286, K32: 17746.268627432586
+ [S04] Reference model calculations complete
+ [S04DB] storeReference: ref_j_32=347966.051518286, ref_k_32=17746.268627432586 | current target j_32=144607.52045409314, k_32=7374.98354315875
+ [S04] 🔄 Updating calculated display values for target mode
+ [S04DB] displayContext mode=target j_32=144607.52045409314 ref_j_32=347966.051518286 k_32=7374.98354315875 ref_k_32=17746.268627432586
+ [S04 DEBUG] Target mode - j_32: 144607.52045409314
+ [S04 DEBUG] Target mode - k_32: 7374.98354315875
+ [S04 DEBUG] Target mode - l_27: 51
+ [S04] Calculated display values updated for target mode
+ [S04] Dual-engine calculations completed successfully
+ [S04] 🔄 Updating calculated display values for target mode
+ [S04DB] displayContext mode=target j_32=144607.52045409314 ref_j_32=347966.051518286 k_32=7374.98354315875 ref_k_32=17746.268627432586
+ [S04 DEBUG] Target mode - j_32: 144607.52045409314
+ [S04 DEBUG] Target mode - k_32: 7374.98354315875
+ [S04 DEBUG] Target mode - l_27: 51
+ [S04] Calculated display values updated for target mode
+ [StateManager] 🎯 h_10 setValue: "101.32253395045764" (state: calculated)
+ [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -5488,10 +5488,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -5507,9 +5507,9 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
-4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
-4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "101.32253395045764" (state: calculated)
-4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
+ [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
+ [StateManager] 🎯 h_10 setValue: "101.32253395045764" (state: calculated)
+ [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -5528,10 +5528,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -5547,48 +5547,8 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
-24011-Section14.js:1413 [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
-4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
-4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "101.32253395045764" (state: calculated)
-4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
-setValue @ 4011-StateManager.js:346
-calculateValues @ 4011-Section15.js:1834
-calculateTargetModel @ 4011-Section15.js:1662
-calculateAll @ 4011-Section15.js:1328
-(anonymous) @ 4011-Section15.js:2123
-(anonymous) @ 4011-StateManager.js:543
-notifyListeners @ 4011-StateManager.js:541
-setValue @ 4011-StateManager.js:419
-setFieldValue @ 4011-Section13.js:636
-updateTargetModelDOMValues @ 4011-Section13.js:3684
-calculateTargetModel @ 4011-Section13.js:3570
-calculateAll @ 4011-Section13.js:3403
-calculateAndRefresh @ 4011-Section13.js:2368
-(anonymous) @ 4011-Section13.js:2396
-(anonymous) @ 4011-StateManager.js:543
-notifyListeners @ 4011-StateManager.js:541
-setValue @ 4011-StateManager.js:419
-setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
-calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
-(anonymous) @ 4011-StateManager.js:543
-notifyListeners @ 4011-StateManager.js:541
-setValue @ 4011-StateManager.js:419
-setValue @ 4011-Section11.js:338
-setCalculatedValue @ 4011-Section11.js:955
-calculateThermalBridgePenalty @ 4011-Section11.js:1268
-calculateTargetModel @ 4011-Section11.js:1571
-calculateAll @ 4011-Section11.js:1693
-(anonymous) @ 4011-StateManager.js:543
-notifyListeners @ 4011-StateManager.js:541
-setValue @ 4011-StateManager.js:419
-(anonymous) @ 4011-Section03.js:1720
-calculateTargetModel @ 4011-Section03.js:1717
-calculateAll @ 4011-Section03.js:1696
-(anonymous) @ 4011-Section03.js:2097
-4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
+2 [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
+ [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
  [StateManager] 🎯 h_10 setValue: "101.32253395045764" (state: calculated)
  [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
@@ -5609,10 +5569,50 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setValue @ 4011-Section11.js:338
+setCalculatedValue @ 4011-Section11.js:955
+calculateThermalBridgePenalty @ 4011-Section11.js:1268
+calculateTargetModel @ 4011-Section11.js:1571
+calculateAll @ 4011-Section11.js:1693
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+(anonymous) @ 4011-Section03.js:1720
+calculateTargetModel @ 4011-Section03.js:1717
+calculateAll @ 4011-Section03.js:1696
+(anonymous) @ 4011-Section03.js:2097
+ [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
+ [StateManager] 🎯 h_10 setValue: "101.32253395045764" (state: calculated)
+ [StateManager] h_10 setValue stack trace:
+setValue @ 4011-StateManager.js:346
+calculateValues @ 4011-Section15.js:1834
+calculateTargetModel @ 4011-Section15.js:1662
+calculateAll @ 4011-Section15.js:1328
+(anonymous) @ 4011-Section15.js:2123
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setFieldValue @ 4011-Section13.js:636
+updateTargetModelDOMValues @ 4011-Section13.js:3684
+calculateTargetModel @ 4011-Section13.js:3570
+calculateAll @ 4011-Section13.js:3403
+calculateAndRefresh @ 4011-Section13.js:2368
+(anonymous) @ 4011-Section13.js:2396
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setCalculatedValue @ 4011-Section14.js:412
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
+calculateAll @ 4011-Section14.js:944
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -5745,32 +5745,32 @@ calculateAll @ 4011-Section03.js:1696
  🔍 [S13-VENT] Supporting values: occupants(d_63)=126, occupiedHours(i_63)=4380, totalHours(j_63)=8760
  🔍 [S13-VENT] Volume Constant calculation: ventRateLs = (3.5 * 8000) / 3.6 = 7777.777777777777
  ✅ [S13-VENT] Final d_120 result: 7777.777777777777 L/s (from method="Volume Constant", ach=3.5, volume=8000)
-4011-Section13.js:2974 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="No Cooling", heatingType="Electricity", isCoolingActive=false, coolingDemand=9572.242304946165
-4011-Section13.js:3734 [S13 CONTAMINATION DEBUG] storeReferenceResults called during reference mode
-4011-Section13.js:3737 [S13 CONTAMINATION DEBUG] Reference heating system: Electricity
-4011-Section13.js:3740 [S13 CONTAMINATION DEBUG] Target heating system: Heatpump
-4011-Section13.js:3743 [S13 CONTAMINATION DEBUG] Reference h_115 (gas volume): 0
-4011-Section13.js:3746 [S13 CONTAMINATION DEBUG] Reference f_115 (oil volume): 0
-4011-Section13.js:3758 [S13 CONTAMINATION DEBUG] Writing ref_f_115 = 0
-4011-Section13.js:3758 [S13 CONTAMINATION DEBUG] Writing ref_h_115 = 0
-4011-Section13.js:3770 [Section13] Reference results stored with ref_ prefix for downstream sections
-4011-Section13.js:3773 [S13 DEBUG] Total Reference results stored: 34
-4011-Section13.js:3512 [Section13] Reference Model calculations complete
-4011-Section13.js:3400 [Section13] ✅ Reference Model complete
-4011-Section13.js:3402 [Section13] 🔄 Starting Target Model calculations...
-4011-Section13.js:721 🔍 [S13-CONTEXT] Creating target context: g_118="Volume by Schedule" from TargetState
-4011-Section13.js:725 🔍 [S13-CONTEXT] TargetState.g_118="Volume by Schedule", ReferenceState.g_118="Volume Constant"
-4011-Section13.js:3533 [Section13] Running Target Model calculations...
-4011-Section13.js:2870 [S13] TGT HEATING: system=Heatpump, ted=187152.24755613707, afue=0.98, cop=3.663540445486518
-4011-Section13.js:3096 🔍 [S13-VENT] calculateVentilationRates: ventMethod="Volume by Schedule", ach(l_118)=3, ratePerPerson(d_119)=14, volume(d_105)=8000
-4011-Section13.js:3099 🔍 [S13-VENT] isReferenceCalculation=false, hasContext=true
-4011-Section13.js:3107 🔍 [S13-VENT] calculateVentilationValues: ventMethod="Volume by Schedule", ach(l_118)=3, ratePerPerson(d_119)=14, volume(d_105)=8000
-4011-Section13.js:3110 🔍 [S13-VENT] Supporting values: occupants(d_63)=126, occupiedHours(i_63)=4380, totalHours(j_63)=8760
-4011-Section13.js:3142 ✅ [S13-VENT] Final d_120 result: 3333.333333333333 L/s (from method="Volume by Schedule", ach=3, volume=8000)
-4011-Section13.js:2974 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=9572.242304946165
-4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
-4011-Section04.js:2482 [S04] S15 target electricity changed: d_136
-4011-Section04.js:1577 [S04] Starting dual-engine Excel-compliant calculations
+ [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="No Cooling", heatingType="Electricity", isCoolingActive=false, coolingDemand=9572.242304946165
+ [S13 CONTAMINATION DEBUG] storeReferenceResults called during reference mode
+ [S13 CONTAMINATION DEBUG] Reference heating system: Electricity
+ [S13 CONTAMINATION DEBUG] Target heating system: Heatpump
+ [S13 CONTAMINATION DEBUG] Reference h_115 (gas volume): 0
+ [S13 CONTAMINATION DEBUG] Reference f_115 (oil volume): 0
+ [S13 CONTAMINATION DEBUG] Writing ref_f_115 = 0
+ [S13 CONTAMINATION DEBUG] Writing ref_h_115 = 0
+ [Section13] Reference results stored with ref_ prefix for downstream sections
+ [S13 DEBUG] Total Reference results stored: 34
+ [Section13] Reference Model calculations complete
+ [Section13] ✅ Reference Model complete
+ [Section13] 🔄 Starting Target Model calculations...
+ 🔍 [S13-CONTEXT] Creating target context: g_118="Volume by Schedule" from TargetState
+ 🔍 [S13-CONTEXT] TargetState.g_118="Volume by Schedule", ReferenceState.g_118="Volume Constant"
+ [Section13] Running Target Model calculations...
+ [S13] TGT HEATING: system=Heatpump, ted=187152.24755613707, afue=0.98, cop=3.663540445486518
+ 🔍 [S13-VENT] calculateVentilationRates: ventMethod="Volume by Schedule", ach(l_118)=3, ratePerPerson(d_119)=14, volume(d_105)=8000
+ 🔍 [S13-VENT] isReferenceCalculation=false, hasContext=true
+ 🔍 [S13-VENT] calculateVentilationValues: ventMethod="Volume by Schedule", ach(l_118)=3, ratePerPerson(d_119)=14, volume(d_105)=8000
+ 🔍 [S13-VENT] Supporting values: occupants(d_63)=126, occupiedHours(i_63)=4380, totalHours(j_63)=8760
+ ✅ [S13-VENT] Final d_120 result: 3333.333333333333 L/s (from method="Volume by Schedule", ach=3, volume=8000)
+ [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=9572.242304946165
+ [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
+ [S04] S15 target electricity changed: d_136
+ [S04] Starting dual-engine Excel-compliant calculations
  [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 142489.1803510383, K32: 7266.948197902952
  [S04] j_32 update: 142489.1803510383
  [S01] j_32 listener: 144607.52045409314 → 142489.1803510383
@@ -5813,10 +5813,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -5875,10 +5875,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -5937,10 +5937,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -5992,10 +5992,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -6046,10 +6046,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -6066,7 +6066,7 @@ calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
  [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
  [StateManager] 🎯 h_10 setValue: "99.83827098587324" (state: calculated)
- [StateManager] h_10 setValue stack trace:
+4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -6085,10 +6085,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -6103,11 +6103,11 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
- [Section13] 🧊 COOLING RESULTS: d_117=3593.80399917213, j_116=2.663540445486518, l_116=0, l_114=5978.438305774035
-2 [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
- [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
- [StateManager] 🎯 h_10 setValue: "99.83827098587324" (state: calculated)
- [StateManager] h_10 setValue stack trace:
+4011-Section13.js:3036 [Section13] 🧊 COOLING RESULTS: d_117=3593.80399917213, j_116=2.663540445486518, l_116=0, l_114=5978.438305774035
+24011-Section14.js:1414 [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
+4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
+4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "99.83827098587324" (state: calculated)
+4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -6127,10 +6127,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -6145,9 +6145,9 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
- [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
- [StateManager] 🎯 h_10 setValue: "99.83827098587324" (state: calculated)
- [StateManager] h_10 setValue stack trace:
+4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
+4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "99.83827098587324" (state: calculated)
+4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -6167,10 +6167,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -6185,17 +6185,17 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
- [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
- [S04] S15 target electricity changed: d_136
- [S04] Starting dual-engine Excel-compliant calculations
- [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 151897.36149209528, K32: 7746.765436096859
- [S04] j_32 update: 151897.36149209528
- [S01] j_32 listener: 142489.1803510383 → 151897.36149209528
- [S01] 🕐 j_32 listener timing: StateManager current j_32 = 151897.36149209528
-2 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
- [StateManager] 🎯 h_10 setValue: "106.43032615757797" (state: calculated)
- [StateManager] h_10 setValue stack trace:
+4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
+4011-Section04.js:2482 [S04] S15 target electricity changed: d_136
+4011-Section04.js:1577 [S04] Starting dual-engine Excel-compliant calculations
+4011-Section04.js:1018 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 151897.36149209528, K32: 7746.765436096859
+4011-Section04.js:94 [S04] j_32 update: 151897.36149209528
+4011-Section01.js:1270 [S01] j_32 listener: 142489.1803510383 → 151897.36149209528
+4011-Section01.js:1271 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 151897.36149209528
+24011-Section05.js:266 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
+4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "106.43032615757797" (state: calculated)
+4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -6230,10 +6230,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -6248,71 +6248,9 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
- [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
- [StateManager] 🎯 h_10 setValue: "106.43032615757797" (state: calculated)
- [StateManager] h_10 setValue stack trace:
-setValue @ 4011-StateManager.js:346
-calculateValues @ 4011-Section15.js:1834
-calculateTargetModel @ 4011-Section15.js:1662
-calculateAll @ 4011-Section15.js:1328
-(anonymous) @ 4011-Section15.js:2123
-(anonymous) @ 4011-StateManager.js:543
-notifyListeners @ 4011-StateManager.js:541
-setValue @ 4011-StateManager.js:419
-calculateValues @ 4011-Section15.js:1834
-calculateTargetModel @ 4011-Section15.js:1662
-calculateAll @ 4011-Section15.js:1328
-(anonymous) @ 4011-Section15.js:2123
-(anonymous) @ 4011-StateManager.js:543
-notifyListeners @ 4011-StateManager.js:541
-setValue @ 4011-StateManager.js:419
-setCalculatedValue @ 4011-Section04.js:96
-calculateRow32 @ 4011-Section04.js:1026
-calculateTargetModel @ 4011-Section04.js:1620
-calculateAll @ 4011-Section04.js:1586
-(anonymous) @ 4011-Section04.js:2483
-(anonymous) @ 4011-StateManager.js:543
-notifyListeners @ 4011-StateManager.js:541
-setValue @ 4011-StateManager.js:419
-setTargetValue @ 4011-Section15.js:146
-calculateValues @ 4011-Section15.js:1812
-calculateTargetModel @ 4011-Section15.js:1662
-calculateAll @ 4011-Section15.js:1328
-(anonymous) @ 4011-Section15.js:2123
-(anonymous) @ 4011-StateManager.js:543
-notifyListeners @ 4011-StateManager.js:541
-setValue @ 4011-StateManager.js:419
-setFieldValue @ 4011-Section13.js:636
-updateTargetModelDOMValues @ 4011-Section13.js:3614
-calculateTargetModel @ 4011-Section13.js:3570
-calculateAll @ 4011-Section13.js:3403
-calculateAndRefresh @ 4011-Section13.js:2368
-(anonymous) @ 4011-Section13.js:2396
-(anonymous) @ 4011-StateManager.js:543
-notifyListeners @ 4011-StateManager.js:541
-setValue @ 4011-StateManager.js:419
-setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
-calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
-(anonymous) @ 4011-StateManager.js:543
-notifyListeners @ 4011-StateManager.js:541
-setValue @ 4011-StateManager.js:419
-setValue @ 4011-Section11.js:338
-setCalculatedValue @ 4011-Section11.js:955
-calculateTargetModel @ 4011-Section11.js:1583
-calculateAll @ 4011-Section11.js:1693
-(anonymous) @ 4011-StateManager.js:543
-notifyListeners @ 4011-StateManager.js:541
-setValue @ 4011-StateManager.js:419
-(anonymous) @ 4011-Section03.js:1720
-calculateTargetModel @ 4011-Section03.js:1717
-calculateAll @ 4011-Section03.js:1696
-(anonymous) @ 4011-Section03.js:2097
- [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
- [StateManager] 🎯 h_10 setValue: "106.43032615757797" (state: calculated)
- [StateManager] h_10 setValue stack trace:
+4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
+4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "106.43032615757797" (state: calculated)
+4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -6354,10 +6292,72 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setValue @ 4011-Section11.js:338
+setCalculatedValue @ 4011-Section11.js:955
+calculateTargetModel @ 4011-Section11.js:1583
+calculateAll @ 4011-Section11.js:1693
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+(anonymous) @ 4011-Section03.js:1720
+calculateTargetModel @ 4011-Section03.js:1717
+calculateAll @ 4011-Section03.js:1696
+(anonymous) @ 4011-Section03.js:2097
+4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
+4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "106.43032615757797" (state: calculated)
+4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
+setValue @ 4011-StateManager.js:346
+calculateValues @ 4011-Section15.js:1834
+calculateTargetModel @ 4011-Section15.js:1662
+calculateAll @ 4011-Section15.js:1328
+(anonymous) @ 4011-Section15.js:2123
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+calculateValues @ 4011-Section15.js:1834
+calculateTargetModel @ 4011-Section15.js:1662
+calculateAll @ 4011-Section15.js:1328
+(anonymous) @ 4011-Section15.js:2123
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setCalculatedValue @ 4011-Section04.js:96
+calculateRow32 @ 4011-Section04.js:1026
+calculateTargetModel @ 4011-Section04.js:1620
+calculateAll @ 4011-Section04.js:1586
+(anonymous) @ 4011-Section04.js:2483
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setTargetValue @ 4011-Section15.js:146
+calculateValues @ 4011-Section15.js:1812
+calculateTargetModel @ 4011-Section15.js:1662
+calculateAll @ 4011-Section15.js:1328
+(anonymous) @ 4011-Section15.js:2123
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setFieldValue @ 4011-Section13.js:636
+updateTargetModelDOMValues @ 4011-Section13.js:3614
+calculateTargetModel @ 4011-Section13.js:3570
+calculateAll @ 4011-Section13.js:3403
+calculateAndRefresh @ 4011-Section13.js:2368
+(anonymous) @ 4011-Section13.js:2396
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setCalculatedValue @ 4011-Section14.js:412
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
+calculateAll @ 4011-Section14.js:944
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -6409,10 +6409,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -6463,10 +6463,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -6502,10 +6502,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -6542,10 +6542,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -6581,10 +6581,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -6646,7 +6646,7 @@ calculateAll @ 4011-Section03.js:1696
 4011-Section13.js:3142 ✅ [S13-VENT] Final d_120 result: 3333.333333333333 L/s (from method="Volume by Schedule", ach=3, volume=8000)
 4011-Section13.js:2974 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=9572.242304946165
 4011-Section13.js:3036 [Section13] 🧊 COOLING RESULTS: d_117=3593.80399917213, j_116=2.663540445486518, l_116=0, l_114=5978.438305774035
-24011-Section14.js:1413 [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
+24011-Section14.js:1414 [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
 4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
 4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "106.43032615757797" (state: calculated)
 4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
@@ -6669,10 +6669,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -6709,10 +6709,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -6727,7 +6727,7 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
-24011-Section14.js:1413 [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
+24011-Section14.js:1414 [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
  [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
  [StateManager] 🎯 h_10 setValue: "106.43032615757797" (state: calculated)
  [StateManager] h_10 setValue stack trace:
@@ -6749,10 +6749,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -6788,10 +6788,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -6871,32 +6871,32 @@ calculateAll @ 4011-Section03.js:1696
  🔍 [S13-VENT] calculateVentilationValues: ventMethod="Volume Constant", ach(l_118)=3.5, ratePerPerson(d_119)=8.33, volume(d_105)=8000
  🔍 [S13-VENT] Supporting values: occupants(d_63)=126, occupiedHours(i_63)=4380, totalHours(j_63)=8760
  🔍 [S13-VENT] Volume Constant calculation: ventRateLs = (3.5 * 8000) / 3.6 = 7777.777777777777
-4011-Section13.js:3142 ✅ [S13-VENT] Final d_120 result: 7777.777777777777 L/s (from method="Volume Constant", ach=3.5, volume=8000)
-4011-Section13.js:2974 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="No Cooling", heatingType="Electricity", isCoolingActive=false, coolingDemand=9572.242304946165
-4011-Section13.js:3734 [S13 CONTAMINATION DEBUG] storeReferenceResults called during reference mode
-4011-Section13.js:3737 [S13 CONTAMINATION DEBUG] Reference heating system: Electricity
-4011-Section13.js:3740 [S13 CONTAMINATION DEBUG] Target heating system: Heatpump
-4011-Section13.js:3743 [S13 CONTAMINATION DEBUG] Reference h_115 (gas volume): 0
-4011-Section13.js:3746 [S13 CONTAMINATION DEBUG] Reference f_115 (oil volume): 0
-4011-Section13.js:3758 [S13 CONTAMINATION DEBUG] Writing ref_f_115 = 0
-4011-Section13.js:3758 [S13 CONTAMINATION DEBUG] Writing ref_h_115 = 0
-4011-Section13.js:3770 [Section13] Reference results stored with ref_ prefix for downstream sections
-4011-Section13.js:3773 [S13 DEBUG] Total Reference results stored: 34
-4011-Section13.js:3512 [Section13] Reference Model calculations complete
-4011-Section13.js:3400 [Section13] ✅ Reference Model complete
-4011-Section13.js:3402 [Section13] 🔄 Starting Target Model calculations...
-4011-Section13.js:721 🔍 [S13-CONTEXT] Creating target context: g_118="Volume by Schedule" from TargetState
-4011-Section13.js:725 🔍 [S13-CONTEXT] TargetState.g_118="Volume by Schedule", ReferenceState.g_118="Volume Constant"
-4011-Section13.js:3533 [Section13] Running Target Model calculations...
-4011-Section13.js:2870 [S13] TGT HEATING: system=Heatpump, ted=187152.24755613707, afue=0.98, cop=3.663540445486518
-4011-Section13.js:3096 🔍 [S13-VENT] calculateVentilationRates: ventMethod="Volume by Schedule", ach(l_118)=3, ratePerPerson(d_119)=14, volume(d_105)=8000
-4011-Section13.js:3099 🔍 [S13-VENT] isReferenceCalculation=false, hasContext=true
-4011-Section13.js:3107 🔍 [S13-VENT] calculateVentilationValues: ventMethod="Volume by Schedule", ach(l_118)=3, ratePerPerson(d_119)=14, volume(d_105)=8000
-4011-Section13.js:3110 🔍 [S13-VENT] Supporting values: occupants(d_63)=126, occupiedHours(i_63)=4380, totalHours(j_63)=8760
-4011-Section13.js:3142 ✅ [S13-VENT] Final d_120 result: 3333.333333333333 L/s (from method="Volume by Schedule", ach=3, volume=8000)
-4011-Section13.js:2974 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=9572.242304946165
-4011-Section13.js:3036 [Section13] 🧊 COOLING RESULTS: d_117=3593.80399917213, j_116=2.663540445486518, l_116=0, l_114=5978.438305774035
-24011-Section14.js:1413 [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
+ ✅ [S13-VENT] Final d_120 result: 7777.777777777777 L/s (from method="Volume Constant", ach=3.5, volume=8000)
+ [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="No Cooling", heatingType="Electricity", isCoolingActive=false, coolingDemand=9572.242304946165
+ [S13 CONTAMINATION DEBUG] storeReferenceResults called during reference mode
+ [S13 CONTAMINATION DEBUG] Reference heating system: Electricity
+ [S13 CONTAMINATION DEBUG] Target heating system: Heatpump
+ [S13 CONTAMINATION DEBUG] Reference h_115 (gas volume): 0
+ [S13 CONTAMINATION DEBUG] Reference f_115 (oil volume): 0
+ [S13 CONTAMINATION DEBUG] Writing ref_f_115 = 0
+ [S13 CONTAMINATION DEBUG] Writing ref_h_115 = 0
+ [Section13] Reference results stored with ref_ prefix for downstream sections
+ [S13 DEBUG] Total Reference results stored: 34
+ [Section13] Reference Model calculations complete
+ [Section13] ✅ Reference Model complete
+ [Section13] 🔄 Starting Target Model calculations...
+ 🔍 [S13-CONTEXT] Creating target context: g_118="Volume by Schedule" from TargetState
+ 🔍 [S13-CONTEXT] TargetState.g_118="Volume by Schedule", ReferenceState.g_118="Volume Constant"
+ [Section13] Running Target Model calculations...
+ [S13] TGT HEATING: system=Heatpump, ted=187152.24755613707, afue=0.98, cop=3.663540445486518
+ 🔍 [S13-VENT] calculateVentilationRates: ventMethod="Volume by Schedule", ach(l_118)=3, ratePerPerson(d_119)=14, volume(d_105)=8000
+ 🔍 [S13-VENT] isReferenceCalculation=false, hasContext=true
+ 🔍 [S13-VENT] calculateVentilationValues: ventMethod="Volume by Schedule", ach(l_118)=3, ratePerPerson(d_119)=14, volume(d_105)=8000
+ 🔍 [S13-VENT] Supporting values: occupants(d_63)=126, occupiedHours(i_63)=4380, totalHours(j_63)=8760
+ ✅ [S13-VENT] Final d_120 result: 3333.333333333333 L/s (from method="Volume by Schedule", ach=3, volume=8000)
+ [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=9572.242304946165
+ [Section13] 🧊 COOLING RESULTS: d_117=3593.80399917213, j_116=2.663540445486518, l_116=0, l_114=5978.438305774035
+2 [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
  [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
  [StateManager] 🎯 h_10 setValue: "106.43032615757797" (state: calculated)
  [StateManager] h_10 setValue stack trace:
@@ -7155,15 +7155,15 @@ calculateAll @ 4011-Section03.js:1696
  [S11] 🔵 REF CLIMATE READ: d_21=196
  [S11] 🔵 REF CLIMATE READ: d_20=4600
  [S11] 🔵 REF CLIMATE READ: d_21=196
-4011-Section11.js:1132 [S11] 🔵 REF CLIMATE READ: d_20=4600
-4011-Section11.js:1136 [S11] 🔵 REF CLIMATE READ: d_21=196
-4011-Section11.js:1132 [S11] 🔵 REF CLIMATE READ: d_20=4600
-4011-Section11.js:1136 [S11] 🔵 REF CLIMATE READ: d_21=196
-4011-Section11.js:1166 [S11] 🔵 REF CLIMATE READ: d_22=1960
-4011-Section11.js:1184 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4011-Section11.js:1166 [S11] 🔵 REF CLIMATE READ: d_22=1960
-4011-Section11.js:1184 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4011-Section11.js:1256 [S11] REF TB%=50% → ref_i_97=59532.29, ref_k_97=-947.70
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_21=196
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_21=196
+ [S11] 🔵 REF CLIMATE READ: d_22=1960
+ [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] 🔵 REF CLIMATE READ: d_22=1960
+ [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=59532.29, ref_k_97=-947.70
 4011-Section11.js:1434 [S11] Writing ref penalty: ref_i_97=59532.29, ref_k_97=-947.70
 4011-Section11.js:1145 [S11] 🎯 TGT CLIMATE READ: d_20=7100
 4011-Section11.js:1149 [S11] 🎯 TGT CLIMATE READ: d_21=0
@@ -7181,12 +7181,12 @@ calculateAll @ 4011-Section03.js:1696
 4011-Section11.js:1149 [S11] 🎯 TGT CLIMATE READ: d_21=0
 4011-Section11.js:1145 [S11] 🎯 TGT CLIMATE READ: d_20=7100
 4011-Section11.js:1149 [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
- [StateManager] 🎯 h_10 setValue: "106.43032615757797" (state: calculated)
- [StateManager] h_10 setValue stack trace:
+4011-Section11.js:1145 [S11] 🎯 TGT CLIMATE READ: d_20=7100
+4011-Section11.js:1149 [S11] 🎯 TGT CLIMATE READ: d_21=0
+24011-Section11.js:1189 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
+4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "106.43032615757797" (state: calculated)
+4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -7206,9 +7206,9 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
- [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
- [StateManager] 🎯 h_10 setValue: "106.43032615757797" (state: calculated)
- [StateManager] h_10 setValue stack trace:
+4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
+4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "106.43032615757797" (state: calculated)
+4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -7239,23 +7239,23 @@ calculateAll @ 4011-Section03.js:1696
  [S13 REF DEBUG] About to calculate with heating system: Electricity
  [S13 REF DEBUG] Will S13 publish ref_d_113=Electricity?
  🔍 [S13-VENT] calculateVentilationRates: ventMethod="Volume Constant", ach(l_118)=3.5, ratePerPerson(d_119)=8.33, volume(d_105)=8000
- 🔍 [S13-VENT] isReferenceCalculation=true, hasContext=true
- 🔍 [S13-VENT] calculateVentilationValues: ventMethod="Volume Constant", ach(l_118)=3.5, ratePerPerson(d_119)=8.33, volume(d_105)=8000
- 🔍 [S13-VENT] Supporting values: occupants(d_63)=126, occupiedHours(i_63)=4380, totalHours(j_63)=8760
- 🔍 [S13-VENT] Volume Constant calculation: ventRateLs = (3.5 * 8000) / 3.6 = 7777.777777777777
- ✅ [S13-VENT] Final d_120 result: 7777.777777777777 L/s (from method="Volume Constant", ach=3.5, volume=8000)
- [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="No Cooling", heatingType="Electricity", isCoolingActive=false, coolingDemand=9572.242304946165
- [S13 CONTAMINATION DEBUG] storeReferenceResults called during reference mode
- [S13 CONTAMINATION DEBUG] Reference heating system: Electricity
- [S13 CONTAMINATION DEBUG] Target heating system: Heatpump
- [S13 CONTAMINATION DEBUG] Reference h_115 (gas volume): 0
- [S13 CONTAMINATION DEBUG] Reference f_115 (oil volume): 0
- [S13 CONTAMINATION DEBUG] Writing ref_f_115 = 0
- [S13 CONTAMINATION DEBUG] Writing ref_h_115 = 0
-2 [S14 LISTENER] 🔥 ref_d_122 changed - triggering calculateAll() + UI update
- [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
- [StateManager] 🎯 h_10 setValue: "106.43032615757797" (state: calculated)
- [StateManager] h_10 setValue stack trace:
+4011-Section13.js:3099 🔍 [S13-VENT] isReferenceCalculation=true, hasContext=true
+4011-Section13.js:3107 🔍 [S13-VENT] calculateVentilationValues: ventMethod="Volume Constant", ach(l_118)=3.5, ratePerPerson(d_119)=8.33, volume(d_105)=8000
+4011-Section13.js:3110 🔍 [S13-VENT] Supporting values: occupants(d_63)=126, occupiedHours(i_63)=4380, totalHours(j_63)=8760
+4011-Section13.js:3130 🔍 [S13-VENT] Volume Constant calculation: ventRateLs = (3.5 * 8000) / 3.6 = 7777.777777777777
+4011-Section13.js:3142 ✅ [S13-VENT] Final d_120 result: 7777.777777777777 L/s (from method="Volume Constant", ach=3.5, volume=8000)
+4011-Section13.js:2974 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="No Cooling", heatingType="Electricity", isCoolingActive=false, coolingDemand=9572.242304946165
+4011-Section13.js:3734 [S13 CONTAMINATION DEBUG] storeReferenceResults called during reference mode
+4011-Section13.js:3737 [S13 CONTAMINATION DEBUG] Reference heating system: Electricity
+4011-Section13.js:3740 [S13 CONTAMINATION DEBUG] Target heating system: Heatpump
+4011-Section13.js:3743 [S13 CONTAMINATION DEBUG] Reference h_115 (gas volume): 0
+4011-Section13.js:3746 [S13 CONTAMINATION DEBUG] Reference f_115 (oil volume): 0
+4011-Section13.js:3758 [S13 CONTAMINATION DEBUG] Writing ref_f_115 = 0
+4011-Section13.js:3758 [S13 CONTAMINATION DEBUG] Writing ref_h_115 = 0
+24011-Section14.js:1414 [S14 LISTENER] 🔥 ref_d_122 changed - triggering calculateAll() + UI update
+4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
+4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "106.43032615757797" (state: calculated)
+4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -7276,9 +7276,9 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
- [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
- [StateManager] 🎯 h_10 setValue: "106.43032615757797" (state: calculated)
- [StateManager] h_10 setValue stack trace:
+4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
+4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "106.43032615757797" (state: calculated)
+4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -7299,9 +7299,9 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
- [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
- [StateManager] 🎯 h_10 setValue: "106.43032615757797" (state: calculated)
- [StateManager] h_10 setValue stack trace:
+4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
+4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "106.43032615757797" (state: calculated)
+4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -7322,9 +7322,9 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
- [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
- [StateManager] 🎯 h_10 setValue: "106.43032615757797" (state: calculated)
- [StateManager] h_10 setValue stack trace:
+4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
+4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "106.43032615757797" (state: calculated)
+4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -7548,7 +7548,7 @@ calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
  [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
  [StateManager] 🎯 h_10 setValue: "105.4449703109955" (state: calculated)
-4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
+ [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -7592,9 +7592,9 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
-4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
-4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "105.4449703109955" (state: calculated)
-4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
+ [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
+ [StateManager] 🎯 h_10 setValue: "105.4449703109955" (state: calculated)
+ [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -7631,24 +7631,24 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
-4011-Section04.js:1018 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 347966.051518286, K32: 17746.268627432586
-4011-Section04.js:1668 [S04] Reference model calculations complete
-4011-Section04.js:1674 [S04DB] storeReference: ref_j_32=347966.051518286, ref_k_32=17746.268627432586 | current target j_32=150491.0616278528, k_32=7675.044143020492
-4011-Section04.js:493 [S04] 🔄 Updating calculated display values for target mode
-4011-Section04.js:501 [S04DB] displayContext mode=target j_32=150491.0616278528 ref_j_32=347966.051518286 k_32=7675.044143020492 ref_k_32=17746.268627432586
-4011-Section04.js:582 [S04 DEBUG] Target mode - j_32: 150491.0616278528
-4011-Section04.js:582 [S04 DEBUG] Target mode - k_32: 7675.044143020492
-4011-Section04.js:582 [S04 DEBUG] Target mode - l_27: 51
-4011-Section04.js:617 [S04] Calculated display values updated for target mode
-4011-Section04.js:1599 [S04] Dual-engine calculations completed successfully
-4011-Section04.js:493 [S04] 🔄 Updating calculated display values for target mode
-4011-Section04.js:501 [S04DB] displayContext mode=target j_32=150491.0616278528 ref_j_32=347966.051518286 k_32=7675.044143020492 ref_k_32=17746.268627432586
-4011-Section04.js:582 [S04 DEBUG] Target mode - j_32: 150491.0616278528
-4011-Section04.js:582 [S04 DEBUG] Target mode - k_32: 7675.044143020492
-4011-Section04.js:582 [S04 DEBUG] Target mode - l_27: 51
-4011-Section04.js:617 [S04] Calculated display values updated for target mode
-4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "105.4449703109955" (state: calculated)
-4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
+ [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 347966.051518286, K32: 17746.268627432586
+ [S04] Reference model calculations complete
+ [S04DB] storeReference: ref_j_32=347966.051518286, ref_k_32=17746.268627432586 | current target j_32=150491.0616278528, k_32=7675.044143020492
+ [S04] 🔄 Updating calculated display values for target mode
+ [S04DB] displayContext mode=target j_32=150491.0616278528 ref_j_32=347966.051518286 k_32=7675.044143020492 ref_k_32=17746.268627432586
+ [S04 DEBUG] Target mode - j_32: 150491.0616278528
+ [S04 DEBUG] Target mode - k_32: 7675.044143020492
+ [S04 DEBUG] Target mode - l_27: 51
+ [S04] Calculated display values updated for target mode
+ [S04] Dual-engine calculations completed successfully
+ [S04] 🔄 Updating calculated display values for target mode
+ [S04DB] displayContext mode=target j_32=150491.0616278528 ref_j_32=347966.051518286 k_32=7675.044143020492 ref_k_32=17746.268627432586
+ [S04 DEBUG] Target mode - j_32: 150491.0616278528
+ [S04 DEBUG] Target mode - k_32: 7675.044143020492
+ [S04 DEBUG] Target mode - l_27: 51
+ [S04] Calculated display values updated for target mode
+ [StateManager] 🎯 h_10 setValue: "105.4449703109955" (state: calculated)
+ [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -7669,9 +7669,9 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
-4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
-4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "105.4449703109955" (state: calculated)
-4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
+ [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
+ [StateManager] 🎯 h_10 setValue: "105.4449703109955" (state: calculated)
+ [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
 calculateTargetModel @ 4011-Section15.js:1662
@@ -7692,7 +7692,7 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
-4011-Section13.js:3036 [Section13] 🧊 COOLING RESULTS: d_117=2187.504134929625, j_116=2.663540445486518, l_116=0, l_114=3639.0016031244286
+ [Section13] 🧊 COOLING RESULTS: d_117=2187.504134929625, j_116=2.663540445486518, l_116=0, l_114=3639.0016031244286
  [Section13] Target Model calculations complete
  [Section13] ✅ Target Model complete
  [Section13] ⏭️ Skipping Reference value re-write - triggered in target mode
@@ -7757,16 +7757,16 @@ calculateAll @ 4011-Section03.js:1696
  [S13] REF HEATING: system=Electricity, ted=297371.1974742337, afue=0.9, cop=1
  [S13 REF DEBUG] About to calculate with heating system: Electricity
  [S13 REF DEBUG] Will S13 publish ref_d_113=Electricity?
- 🔍 [S13-VENT] calculateVentilationRates: ventMethod="Volume Constant", ach(l_118)=3.5, ratePerPerson(d_119)=8.33, volume(d_105)=8000
- 🔍 [S13-VENT] isReferenceCalculation=true, hasContext=true
- 🔍 [S13-VENT] calculateVentilationValues: ventMethod="Volume Constant", ach(l_118)=3.5, ratePerPerson(d_119)=8.33, volume(d_105)=8000
- 🔍 [S13-VENT] Supporting values: occupants(d_63)=126, occupiedHours(i_63)=4380, totalHours(j_63)=8760
- 🔍 [S13-VENT] Volume Constant calculation: ventRateLs = (3.5 * 8000) / 3.6 = 7777.777777777777
- ✅ [S13-VENT] Final d_120 result: 7777.777777777777 L/s (from method="Volume Constant", ach=3.5, volume=8000)
- [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="No Cooling", heatingType="Electricity", isCoolingActive=false, coolingDemand=5826.505738054053
- [S13 CONTAMINATION DEBUG] storeReferenceResults called during reference mode
- [S13 CONTAMINATION DEBUG] Reference heating system: Electricity
- [S13 CONTAMINATION DEBUG] Target heating system: Heatpump
+4011-Section13.js:3096 🔍 [S13-VENT] calculateVentilationRates: ventMethod="Volume Constant", ach(l_118)=3.5, ratePerPerson(d_119)=8.33, volume(d_105)=8000
+4011-Section13.js:3099 🔍 [S13-VENT] isReferenceCalculation=true, hasContext=true
+4011-Section13.js:3107 🔍 [S13-VENT] calculateVentilationValues: ventMethod="Volume Constant", ach(l_118)=3.5, ratePerPerson(d_119)=8.33, volume(d_105)=8000
+4011-Section13.js:3110 🔍 [S13-VENT] Supporting values: occupants(d_63)=126, occupiedHours(i_63)=4380, totalHours(j_63)=8760
+4011-Section13.js:3130 🔍 [S13-VENT] Volume Constant calculation: ventRateLs = (3.5 * 8000) / 3.6 = 7777.777777777777
+4011-Section13.js:3142 ✅ [S13-VENT] Final d_120 result: 7777.777777777777 L/s (from method="Volume Constant", ach=3.5, volume=8000)
+4011-Section13.js:2974 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="No Cooling", heatingType="Electricity", isCoolingActive=false, coolingDemand=5826.505738054053
+4011-Section13.js:3734 [S13 CONTAMINATION DEBUG] storeReferenceResults called during reference mode
+4011-Section13.js:3737 [S13 CONTAMINATION DEBUG] Reference heating system: Electricity
+4011-Section13.js:3740 [S13 CONTAMINATION DEBUG] Target heating system: Heatpump
 4011-Section13.js:3743 [S13 CONTAMINATION DEBUG] Reference h_115 (gas volume): 0
 4011-Section13.js:3746 [S13 CONTAMINATION DEBUG] Reference f_115 (oil volume): 0
 4011-Section13.js:3758 [S13 CONTAMINATION DEBUG] Writing ref_f_115 = 0
@@ -7783,16 +7783,16 @@ calculateAll @ 4011-Section03.js:1696
 4011-Section13.js:3096 🔍 [S13-VENT] calculateVentilationRates: ventMethod="Volume by Schedule", ach(l_118)=3, ratePerPerson(d_119)=14, volume(d_105)=8000
 4011-Section13.js:3099 🔍 [S13-VENT] isReferenceCalculation=false, hasContext=true
 4011-Section13.js:3107 🔍 [S13-VENT] calculateVentilationValues: ventMethod="Volume by Schedule", ach(l_118)=3, ratePerPerson(d_119)=14, volume(d_105)=8000
-4011-Section13.js:3110 🔍 [S13-VENT] Supporting values: occupants(d_63)=126, occupiedHours(i_63)=4380, totalHours(j_63)=8760
-4011-Section13.js:3142 ✅ [S13-VENT] Final d_120 result: 3333.333333333333 L/s (from method="Volume by Schedule", ach=3, volume=8000)
-4011-Section13.js:2974 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=5826.505738054053
-4011-Section13.js:3036 [Section13] 🧊 COOLING RESULTS: d_117=2187.504134929625, j_116=2.663540445486518, l_116=0, l_114=3639.0016031244286
-4011-Section13.js:3588 [Section13] Target Model calculations complete
-4011-Section13.js:3404 [Section13] ✅ Target Model complete
-4011-Section13.js:3431 [Section13] ⏭️ Skipping Reference value re-write - triggered in target mode
-4011-Section13.js:3437 [Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE
-4011-Section13.js:252 [Section13] 🔄 Updating calculated display values for target mode
-4011-Section13.js:336 [Section13] Calculated display values updated for target mode
+ 🔍 [S13-VENT] Supporting values: occupants(d_63)=126, occupiedHours(i_63)=4380, totalHours(j_63)=8760
+ ✅ [S13-VENT] Final d_120 result: 3333.333333333333 L/s (from method="Volume by Schedule", ach=3, volume=8000)
+ [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=5826.505738054053
+ [Section13] 🧊 COOLING RESULTS: d_117=2187.504134929625, j_116=2.663540445486518, l_116=0, l_114=3639.0016031244286
+ [Section13] Target Model calculations complete
+ [Section13] ✅ Target Model complete
+ [Section13] ⏭️ Skipping Reference value re-write - triggered in target mode
+ [Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE
+ [Section13] 🔄 Updating calculated display values for target mode
+ [Section13] Calculated display values updated for target mode
  [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
  [StateManager] 🎯 h_10 setValue: "105.4449703109955" (state: calculated)
  [StateManager] h_10 setValue stack trace:
@@ -7925,10 +7925,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -7988,10 +7988,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -8051,10 +8051,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -8107,10 +8107,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -8162,10 +8162,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -8202,10 +8202,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -8312,10 +8312,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -8375,10 +8375,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -8395,7 +8395,7 @@ calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
  [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-24, d_24=30, h_24=24
-4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "105.80201607309101" (state: calculated)
+ [StateManager] 🎯 h_10 setValue: "105.80201607309101" (state: calculated)
 4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
 setValue @ 4011-StateManager.js:346
 calculateValues @ 4011-Section15.js:1834
@@ -8438,10 +8438,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -8494,10 +8494,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -8549,10 +8549,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -8589,10 +8589,10 @@ calculateAndRefresh @ 4011-Section13.js:2368
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
 setCalculatedValue @ 4011-Section14.js:412
-calculateValues @ 4011-Section14.js:1162
-calculateTargetModel @ 4011-Section14.js:1120
+calculateValues @ 4011-Section14.js:1163
+calculateTargetModel @ 4011-Section14.js:1121
 calculateAll @ 4011-Section14.js:944
-(anonymous) @ 4011-Section14.js:1417
+(anonymous) @ 4011-Section14.js:1418
 (anonymous) @ 4011-StateManager.js:543
 notifyListeners @ 4011-StateManager.js:541
 setValue @ 4011-StateManager.js:419
@@ -8608,7 +8608,7 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
- [Section13] 🧊 COOLING RESULTS: d_117=2260.272254643532, j_116=2.663540445486518, l_116=0, l_114=3760.0543134105183
+4011-Section13.js:3036 [Section13] 🧊 COOLING RESULTS: d_117=2260.272254643532, j_116=2.663540445486518, l_116=0, l_114=3760.0543134105183
  [Section13] Target Model calculations complete
  [Section13] ✅ Target Model complete
  [Section13] ⏭️ Skipping Reference value re-write - triggered in target mode
@@ -8811,291 +8811,157 @@ setValue @ 4011-StateManager.js:419
 calculateTargetModel @ 4011-Section03.js:1717
 calculateAll @ 4011-Section03.js:1696
 (anonymous) @ 4011-Section03.js:2097
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-37, d_24=28, h_24=24
- [StateManager] 🎯 h_10 setValue: "105.80201607309101" (state: calculated)
- [StateManager] h_10 setValue stack trace:
-setValue @ 4011-StateManager.js:346
-calculateValues @ 4011-Section15.js:1834
-calculateTargetModel @ 4011-Section15.js:1662
-calculateAll @ 4011-Section15.js:1328
-(anonymous) @ 4011-Section15.js:2123
-(anonymous) @ 4011-StateManager.js:543
-notifyListeners @ 4011-StateManager.js:541
-setValue @ 4011-StateManager.js:419
-setValue @ 4011-Section03.js:217
-setFieldValue @ 4011-Section03.js:453
-calculateHeatingSetpoint @ 4011-Section03.js:1846
-calculateReferenceModel @ 4011-Section03.js:1755
-calculateAll @ 4011-Section03.js:1697
-(anonymous) @ 4011-Section03.js:2097
- [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-37, d_24=28, h_24=24
- [StateManager] 🎯 h_10 setValue: "105.80201607309101" (state: calculated)
- [StateManager] h_10 setValue stack trace:
-setValue @ 4011-StateManager.js:346
-calculateValues @ 4011-Section15.js:1834
-calculateTargetModel @ 4011-Section15.js:1662
-calculateAll @ 4011-Section15.js:1328
-(anonymous) @ 4011-Section15.js:2123
-(anonymous) @ 4011-StateManager.js:543
-notifyListeners @ 4011-StateManager.js:541
-setValue @ 4011-StateManager.js:419
-setValue @ 4011-Section03.js:217
-setFieldValue @ 4011-Section03.js:453
-calculateHeatingSetpoint @ 4011-Section03.js:1846
-calculateReferenceModel @ 4011-Section03.js:1755
-calculateAll @ 4011-Section03.js:1697
-(anonymous) @ 4011-Section03.js:2097
- [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-37, d_24=28, h_24=24
- [StateManager] 🎯 h_10 setValue: "105.80201607309101" (state: calculated)
- [StateManager] h_10 setValue stack trace:
-setValue @ 4011-StateManager.js:346
-calculateValues @ 4011-Section15.js:1834
-calculateTargetModel @ 4011-Section15.js:1662
-calculateAll @ 4011-Section15.js:1328
-(anonymous) @ 4011-Section15.js:2123
-(anonymous) @ 4011-StateManager.js:543
-notifyListeners @ 4011-StateManager.js:541
-setValue @ 4011-StateManager.js:419
-setValue @ 4011-Section03.js:217
-setFieldValue @ 4011-Section03.js:453
-calculateHeatingSetpoint @ 4011-Section03.js:1846
-calculateReferenceModel @ 4011-Section03.js:1755
-calculateAll @ 4011-Section03.js:1697
-(anonymous) @ 4011-Section03.js:2097
- [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-37, d_24=28, h_24=24
- [StateManager] 🎯 h_10 setValue: "105.80201607309101" (state: calculated)
- [StateManager] h_10 setValue stack trace:
-setValue @ 4011-StateManager.js:346
-calculateValues @ 4011-Section15.js:1834
-calculateTargetModel @ 4011-Section15.js:1662
-calculateAll @ 4011-Section15.js:1328
-(anonymous) @ 4011-Section15.js:2123
-(anonymous) @ 4011-StateManager.js:543
-notifyListeners @ 4011-StateManager.js:541
-setValue @ 4011-StateManager.js:419
-setValue @ 4011-Section03.js:217
-setFieldValue @ 4011-Section03.js:453
-calculateHeatingSetpoint @ 4011-Section03.js:1846
-calculateReferenceModel @ 4011-Section03.js:1755
-calculateAll @ 4011-Section03.js:1697
-(anonymous) @ 4011-Section03.js:2097
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-37, d_24=28, h_24=24
- [StateManager] 🎯 h_10 setValue: "105.80201607309101" (state: calculated)
- [StateManager] h_10 setValue stack trace:
-setValue @ 4011-StateManager.js:346
-calculateValues @ 4011-Section15.js:1834
-calculateTargetModel @ 4011-Section15.js:1662
-calculateAll @ 4011-Section15.js:1328
-(anonymous) @ 4011-Section15.js:2123
-(anonymous) @ 4011-StateManager.js:543
-notifyListeners @ 4011-StateManager.js:541
-setValue @ 4011-StateManager.js:419
-setValue @ 4011-Section03.js:217
-setFieldValue @ 4011-Section03.js:453
-calculateCoolingSetpoint_h24 @ 4011-Section03.js:1858
-calculateReferenceModel @ 4011-Section03.js:1756
-calculateAll @ 4011-Section03.js:1697
-(anonymous) @ 4011-Section03.js:2097
- [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-37, d_24=28, h_24=24
- [StateManager] 🎯 h_10 setValue: "105.80201607309101" (state: calculated)
- [StateManager] h_10 setValue stack trace:
-setValue @ 4011-StateManager.js:346
-calculateValues @ 4011-Section15.js:1834
-calculateTargetModel @ 4011-Section15.js:1662
-calculateAll @ 4011-Section15.js:1328
-(anonymous) @ 4011-Section15.js:2123
-(anonymous) @ 4011-StateManager.js:543
-notifyListeners @ 4011-StateManager.js:541
-setValue @ 4011-StateManager.js:419
-setValue @ 4011-Section03.js:217
-setFieldValue @ 4011-Section03.js:453
-calculateCoolingSetpoint_h24 @ 4011-Section03.js:1858
-calculateReferenceModel @ 4011-Section03.js:1756
-calculateAll @ 4011-Section03.js:1697
-(anonymous) @ 4011-Section03.js:2097
- [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-37, d_24=28, h_24=24
- [StateManager] 🎯 h_10 setValue: "105.80201607309101" (state: calculated)
- [StateManager] h_10 setValue stack trace:
-setValue @ 4011-StateManager.js:346
-calculateValues @ 4011-Section15.js:1834
-calculateTargetModel @ 4011-Section15.js:1662
-calculateAll @ 4011-Section15.js:1328
-(anonymous) @ 4011-Section15.js:2123
-(anonymous) @ 4011-StateManager.js:543
-notifyListeners @ 4011-StateManager.js:541
-setValue @ 4011-StateManager.js:419
-setValue @ 4011-Section03.js:217
-setFieldValue @ 4011-Section03.js:453
-calculateCoolingSetpoint_h24 @ 4011-Section03.js:1858
-calculateReferenceModel @ 4011-Section03.js:1756
-calculateAll @ 4011-Section03.js:1697
-(anonymous) @ 4011-Section03.js:2097
- [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-37, d_24=28, h_24=24
- [StateManager] 🎯 h_10 setValue: "105.80201607309101" (state: calculated)
- [StateManager] h_10 setValue stack trace:
-setValue @ 4011-StateManager.js:346
-calculateValues @ 4011-Section15.js:1834
-calculateTargetModel @ 4011-Section15.js:1662
-calculateAll @ 4011-Section15.js:1328
-(anonymous) @ 4011-Section15.js:2123
-(anonymous) @ 4011-StateManager.js:543
-notifyListeners @ 4011-StateManager.js:541
-setValue @ 4011-StateManager.js:419
-setValue @ 4011-Section03.js:217
-setFieldValue @ 4011-Section03.js:453
-calculateCoolingSetpoint_h24 @ 4011-Section03.js:1858
-calculateReferenceModel @ 4011-Section03.js:1756
-calculateAll @ 4011-Section03.js:1697
-(anonymous) @ 4011-Section03.js:2097
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [S11] calculateAll TRIGGERED. isReferenceMode: false
- [S11] 🔵 REF CLIMATE READ: d_20=4600
- [S11] 🔵 REF CLIMATE READ: d_21=196
- [S11] 🔵 REF CLIMATE READ: d_20=4600
- [S11] 🔵 REF CLIMATE READ: d_21=196
- [S11] 🔵 REF CLIMATE READ: d_20=4600
- [S11] 🔵 REF CLIMATE READ: d_21=196
- [S11] 🔵 REF CLIMATE READ: d_20=4600
- [S11] 🔵 REF CLIMATE READ: d_21=196
- [S11] 🔵 REF CLIMATE READ: d_20=4600
- [S11] 🔵 REF CLIMATE READ: d_21=196
- [S11] 🔵 REF CLIMATE READ: d_20=4600
- [S11] 🔵 REF CLIMATE READ: d_21=196
- [S11] 🔵 REF CLIMATE READ: d_20=4600
- [S11] 🔵 REF CLIMATE READ: d_21=196
- [S11] 🔵 REF CLIMATE READ: d_20=4600
- [S11] 🔵 REF CLIMATE READ: d_21=196
- [S11] 🔵 REF CLIMATE READ: d_20=4600
- [S11] 🔵 REF CLIMATE READ: d_21=196
- [S11] 🔵 REF CLIMATE READ: d_22=1960
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] 🔵 REF CLIMATE READ: d_22=1960
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=59532.29, ref_k_97=-947.70
- [S11] Writing ref penalty: ref_i_97=59532.29, ref_k_97=-947.70
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] calculateAll TRIGGERED. isReferenceMode: false
- [S11] 🔵 REF CLIMATE READ: d_20=4600
- [S11] 🔵 REF CLIMATE READ: d_21=196
- [S11] 🔵 REF CLIMATE READ: d_20=4600
- [S11] 🔵 REF CLIMATE READ: d_21=196
- [S11] 🔵 REF CLIMATE READ: d_20=4600
- [S11] 🔵 REF CLIMATE READ: d_21=196
- [S11] 🔵 REF CLIMATE READ: d_20=4600
- [S11] 🔵 REF CLIMATE READ: d_21=196
- [S11] 🔵 REF CLIMATE READ: d_20=4600
- [S11] 🔵 REF CLIMATE READ: d_21=196
- [S11] 🔵 REF CLIMATE READ: d_20=4600
- [S11] 🔵 REF CLIMATE READ: d_21=196
- [S11] 🔵 REF CLIMATE READ: d_20=4600
- [S11] 🔵 REF CLIMATE READ: d_21=196
- [S11] 🔵 REF CLIMATE READ: d_20=4600
- [S11] 🔵 REF CLIMATE READ: d_21=196
- [S11] 🔵 REF CLIMATE READ: d_20=4600
- [S11] 🔵 REF CLIMATE READ: d_21=196
- [S11] 🔵 REF CLIMATE READ: d_22=1960
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] 🔵 REF CLIMATE READ: d_22=1960
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=59532.29, ref_k_97=-947.70
- [S11] Writing ref penalty: ref_i_97=59532.29, ref_k_97=-947.70
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S13DEBUG] Reference GF HDD changed: ref_d_22=1960 → triggering Reference calculations
- [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
- [Section13] 🎯 Mode captured at calculation start: target
- [Section13] 🔄 Starting Reference Model calculations...
- 🔍 [S13-CONTEXT] Creating reference context: g_118="Volume Constant" from ReferenceState
- 🔍 [S13-CONTEXT] ReferenceState.g_118="Volume Constant", TargetState.g_118="Volume by Schedule"
- [Section13] Running Reference Model calculations...
- [S13 CONTAMINATION DEBUG] calculateReferenceModel: Using system type = Electricity
- [S13] REF HEATING: system=Electricity, ted=297371.1974742337, afue=0.9, cop=1
- [S13 REF DEBUG] About to calculate with heating system: Electricity
- [S13 REF DEBUG] Will S13 publish ref_d_113=Electricity?
- 🔍 [S13-VENT] calculateVentilationRates: ventMethod="Volume Constant", ach(l_118)=3.5, ratePerPerson(d_119)=8.33, volume(d_105)=8000
- 🔍 [S13-VENT] isReferenceCalculation=true, hasContext=true
- 🔍 [S13-VENT] calculateVentilationValues: ventMethod="Volume Constant", ach(l_118)=3.5, ratePerPerson(d_119)=8.33, volume(d_105)=8000
- 🔍 [S13-VENT] Supporting values: occupants(d_63)=126, occupiedHours(i_63)=4380, totalHours(j_63)=8760
- 🔍 [S13-VENT] Volume Constant calculation: ventRateLs = (3.5 * 8000) / 3.6 = 7777.777777777777
- ✅ [S13-VENT] Final d_120 result: 7777.777777777777 L/s (from method="Volume Constant", ach=3.5, volume=8000)
- [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="No Cooling", heatingType="Electricity", isCoolingActive=false, coolingDemand=6020.32656805405
- [S13 CONTAMINATION DEBUG] storeReferenceResults called during reference mode
- [S13 CONTAMINATION DEBUG] Reference heating system: Electricity
-4011-Section13.js:3740 [S13 CONTAMINATION DEBUG] Target heating system: Heatpump
-4011-Section13.js:3743 [S13 CONTAMINATION DEBUG] Reference h_115 (gas volume): 0
-4011-Section13.js:3746 [S13 CONTAMINATION DEBUG] Reference f_115 (oil volume): 0
-4011-Section13.js:3758 [S13 CONTAMINATION DEBUG] Writing ref_f_115 = 0
-4011-Section13.js:3758 [S13 CONTAMINATION DEBUG] Writing ref_h_115 = 0
-4011-Section13.js:3770 [Section13] Reference results stored with ref_ prefix for downstream sections
-4011-Section13.js:3773 [S13 DEBUG] Total Reference results stored: 34
-4011-Section13.js:3512 [Section13] Reference Model calculations complete
-4011-Section13.js:3400 [Section13] ✅ Reference Model complete
-4011-Section13.js:3402 [Section13] 🔄 Starting Target Model calculations...
-4011-Section13.js:721 🔍 [S13-CONTEXT] Creating target context: g_118="Volume by Schedule" from TargetState
-4011-Section13.js:725 🔍 [S13-CONTEXT] TargetState.g_118="Volume by Schedule", ReferenceState.g_118="Volume Constant"
-4011-Section13.js:3533 [Section13] Running Target Model calculations...
-4011-Section13.js:2870 [S13] TGT HEATING: system=Heatpump, ted=188752.50983613706, afue=0.98, cop=3.663540445486518
-4011-Section13.js:3096 🔍 [S13-VENT] calculateVentilationRates: ventMethod="Volume by Schedule", ach(l_118)=3, ratePerPerson(d_119)=14, volume(d_105)=8000
-4011-Section13.js:3099 🔍 [S13-VENT] isReferenceCalculation=false, hasContext=true
-4011-Section13.js:3107 🔍 [S13-VENT] calculateVentilationValues: ventMethod="Volume by Schedule", ach(l_118)=3, ratePerPerson(d_119)=14, volume(d_105)=8000
-4011-Section13.js:3110 🔍 [S13-VENT] Supporting values: occupants(d_63)=126, occupiedHours(i_63)=4380, totalHours(j_63)=8760
-4011-Section13.js:3142 ✅ [S13-VENT] Final d_120 result: 3333.333333333333 L/s (from method="Volume by Schedule", ach=3, volume=8000)
-4011-Section13.js:2974 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=6020.32656805405
-4011-Section13.js:3036 [Section13] 🧊 COOLING RESULTS: d_117=2260.272254643532, j_116=2.663540445486518, l_116=0, l_114=3760.0543134105183
-4011-Section13.js:3588 [Section13] Target Model calculations complete
-4011-Section13.js:3404 [Section13] ✅ Target Model complete
-4011-Section13.js:3431 [Section13] ⏭️ Skipping Reference value re-write - triggered in target mode
-4011-Section13.js:3437 [Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE
 4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-37, d_24=28, h_24=24
+4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "105.80201607309101" (state: calculated)
+4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
+setValue @ 4011-StateManager.js:346
+calculateValues @ 4011-Section15.js:1834
+calculateTargetModel @ 4011-Section15.js:1662
+calculateAll @ 4011-Section15.js:1328
+(anonymous) @ 4011-Section15.js:2123
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setValue @ 4011-Section03.js:217
+setFieldValue @ 4011-Section03.js:453
+calculateHeatingSetpoint @ 4011-Section03.js:1846
+calculateReferenceModel @ 4011-Section03.js:1755
+calculateAll @ 4011-Section03.js:1697
+(anonymous) @ 4011-Section03.js:2097
+4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-37, d_24=28, h_24=24
+4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "105.80201607309101" (state: calculated)
+4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
+setValue @ 4011-StateManager.js:346
+calculateValues @ 4011-Section15.js:1834
+calculateTargetModel @ 4011-Section15.js:1662
+calculateAll @ 4011-Section15.js:1328
+(anonymous) @ 4011-Section15.js:2123
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setValue @ 4011-Section03.js:217
+setFieldValue @ 4011-Section03.js:453
+calculateHeatingSetpoint @ 4011-Section03.js:1846
+calculateReferenceModel @ 4011-Section03.js:1755
+calculateAll @ 4011-Section03.js:1697
+(anonymous) @ 4011-Section03.js:2097
+4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-37, d_24=28, h_24=24
+4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "105.80201607309101" (state: calculated)
+4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
+setValue @ 4011-StateManager.js:346
+calculateValues @ 4011-Section15.js:1834
+calculateTargetModel @ 4011-Section15.js:1662
+calculateAll @ 4011-Section15.js:1328
+(anonymous) @ 4011-Section15.js:2123
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setValue @ 4011-Section03.js:217
+setFieldValue @ 4011-Section03.js:453
+calculateHeatingSetpoint @ 4011-Section03.js:1846
+calculateReferenceModel @ 4011-Section03.js:1755
+calculateAll @ 4011-Section03.js:1697
+(anonymous) @ 4011-Section03.js:2097
+4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-37, d_24=28, h_24=24
+4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "105.80201607309101" (state: calculated)
+4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
+setValue @ 4011-StateManager.js:346
+calculateValues @ 4011-Section15.js:1834
+calculateTargetModel @ 4011-Section15.js:1662
+calculateAll @ 4011-Section15.js:1328
+(anonymous) @ 4011-Section15.js:2123
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setValue @ 4011-Section03.js:217
+setFieldValue @ 4011-Section03.js:453
+calculateHeatingSetpoint @ 4011-Section03.js:1846
+calculateReferenceModel @ 4011-Section03.js:1755
+calculateAll @ 4011-Section03.js:1697
+(anonymous) @ 4011-Section03.js:2097
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Section15.js:1750 [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-37, d_24=28, h_24=24
+4011-StateManager.js:343 [StateManager] 🎯 h_10 setValue: "105.80201607309101" (state: calculated)
+4011-StateManager.js:346 [StateManager] h_10 setValue stack trace:
+setValue @ 4011-StateManager.js:346
+calculateValues @ 4011-Section15.js:1834
+calculateTargetModel @ 4011-Section15.js:1662
+calculateAll @ 4011-Section15.js:1328
+(anonymous) @ 4011-Section15.js:2123
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setValue @ 4011-Section03.js:217
+setFieldValue @ 4011-Section03.js:453
+calculateCoolingSetpoint_h24 @ 4011-Section03.js:1858
+calculateReferenceModel @ 4011-Section03.js:1756
+calculateAll @ 4011-Section03.js:1697
+(anonymous) @ 4011-Section03.js:2097
+ [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-37, d_24=28, h_24=24
+ [StateManager] 🎯 h_10 setValue: "105.80201607309101" (state: calculated)
+ [StateManager] h_10 setValue stack trace:
+setValue @ 4011-StateManager.js:346
+calculateValues @ 4011-Section15.js:1834
+calculateTargetModel @ 4011-Section15.js:1662
+calculateAll @ 4011-Section15.js:1328
+(anonymous) @ 4011-Section15.js:2123
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setValue @ 4011-Section03.js:217
+setFieldValue @ 4011-Section03.js:453
+calculateCoolingSetpoint_h24 @ 4011-Section03.js:1858
+calculateReferenceModel @ 4011-Section03.js:1756
+calculateAll @ 4011-Section03.js:1697
+(anonymous) @ 4011-Section03.js:2097
+ [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-37, d_24=28, h_24=24
+ [StateManager] 🎯 h_10 setValue: "105.80201607309101" (state: calculated)
+ [StateManager] h_10 setValue stack trace:
+setValue @ 4011-StateManager.js:346
+calculateValues @ 4011-Section15.js:1834
+calculateTargetModel @ 4011-Section15.js:1662
+calculateAll @ 4011-Section15.js:1328
+(anonymous) @ 4011-Section15.js:2123
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setValue @ 4011-Section03.js:217
+setFieldValue @ 4011-Section03.js:453
+calculateCoolingSetpoint_h24 @ 4011-Section03.js:1858
+calculateReferenceModel @ 4011-Section03.js:1756
+calculateAll @ 4011-Section03.js:1697
+(anonymous) @ 4011-Section03.js:2097
+ [S15] 🎯 TGT S03 CLIMATE READ: h_23=18, d_23=-37, d_24=28, h_24=24
+ [StateManager] 🎯 h_10 setValue: "105.80201607309101" (state: calculated)
+ [StateManager] h_10 setValue stack trace:
+setValue @ 4011-StateManager.js:346
+calculateValues @ 4011-Section15.js:1834
+calculateTargetModel @ 4011-Section15.js:1662
+calculateAll @ 4011-Section15.js:1328
+(anonymous) @ 4011-Section15.js:2123
+(anonymous) @ 4011-StateManager.js:543
+notifyListeners @ 4011-StateManager.js:541
+setValue @ 4011-StateManager.js:419
+setValue @ 4011-Section03.js:217
+setFieldValue @ 4011-Section03.js:453
+calculateCoolingSetpoint_h24 @ 4011-Section03.js:1858
+calculateReferenceModel @ 4011-Section03.js:1756
+calculateAll @ 4011-Section03.js:1697
+(anonymous) @ 4011-Section03.js:2097
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
  [S11] calculateAll TRIGGERED. isReferenceMode: false
  [S11] 🔵 REF CLIMATE READ: d_20=4600
  [S11] 🔵 REF CLIMATE READ: d_21=196
@@ -9153,11 +9019,145 @@ calculateAll @ 4011-Section03.js:1697
  [S11] 🔵 REF CLIMATE READ: d_21=196
  [S11] 🔵 REF CLIMATE READ: d_20=4600
  [S11] 🔵 REF CLIMATE READ: d_21=196
-4011-Section11.js:1132 [S11] 🔵 REF CLIMATE READ: d_20=4600
-4011-Section11.js:1136 [S11] 🔵 REF CLIMATE READ: d_21=196
-4011-Section11.js:1132 [S11] 🔵 REF CLIMATE READ: d_20=4600
-4011-Section11.js:1136 [S11] 🔵 REF CLIMATE READ: d_21=196
-4011-Section11.js:1132 [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_21=196
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_21=196
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_21=196
+ [S11] 🔵 REF CLIMATE READ: d_22=1960
+ [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] 🔵 REF CLIMATE READ: d_22=1960
+ [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=59532.29, ref_k_97=-947.70
+ [S11] Writing ref penalty: ref_i_97=59532.29, ref_k_97=-947.70
+ [S11] 🎯 TGT CLIMATE READ: d_20=7100
+ [S11] 🎯 TGT CLIMATE READ: d_21=0
+ [S11] 🎯 TGT CLIMATE READ: d_20=7100
+ [S11] 🎯 TGT CLIMATE READ: d_21=0
+ [S11] 🎯 TGT CLIMATE READ: d_20=7100
+ [S11] 🎯 TGT CLIMATE READ: d_21=0
+ [S11] 🎯 TGT CLIMATE READ: d_20=7100
+ [S11] 🎯 TGT CLIMATE READ: d_21=0
+ [S11] 🎯 TGT CLIMATE READ: d_20=7100
+ [S11] 🎯 TGT CLIMATE READ: d_21=0
+ [S11] 🎯 TGT CLIMATE READ: d_20=7100
+ [S11] 🎯 TGT CLIMATE READ: d_21=0
+ [S11] 🎯 TGT CLIMATE READ: d_20=7100
+ [S11] 🎯 TGT CLIMATE READ: d_21=0
+ [S11] 🎯 TGT CLIMATE READ: d_20=7100
+ [S11] 🎯 TGT CLIMATE READ: d_21=0
+ [S11] 🎯 TGT CLIMATE READ: d_20=7100
+ [S11] 🎯 TGT CLIMATE READ: d_21=0
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S13DEBUG] Reference GF HDD changed: ref_d_22=1960 → triggering Reference calculations
+ [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
+ [Section13] 🎯 Mode captured at calculation start: target
+ [Section13] 🔄 Starting Reference Model calculations...
+ 🔍 [S13-CONTEXT] Creating reference context: g_118="Volume Constant" from ReferenceState
+ 🔍 [S13-CONTEXT] ReferenceState.g_118="Volume Constant", TargetState.g_118="Volume by Schedule"
+ [Section13] Running Reference Model calculations...
+ [S13 CONTAMINATION DEBUG] calculateReferenceModel: Using system type = Electricity
+ [S13] REF HEATING: system=Electricity, ted=297371.1974742337, afue=0.9, cop=1
+ [S13 REF DEBUG] About to calculate with heating system: Electricity
+ [S13 REF DEBUG] Will S13 publish ref_d_113=Electricity?
+ 🔍 [S13-VENT] calculateVentilationRates: ventMethod="Volume Constant", ach(l_118)=3.5, ratePerPerson(d_119)=8.33, volume(d_105)=8000
+ 🔍 [S13-VENT] isReferenceCalculation=true, hasContext=true
+ 🔍 [S13-VENT] calculateVentilationValues: ventMethod="Volume Constant", ach(l_118)=3.5, ratePerPerson(d_119)=8.33, volume(d_105)=8000
+ 🔍 [S13-VENT] Supporting values: occupants(d_63)=126, occupiedHours(i_63)=4380, totalHours(j_63)=8760
+ 🔍 [S13-VENT] Volume Constant calculation: ventRateLs = (3.5 * 8000) / 3.6 = 7777.777777777777
+ ✅ [S13-VENT] Final d_120 result: 7777.777777777777 L/s (from method="Volume Constant", ach=3.5, volume=8000)
+ [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="No Cooling", heatingType="Electricity", isCoolingActive=false, coolingDemand=6020.32656805405
+ [S13 CONTAMINATION DEBUG] storeReferenceResults called during reference mode
+ [S13 CONTAMINATION DEBUG] Reference heating system: Electricity
+ [S13 CONTAMINATION DEBUG] Target heating system: Heatpump
+ [S13 CONTAMINATION DEBUG] Reference h_115 (gas volume): 0
+ [S13 CONTAMINATION DEBUG] Reference f_115 (oil volume): 0
+ [S13 CONTAMINATION DEBUG] Writing ref_f_115 = 0
+ [S13 CONTAMINATION DEBUG] Writing ref_h_115 = 0
+ [Section13] Reference results stored with ref_ prefix for downstream sections
+ [S13 DEBUG] Total Reference results stored: 34
+ [Section13] Reference Model calculations complete
+ [Section13] ✅ Reference Model complete
+ [Section13] 🔄 Starting Target Model calculations...
+ 🔍 [S13-CONTEXT] Creating target context: g_118="Volume by Schedule" from TargetState
+ 🔍 [S13-CONTEXT] TargetState.g_118="Volume by Schedule", ReferenceState.g_118="Volume Constant"
+ [Section13] Running Target Model calculations...
+ [S13] TGT HEATING: system=Heatpump, ted=188752.50983613706, afue=0.98, cop=3.663540445486518
+ 🔍 [S13-VENT] calculateVentilationRates: ventMethod="Volume by Schedule", ach(l_118)=3, ratePerPerson(d_119)=14, volume(d_105)=8000
+ 🔍 [S13-VENT] isReferenceCalculation=false, hasContext=true
+ 🔍 [S13-VENT] calculateVentilationValues: ventMethod="Volume by Schedule", ach(l_118)=3, ratePerPerson(d_119)=14, volume(d_105)=8000
+ 🔍 [S13-VENT] Supporting values: occupants(d_63)=126, occupiedHours(i_63)=4380, totalHours(j_63)=8760
+ ✅ [S13-VENT] Final d_120 result: 3333.333333333333 L/s (from method="Volume by Schedule", ach=3, volume=8000)
+ [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=6020.32656805405
+ [Section13] 🧊 COOLING RESULTS: d_117=2260.272254643532, j_116=2.663540445486518, l_116=0, l_114=3760.0543134105183
+ [Section13] Target Model calculations complete
+ [Section13] ✅ Target Model complete
+ [Section13] ⏭️ Skipping Reference value re-write - triggered in target mode
+ [Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_21=196
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_21=196
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_21=196
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_21=196
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_21=196
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_21=196
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_21=196
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_21=196
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_21=196
+ [S11] 🔵 REF CLIMATE READ: d_22=1960
+ [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] 🔵 REF CLIMATE READ: d_22=1960
+ [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=59532.29, ref_k_97=-947.70
+ [S11] Writing ref penalty: ref_i_97=59532.29, ref_k_97=-947.70
+ [S11] 🎯 TGT CLIMATE READ: d_20=7100
+ [S11] 🎯 TGT CLIMATE READ: d_21=0
+ [S11] 🎯 TGT CLIMATE READ: d_20=7100
+ [S11] 🎯 TGT CLIMATE READ: d_21=0
+ [S11] 🎯 TGT CLIMATE READ: d_20=7100
+ [S11] 🎯 TGT CLIMATE READ: d_21=0
+ [S11] 🎯 TGT CLIMATE READ: d_20=7100
+ [S11] 🎯 TGT CLIMATE READ: d_21=0
+ [S11] 🎯 TGT CLIMATE READ: d_20=7100
+ [S11] 🎯 TGT CLIMATE READ: d_21=0
+ [S11] 🎯 TGT CLIMATE READ: d_20=7100
+ [S11] 🎯 TGT CLIMATE READ: d_21=0
+ [S11] 🎯 TGT CLIMATE READ: d_20=7100
+ [S11] 🎯 TGT CLIMATE READ: d_21=0
+ [S11] 🎯 TGT CLIMATE READ: d_20=7100
+ [S11] 🎯 TGT CLIMATE READ: d_21=0
+ [S11] 🎯 TGT CLIMATE READ: d_20=7100
+ [S11] 🎯 TGT CLIMATE READ: d_21=0
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_21=196
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_21=196
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_21=196
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_21=196
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_21=196
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_21=196
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_21=196
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_21=196
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
 4011-Section11.js:1136 [S11] 🔵 REF CLIMATE READ: d_21=196
 4011-Section11.js:1166 [S11] 🔵 REF CLIMATE READ: d_22=1960
 4011-Section11.js:1184 [S11] 🔵 REF CLIMATE READ: h_22=-1680
@@ -9179,11 +9179,11 @@ calculateAll @ 4011-Section03.js:1697
 4011-Section11.js:1149 [S11] 🎯 TGT CLIMATE READ: d_21=0
 4011-Section11.js:1145 [S11] 🎯 TGT CLIMATE READ: d_20=7100
 4011-Section11.js:1149 [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+4011-Section11.js:1145 [S11] 🎯 TGT CLIMATE READ: d_20=7100
+4011-Section11.js:1149 [S11] 🎯 TGT CLIMATE READ: d_21=0
+4011-Section11.js:1145 [S11] 🎯 TGT CLIMATE READ: d_20=7100
+4011-Section11.js:1149 [S11] 🎯 TGT CLIMATE READ: d_21=0
+24011-Section11.js:1189 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
  [S13DEBUG] Reference GF CDD changed: ref_h_22=-1680 → triggering Reference calculations
  [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
  [Section13] 🎯 Mode captured at calculation start: target
@@ -9494,22 +9494,22 @@ calculateAll @ 4011-Section03.js:1697
  [Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE
  [S11] calculateAll TRIGGERED. isReferenceMode: false
  [S11] 🔵 REF CLIMATE READ: d_20=4600
-4011-Section11.js:1136 [S11] 🔵 REF CLIMATE READ: d_21=196
-4011-Section11.js:1132 [S11] 🔵 REF CLIMATE READ: d_20=4600
-4011-Section11.js:1136 [S11] 🔵 REF CLIMATE READ: d_21=196
-4011-Section11.js:1132 [S11] 🔵 REF CLIMATE READ: d_20=4600
-4011-Section11.js:1136 [S11] 🔵 REF CLIMATE READ: d_21=196
-4011-Section11.js:1132 [S11] 🔵 REF CLIMATE READ: d_20=4600
-4011-Section11.js:1136 [S11] 🔵 REF CLIMATE READ: d_21=196
-4011-Section11.js:1132 [S11] 🔵 REF CLIMATE READ: d_20=4600
-4011-Section11.js:1136 [S11] 🔵 REF CLIMATE READ: d_21=196
-4011-Section11.js:1132 [S11] 🔵 REF CLIMATE READ: d_20=4600
-4011-Section11.js:1136 [S11] 🔵 REF CLIMATE READ: d_21=196
-4011-Section11.js:1132 [S11] 🔵 REF CLIMATE READ: d_20=4600
-4011-Section11.js:1136 [S11] 🔵 REF CLIMATE READ: d_21=196
-4011-Section11.js:1132 [S11] 🔵 REF CLIMATE READ: d_20=4600
-4011-Section11.js:1136 [S11] 🔵 REF CLIMATE READ: d_21=196
-4011-Section11.js:1132 [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_21=196
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_21=196
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_21=196
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_21=196
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_21=196
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_21=196
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_21=196
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
+ [S11] 🔵 REF CLIMATE READ: d_21=196
+ [S11] 🔵 REF CLIMATE READ: d_20=4600
 4011-Section11.js:1136 [S11] 🔵 REF CLIMATE READ: d_21=196
 4011-Section11.js:1166 [S11] 🔵 REF CLIMATE READ: d_22=1960
 4011-Section11.js:1184 [S11] 🔵 REF CLIMATE READ: h_22=-1680
@@ -9520,22 +9520,22 @@ calculateAll @ 4011-Section03.js:1697
 4011-Section11.js:1145 [S11] 🎯 TGT CLIMATE READ: d_20=7100
 4011-Section11.js:1149 [S11] 🎯 TGT CLIMATE READ: d_21=0
 4011-Section11.js:1145 [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+4011-Section11.js:1149 [S11] 🎯 TGT CLIMATE READ: d_21=0
+4011-Section11.js:1145 [S11] 🎯 TGT CLIMATE READ: d_20=7100
+4011-Section11.js:1149 [S11] 🎯 TGT CLIMATE READ: d_21=0
+4011-Section11.js:1145 [S11] 🎯 TGT CLIMATE READ: d_20=7100
+4011-Section11.js:1149 [S11] 🎯 TGT CLIMATE READ: d_21=0
+4011-Section11.js:1145 [S11] 🎯 TGT CLIMATE READ: d_20=7100
+4011-Section11.js:1149 [S11] 🎯 TGT CLIMATE READ: d_21=0
+4011-Section11.js:1145 [S11] 🎯 TGT CLIMATE READ: d_20=7100
+4011-Section11.js:1149 [S11] 🎯 TGT CLIMATE READ: d_21=0
+4011-Section11.js:1145 [S11] 🎯 TGT CLIMATE READ: d_20=7100
+4011-Section11.js:1149 [S11] 🎯 TGT CLIMATE READ: d_21=0
+4011-Section11.js:1145 [S11] 🎯 TGT CLIMATE READ: d_20=7100
+4011-Section11.js:1149 [S11] 🎯 TGT CLIMATE READ: d_21=0
+4011-Section11.js:1145 [S11] 🎯 TGT CLIMATE READ: d_20=7100
+4011-Section11.js:1149 [S11] 🎯 TGT CLIMATE READ: d_21=0
+24011-Section11.js:1189 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
  [S11] calculateAll TRIGGERED. isReferenceMode: false
  [S11] 🔵 REF CLIMATE READ: d_20=4600
  [S11] 🔵 REF CLIMATE READ: d_21=196
@@ -9560,32 +9560,32 @@ calculateAll @ 4011-Section03.js:1697
  [S11] 🔵 REF CLIMATE READ: d_22=1960
  [S11] 🔵 REF CLIMATE READ: h_22=-1680
  [S11] REF TB%=50% → ref_i_97=59532.29, ref_k_97=-947.70
- [S11] Writing ref penalty: ref_i_97=59532.29, ref_k_97=-947.70
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
- [S11] 🎯 TGT CLIMATE READ: d_20=7100
- [S11] 🎯 TGT CLIMATE READ: d_21=0
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S13DEBUG] Reference GF CDD changed: ref_h_22=-1680 → triggering Reference calculations
- [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
- [Section13] 🎯 Mode captured at calculation start: target
- [Section13] 🔄 Starting Reference Model calculations...
- 🔍 [S13-CONTEXT] Creating reference context: g_118="Volume Constant" from ReferenceState
- 🔍 [S13-CONTEXT] ReferenceState.g_118="Volume Constant", TargetState.g_118="Volume by Schedule"
+4011-Section11.js:1434 [S11] Writing ref penalty: ref_i_97=59532.29, ref_k_97=-947.70
+4011-Section11.js:1145 [S11] 🎯 TGT CLIMATE READ: d_20=7100
+4011-Section11.js:1149 [S11] 🎯 TGT CLIMATE READ: d_21=0
+4011-Section11.js:1145 [S11] 🎯 TGT CLIMATE READ: d_20=7100
+4011-Section11.js:1149 [S11] 🎯 TGT CLIMATE READ: d_21=0
+4011-Section11.js:1145 [S11] 🎯 TGT CLIMATE READ: d_20=7100
+4011-Section11.js:1149 [S11] 🎯 TGT CLIMATE READ: d_21=0
+4011-Section11.js:1145 [S11] 🎯 TGT CLIMATE READ: d_20=7100
+4011-Section11.js:1149 [S11] 🎯 TGT CLIMATE READ: d_21=0
+4011-Section11.js:1145 [S11] 🎯 TGT CLIMATE READ: d_20=7100
+4011-Section11.js:1149 [S11] 🎯 TGT CLIMATE READ: d_21=0
+4011-Section11.js:1145 [S11] 🎯 TGT CLIMATE READ: d_20=7100
+4011-Section11.js:1149 [S11] 🎯 TGT CLIMATE READ: d_21=0
+4011-Section11.js:1145 [S11] 🎯 TGT CLIMATE READ: d_20=7100
+4011-Section11.js:1149 [S11] 🎯 TGT CLIMATE READ: d_21=0
+4011-Section11.js:1145 [S11] 🎯 TGT CLIMATE READ: d_20=7100
+4011-Section11.js:1149 [S11] 🎯 TGT CLIMATE READ: d_21=0
+4011-Section11.js:1145 [S11] 🎯 TGT CLIMATE READ: d_20=7100
+4011-Section11.js:1149 [S11] 🎯 TGT CLIMATE READ: d_21=0
+24011-Section11.js:1189 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+4011-Section13.js:2816 [S13DEBUG] Reference GF CDD changed: ref_h_22=-1680 → triggering Reference calculations
+4011-Section13.js:3386 [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
+4011-Section13.js:3392 [Section13] 🎯 Mode captured at calculation start: target
+4011-Section13.js:3398 [Section13] 🔄 Starting Reference Model calculations...
+4011-Section13.js:721 🔍 [S13-CONTEXT] Creating reference context: g_118="Volume Constant" from ReferenceState
+4011-Section13.js:723 🔍 [S13-CONTEXT] ReferenceState.g_118="Volume Constant", TargetState.g_118="Volume by Schedule"
  [Section13] Running Reference Model calculations...
  [S13 CONTAMINATION DEBUG] calculateReferenceModel: Using system type = Electricity
  [S13] REF HEATING: system=Electricity, ted=297371.1974742337, afue=0.9, cop=1
@@ -9599,14 +9599,14 @@ calculateAll @ 4011-Section03.js:1697
  ✅ [S13-VENT] Final d_120 result: 7777.777777777777 L/s (from method="Volume Constant", ach=3.5, volume=8000)
  [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="No Cooling", heatingType="Electricity", isCoolingActive=false, coolingDemand=6020.32656805405
  [S13 CONTAMINATION DEBUG] storeReferenceResults called during reference mode
-4011-Section13.js:3737 [S13 CONTAMINATION DEBUG] Reference heating system: Electricity
-4011-Section13.js:3740 [S13 CONTAMINATION DEBUG] Target heating system: Heatpump
-4011-Section13.js:3743 [S13 CONTAMINATION DEBUG] Reference h_115 (gas volume): 0
-4011-Section13.js:3746 [S13 CONTAMINATION DEBUG] Reference f_115 (oil volume): 0
-4011-Section13.js:3758 [S13 CONTAMINATION DEBUG] Writing ref_f_115 = 0
-4011-Section13.js:3758 [S13 CONTAMINATION DEBUG] Writing ref_h_115 = 0
-4011-Section13.js:3770 [Section13] Reference results stored with ref_ prefix for downstream sections
-4011-Section13.js:3773 [S13 DEBUG] Total Reference results stored: 34
+ [S13 CONTAMINATION DEBUG] Reference heating system: Electricity
+ [S13 CONTAMINATION DEBUG] Target heating system: Heatpump
+ [S13 CONTAMINATION DEBUG] Reference h_115 (gas volume): 0
+ [S13 CONTAMINATION DEBUG] Reference f_115 (oil volume): 0
+ [S13 CONTAMINATION DEBUG] Writing ref_f_115 = 0
+ [S13 CONTAMINATION DEBUG] Writing ref_h_115 = 0
+ [Section13] Reference results stored with ref_ prefix for downstream sections
+ [S13 DEBUG] Total Reference results stored: 34
 4011-Section13.js:3512 [Section13] Reference Model calculations complete
 4011-Section13.js:3400 [Section13] ✅ Reference Model complete
 4011-Section13.js:3402 [Section13] 🔄 Starting Target Model calculations...
@@ -9630,6 +9630,6 @@ calculateAll @ 4011-Section03.js:1697
 4011-Section01.js:794 🔍 [S01] T.1 Calculation: e_6=25.4 (ref), h_6=12.3 (target) → reduction should be 52%
 4011-Section01.js:886 🔍 [S01DB] UPDATING h_10: 105.8 (from j_32=151000.6373395155, area=1427.2)
 4011-Section01.js:498 🔍 [S01] h_6 explanation: target=12.3, ref=25.4, reduction=0.515748031496063, percent=52%
-4011-Clock.js:65 🕐 [CLOCK] ⚡ CALCULATION COMPLETE: 84ms (subsequent update)
-4011-Clock.js:161 🕐 [CLOCK] ⚡ USER INTERACTION COMPLETE: 84ms (interaction → h_10 settlement)
+4011-Clock.js:65 🕐 [CLOCK] ⚡ CALCULATION COMPLETE: 90ms (subsequent update)
+4011-Clock.js:161 🕐 [CLOCK] ⚡ USER INTERACTION COMPLETE: 90ms (interaction → h_10 settlement)
 4011-Section01.js:1191 ✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10

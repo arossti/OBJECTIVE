@@ -1353,7 +1353,8 @@ window.TEUI.SectionModules.sect15 = (function () {
       };
 
       // ✅ Get Reference values from upstream sections and convert to numbers
-      const area = getRefValue("h_15");
+      // ✅ CONTAMINATION FIX: Read ONLY ref_ prefixed area value
+      const area = parseFloat(window.TEUI?.StateManager?.getValue("ref_h_15")) || 1;
       if (area === null || area <= 0) {
         console.warn(
           "[S15 REF DEBUG] Critical: ref_h_15 (area) missing or zero - cannot calculate Reference model",
@@ -1365,14 +1366,15 @@ window.TEUI.SectionModules.sect15 = (function () {
         window.TEUI?.parseNumeric?.(
           window.TEUI?.StateManager?.getValue(`ref_l_12`),
         ) || 0;
-      const gasPrice = parseFloat(getRefValue("l_13")) || 0;
-      const propanePrice = parseFloat(getRefValue("l_14")) || 0;
-      const oilPrice = parseFloat(getRefValue("l_16")) || 0;
-      const woodPrice = parseFloat(getRefValue("l_15")) || 0;
+      // ✅ CONTAMINATION FIX: Read ONLY ref_ prefixed cost values
+      const gasPrice = parseFloat(window.TEUI?.StateManager?.getValue("ref_l_13")) || 0;
+      const propanePrice = parseFloat(window.TEUI?.StateManager?.getValue("ref_l_14")) || 0;
+      const oilPrice = parseFloat(window.TEUI?.StateManager?.getValue("ref_l_16")) || 0;
+      const woodPrice = parseFloat(window.TEUI?.StateManager?.getValue("ref_l_15")) || 0;
 
-      // ✅ CRITICAL: Get Reference values from Section 04 (j_32, k_32) with parseFloat
-      const ref_j32 = parseFloat(getRefValue("j_32")) || 0; // Reference Total Energy from S04
-      const ref_k32 = parseFloat(getRefValue("k_32")) || 0; // Reference Total Emissions from S04
+      // ✅ CONTAMINATION FIX: Read ONLY ref_ prefixed S04 values  
+      const ref_j32 = parseFloat(window.TEUI?.StateManager?.getValue("ref_j_32")) || 0; // Reference Total Energy from S04
+      const ref_k32 = parseFloat(window.TEUI?.StateManager?.getValue("ref_k_32")) || 0; // Reference Total Emissions from S04
 
       // ✅ Reference upstream values - READ ONLY ref_ prefixed values with parseFloat
       const ref_i104 =
@@ -1386,10 +1388,11 @@ window.TEUI.SectionModules.sect15 = (function () {
       // );
 
       // ✅ Get other Reference dependencies with parseFloat conversion
-      const m43 = getRefValue("m_43");
+      // ✅ CONTAMINATION FIX: Read ONLY ref_ prefixed values
+      const m43 = parseFloat(window.TEUI?.StateManager?.getValue("ref_m_43")) || 0;
       const m43_final = m43 !== null ? m43 : 0; // Use 0 if ref_m_43 is missing
-      const k51 = parseFloat(getRefValue("k_51")) || 0;
-      const h70 = parseFloat(getRefValue("h_70")) || 0; // ✅ CORRECT: Read PLE subtotal (h_70) as per Excel formula
+      const k51 = parseFloat(window.TEUI?.StateManager?.getValue("ref_k_51")) || 0;
+      const h70 = parseFloat(window.TEUI?.StateManager?.getValue("ref_h_70")) || 0; // ✅ CORRECT: Read PLE subtotal (h_70) as per Excel formula
       const i104 = ref_i104; // Use Reference values for Reference calculations
       const m121 = ref_m121; // Use Reference values for Reference calculations
       const i80 = ref_i80; // Use Reference values for Reference calculations
@@ -1400,19 +1403,21 @@ window.TEUI.SectionModules.sect15 = (function () {
 
       // 🔍 CRITICAL DEBUG: Confirm S15 Reference engine now reads correct heating system (commented out for clean logs)
       // console.log(`[S15 REF DEBUG] FIXED: Reading ref_d_113 directly = "${primaryHeating}"`);
-      const d114 = parseFloat(getRefValue("d_114")) || 0;
+      // ✅ CONTAMINATION FIX: Read ONLY ref_ prefixed S13 heating value
+      const d114 = parseFloat(window.TEUI?.StateManager?.getValue("ref_d_114")) || 0;
 
       // 🔍 DEBUG: Log S15 Reference calculation inputs (commented out for clean logs)
       // console.log(`[S15 REF DEBUG] d_114 calculation: ref_d_114=${window.TEUI?.StateManager?.getValue("ref_d_114")}, parsed=${d114}, heating=${primaryHeating}`);
 
-      const g101 = parseFloat(getRefValue("g_101")) || 0;
-      const d101 = parseFloat(getRefValue("d_101")) || 0;
-      const d102 = parseFloat(getRefValue("d_102")) || 0;
-      const g102 = parseFloat(getRefValue("g_102")) || 0;
-      const h23 = parseFloat(getRefValue("h_23")) || 0;
-      const d23 = parseFloat(getRefValue("d_23")) || 0;
-      const d24 = parseFloat(getRefValue("d_24")) || 0;
-      const h24 = parseFloat(getRefValue("h_24")) || 0;
+      // ✅ CONTAMINATION FIX: Read ONLY ref_ prefixed values for Reference calculations
+      const g101 = parseFloat(window.TEUI?.StateManager?.getValue("ref_g_101")) || 0;
+      const d101 = parseFloat(window.TEUI?.StateManager?.getValue("ref_d_101")) || 0;
+      const d102 = parseFloat(window.TEUI?.StateManager?.getValue("ref_d_102")) || 0;
+      const g102 = parseFloat(window.TEUI?.StateManager?.getValue("ref_g_102")) || 0;
+      const h23 = parseFloat(window.TEUI?.StateManager?.getValue("ref_h_23")) || 0;
+      const d23 = parseFloat(window.TEUI?.StateManager?.getValue("ref_d_23")) || 0;
+      const d24 = parseFloat(window.TEUI?.StateManager?.getValue("ref_d_24")) || 0;
+      const h24 = parseFloat(window.TEUI?.StateManager?.getValue("ref_h_24")) || 0;
 
       // Check if critical upstream Reference values are available
       const criticalRefValues = [
@@ -1434,25 +1439,27 @@ window.TEUI.SectionModules.sect15 = (function () {
         );
       }
 
-      const d65 = parseFloat(getRefValue("d_65")) || 0;
-      const d66 = parseFloat(getRefValue("d_66")) || 0;
-      const d67 = parseFloat(getRefValue("d_67")) || 0;
-      const k79 = parseFloat(getRefValue("k_79")) || 0;
-      const d122 = parseFloat(getRefValue("d_122")) || 0;
-      const k64 = parseFloat(getRefValue("k_64")) || 0;
-      const h124 = parseFloat(getRefValue("h_124")) || 0;
-      const m19_days = parseFloat(getRefValue("m_19")) || 120;
+      // ✅ CONTAMINATION FIX: Read ONLY ref_ prefixed values for Reference calculations  
+      const d65 = parseFloat(window.TEUI?.StateManager?.getValue("ref_d_65")) || 0;
+      const d66 = parseFloat(window.TEUI?.StateManager?.getValue("ref_d_66")) || 0;
+      const d67 = parseFloat(window.TEUI?.StateManager?.getValue("ref_d_67")) || 0;
+      const k79 = parseFloat(window.TEUI?.StateManager?.getValue("ref_k_79")) || 0;
+      const d122 = parseFloat(window.TEUI?.StateManager?.getValue("ref_d_122")) || 0;
+      const k64 = parseFloat(window.TEUI?.StateManager?.getValue("ref_k_64")) || 0;
+      const h124 = parseFloat(window.TEUI?.StateManager?.getValue("ref_h_124")) || 0;
+      const m19_days = parseFloat(window.TEUI?.StateManager?.getValue("ref_m_19")) || 120;
 
       // console.log(
       //   `✅ S15 Reference Model: All values converted to numbers for proper math`,
       // );
 
-      // ✅ Get additional fuel and cost variables with parseFloat conversion
-      const d28 = parseFloat(getRefValue("d_28")) || 0; // Total Fossil Gas Use (m3/yr)
-      const d29 = parseFloat(getRefValue("d_29")) || 0; // Total Propane Use (kg/yr)
-      const d31 = parseFloat(getRefValue("d_31")) || 0; // Total Wood Use (m3/yr)
-      const d30_litres = parseFloat(getRefValue("d_30")) || 0; // Total Oil Use (litres/yr)
-      const hpCostPremium = parseFloat(getRefValue("d_142")) || 0; // Heat pump cost premium
+      // ✅ CONTAMINATION FIX: Read ONLY ref_ prefixed fuel and cost values
+      const d28 = parseFloat(window.TEUI?.StateManager?.getValue("ref_d_28")) || 0; // Total Fossil Gas Use (m3/yr)
+      const d29 = parseFloat(window.TEUI?.StateManager?.getValue("ref_d_29")) || 0; // Total Propane Use (kg/yr)
+      const d31 = parseFloat(window.TEUI?.StateManager?.getValue("ref_d_31")) || 0; // Total Wood Use (m3/yr)
+      const d30_litres = parseFloat(window.TEUI?.StateManager?.getValue("ref_d_30")) || 0; // Total Oil Use (litres/yr)
+      // ✅ CONTAMINATION FIX: Read ONLY ref_ prefixed cost premium value
+      const hpCostPremium = parseFloat(window.TEUI?.StateManager?.getValue("ref_d_142")) || 0; // Heat pump cost premium
       // Read S01 dashboard values directly (S01 is state-agnostic)
       const refTEUI_e10 =
         window.TEUI?.parseNumeric(
@@ -1477,7 +1484,8 @@ window.TEUI.SectionModules.sect15 = (function () {
       // ✅ FIX: Use direct ref_d_116 instead of broken getReferenceValue()
       const coolingType_d116 =
         window.TEUI?.StateManager?.getValue("ref_d_116") || "No Cooling";
-      let d117_actual_val = parseFloat(getRefValue("d_117")) || 0;
+      // ✅ CONTAMINATION FIX: Read ONLY ref_ prefixed cooling value
+      let d117_actual_val = parseFloat(window.TEUI?.StateManager?.getValue("ref_d_117")) || 0;
       let d117_effective = d117_actual_val;
       if (coolingType_d116 === "No Cooling") {
         d117_effective = 0;
