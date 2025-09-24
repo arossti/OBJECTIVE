@@ -220,6 +220,69 @@ This refactor will be considered complete and successful when the following cond
 
 ---
 
+## 4. Reference Contamination Investigation (Sept 24, 2025)
+
+### **BREAKTHROUGH: Systematic Contamination Source Identification**
+
+**Problem**: Target location changes (S03: Alexandria → Attawapiskat) cause Reference e_10 to jump from 211.6 → 243.8 when Reference should remain unchanged.
+
+**Root Cause Discovered**: Multiple sections using **fallback contamination patterns** where Reference calculations fall back to Target values when ref_ prefixed values are missing.
+
+### **Contamination Sources Identified & Status:**
+
+#### **✅ S14 (TEDI Section) - FIXED**
+**Issue**: `getRefValue()` function with fallback logic:
+```javascript
+// ❌ BEFORE: Contaminated fallback pattern
+const i97 = parseFloat(getRefValue("i_97")) || 0; // Could fallback to Target!
+
+// ✅ AFTER: Pure Reference reads
+const i97 = parseFloat(window.TEUI?.StateManager?.getValue("ref_i_97")) || 0;
+```
+**Status**: ✅ Fixed - all S14 Reference calculations now use pure ref_ prefixed values
+
+#### **✅ S15 (TEUI Section) - FIXED**  
+**Issue**: Same `getRefValue()` fallback contamination pattern
+**Status**: ✅ Fixed - eliminated all getRefValue calls, now uses direct ref_ reads
+
+#### **✅ S04 (Energy Totals) - CLEARED AS CONTAMINATION SOURCE**
+**Investigation Result**: S04 debug logging revealed NO S04 Reference calculations triggered by S03 Target location changes
+**Analysis**: S04 Row 27 correctly reads external S15 values (`ref_d_136` vs `d_136`), Row 32 correctly sums j_27 values
+**Root Cause**: S04 is correctly reading contaminated upstream values - contamination source is upstream in calculation chain
+**Status**: ✅ Cleared - S04 architecture is correct, issue is upstream
+
+#### **❓ UPSTREAM CONTAMINATION SOURCES - INVESTIGATION PRIORITIES**
+
+**S12 (Volume Metrics) - i_104 Investigation:**
+- **Issue**: S14 reads `ref_i_104` for Reference TED calculations
+- **Investigation**: Verify S12 publishes clean `ref_i_104` values that don't change when Target location changes
+- **Pattern**: Check if S12 Reference calculations use contaminated climate values
+
+**S13 (Mechanical Loads) - m_121 & d_114 Investigation:**
+- **Issue**: S14 reads `ref_m_121` and S15 reads `ref_d_114` for Reference calculations  
+- **Investigation**: Verify S13 publishes clean Reference values independent of Target location changes
+- **Potential Problems**:
+  1. **getRefValue fallback patterns**: Similar to S14/S15 contamination  
+  2. **Missing ref_ value publishing**: S13 might not publish ref_m_121, ref_d_122, etc.
+  3. **Internal state contamination**: S13's Reference calculations might use Target heating loads
+
+**Investigation Strategy**:
+- Check if S12/S13 publish clean ref_ values for S14/S15 consumption
+- Verify S12/S13 Reference calculations don't use Target climate or heating values
+- Look for fallback contamination patterns in S12/S13 Reference logic
+
+### **Anti-Pattern Analysis for S13 Completion:**
+
+**Key Anti-Patterns to Eliminate in S13:**
+1. **Fallback Contamination**: Any `getRefValue()` or similar functions that fall back to Target values
+2. **ModeManager Internal State**: Reference calculations reading from internal state that could be contaminated
+3. **Missing ref_ Publishing**: Reference calculations not storing results with ref_ prefix for downstream consumption
+4. **Cross-State Function Calls**: Reference calculations calling Target calculation functions
+
+**Strategic Approach**: Apply same contamination elimination patterns used successfully in S14/S15 to S13's Reference calculation logic.
+
+---
+
 ## 7. Claude Code Strategic Additions (Sept 24, 2025 - 12:50am)
 
 ### **Assessment: Surgical Precision Required**
