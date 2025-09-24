@@ -1771,13 +1771,14 @@ window.TEUI.SectionModules.sect03 = (function () {
   function storeReferenceResults() {
     if (!window.TEUI?.StateManager) return;
 
-    // Get Reference state climate values and store with ref_ prefix
+    // ✅ CRITICAL FIX: Read from published Reference values, not local state
+    // This prevents contamination when Target location changes but Reference should stay unchanged
     const referenceResults = {
-      // Location identifiers
-      d_19: ReferenceState.getValue("d_19"), // Province
-      h_19: ReferenceState.getValue("h_19"), // City
-      h_20: ReferenceState.getValue("h_20"), // Timeframe
-      // Climate data
+      // Location identifiers - read from StateManager ref_ values
+      d_19: window.TEUI.StateManager.getValue("ref_d_19") || ReferenceState.getValue("d_19"),
+      h_19: window.TEUI.StateManager.getValue("ref_h_19") || ReferenceState.getValue("h_19"), 
+      h_20: window.TEUI.StateManager.getValue("ref_h_20") || ReferenceState.getValue("h_20"),
+      // Climate data - read from current Reference calculation
       d_20: ReferenceState.getValue("d_20"), // Reference HDD
       d_21: ReferenceState.getValue("d_21"), // Reference CDD
       j_19: ReferenceState.getValue("j_19"), // Reference climate zone
