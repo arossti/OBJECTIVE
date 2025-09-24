@@ -2212,30 +2212,10 @@ window.TEUI.SectionModules.sect03 = (function () {
         },
       );
 
-      // Listener for h_24 (Calculated Cooling Setpoint) changes
-      window.TEUI.StateManager.addListener("h_24", function (newValue) {
-        updateCoolingDependents();
-        calculateGroundFacing(); // Re-add call needed for GF CDD
-      });
-
-      // Listener for l_24 (Cooling Override) changes
-      window.TEUI.StateManager.addListener("l_24", function (newValue) {
-        updateCoolingDependents();
-        calculateGroundFacing(); // Re-add call needed for GF CDD
-      });
-
-      // Listener for d_20 (HDD) changes to update j_19 (Climate Zone)
-      window.TEUI.StateManager.addListener("d_20", function (newHddValue) {
-        const climateZone = determineClimateZone(newHddValue);
-        setFieldValue("j_19", climateZone, "derived");
-        // Also recalculate Ground Facing HDD (d_22) which depends on d_20
-        calculateGroundFacing();
-      });
-
-      // Listener for m_19 (Cooling Days) changes
-      window.TEUI.StateManager.addListener("m_19", function (newValue) {
-        calculateAll(); // Recalculate everything as GF HDD and GF CDD change
-      });
+      // ✅ REMOVED: Self-listeners cause recursion anti-pattern per 4012-CHEATSHEET.md
+      // S03 should not listen to its own calculated values (d_20, h_24, d_22, etc.)
+      // User input changes trigger calculateAll() directly via dropdown/slider handlers
+      // Internal calculations (j_19, h_22, d_22) are handled within calculation engines
 
       // ✅ CRITICAL: Bridge FieldManager slider updates to DualState
       window.TEUI.StateManager.addListener("i_21", function (newValue) {
