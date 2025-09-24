@@ -1855,12 +1855,16 @@ window.TEUI.SectionModules.sect12 = (function () {
       // ✅ FIXED: Reference calculations read ONLY ref_ prefixed values
       d20_hdd = getGlobalNumericValue("ref_d_20");
       d21_cdd = getGlobalNumericValue("ref_d_21");
-      console.log(`[S12] 🔵 REF CLIMATE READ: d_20=${d20_hdd}, d_21=${d21_cdd}`);
+      console.log(
+        `[S12] 🔵 REF CLIMATE READ: d_20=${d20_hdd}, d_21=${d21_cdd}`,
+      );
     } else {
       // ✅ PATTERN A: Target calculations read unprefixed values
       d20_hdd = getGlobalNumericValue("d_20");
       d21_cdd = getGlobalNumericValue("d_21");
-      console.log(`[S12] 🎯 TGT CLIMATE READ: d_20=${d20_hdd}, d_21=${d21_cdd}`);
+      console.log(
+        `[S12] 🎯 TGT CLIMATE READ: d_20=${d20_hdd}, d_21=${d21_cdd}`,
+      );
     }
 
     const d101_areaAir = volumeResults.d_101;
@@ -2696,37 +2700,53 @@ window.TEUI.SectionModules.sect12 = (function () {
 
     // ✅ CRITICAL: Listen for Target climate data changes to trigger recalculation
     window.TEUI.StateManager.addListener("d_20", (newValue) => {
-      console.log(`[S12] Target HDD changed: d_20=${newValue} → triggering calculations`);
+      console.log(
+        `[S12] Target HDD changed: d_20=${newValue} → triggering calculations`,
+      );
       calculateAll();
     });
     window.TEUI.StateManager.addListener("d_21", (newValue) => {
-      console.log(`[S12] Target CDD changed: d_21=${newValue} → triggering calculations`);
+      console.log(
+        `[S12] Target CDD changed: d_21=${newValue} → triggering calculations`,
+      );
       calculateAll();
     });
     window.TEUI.StateManager.addListener("d_22", (newValue) => {
-      console.log(`[S12] Target GF HDD changed: d_22=${newValue} → triggering calculations`);
+      console.log(
+        `[S12] Target GF HDD changed: d_22=${newValue} → triggering calculations`,
+      );
       calculateAll();
     });
     window.TEUI.StateManager.addListener("h_22", (newValue) => {
-      console.log(`[S12] Target GF CDD changed: h_22=${newValue} → triggering calculations`);
+      console.log(
+        `[S12] Target GF CDD changed: h_22=${newValue} → triggering calculations`,
+      );
       calculateAll();
     });
 
     // ✅ CRITICAL: Listen for Reference climate data changes to trigger recalculation
     window.TEUI.StateManager.addListener("ref_d_20", (newValue) => {
-      console.log(`[S12] Reference HDD changed: ref_d_20=${newValue} → triggering calculations`);
+      console.log(
+        `[S12] Reference HDD changed: ref_d_20=${newValue} → triggering calculations`,
+      );
       calculateAll();
     });
     window.TEUI.StateManager.addListener("ref_d_21", (newValue) => {
-      console.log(`[S12] Reference CDD changed: ref_d_21=${newValue} → triggering calculations`);
+      console.log(
+        `[S12] Reference CDD changed: ref_d_21=${newValue} → triggering calculations`,
+      );
       calculateAll();
     });
     window.TEUI.StateManager.addListener("ref_d_22", (newValue) => {
-      console.log(`[S12] Reference GF HDD changed: ref_d_22=${newValue} → triggering calculations`);
+      console.log(
+        `[S12] Reference GF HDD changed: ref_d_22=${newValue} → triggering calculations`,
+      );
       calculateAll();
     });
     window.TEUI.StateManager.addListener("ref_h_22", (newValue) => {
-      console.log(`[S12] Reference GF CDD changed: ref_h_22=${newValue} → triggering calculations`);
+      console.log(
+        `[S12] Reference GF CDD changed: ref_h_22=${newValue} → triggering calculations`,
+      );
       calculateAll();
     });
 
@@ -2739,7 +2759,9 @@ window.TEUI.SectionModules.sect12 = (function () {
     window.TEUI.StateManager.addListener("g_109", () => calculateAll()); // Measured ACH50
 
     s12ListenersAdded = true;
-    console.log("[S12] ✅ CLIMATE LISTENERS ADDED - Ready for d_20/d_21 changes");
+    console.log(
+      "[S12] ✅ CLIMATE LISTENERS ADDED - Ready for d_20/d_21 changes",
+    );
   }
 
   /**

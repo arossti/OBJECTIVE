@@ -153,14 +153,14 @@ window.TEUI.SectionModules.sect01 = (function () {
       section: "keyValues",
     },
     m_8: {
-      type: "calculated", 
+      type: "calculated",
       label: "Annual Carbon %",
       defaultValue: "14%",
       section: "keyValues",
     },
     m_10: {
       type: "calculated",
-      label: "TEUI %", 
+      label: "TEUI %",
       defaultValue: "41%",
       section: "keyValues",
     },
@@ -352,17 +352,29 @@ window.TEUI.SectionModules.sect01 = (function () {
     // M_6 CALCULATION: Lifetime Carbon % (Excel formula)
     // M6=IF(I$40="N/A","N/A",IF(D15="BR18 (Denmark)",((I$41/H13)+K8)/12,IF(D15="IPCC AR6 EPC", 3.39, IF(D15="IPCC AR6 EA", 4.07,IF(D15="TGS4",((I$41/I39)),"N/A")))))
     // ========================================
-    
+
     let m_6_result = "N/A";
-    
+
     // Get dependencies from StateManager (Target state values only - S01 is state agnostic)
     const i_40 = window.TEUI?.StateManager?.getValue("i_40") || ""; // From S05
     const d_15 = window.TEUI?.StateManager?.getValue("d_15") || ""; // Carbon standard from S02
-    const i_41 = window.TEUI?.parseNumeric?.(window.TEUI?.StateManager?.getValue("i_41"), 0) ?? 0; // Embodied carbon from S05
-    const h_13 = window.TEUI?.parseNumeric?.(window.TEUI?.StateManager?.getValue("h_13"), 50) ?? 50; // Service life from S02
+    const i_41 =
+      window.TEUI?.parseNumeric?.(
+        window.TEUI?.StateManager?.getValue("i_41"),
+        0,
+      ) ?? 0; // Embodied carbon from S05
+    const h_13 =
+      window.TEUI?.parseNumeric?.(
+        window.TEUI?.StateManager?.getValue("h_13"),
+        50,
+      ) ?? 50; // Service life from S02
     const k_8_calc = useType === "Utility Bills" && !isNaN(k_8) ? k_8 : h_8; // Annual carbon (calculated above)
-    const i_39 = window.TEUI?.parseNumeric?.(window.TEUI?.StateManager?.getValue("i_39"), 0) ?? 0; // TGS4 value from S05
-    
+    const i_39 =
+      window.TEUI?.parseNumeric?.(
+        window.TEUI?.StateManager?.getValue("i_39"),
+        0,
+      ) ?? 0; // TGS4 value from S05
+
     // Excel formula logic: IF(I$40="N/A","N/A",...)
     if (i_40 === "N/A") {
       m_6_result = "N/A";
@@ -370,7 +382,7 @@ window.TEUI.SectionModules.sect01 = (function () {
       // IF(D15="BR18 (Denmark)",((I$41/H13)+K8)/12,...)
       if (d_15 === "BR18 (Denmark)") {
         if (h_13 > 0) {
-          m_6_result = ((i_41 / h_13) + k_8_calc) / 12;
+          m_6_result = (i_41 / h_13 + k_8_calc) / 12;
           m_6_result = Math.round(m_6_result * 100) / 100; // Round to 2 decimal places
         }
       }
@@ -402,7 +414,7 @@ window.TEUI.SectionModules.sect01 = (function () {
     // m_8 = 100% - j_8 (remaining percentage of reference)
     // m_10 = 100% - j_10 (remaining percentage of reference)
     // ========================================
-    
+
     // Corrected calculations for j_8 and j_10 (reduction percentages)
     let annualCarbonReduction = 0;
     if (e_8 !== 0) {
@@ -412,18 +424,21 @@ window.TEUI.SectionModules.sect01 = (function () {
 
     let teuiReduction = 0;
     if (e_10 !== 0) {
-      const valueToUse = useType === "Utility Bills" && !isNaN(k_10) ? k_10 : h_10;
+      const valueToUse =
+        useType === "Utility Bills" && !isNaN(k_10) ? k_10 : h_10;
       teuiReduction = Math.round((1 - valueToUse / e_10) * 100); // REDUCTION percentage
     }
-    
+
     // Calculate m_8 and m_10 as complement of j_8 and j_10
     const m_8_result = 100 - annualCarbonReduction; // Remaining % of reference
     const m_10_result = 100 - teuiReduction; // Remaining % of reference
 
     // Format the percentage values (move outside StateManager block to fix scoping)
-    const m_6_formatted = typeof m_6_result === "number" ? 
-      window.TEUI?.formatNumber?.(m_6_result, "percent-0dp") ?? `${Math.round(m_6_result * 100)}%` : 
-      m_6_result;
+    const m_6_formatted =
+      typeof m_6_result === "number"
+        ? (window.TEUI?.formatNumber?.(m_6_result, "percent-0dp") ??
+          `${Math.round(m_6_result * 100)}%`)
+        : m_6_result;
     const m_8_formatted = `${m_8_result}%`;
     const m_10_formatted = `${m_10_result}%`;
 
@@ -440,11 +455,11 @@ window.TEUI.SectionModules.sect01 = (function () {
       if (currentJ10 !== newJ10) {
         window.TEUI.StateManager.setValue("j_10", newJ10, "calculated");
       }
-      
+
       const currentM6 = window.TEUI.StateManager.getValue("m_6");
       const currentM8 = window.TEUI.StateManager.getValue("m_8");
       const currentM10 = window.TEUI.StateManager.getValue("m_10");
-      
+
       if (currentM6 !== m_6_formatted) {
         window.TEUI.StateManager.setValue("m_6", m_6_formatted, "calculated");
       }
@@ -455,7 +470,7 @@ window.TEUI.SectionModules.sect01 = (function () {
         window.TEUI.StateManager.setValue("m_10", m_10_formatted, "calculated");
       }
     }
-    
+
     // Update all percentage displays with checkmark/X logic
     updatePercentageFieldWithCheckmark("m_6", m_6_formatted);
     updatePercentageFieldWithCheckmark("m_8", m_8_formatted);
@@ -480,7 +495,9 @@ window.TEUI.SectionModules.sect01 = (function () {
 
       // Debug logging to trace the calculation
       if (fieldId === "h_6") {
-        console.log(`🔍 [S01] h_6 explanation: target=${targetValue}, ref=${referenceValue}, reduction=${reduction}, percent=${reductionPercent}%`);
+        console.log(
+          `🔍 [S01] h_6 explanation: target=${targetValue}, ref=${referenceValue}, reduction=${reduction}, percent=${reductionPercent}%`,
+        );
       }
 
       const explanationSpan = document.querySelector(
@@ -672,7 +689,8 @@ window.TEUI.SectionModules.sect01 = (function () {
     let showCheckmark = false;
     if (percentageValue !== "N/A") {
       // Extract numeric percentage (remove % sign)
-      const numericPercent = window.TEUI?.parseNumeric?.(percentageValue, 0) ?? 0;
+      const numericPercent =
+        window.TEUI?.parseNumeric?.(percentageValue, 0) ?? 0;
       showCheckmark = numericPercent <= 100; // Pass if 100% or under, fail if over 100%
     }
 
@@ -773,7 +791,9 @@ window.TEUI.SectionModules.sect01 = (function () {
         : 0;
 
     // Debug logging for T.1 Lifetime Carbon
-    console.log(`🔍 [S01] T.1 Calculation: e_6=${e_6} (ref), h_6=${h_6} (target) → reduction should be ${Math.round((1 - h_6/e_6) * 100)}%`);
+    console.log(
+      `🔍 [S01] T.1 Calculation: e_6=${e_6} (ref), h_6=${h_6} (target) → reduction should be ${Math.round((1 - h_6 / e_6) * 100)}%`,
+    );
 
     // ========================================
     // COLUMN K (ACTUAL): Excel-compliant calculations (Utility Bills mode only)
@@ -1278,7 +1298,6 @@ window.TEUI.SectionModules.sect01 = (function () {
       styleElement.textContent = customCSS;
     }
   }
-
 
   function removeToggleIcon() {
     const toggleIcon = document.querySelector(

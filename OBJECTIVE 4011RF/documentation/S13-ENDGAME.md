@@ -97,6 +97,15 @@ This refactor will be considered complete and successful when the following cond
 - Focus on calculation ordering and dependency chain timing
 - Preserve dual-state isolation and hybrid m_129 architecture
 
+### **Known Technical Debt (Sept 23, 2025)**
+
+**ESLint Errors to Address:**
+- `calculateSpaceHeatingEmissions` function not defined (referenced in S13 files)
+- Multiple S13 backup files have same undefined function reference
+- 140+ unused variable warnings (code cleanup opportunity)
+
+**Status**: Non-critical for functionality, but should be cleaned up for code quality
+
 ### **Phase 1: Diagnose Calculation Drift**
 
 1. **Compare cooling load calculations** between S13-CONTEXT.js (working) and current S13

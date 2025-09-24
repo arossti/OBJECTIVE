@@ -1002,7 +1002,6 @@ window.TEUI.SectionModules.sect02 = (function () {
       window.TEUI.sect02.userInteracted = true;
     }
 
-
     // ✅ CRITICAL FIX: Save to current state (Target or Reference) via ModeManager
     // This ensures user changes persist when toggling between modes
     ModeManager.setValue(fieldId, selectedValue, "user-modified");
@@ -1178,7 +1177,10 @@ window.TEUI.SectionModules.sect02 = (function () {
 
       // Add listeners for occupancy changes to update critical flag
       window.TEUI.StateManager.addListener("d_12", updateCriticalOccupancyFlag);
-      window.TEUI.StateManager.addListener("ref_d_12", updateCriticalOccupancyFlag);
+      window.TEUI.StateManager.addListener(
+        "ref_d_12",
+        updateCriticalOccupancyFlag,
+      );
     }
   }
 
@@ -1794,7 +1796,7 @@ window.TEUI.SectionModules.sect02 = (function () {
       // ✅ CRITICAL FIX: UI toggle is for DISPLAY ONLY - values are already calculated
       this.refreshUI(); // Update input fields from state
       this.updateCalculatedDisplayValues(); // Update calculated fields from StateManager
-      
+
       // ✅ CRITICAL FIX: Update critical occupancy flag when mode changes
       updateCriticalOccupancyFlag();
 
@@ -1811,7 +1813,6 @@ window.TEUI.SectionModules.sect02 = (function () {
       const currentState =
         this.currentMode === "target" ? TargetState : ReferenceState;
       currentState.setValue(fieldId, value, source);
-
 
       // ✅ CRITICAL BRIDGE: Sync Target changes to StateManager for downstream sections
       if (this.currentMode === "target" && window.TEUI?.StateManager) {

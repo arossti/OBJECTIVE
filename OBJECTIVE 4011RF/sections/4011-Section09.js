@@ -634,7 +634,11 @@ window.TEUI.SectionModules.sect09 = (function () {
       determinedFormatType = "number-1dp"; // Equipment/plug density with 1 decimal
     } else if (fieldId.startsWith("l_") && fieldId !== "l_12") {
       determinedFormatType = "percent-0dp"; // Percentages
-    } else if (fieldId.startsWith("h_") || fieldId.startsWith("i_") || fieldId.startsWith("k_")) {
+    } else if (
+      fieldId.startsWith("h_") ||
+      fieldId.startsWith("i_") ||
+      fieldId.startsWith("k_")
+    ) {
       determinedFormatType = "number-2dp-comma"; // Energy values with commas
     }
 
@@ -1952,16 +1956,18 @@ window.TEUI.SectionModules.sect09 = (function () {
       1000;
     // ✅ PLUG LOADS: Complete Excel formula implementation
     // Excel: =IF(ISNUMBER(SEARCH("PH",D13)), 2.1, IF(OR(D12="C - Residential", D12="B1 - Detention", D12="B2 - Care and Treatment", D12="B3 - Detention, Care and Treatment"), 5, 7))
-    
+
     // Get building standard (d_13) based on calculation mode
-    const buildingStandard = window.TEUI.StateManager.getValue(isReference ? "ref_d_13" : "d_13") || "";
-    
+    const buildingStandard =
+      window.TEUI.StateManager.getValue(isReference ? "ref_d_13" : "d_13") ||
+      "";
+
     let plugLoadDensity;
-    
+
     // Priority 1: Check for Passive House standards (contains "PH") → 2.1 W/m²
     if (buildingStandard.includes("PH")) {
       plugLoadDensity = 2.1;
-    } 
+    }
     // Priority 2: Check for residential/care occupancies → 5 W/m²
     else {
       const isResidentialOrCare =
@@ -1969,12 +1975,12 @@ window.TEUI.SectionModules.sect09 = (function () {
         buildingType === "B1-Detention" ||
         buildingType === "B2-Care and Treatment" ||
         buildingType === "B3-Detention Care & Treatment"; // ✅ Fixed: matches S02 dropdown values
-      
+
       plugLoadDensity = isResidentialOrCare ? 5 : 7;
     }
-    
+
     state.setValue("d_65", plugLoadDensity.toString());
-    
+
     const plugEnergy = (plugLoadDensity * conditionedArea * annualHours) / 1000;
     const lightingEnergy =
       (window.TEUI.parseNumeric(state.getValue("d_66")) *

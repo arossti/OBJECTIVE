@@ -1058,7 +1058,8 @@ window.TEUI.SectionModules.sect14 = (function () {
       );
 
       // h_130: CEDI Mitigated W/m2 (depends on S13's ref_m_129)
-      const ref_m129_fromS13 = parseFloat(window.TEUI?.StateManager?.getValue("ref_m_129")) || 0;
+      const ref_m129_fromS13 =
+        parseFloat(window.TEUI?.StateManager?.getValue("ref_m_129")) || 0;
       const ref_cediMitigated_h130 =
         area > 0 ? ((ref_m129_fromS13 / 8760) * 1000) / area : 0;
       window.TEUI?.StateManager?.setValue(

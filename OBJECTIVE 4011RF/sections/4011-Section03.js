@@ -183,7 +183,7 @@ window.TEUI.SectionModules.sect03 = (function () {
 
       this.refreshUI();
       this.updateCalculatedDisplayValues();
-      
+
       // ✅ CRITICAL FIX: Update critical occupancy flag when mode changes
       updateCriticalOccupancyFlag();
     },
@@ -560,7 +560,7 @@ window.TEUI.SectionModules.sect03 = (function () {
     const province = stateObject.getValue("d_19") || "ON";
     const city = stateObject.getValue("h_19") || "Alexandria";
     const timeframe = stateObject.getValue("h_20") || "Present";
-    
+
     // ✅ CRITICAL FIX: Get occupancy type based on calculation mode for proper temperature selection
     let occupancyType = "";
     if (window.TEUI?.StateManager) {
@@ -569,49 +569,54 @@ window.TEUI.SectionModules.sect03 = (function () {
         occupancyType = window.TEUI.StateManager.getValue("ref_d_12") || "";
         // console.log(`[S03] 🔵 REF MODE: Using occupancy "${occupancyType}" from ref_d_12`);
       } else {
-        // Target calculations: Read d_12 for Target occupancy  
+        // Target calculations: Read d_12 for Target occupancy
         occupancyType = window.TEUI.StateManager.getValue("d_12") || "";
         // console.log(`[S03] 🎯 TGT MODE: Using occupancy "${occupancyType}" from d_12`);
       }
     }
-    
+
     const isCritical = occupancyType.includes("Care");
     // console.log(`[S03] Getting climate data for: ${city}, ${province} (${timeframe}) - Critical: ${isCritical} (${calculationMode} mode)`);
-    
+
     const cityData = ClimateDataService.getCityData(province, city);
 
     if (!cityData) {
       console.warn(`S03: No climate data for ${city}, ${province}`);
       return {
         d_20: "N/A",
-        d_21: "N/A", 
+        d_21: "N/A",
         j_19: "6.0",
         d_23: isCritical ? "-26" : "-24", // Use fallback appropriate for occupancy
         d_24: "34",
-        l_22: "80"
+        l_22: "80",
       };
     }
 
     // Choose values based on timeframe
-    const hdd = timeframe === "Future" ? cityData.HDD18_2021_2050 : cityData.HDD18;
-    const cdd = timeframe === "Future" ? cityData.CDD24_2021_2050 : cityData.CDD24;
+    const hdd =
+      timeframe === "Future" ? cityData.HDD18_2021_2050 : cityData.HDD18;
+    const cdd =
+      timeframe === "Future" ? cityData.CDD24_2021_2050 : cityData.CDD24;
 
     // ✅ CRITICAL FIX: Select January temperature based on critical occupancy
     // Use January_1 (1%) for critical occupancies (Care), January_2_5 (2.5%) for others
     const janTempKey = isCritical ? "January_1" : "January_2_5";
-    const selectedJanTemp = cityData[janTempKey] || cityData["January_2_5"] || (isCritical ? "-26" : "-24");
-    
+    const selectedJanTemp =
+      cityData[janTempKey] ||
+      cityData["January_2_5"] ||
+      (isCritical ? "-26" : "-24");
+
     // console.log(`[S03] ${calculationMode.toUpperCase()} TEMP SELECTION: ${janTempKey} = ${selectedJanTemp} (Critical: ${isCritical})`);
 
     const climateValues = {
-      d_20: (hdd !== null && hdd !== undefined && hdd !== 666) ? hdd : "N/A",
-      d_21: (cdd !== null && cdd !== undefined && cdd !== 666) ? cdd : "N/A",
+      d_20: hdd !== null && hdd !== undefined && hdd !== 666 ? hdd : "N/A",
+      d_21: cdd !== null && cdd !== undefined && cdd !== 666 ? cdd : "N/A",
       j_19: determineClimateZone(hdd),
       d_23: selectedJanTemp, // ✅ Now uses occupancy-aware temperature selection
-      d_24: cityData.July_2_5_Tdb || "34", 
-      l_22: cityData["Elev ASL (m)"] || "80"
+      d_24: cityData.July_2_5_Tdb || "34",
+      l_22: cityData["Elev ASL (m)"] || "80",
     };
-    
+
     // console.log(`[S03] Climate values for ${city} (${calculationMode}):`, climateValues);
     return climateValues;
   }
@@ -1132,13 +1137,13 @@ window.TEUI.SectionModules.sect03 = (function () {
     if (!provinceValue) return;
 
     console.log("Section03: Province selected:", provinceValue);
-    
+
     // Update state using ModeManager (handles mode-aware StateManager sync)
     ModeManager.setValue("d_19", provinceValue, "user-modified");
-    
+
     // Update city dropdown for this province (UI only)
     updateCityDropdown(provinceValue);
-    
+
     // Note: calculateAll() will be called by the city dropdown's auto-selection
     // If city doesn't auto-select, we would add calculateAll() here
   }
@@ -1714,7 +1719,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         // CRITICAL: Publish to StateManager so downstream sections can access
         window.TEUI.StateManager.setValue(key, value.toString(), "calculated");
       });
-      
+
       // ✅ STEP 3: Run calculations that depend on climate data
       calculateHeatingSetpoint();
       calculateCoolingSetpoint_h24();
@@ -1722,7 +1727,6 @@ window.TEUI.SectionModules.sect03 = (function () {
       calculateGroundFacing();
       updateCoolingDependents();
       updateCriticalOccupancyFlag();
-
     } finally {
       // Restore prior UI mode
       ModeManager.currentMode = originalMode;
@@ -1737,12 +1741,12 @@ window.TEUI.SectionModules.sect03 = (function () {
     try {
       // ✅ STEP 1: Get climate data based on ReferenceState location with Reference occupancy
       const climateValues = getClimateDataForState(ReferenceState, "reference");
-      
+
       // ✅ STEP 2: Update ReferenceState with the new climate data
       Object.entries(climateValues).forEach(([key, value]) => {
         ReferenceState.setValue(key, value, "calculated");
       });
-      
+
       // Force Reference mode temporarily for other calculations
       const originalMode = ModeManager.currentMode;
       ModeManager.currentMode = "reference";
@@ -1753,13 +1757,12 @@ window.TEUI.SectionModules.sect03 = (function () {
       calculateTemperatures();
       calculateGroundFacing();
       updateCoolingDependents();
-      
+
       // Restore original mode
       ModeManager.currentMode = originalMode;
 
       // ✅ STEP 4: Store all Reference results for downstream sections
       storeReferenceResults();
-
     } catch (error) {
       console.error("Error during Section 03 calculateReferenceModel:", error);
     }
@@ -1775,9 +1778,15 @@ window.TEUI.SectionModules.sect03 = (function () {
     // This prevents contamination when Target location changes but Reference should stay unchanged
     const referenceResults = {
       // Location identifiers - read from StateManager ref_ values
-      d_19: window.TEUI.StateManager.getValue("ref_d_19") || ReferenceState.getValue("d_19"),
-      h_19: window.TEUI.StateManager.getValue("ref_h_19") || ReferenceState.getValue("h_19"), 
-      h_20: window.TEUI.StateManager.getValue("ref_h_20") || ReferenceState.getValue("h_20"),
+      d_19:
+        window.TEUI.StateManager.getValue("ref_d_19") ||
+        ReferenceState.getValue("d_19"),
+      h_19:
+        window.TEUI.StateManager.getValue("ref_h_19") ||
+        ReferenceState.getValue("h_19"),
+      h_20:
+        window.TEUI.StateManager.getValue("ref_h_20") ||
+        ReferenceState.getValue("h_20"),
       // Climate data - read from current Reference calculation
       d_20: ReferenceState.getValue("d_20"), // Reference HDD
       d_21: ReferenceState.getValue("d_21"), // Reference CDD
@@ -1895,7 +1904,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       ModeManager.currentMode === "reference"
         ? window.TEUI.StateManager?.getValue("ref_d_12") || "" // ✅ Reference mode: read ref_d_12
         : window.TEUI.StateManager?.getValue("d_12") || ""; // ✅ Target mode: read d_12
-    
+
     const sectionHeader = document.querySelector(
       "#climateCalculations .section-header",
     ); // Target the main header
@@ -1908,7 +1917,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       ".critical-occupancy-header-flag",
     );
     let isCritical = occupancyType.includes("Care");
-    
+
     // console.log(`[S03] Critical flag update: mode=${ModeManager.currentMode}, occupancy="${occupancyType}", critical=${isCritical}`);
 
     if (isCritical) {
@@ -2185,28 +2194,28 @@ window.TEUI.SectionModules.sect03 = (function () {
         "d_12",
         function (newOccupancyValue) {
           // console.log(`[S03] 🎯 Target occupancy changed: ${newOccupancyValue}`);
-          
+
           // ✅ NEW APPROACH: Trigger full recalculation of BOTH engines
           // This ensures both Target and Reference models get updated with correct temperatures
           // based on their respective occupancy values
           calculateAll();
-          
+
           // ✅ CRITICAL FIX: Update critical flag display immediately (mode-aware)
           updateCriticalOccupancyFlag();
         },
       );
 
-      // ✅ NEW: Listener for ref_d_12 (Reference Occupancy) changes  
+      // ✅ NEW: Listener for ref_d_12 (Reference Occupancy) changes
       window.TEUI.StateManager.addListener(
         "ref_d_12",
         function (newRefOccupancyValue) {
           // console.log(`[S03] 🔵 Reference occupancy changed: ${newRefOccupancyValue}`);
-          
+
           // ✅ NEW APPROACH: Trigger full recalculation of BOTH engines
           // This ensures both Target and Reference models get updated with correct temperatures
           // based on their respective occupancy values
           calculateAll();
-          
+
           // ✅ CRITICAL FIX: Update critical flag display immediately (mode-aware)
           updateCriticalOccupancyFlag();
         },
@@ -2373,7 +2382,6 @@ window.TEUI.SectionModules.sect03 = (function () {
       console.log("S03: Self-Contained State Module initialization complete");
     });
   }
-
 
   //==========================================================================
   // PART 5: PUBLIC API - Enhanced with DualState

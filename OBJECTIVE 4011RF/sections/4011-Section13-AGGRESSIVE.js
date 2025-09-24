@@ -720,16 +720,19 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     const projectElevation = getModeAwareGlobalValue("l_22") || 80;
     const seaLevelPressure = 101325;
-    coolingState.atmPressure = seaLevelPressure * Math.exp(-projectElevation / 8434);
+    coolingState.atmPressure =
+      seaLevelPressure * Math.exp(-projectElevation / 8434);
 
     const coolingSetTempOverride = getModeAwareGlobalValue("l_24");
-    coolingState.coolingSetTemp = coolingSetTempOverride || getModeAwareGlobalValue("h_24") || 24;
+    coolingState.coolingSetTemp =
+      coolingSetTempOverride || getModeAwareGlobalValue("h_24") || 24;
 
     coolingState.coolingDegreeDays = getModeAwareGlobalValue("d_21") || 196;
     coolingState.buildingVolume = getModeAwareGlobalValue("d_105") || 8000;
     coolingState.buildingArea = getModeAwareGlobalValue("h_15") || 1427.2;
     coolingState.coolingLoad = getModeAwareGlobalValue("l_128") || 0;
-    coolingState.ventilationMethod = ModeManager.getValue("g_118") || "Constant";
+    coolingState.ventilationMethod =
+      ModeManager.getValue("g_118") || "Constant";
 
     // Calculate A50 temperature (Excel E64 formula)
     calculateA50Temp();
@@ -754,17 +757,27 @@ window.TEUI.SectionModules.sect13 = (function () {
   /** [Cooling Calc] Calculate atmospheric values */
   function calculateAtmosphericValues() {
     // Calculate saturation vapor pressure (Tetens formula)
-    const pSatAvg = 610.94 * Math.exp((17.625 * coolingState.nightTimeTemp) / (coolingState.nightTimeTemp + 243.04));
-    
+    const pSatAvg =
+      610.94 *
+      Math.exp(
+        (17.625 * coolingState.nightTimeTemp) /
+          (coolingState.nightTimeTemp + 243.04),
+      );
+
     // Calculate partial pressure of water vapor
     const partialPressure = pSatAvg * coolingState.coolingSeasonMeanRH;
-    
+
     // Calculate indoor saturation vapor pressure
-    const pSatIndoor = 610.94 * Math.exp((17.625 * coolingState.coolingSetTemp) / (coolingState.coolingSetTemp + 243.04));
-    
+    const pSatIndoor =
+      610.94 *
+      Math.exp(
+        (17.625 * coolingState.coolingSetTemp) /
+          (coolingState.coolingSetTemp + 243.04),
+      );
+
     // Calculate indoor partial pressure (assuming same RH indoors)
     const partialPressureIndoor = pSatIndoor * coolingState.coolingSeasonMeanRH;
-    
+
     // Store results in cooling state
     coolingState.pSatAvg = pSatAvg;
     coolingState.partialPressure = partialPressure;
@@ -775,14 +788,18 @@ window.TEUI.SectionModules.sect13 = (function () {
   /** [Cooling Calc] Calculate humidity ratios */
   function calculateHumidityRatios() {
     // Calculate humidity ratio indoor
-    const humidityRatioIndoor = (0.62198 * coolingState.partialPressureIndoor) / (coolingState.atmPressure - coolingState.partialPressureIndoor);
-    
+    const humidityRatioIndoor =
+      (0.62198 * coolingState.partialPressureIndoor) /
+      (coolingState.atmPressure - coolingState.partialPressureIndoor);
+
     // Calculate humidity ratio at average conditions
-    const humidityRatioAvg = (0.62198 * coolingState.partialPressure) / (coolingState.atmPressure - coolingState.partialPressure);
-    
+    const humidityRatioAvg =
+      (0.62198 * coolingState.partialPressure) /
+      (coolingState.atmPressure - coolingState.partialPressure);
+
     // Calculate humidity ratio difference
     const humidityRatioDifference = humidityRatioIndoor - humidityRatioAvg;
-    
+
     // Store results in cooling state
     coolingState.humidityRatioIndoor = humidityRatioIndoor;
     coolingState.humidityRatioAvg = humidityRatioAvg;
@@ -799,10 +816,10 @@ window.TEUI.SectionModules.sect13 = (function () {
   function calculateWetBulbTemperature() {
     const tdb = coolingState.nightTimeTemp; // Using night-time temp as dry bulb
     const rh = coolingState.coolingSeasonMeanRH * 100; // Convert to percentage
-    
+
     // Linear equation to obtain Twb from Tdb and RH%
     const twb = tdb - (tdb - (tdb - (100 - rh) / 5)) * (0.1 + 0.9 * (rh / 100));
-    
+
     coolingState.wetBulbTemperature = twb;
     return twb;
   }
@@ -812,19 +829,24 @@ window.TEUI.SectionModules.sect13 = (function () {
     // Get building parameters
     const volume = coolingState.buildingVolume;
     const area = coolingState.buildingArea;
-    
+
     // Calculate total mass of building air
     const totalMass = volume * coolingState.airMass;
-    
+
     // Calculate temperature differential for free cooling
-    const tempDifferential = Math.max(0, coolingState.nightTimeTemp - coolingState.coolingSetTemp);
-    
+    const tempDifferential = Math.max(
+      0,
+      coolingState.nightTimeTemp - coolingState.coolingSetTemp,
+    );
+
     // Calculate cooling energy potential (simplified)
-    const coolingCapacity = totalMass * coolingState.specificHeatCapacity * tempDifferential;
-    
+    const coolingCapacity =
+      totalMass * coolingState.specificHeatCapacity * tempDifferential;
+
     // Convert to kWh/yr and apply occupancy factors
-    const freeCoolingLimit = (coolingCapacity * coolingState.daysActiveCooling * 24) / (1000 * 1000); // Convert J to kWh
-    
+    const freeCoolingLimit =
+      (coolingCapacity * coolingState.daysActiveCooling * 24) / (1000 * 1000); // Convert J to kWh
+
     return Math.max(0, freeCoolingLimit);
   }
 
@@ -2056,20 +2078,26 @@ window.TEUI.SectionModules.sect13 = (function () {
       sm.addListener("d_129", calculateMitigatedCED); // d_129 from S14
       sm.addListener("h_124", calculateMitigatedCED); // h_124 from S13 (Free Cooling)
       sm.addListener("d_123", calculateMitigatedCED); // d_123 from S13 (Vent Recovery)
-      
+
       // ✅ CRITICAL FIX: Oil and Gas fuel volume listeners for emissions calculations
       sm.addListener("f_115", () => {
-        console.log("[Section13] 📡 ⛽ f_115 (OIL VOLUME) changed - recalculating emissions");
+        console.log(
+          "[Section13] 📡 ⛽ f_115 (OIL VOLUME) changed - recalculating emissions",
+        );
         calculateAll();
         ModeManager.updateCalculatedDisplayValues();
       }); // Oil volume changes
       sm.addListener("h_115", () => {
-        console.log("[Section13] 📡 ⛽ h_115 (GAS VOLUME) changed - recalculating emissions");
+        console.log(
+          "[Section13] 📡 ⛽ h_115 (GAS VOLUME) changed - recalculating emissions",
+        );
         calculateAll();
         ModeManager.updateCalculatedDisplayValues();
       }); // Gas volume changes
       sm.addListener("j_115", () => {
-        console.log("[Section13] 📡 ⛽ j_115 (AFUE) changed - recalculating fuel impact and emissions");
+        console.log(
+          "[Section13] 📡 ⛽ j_115 (AFUE) changed - recalculating fuel impact and emissions",
+        );
         calculateAll();
         ModeManager.updateCalculatedDisplayValues();
       }); // AFUE changes affect fuel calculations
@@ -2628,7 +2656,8 @@ window.TEUI.SectionModules.sect13 = (function () {
     const heatingSystemType = ModeManager.getValue("d_113");
     const coolingDemand_m129 = getModeAwareGlobalValue("m_129") || 0;
     const copcool_hp_j113 = getModeAwareGlobalValue("j_113") || 0;
-    const copcool_dedicated_j116 = window.TEUI.parseNumeric(ModeManager.getValue("j_116")) || 3.3;
+    const copcool_dedicated_j116 =
+      window.TEUI.parseNumeric(ModeManager.getValue("j_116")) || 3.3;
 
     let copcool_to_use = 0;
     let coolingLoad_d117 = 0;
@@ -2671,8 +2700,10 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     const ref_cop_cool_T116 = 3.35;
     const ref_intensity_T117 = 138;
-    const m116_value = copcool_to_use > 0 ? ref_cop_cool_T116 / copcool_to_use : 0;
-    const m117_value = ref_intensity_T117 > 0 ? intensity_f117 / ref_intensity_T117 : 0;
+    const m116_value =
+      copcool_to_use > 0 ? ref_cop_cool_T116 / copcool_to_use : 0;
+    const m117_value =
+      ref_intensity_T117 > 0 ? intensity_f117 / ref_intensity_T117 : 0;
 
     return {
       j_116: copcool_to_use,
@@ -2693,12 +2724,14 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   function calculateVentilationRates() {
-    const ratePerPerson = window.TEUI.parseNumeric(ModeManager.getValue("d_119")) || 0;
+    const ratePerPerson =
+      window.TEUI.parseNumeric(ModeManager.getValue("d_119")) || 0;
     const cfm = ratePerPerson * 2.11888;
     const m3hr = ratePerPerson * 3.6;
 
     const ventMethod = ModeManager.getValue("g_118");
-    const ratePerPerson_d119 = window.TEUI.parseNumeric(ModeManager.getValue("d_119")) || 0;
+    const ratePerPerson_d119 =
+      window.TEUI.parseNumeric(ModeManager.getValue("d_119")) || 0;
     const volume = getModeAwareGlobalValue("d_105") || 0;
     const ach = window.TEUI.parseNumeric(ModeManager.getValue("l_118")) || 0;
     const occupiedHours = getModeAwareGlobalValue("i_63") || 0;
@@ -2709,27 +2742,44 @@ window.TEUI.SectionModules.sect13 = (function () {
     if (ventMethod === "Occupant Constant") {
       ventRateLs = ratePerPerson_d119 * occupants_d63;
     } else if (ventMethod === "Occupant by Schedule") {
-      ventRateLs = totalHours > 0 ? ratePerPerson_d119 * occupants_d63 * (occupiedHours / totalHours) : 0;
+      ventRateLs =
+        totalHours > 0
+          ? ratePerPerson_d119 * occupants_d63 * (occupiedHours / totalHours)
+          : 0;
     } else if (ventMethod === "Volume by Schedule") {
-      ventRateLs = totalHours > 0 && volume > 0 ? ((ach * volume) / 3.6) * (occupiedHours / totalHours) : 0;
+      ventRateLs =
+        totalHours > 0 && volume > 0
+          ? ((ach * volume) / 3.6) * (occupiedHours / totalHours)
+          : 0;
     } else if (ventMethod === "Volume Constant") {
       ventRateLs = volume > 0 ? (ach * volume) / 3.6 : 0;
     } else {
       ventRateLs = volume > 0 ? (ach * volume) / 3.6 : 0;
     }
 
-    return { f_119: cfm, h_119: m3hr, d_120: ventRateLs, f_120: ventRateLs * 2.11888, h_120: ventRateLs * 3.6 };
+    return {
+      f_119: cfm,
+      h_119: m3hr,
+      d_120: ventRateLs,
+      f_120: ventRateLs * 2.11888,
+      h_120: ventRateLs * 3.6,
+    };
   }
 
   function calculateVentilationEnergy() {
     const ventRate = getModeAwareGlobalValue("d_120") || 0;
     const hdd = getModeAwareGlobalValue("d_20");
-    const efficiency = (window.TEUI.parseNumeric(ModeManager.getValue("d_118")) || 0) / 100;
+    const efficiency =
+      (window.TEUI.parseNumeric(ModeManager.getValue("d_118")) || 0) / 100;
     const heatingVentEnergy = (1.21 * ventRate * hdd * 24) / 1000;
     const recoveredEnergy = heatingVentEnergy * efficiency;
     const netHeatLoss = heatingVentEnergy - recoveredEnergy;
 
-    return { d_121: heatingVentEnergy, i_121: recoveredEnergy, m_121: netHeatLoss };
+    return {
+      d_121: heatingVentEnergy,
+      i_121: recoveredEnergy,
+      m_121: netHeatLoss,
+    };
   }
 
   function calculateCoolingVentilation() {
@@ -2737,32 +2787,55 @@ window.TEUI.SectionModules.sect13 = (function () {
     const cdd_d21 = getModeAwareGlobalValue("d_21") || 0;
     const occupiedHours_i63 = getModeAwareGlobalValue("i_63") || 0;
     const totalHours_j63 = getModeAwareGlobalValue("j_63") || 8760;
-    const occupancyFactor = totalHours_j63 > 0 ? occupiedHours_i63 / totalHours_j63 : 0;
+    const occupancyFactor =
+      totalHours_j63 > 0 ? occupiedHours_i63 / totalHours_j63 : 0;
     const latentLoadFactor_i122 = coolingState.latentLoadFactor;
     const summerBoostRawValue = ModeManager.getValue("l_119");
-    const summerBoostFactor = summerBoostRawValue === "None" || summerBoostRawValue === "" ? 1.0 : window.TEUI.parseNumeric(summerBoostRawValue) || 1.0;
+    const summerBoostFactor =
+      summerBoostRawValue === "None" || summerBoostRawValue === ""
+        ? 1.0
+        : window.TEUI.parseNumeric(summerBoostRawValue) || 1.0;
     const coolingSystem_d116 = ModeManager.getValue("d_116") || "No Cooling";
     const baseConstant = 1.21;
-    const sre_d118 = (window.TEUI.parseNumeric(ModeManager.getValue("d_118")) || 0) / 100;
+    const sre_d118 =
+      (window.TEUI.parseNumeric(ModeManager.getValue("d_118")) || 0) / 100;
 
     let ventEnergyCoolingIncoming_d122 = 0;
     if (coolingSystem_d116 === "Cooling") {
       if (summerBoostRawValue === "None" || summerBoostRawValue === "") {
-        ventEnergyCoolingIncoming_d122 = ((baseConstant * ventilationRateLs_d120 * cdd_d21 * 24) / 1000) * occupancyFactor * latentLoadFactor_i122;
+        ventEnergyCoolingIncoming_d122 =
+          ((baseConstant * ventilationRateLs_d120 * cdd_d21 * 24) / 1000) *
+          occupancyFactor *
+          latentLoadFactor_i122;
       } else {
-        ventEnergyCoolingIncoming_d122 = ((baseConstant * ventilationRateLs_d120 * cdd_d21 * 24) / 1000) * occupancyFactor * summerBoostFactor * latentLoadFactor_i122;
+        ventEnergyCoolingIncoming_d122 =
+          ((baseConstant * ventilationRateLs_d120 * cdd_d21 * 24) / 1000) *
+          occupancyFactor *
+          summerBoostFactor *
+          latentLoadFactor_i122;
       }
     } else {
       if (summerBoostRawValue === "None" || summerBoostRawValue === "") {
-        ventEnergyCoolingIncoming_d122 = ((baseConstant * ventilationRateLs_d120 * cdd_d21 * 24) / 1000) * latentLoadFactor_i122;
+        ventEnergyCoolingIncoming_d122 =
+          ((baseConstant * ventilationRateLs_d120 * cdd_d21 * 24) / 1000) *
+          latentLoadFactor_i122;
       } else {
-        ventEnergyCoolingIncoming_d122 = ((baseConstant * ventilationRateLs_d120 * cdd_d21 * 24) / 1000) * summerBoostFactor * latentLoadFactor_i122;
+        ventEnergyCoolingIncoming_d122 =
+          ((baseConstant * ventilationRateLs_d120 * cdd_d21 * 24) / 1000) *
+          summerBoostFactor *
+          latentLoadFactor_i122;
       }
     }
 
     const ventEnergyRecovered_d123 = ventEnergyCoolingIncoming_d122 * sre_d118;
 
-    return { incoming: ventEnergyCoolingIncoming_d122, recovered: ventEnergyRecovered_d123, i_122: latentLoadFactor_i122, d_122: ventEnergyCoolingIncoming_d122, d_123: ventEnergyRecovered_d123 };
+    return {
+      incoming: ventEnergyCoolingIncoming_d122,
+      recovered: ventEnergyRecovered_d123,
+      i_122: latentLoadFactor_i122,
+      d_122: ventEnergyCoolingIncoming_d122,
+      d_123: ventEnergyRecovered_d123,
+    };
   }
 
   function calculateFreeCooling() {
@@ -2776,7 +2849,11 @@ window.TEUI.SectionModules.sect13 = (function () {
       potentialLimit = calculateFreeCoolingLimit();
       if (setbackValueStr) {
         let parsedNumForFactor = window.TEUI.parseNumeric(setbackValueStr);
-        if (!isNaN(parsedNumForFactor) && parsedNumForFactor >= 0 && parsedNumForFactor <= 100) {
+        if (
+          !isNaN(parsedNumForFactor) &&
+          parsedNumForFactor >= 0 &&
+          parsedNumForFactor <= 100
+        ) {
           setbackFactor = parsedNumForFactor / 100;
         } else {
           setbackFactor = 1.0;
@@ -2800,9 +2877,13 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   function calculateAll() {
-    console.log("[Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...");
+    console.log(
+      "[Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...",
+    );
     const modeAtCalculationStart = ModeManager.currentMode;
-    console.log(`[Section13] 🎯 Mode captured at calculation start: ${modeAtCalculationStart}`);
+    console.log(
+      `[Section13] 🎯 Mode captured at calculation start: ${modeAtCalculationStart}`,
+    );
 
     try {
       console.log("[Section13] 🔄 Starting Reference Model calculations...");
@@ -2813,18 +2894,31 @@ window.TEUI.SectionModules.sect13 = (function () {
       calculateTargetModel();
       console.log("[Section13] ✅ Target Model complete");
 
-      if (Object.keys(lastReferenceResults).length > 0 && window.TEUI?.StateManager) {
+      if (
+        Object.keys(lastReferenceResults).length > 0 &&
+        window.TEUI?.StateManager
+      ) {
         const shouldRewrite = modeAtCalculationStart === "reference";
         if (shouldRewrite) {
-          console.log("[Section13] 🔄 Re-writing Reference results to prevent race conditions...");
+          console.log(
+            "[Section13] 🔄 Re-writing Reference results to prevent race conditions...",
+          );
           Object.entries(lastReferenceResults).forEach(([fieldId, value]) => {
             if (value !== null && value !== undefined) {
-              window.TEUI.StateManager.setValue(`ref_${fieldId}`, value.toString(), "calculated-persistent");
+              window.TEUI.StateManager.setValue(
+                `ref_${fieldId}`,
+                value.toString(),
+                "calculated-persistent",
+              );
             }
           });
-          console.log(`[Section13] ✅ Re-wrote ${Object.keys(lastReferenceResults).length} Reference values`);
+          console.log(
+            `[Section13] ✅ Re-wrote ${Object.keys(lastReferenceResults).length} Reference values`,
+          );
         } else {
-          console.log(`[Section13] ⏭️ Skipping Reference value re-write - triggered in ${modeAtCalculationStart} mode`);
+          console.log(
+            `[Section13] ⏭️ Skipping Reference value re-write - triggered in ${modeAtCalculationStart} mode`,
+          );
         }
       }
 
@@ -2849,9 +2943,21 @@ window.TEUI.SectionModules.sect13 = (function () {
       const coolingResults = calculateCoolingSystem();
       const mitigatedResults = calculateMitigatedCED();
 
-      storeReferenceResults(copResults, heatingResults, coolingResults, mitigatedResults, ventilationRatesResults, ventilationEnergyResults, coolingVentilationResults, freeCoolingResults);
+      storeReferenceResults(
+        copResults,
+        heatingResults,
+        coolingResults,
+        mitigatedResults,
+        ventilationRatesResults,
+        ventilationEnergyResults,
+        coolingVentilationResults,
+        freeCoolingResults,
+      );
     } catch (error) {
-      console.error("[Section13] Error in Reference Model calculations:", error);
+      console.error(
+        "[Section13] Error in Reference Model calculations:",
+        error,
+      );
     } finally {
       ModeManager.currentMode = originalMode;
     }
@@ -2872,7 +2978,16 @@ window.TEUI.SectionModules.sect13 = (function () {
       const coolingResults = calculateCoolingSystem();
       const mitigatedResults = calculateMitigatedCED();
 
-      updateTargetModelDOMValues(copResults, heatingResults, coolingResults, ventilationRatesResults, ventilationEnergyResults, coolingVentilationResults, freeCoolingResults, mitigatedResults);
+      updateTargetModelDOMValues(
+        copResults,
+        heatingResults,
+        coolingResults,
+        ventilationRatesResults,
+        ventilationEnergyResults,
+        coolingVentilationResults,
+        freeCoolingResults,
+        mitigatedResults,
+      );
       updateAllReferenceIndicators();
     } catch (error) {
       console.error("[Section13] Error in Target Model calculations:", error);
