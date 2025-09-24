@@ -1,7 +1,7 @@
 # S13-ENDGAME.md: The Final, Architecturally-Compliant Refactor for Section 13
 
 **Version**: 1.0
-**Date**: September 12, 2025
+**Date**: September 12, 2025 (Updated Sept 23rd, 2025)
 **Status**: This document outlines the definitive and final refactoring plan for Section 13 to achieve perfect dual-state compliance, building upon the critical insights gathered in `S13-MASTER-WORKPLAN.md`.
 
 ---
@@ -101,7 +101,7 @@ This refactor will be considered complete and successful when the following cond
 
 **ESLint Errors to Address:**
 - `calculateSpaceHeatingEmissions` function not defined (referenced in S13 files)
-- Multiple S13 backup files have same undefined function reference
+- Multiple S13 backup files have same undefined function reference - can be safely ignored as focus is on the 13.js working file. 
 - 140+ unused variable warnings (code cleanup opportunity)
 
 **Status**: Non-critical for functionality, but should be cleaned up for code quality
@@ -217,4 +217,62 @@ This refactor will be considered complete and successful when the following cond
 - ✅ **Known baselines** - start from proven calculation foundations
 
 **Target Completion**: September 14, 2025 - Final S13 with both perfect state isolation AND Excel calculation parity.
+
+---
+
+## 7. Claude Code Strategic Additions (Sept 24, 2025 - 12:50am)
+
+### **Assessment: Surgical Precision Required**
+
+Given the 100% Excel parity achievement (h_10 = 93.7) and the graveyard of failed S13 refactors, this is now a **timing/sequencing issue**, not an architectural problem. The conservative approach is exactly right.
+
+### **Phase 0: Deep Dive Debugging (Before Any Code Changes)**
+
+**Objective**: Understand the exact mechanism of the "cooling bump" before touching any code.
+
+1. **"Cooling Bump" Forensics**:
+   - Log the precise calculation sequence difference between:
+     - Initial run: h_10 = 93.4
+     - Post-bump: h_10 = 93.7 (correct)
+   - Capture which specific functions/calculations are triggered by the manual d_116 toggle
+   - Document the dependency chain that gets re-executed
+
+2. **Calculation Sequence Mapping**:
+   - Trace the exact order of function calls in both scenarios
+   - Identify which calculation is "missing" on first pass
+   - Determine if it's a dependency timing issue or state update sequence problem
+
+3. **Minimal Impact Analysis**:
+   - Since calculations work perfectly with manual trigger, identify the smallest possible code change
+   - Focus on replicating the bump effect automatically rather than refactoring
+
+### **Phase 1.5: Ultra-Conservative Testing Framework**
+
+**Objective**: Create a safety net before making any changes.
+
+1. **Regression Safety Net**:
+   - Automated verification that h_10 = 93.7 AND state isolation work before/after changes
+   - Test both Target and Reference model independence
+   - Quick rollback strategy if working state breaks
+
+2. **Surgical Implementation Strategy**:
+   - Preserve the cooling engine itself - avoid touching core calculations
+   - Focus on dependency ordering or missing function calls
+   - Make the minimum change that eliminates manual trigger requirement
+
+### **Key Strategic Insights**
+
+1. **Preserve What Works**: Current system achieves 100% Excel parity - this is gold
+2. **Timing Over Architecture**: This feels like dependency sequencing, not a Pattern 1 refactor need
+3. **Surgical Precision**: Given complexity and previous failures, minimal change approach is critical
+4. **Trust the Process**: The methodical, conservative approach learned from failed attempts is wise
+
+### **Critical Success Factors**
+
+- **No breaking changes**: Maintain h_10 = 93.7 and state isolation at all costs
+- **Minimal code impact**: Find the smallest change that replicates bump effect
+- **Continuous validation**: Test after every small change
+- **Quick rollback capability**: Be ready to revert if anything breaks
+
+**Ready to execute with surgical precision on Sept 24, 2025** 🎯
 
