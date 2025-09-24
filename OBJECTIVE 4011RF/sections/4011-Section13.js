@@ -200,7 +200,6 @@ window.TEUI.SectionModules.sect13 = (function () {
           criticalFields.includes(fieldId) &&
           ModeManager.currentMode === "reference"
         ) {
-          console.log(`[S13] Reference ${fieldId} → ${value}`);
           calculateAll(); // Runs both models - efficient and keeps both current
           ModeManager.updateCalculatedDisplayValues();
         }
@@ -2207,12 +2206,10 @@ window.TEUI.SectionModules.sect13 = (function () {
     // --- StateManager Listeners ---
     if (window.TEUI && window.TEUI.StateManager) {
       const sm = window.TEUI.StateManager; // Alias for brevity
-      console.log("[Section13] 🔗 Attaching StateManager listeners...");
 
       // ✅ CRITICAL FIX: Add StateManager listener for d_113 to eliminate "cooling bump" requirement
       // This ensures complete calculation cycle + downstream updates (A7 proven pattern)
       sm.addListener("d_113", (newValue, oldValue) => {
-        console.log(`[S13] Target d_113 → ${newValue}`);
 
         // ✅ PATTERN 2: Run dual-engine calculations for proper Target/Reference state handling
         calculateAll();
@@ -2955,6 +2952,14 @@ window.TEUI.SectionModules.sect13 = (function () {
     isReferenceCalculation = false,
     coolingContext,
   ) {
+    // Track cooling system calculations and key dependencies
+    const mode = isReferenceCalculation ? "REF" : "TGT";
+    const h10Before = window.TEUI?.StateManager?.getValue?.("h_10") || "undefined";
+    const m129Before = window.TEUI?.StateManager?.getValue?.("m_129") || "undefined";
+    const d117Before = window.TEUI?.StateManager?.getValue?.("d_117") || "undefined";
+
+    console.log(`[FORENSIC13] COOL-${mode} START: h_10=${h10Before}, m_129=${m129Before}, d_117=${d117Before}`);
+
     // ✅ PATTERN 1: Mode-aware reading (automatic with temporary mode switching)
     const coolingSystemType = ModeManager.getValue("d_116") || "No Cooling";
     const heatingSystemType = isReferenceCalculation
@@ -2976,9 +2981,6 @@ window.TEUI.SectionModules.sect13 = (function () {
     let coolingSink_l114 = 0; // Initialize Sink for Heatpump Cooling
     let isCoolingActive = coolingSystemType === "Cooling";
 
-    console.log(
-      `[Section13] 🧊 COOLING CALC: mode=${isReferenceCalculation ? "REF" : "TGT"}, coolingSystemType="${coolingSystemType}", heatingType="${heatingSystemType}", isCoolingActive=${isCoolingActive}, coolingDemand=${coolingDemand_m129}`,
-    );
 
     if (isCoolingActive) {
       if (heatingSystemType === "Heatpump") {
@@ -3038,12 +3040,15 @@ window.TEUI.SectionModules.sect13 = (function () {
       setFieldValue("m_116", m116_value, "percent-0dp");
       setFieldValue("m_117", m117_value, "percent-0dp");
 
-      console.log(
-        `[Section13] 🧊 COOLING RESULTS: d_117=${coolingLoad_d117}, j_116=${copcool_to_use}, l_116=${coolingSink_l116}, l_114=${coolingSink_l114}`,
-      );
 
       calculateCoolingVentilation();
     }
+
+    // Track cooling system calculation results
+    const h10After = window.TEUI?.StateManager?.getValue?.("h_10") || "undefined";
+    const d117After = window.TEUI?.StateManager?.getValue?.("d_117") || "undefined";
+
+    console.log(`[FORENSIC13] COOL-${mode} END: h_10=${h10After} (${h10Before}→${h10After}), d_117=${d117After} (${d117Before}→${d117After})`);
 
     // Return calculated values for Reference engine storage
     return {
@@ -3394,25 +3399,33 @@ window.TEUI.SectionModules.sect13 = (function () {
    * ✅ INCLUDES S11 PERSISTENCE PATTERN: Prevents Reference value race conditions
    */
   function calculateAll() {
-    console.log(
-      "[Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...",
-    );
+    // 🔍 FORENSIC LOGGING: Track calculation sequence for cooling bump analysis
+    const forensicId = `CALC_${Date.now()}`;
+    const startTime = performance.now();
+
+    // Track calculation runs to identify multiple initialization issue
+    window.TEUI.sect13.calcRunCount = (window.TEUI.sect13.calcRunCount || 0) + 1;
+    const runCount = window.TEUI.sect13.calcRunCount;
 
     // 🚨 CAPTURE MODE AT START: Prevent race conditions from mode changes during calculation
     const modeAtCalculationStart = ModeManager.currentMode;
-    console.log(
-      `[Section13] 🎯 Mode captured at calculation start: ${modeAtCalculationStart}`,
-    );
+    console.log(`[FORENSIC13] ${forensicId} 🚀 CALC #${runCount} START - Mode: ${modeAtCalculationStart}`);
+
+    // Track what's triggering multiple calculations during initialization
+    if (runCount <= 5) {
+      const caller = new Error().stack?.split('\n')[2]?.trim() || 'unknown';
+      console.log(`[FORENSIC13] ${forensicId} 🔍 TRIGGERED BY: ${caller}`);
+    }
+
+    // Track key values before calculations
+    const h10Before = window.TEUI?.StateManager?.getValue?.("h_10") || "undefined";
+    const d116State = window.TEUI?.StateManager?.getValue?.("d_116") || "undefined";
+    console.log(`[FORENSIC13] ${forensicId} 📊 BEFORE: h_10=${h10Before}, d_116=${d116State}`);
 
     // ✅ DUAL-ENGINE: Always run both engines in parallel
     try {
-      console.log("[Section13] 🔄 Starting Reference Model calculations...");
       calculateReferenceModel(); // Reads ReferenceState → stores ref_ prefixed
-      console.log("[Section13] ✅ Reference Model complete");
-
-      console.log("[Section13] 🔄 Starting Target Model calculations...");
       calculateTargetModel(); // Reads TargetState → stores unprefixed
-      console.log("[Section13] ✅ Target Model complete");
 
       // ✅ PHASE 5: S11 PERSISTENCE PATTERN - Re-write Reference results to prevent race conditions
       // ✅ TIMING FIX: Use captured mode instead of current mode to prevent race conditions
@@ -3445,9 +3458,12 @@ window.TEUI.SectionModules.sect13 = (function () {
         }
       }
 
-      console.log("[Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE");
+      // Track results and timing
+      const h10After = window.TEUI?.StateManager?.getValue?.("h_10") || "undefined";
+      const duration = (performance.now() - startTime).toFixed(2);
+      console.log(`[FORENSIC13] ${forensicId} 📊 AFTER: h_10=${h10After} (${h10Before}→${h10After}) ${duration}ms`);
     } catch (error) {
-      console.error("[Section13] ❌ ERROR in calculateAll:", error);
+      console.error(`[FORENSIC13] ${forensicId} ❌ ERROR in calculateAll:`, error);
     }
   }
 
@@ -3456,13 +3472,15 @@ window.TEUI.SectionModules.sect13 = (function () {
    * ✅ PATTERN 1: Temporary mode switching (S02 proven pattern)
    */
   function calculateReferenceModel() {
+    // Track Reference model impact
+    const h10BeforeRef = window.TEUI?.StateManager?.getValue?.("h_10") || "undefined";
+
     const originalMode = ModeManager.currentMode;
     ModeManager.currentMode = "reference"; // Temporarily switch mode
 
     // CHUNK 3E-3G FIX: Create isolated context for Reference model
     const referenceCoolingContext = createIsolatedCoolingContext("reference");
 
-    console.log("[Section13] Running Reference Model calculations...");
     try {
       // Helper function to get Reference values with proper fallback
       const getRefValue = (fieldId) => {
@@ -3523,7 +3541,6 @@ window.TEUI.SectionModules.sect13 = (function () {
         freeCoolingResults,
       );
 
-      console.log("[Section13] Reference Model calculations complete");
     } catch (error) {
       console.error(
         "[Section13] Error in Reference Model calculations:",
@@ -3531,6 +3548,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       );
     } finally {
       ModeManager.currentMode = originalMode; // ✅ CRITICAL: Always restore mode
+
     }
   }
 
@@ -3539,12 +3557,14 @@ window.TEUI.SectionModules.sect13 = (function () {
    * ✅ PATTERN 1: Temporary mode switching (S02 proven pattern)
    */
   function calculateTargetModel() {
+    // Track Target model impact
+    const h10BeforeTarget = window.TEUI?.StateManager?.getValue?.("h_10") || "undefined";
+
     // CHUNK 1: Create the context object. It is not used yet.
     const targetCoolingContext = createIsolatedCoolingContext("target");
     const originalMode = ModeManager.currentMode;
     ModeManager.currentMode = "target"; // Temporarily switch mode
 
-    console.log("[Section13] Running Target Model calculations...");
     try {
       // Run cooling physics *first* to update coolingState centrally
       // CHUNK 1: Pass the new (but currently unused) context down the chain.
@@ -3601,8 +3621,8 @@ window.TEUI.SectionModules.sect13 = (function () {
       console.error("[Section13] Error in Target Model calculations:", error);
     } finally {
       ModeManager.currentMode = originalMode; // ✅ CRITICAL: Always restore mode
+
     }
-    console.log("[Section13] Target Model calculations complete");
   }
 
   /**
