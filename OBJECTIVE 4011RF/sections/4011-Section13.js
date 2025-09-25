@@ -2808,15 +2808,12 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /**
-   * Calculate COPh and COPc values based on heating system and HSPF
+   * ✅ PHASE 2: Calculate COPh and COPc values with automatic mode awareness (ENDGAME Pattern 1)
    */
-  function calculateCOPValues(isReferenceCalculation = false) {
-    // ✅ DUAL-ENGINE: Read from the appropriate state based on the calculation mode.
-    const hspf =
-      window.TEUI.parseNumeric(
-        getSectionValue("f_113", isReferenceCalculation),
-      ) || 0;
-    const systemType = getSectionValue("d_113", isReferenceCalculation);
+  function calculateCOPValues() {
+    // ✅ PHASE 2: Automatic mode-aware reading via ModeManager
+    const hspf = window.TEUI.parseNumeric(ModeManager.getValue("f_113")) || 0;
+    const systemType = ModeManager.getValue("d_113");
 
     let copheat = 1;
     if (systemType === "Heatpump" && hspf > 0) {
@@ -2834,32 +2831,26 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /**
-   * ✅ UNIFIED: Calculate heating system with explicit data flow (S12 pattern)
+   * ✅ PHASE 2: Calculate heating system with automatic mode-aware data flow (ENDGAME Pattern 1)
    * This function consolidates heating demand, fuel impact, and emissions
-   * @param {boolean} isReferenceCalculation - Calculation mode flag
+   * Mode awareness is now automatic via temporary mode switching
    * @param {Object} copResults - Results from COP calculations
    * @param {number} tedValue - Total Energy Demand value
    * @returns {Object} Complete heating system results
    */
-  function calculateHeatingSystem(
-    isReferenceCalculation = false,
-    copResults = {},
-    tedValue = 0,
-  ) {
-    const systemType = getSectionValue("d_113", isReferenceCalculation);
-    const afue =
-      window.TEUI.parseNumeric(
-        getSectionValue("j_115", isReferenceCalculation),
-      ) || 1;
+  function calculateHeatingSystem(copResults = {}, tedValue = 0) {
+    // ✅ PHASE 2: Automatic mode-aware reading (no isReferenceCalculation parameter needed)
+    const systemType = ModeManager.getValue("d_113");
+    const afue = window.TEUI.parseNumeric(ModeManager.getValue("j_115")) || 1;
 
     const copHeat = copResults.h_113 || 1;
 
     console.log(
-      `[S13] ${isReferenceCalculation ? "REF" : "TGT"} HEATING: system=${systemType}, ted=${tedValue}, afue=${afue}, cop=${copHeat}`,
+      `[S13] ${ModeManager.currentMode.toUpperCase()} HEATING: system=${systemType}, ted=${tedValue}, afue=${afue}, cop=${copHeat}`,
     );
 
     // 🔍 CRITICAL DEBUG: Check if S13 publishes heating system selection
-    if (isReferenceCalculation) {
+    if (ModeManager.currentMode === "reference") {
       console.log(
         `[S13 REF DEBUG] About to calculate with heating system: ${systemType}`,
       );
@@ -2900,19 +2891,17 @@ window.TEUI.SectionModules.sect13 = (function () {
       }
     }
 
-    // Calculate space heating emissions
+    // ✅ PHASE 2: Automatic mode-aware emissions factor reading (ENDGAME Pattern 1)
     if (systemType === "Oil") {
-      const oilEmissionsFactor = isReferenceCalculation
-        ? getGlobalNumericValue("ref_l_30") ||
-          getGlobalNumericValue("l_30") ||
-          2753
+      // Automatic mode-aware reading - no manual mode checking needed
+      const oilEmissionsFactor = ModeManager.currentMode === "reference"
+        ? parseFloat(window.TEUI?.StateManager?.getValue("ref_l_30")) || 2753
         : getGlobalNumericValue("l_30") || 2753;
       emissions_f114 = (oilLitres_f115 * oilEmissionsFactor) / 1000;
     } else if (systemType === "Gas") {
-      const gasEmissionsFactor = isReferenceCalculation
-        ? getGlobalNumericValue("ref_l_28") ||
-          getGlobalNumericValue("l_28") ||
-          1921
+      // Automatic mode-aware reading - no manual mode checking needed  
+      const gasEmissionsFactor = ModeManager.currentMode === "reference"
+        ? parseFloat(window.TEUI?.StateManager?.getValue("ref_l_28")) || 1921
         : getGlobalNumericValue("l_28") || 1921;
       emissions_f114 = (gasM3_h115 * gasEmissionsFactor) / 1000;
     }
@@ -2942,8 +2931,10 @@ window.TEUI.SectionModules.sect13 = (function () {
     const heatingSystemType = isReferenceCalculation
       ? getSectionValue("d_113", true) // Reference reads Reference state
       : TargetState.getValue("d_113"); // Target reads Target state
-    const coolingDemand_m129 =
-      window.TEUI.parseNumeric(getFieldValue("m_129")) || 0;
+    // ✅ CONTAMINATION FIX: Mode-aware reading of cooling demand from S14
+    const coolingDemand_m129 = isReferenceCalculation
+      ? parseFloat(window.TEUI?.StateManager?.getValue("ref_m_129")) || 0 // Reference: read ref_m_129
+      : window.TEUI.parseNumeric(getFieldValue("m_129")) || 0; // Target: read m_129
     const copcool_hp_j113 =
       window.TEUI.parseNumeric(getFieldValue("j_113")) || 0;
     // ✅ FIXED: Read dedicated cooling COP from j_116 field (mode-aware)
@@ -3433,22 +3424,20 @@ window.TEUI.SectionModules.sect13 = (function () {
    */
   function calculateReferenceModel() {
     const originalMode = ModeManager.currentMode;
-    ModeManager.currentMode = "reference"; // Temporarily switch mode
-
-    // CHUNK 3E-3G FIX: Create isolated context for Reference model
-    const referenceCoolingContext = createIsolatedCoolingContext("reference");
-
-    console.log("[Section13] Running Reference Model calculations...");
+    
     try {
-      // Helper function to get Reference values with proper fallback
-      const getRefValue = (fieldId) => {
-        const refFieldId = `ref_${fieldId}`;
-        return (
-          window.TEUI?.StateManager?.getValue(refFieldId) ||
-          window.TEUI?.StateManager?.getReferenceValue(fieldId) ||
-          0 // ✅ FIX: Never read Target values in Reference calculations
-        );
-      };
+      // ✅ PHASE 1: Temporary mode switching (ENDGAME Pattern 1)
+      ModeManager.currentMode = "reference";
+      
+      // CHUNK 3E-3G FIX: Create isolated context for Reference model
+      const referenceCoolingContext = createIsolatedCoolingContext("reference");
+
+      console.log("[Section13] Running Reference Model calculations...");
+      
+      // ✅ CONTAMINATION FIX: Read ONLY ref_ prefixed values for Reference calculations (no fallbacks)
+      // This eliminates the getRefValue fallback contamination pattern found in S14/S15
+      // ✅ CONTAMINATION FIX: Read ONLY ref_ prefixed values for Reference calculations (no fallbacks)
+      // This eliminates the getRefValue fallback contamination pattern found in S14/S15
 
       // 🚨 DEBUG: Track what system type the Reference model is using
       const refSystemType = ReferenceState.getValue("d_113");
@@ -3456,16 +3445,12 @@ window.TEUI.SectionModules.sect13 = (function () {
         `[S13 CONTAMINATION DEBUG] calculateReferenceModel: Using system type = ${refSystemType}`,
       );
 
-      // Get external dependency values for Reference
-      const tedValueRef = window.TEUI.parseNumeric(getRefValue("d_127")) || 0;
+      // ✅ CRITICAL FIX: Read ONLY ref_d_127 from S14 (no fallback to Target d_127)
+      const tedValueRef = parseFloat(window.TEUI?.StateManager?.getValue("ref_d_127")) || 0;
 
-      // ✅ EXPLICIT DATA FLOW: Use same unified functions as Target, but with Reference flag
-      const copResults = calculateCOPValues(true);
-      const heatingResults = calculateHeatingSystem(
-        true,
-        copResults,
-        tedValueRef,
-      );
+      // ✅ PHASE 2: Use unified functions with automatic mode awareness (ENDGAME Pattern 1)
+      const copResults = calculateCOPValues();
+      const heatingResults = calculateHeatingSystem(copResults, tedValueRef);
       const ventilationRatesResults = calculateVentilationRates(true, referenceCoolingContext);
       const ventilationEnergyResults = calculateVentilationEnergy(true);
       // CHUNK 3E-3G FIX: Pass the reference context to calculateCoolingVentilation
@@ -3503,7 +3488,8 @@ window.TEUI.SectionModules.sect13 = (function () {
         error,
       );
     } finally {
-      ModeManager.currentMode = originalMode; // ✅ CRITICAL: Always restore mode
+      // ✅ PHASE 1: Always restore original mode (ENDGAME Pattern 1)
+      ModeManager.currentMode = originalMode;
     }
   }
 
@@ -3528,13 +3514,9 @@ window.TEUI.SectionModules.sect13 = (function () {
       // Get external dependency values
       const tedValue = window.TEUI.parseNumeric(getFieldValue("d_127")) || 0;
 
-      // ✅ EXPLICIT DATA FLOW: Chain calculations with parameter passing
-      const copResults = calculateCOPValues(false);
-      const heatingResults = calculateHeatingSystem(
-        false,
-        copResults,
-        tedValue,
-      );
+      // ✅ PHASE 2: Chain calculations with automatic mode awareness (ENDGAME Pattern 1)
+      const copResults = calculateCOPValues();
+      const heatingResults = calculateHeatingSystem(copResults, tedValue);
       const ventilationRatesResults = calculateVentilationRates(false, targetCoolingContext);
       const ventilationEnergyResults = calculateVentilationEnergy(false);
       const coolingVentilationResults = calculateCoolingVentilation(
@@ -3802,10 +3784,10 @@ window.TEUI.SectionModules.sect13 = (function () {
    * REFERENCE MODEL: Calculate heating system values using Reference inputs
    * SIMPLIFIED: No boolean parameters, dedicated Reference function
    */
-  function calculateReferenceModelHeatingSystem(getRefValue) {
+  function calculateReferenceModelHeatingSystem() {
     // ✅ REVERT: Use exact S13-BACKUP methodology - same formulas, Reference state inputs
     const systemType = ReferenceState.getValue("d_113");
-    const tedReference = window.TEUI.parseNumeric(getRefValue("d_127")) || 0; // Read Reference TED from S14
+    const tedReference = parseFloat(window.TEUI?.StateManager?.getValue("ref_d_127")) || 0; // Read Reference TED from S14
     const hspf =
       window.TEUI.parseNumeric(ReferenceState.getValue("f_113")) || 3.5;
 
@@ -3841,7 +3823,6 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     // Calculate fuel impact for Reference
     const fuelImpactResults = calculateReferenceModelHeatingFuelImpact(
-      getRefValue,
       systemType,
       tedReference,
       heatingDemand_d114,
@@ -3858,7 +3839,6 @@ window.TEUI.SectionModules.sect13 = (function () {
    * REFERENCE MODEL: Calculate heating fuel impact for gas and oil systems
    */
   function calculateReferenceModelHeatingFuelImpact(
-    getRefValue,
     systemType,
     tedReference,
     heatingDemand_d114,
