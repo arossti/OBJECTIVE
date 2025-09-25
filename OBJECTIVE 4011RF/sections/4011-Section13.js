@@ -980,42 +980,29 @@ window.TEUI.SectionModules.sect13 = (function () {
     isReferenceCalculation,
     coolingContext,
   ) {
-    // Keep signature for now
-    // CHUNK 3O: Read from context instead of global state
-    const coolingLoad = coolingContext.coolingLoad; // Annual kWh load (m_129)
-    // Get cooling days from m_19, default to 120
-    const coolingDays = window.TEUI.parseNumeric(getFieldValue("m_19")) || 120;
-    const freeCoolingLimit = currentFreeCoolingLimit; // Annual kWh free cooling (h_124)
-    let calculatedDays = 0;
-    let dailyCoolingLoad = 0;
-    let daysCoveredByFreeCooling = 0;
-
-    if (coolingLoad > 0 && freeCoolingLimit >= 0) {
-      if (coolingDays > 0) {
-        dailyCoolingLoad = coolingLoad / coolingDays; // Avg kWh/day
-        if (dailyCoolingLoad > 0) {
-          daysCoveredByFreeCooling = freeCoolingLimit / dailyCoolingLoad;
-          // Calculate the actual value (can be negative), but don't clamp or assign to state for now
-          calculatedDays = coolingDays - daysCoveredByFreeCooling;
-        } else {
-          calculatedDays = 0; // No load
-        }
-      } else {
-        calculatedDays = 0; // No cooling season
-      }
-    } else {
-      // Handle cases with no load or negative free cooling if needed for internal logic
-      // For now, just setting to 0 for internal consistency if load <= 0
-      calculatedDays = 0;
+    // ✅ EXCEL PARITY: Use exact Excel formula from COOLING-TARGET.csv line 55
+    // Excel: =E52/(E54*24) where E52=(E50-E51), E54=REPORT!M19
+    
+    const d_129 = window.TEUI.parseNumeric(getFieldValue("d_129")) || 0; // E50: Seasonal Cooling Load
+    const h_124 = currentFreeCoolingLimit; // E51: Free Cooling Potential
+    const m_19 = window.TEUI.parseNumeric(getFieldValue("m_19")) || 120; // E54: Cooling Season Days
+    
+    // Calculate E52: Unmet Cooling Load = E50 - E51
+    const unmetCoolingLoad = d_129 - h_124; // E52 = E50 - E51
+    
+    // Calculate E55: Days Active Cooling = E52 / (E54 * 24)
+    let daysActiveCooling = 0;
+    if (m_19 > 0) {
+      daysActiveCooling = unmetCoolingLoad / (m_19 * 24);
     }
-
-    // Logging removed
-    // console.warn(`[S13 Debug m_124] Inputs -> Load(m129): ${coolingLoad.toFixed(2)}, FreeCooling(h124): ${freeCoolingLimit.toFixed(2)}, SeasonDays(m19): ${coolingDays}`);
-    // console.warn(`[S13 Debug m_124] Calcs -> DailyLoad: ${dailyCoolingLoad.toFixed(2)}, DaysCovered: ${daysCoveredByFreeCooling.toFixed(2)}, Result(m124): ${calculatedDays.toFixed(2)} (clamped >= 0 for logging)`);
-
-    // Don't update state with this potentially incorrect value yet
-    // coolingState.daysActiveCooling = calculatedDays;
-    return calculatedDays; // Return the calculated value, even though it won't be directly displayed
+    
+    // ✅ EXCEL COMMENT: "Obviously negative days of free cooling is not possible - 
+    // the goal here is to get close to zero - anything less than zero is overkill ventilation-wise"
+    // So we preserve the raw calculation (can be negative) as per Excel methodology
+    
+    console.log(`[S13 m_124 EXCEL] E50(d_129)=${d_129}, E51(h_124)=${h_124}, E52(unmet)=${unmetCoolingLoad}, E54(m_19)=${m_19}, E55(result)=${daysActiveCooling}`);
+    
+    return daysActiveCooling; // Return exact Excel calculation result
   }
 
   /** [Cooling Calc] Calculate wet bulb temperature (Approximation) */
@@ -1973,11 +1960,11 @@ window.TEUI.SectionModules.sect13 = (function () {
           content: "kWh/yr",
           classes: ["label", "flex-cell"],
         },
-        j: {
-          content: "Cooling Days", //Days Active Cooling Required (Experimental)
+        j: {},
+        k: {
+          content: "Days Active Cooling Req'd (Experimental)",
           classes: ["label", "flex-cell"],
         },
-        k: {},
         l: {},
         m: {
           fieldId: "m_124",
@@ -3363,9 +3350,9 @@ window.TEUI.SectionModules.sect13 = (function () {
         }
         setFieldValue("d_124", percentFreeCooling, "percent-0dp");
 
-        // Calculate M124 (Days Active Cooling) - Set to TBD for now
-        // calculateDaysActiveCooling(finalFreeCoolingLimit);
-        setFieldValue("m_124", "TBD", "raw"); // Set display to TBD
+        // Calculate M124 (Days Active Cooling) - Using corrected Excel formula
+        const activeCoolingDays = calculateDaysActiveCooling(finalFreeCoolingLimit, false, coolingContext);
+        setFieldValue("m_124", activeCoolingDays, "number-2dp");
       }
 
       coolingContext.freeCoolingLimit = finalFreeCoolingLimit; // Keep context state consistent

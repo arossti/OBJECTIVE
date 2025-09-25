@@ -222,11 +222,13 @@ This refactor will be considered complete and successful when the following cond
 
 ## 4. Reference Contamination Investigation (Sept 24, 2025)
 
-### **BREAKTHROUGH: Systematic Contamination Source Identification**
+### **BREAKTHROUGH: S13 Confirmed as Primary Contamination Source**
 
 **Problem**: Target location changes (S03: Alexandria → Attawapiskat) cause Reference e_10 to jump from 211.6 → 243.8 when Reference should remain unchanged.
 
-**Root Cause Discovered**: Multiple sections using **fallback contamination patterns** where Reference calculations fall back to Target values when ref_ prefixed values are missing.
+**CRITICAL DISCOVERY (Sept 24, 2025)**: Testing with S13-AGGRESSIVE file **completely resolved S03 state mixing** but broke cooling calculations. This proves **S13 is the primary contamination source**.
+
+**Root Cause Confirmed**: S13's current Reference calculation logic contains contamination patterns that affect downstream S14/S15 calculations, causing Reference model to use Target-derived values.
 
 ### **Contamination Sources Identified & Status:**
 
@@ -258,13 +260,14 @@ const i97 = parseFloat(window.TEUI?.StateManager?.getValue("ref_i_97")) || 0;
 - **Investigation**: Verify S12 publishes clean `ref_i_104` values that don't change when Target location changes
 - **Pattern**: Check if S12 Reference calculations use contaminated climate values
 
-**S13 (Mechanical Loads) - m_121 & d_114 Investigation:**
-- **Issue**: S14 reads `ref_m_121` and S15 reads `ref_d_114` for Reference calculations  
-- **Investigation**: Verify S13 publishes clean Reference values independent of Target location changes
-- **Potential Problems**:
-  1. **getRefValue fallback patterns**: Similar to S14/S15 contamination  
-  2. **Missing ref_ value publishing**: S13 might not publish ref_m_121, ref_d_122, etc.
-  3. **Internal state contamination**: S13's Reference calculations might use Target heating loads
+**S13 (Mechanical Loads) - PRIMARY CONTAMINATION SOURCE CONFIRMED:**
+- **PROOF**: S13-AGGRESSIVE file test completely resolved state mixing when S13 was properly isolated
+- **Issue**: Current S13 Reference calculations contaminate downstream S14/S15 via m_121, d_114 values
+- **Critical Problems**:
+  1. **getRefValue fallback patterns**: Similar to S14/S15 contamination patterns we fixed
+  2. **Missing ref_ value publishing**: S13 likely not publishing clean ref_m_121, ref_d_114, etc.
+  3. **Internal state contamination**: S13's Reference calculations using Target heating loads or climate data
+  4. **Calculation accuracy vs state isolation**: Need S13 refactor that achieves BOTH (like S13-AGGRESSIVE had isolation but broke cooling)
 
 **Investigation Strategy**:
 - Check if S12/S13 publish clean ref_ values for S14/S15 consumption
@@ -279,7 +282,19 @@ const i97 = parseFloat(window.TEUI?.StateManager?.getValue("ref_i_97")) || 0;
 3. **Missing ref_ Publishing**: Reference calculations not storing results with ref_ prefix for downstream consumption
 4. **Cross-State Function Calls**: Reference calculations calling Target calculation functions
 
-**Strategic Approach**: Apply same contamination elimination patterns used successfully in S14/S15 to S13's Reference calculation logic.
+**Strategic Approach**: Complete S13-ENDGAME refactor to achieve both perfect state isolation (like S13-AGGRESSIVE) AND calculation accuracy (like current version). Apply same contamination elimination patterns used successfully in S14/S15, but with careful preservation of working cooling calculations.
+
+### **S13 Completion Priority (Sept 24, 2025)**
+
+**CONFIRMED**: S13 is the final piece needed for complete dual-state system stability. The S13-AGGRESSIVE test proves that proper S13 state isolation eliminates the Reference contamination issue entirely.
+
+**Completion Strategy**:
+1. **Apply S14/S15 contamination fixes to S13**: Eliminate getRefValue fallbacks, use direct ref_ reads
+2. **Preserve cooling calculation accuracy**: Don't break working cooling physics from current S13
+3. **Ensure proper ref_ publishing**: S13 must publish clean ref_m_121, ref_d_114 for downstream consumption
+4. **Test systematically**: Verify both state isolation AND cooling calculation accuracy
+
+**Success Criteria**: S13 refactor that achieves S13-AGGRESSIVE's state isolation without breaking cooling calculations.
 
 ---
 
