@@ -808,8 +808,29 @@ window.TEUI.SectionModules.sect13 = (function () {
 
   /** [Cooling Calc] Calculate latent load factor */
   function calculateLatentLoadFactor() {
-    // Formula: 1 + (Cooling Season Mean RH / Night-Time Temp)
-    return 1 + coolingState.coolingSeasonMeanRH / coolingState.nightTimeTemp;
+    // ✅ RESTORED: Use working S13's complex latent load calculation
+    const hDiff = coolingState.humidityRatioDifference;
+    const LHV = coolingState.latentHeatVaporization;
+    const Cp = coolingState.specificHeatCapacity;
+    const Tdiff = coolingState.nightTimeTemp - coolingState.coolingSetTemp;
+
+    // Check for division by zero or invalid inputs
+    if (
+      Cp === 0 ||
+      Tdiff === 0 ||
+      isNaN(hDiff) ||
+      isNaN(LHV) ||
+      isNaN(Cp) ||
+      isNaN(Tdiff)
+    ) {
+      console.warn("Latent Load Factor: Invalid inputs or division by zero.");
+      return 1.0;
+    }
+
+    const ratio = (hDiff * LHV) / (Cp * Tdiff);
+    const factor = 1 + ratio;
+    const finalFactor = Math.max(1.0, factor);
+    return finalFactor;
   }
 
   /** [Cooling Calc] Calculate wet bulb temperature */
@@ -1712,9 +1733,9 @@ window.TEUI.SectionModules.sect13 = (function () {
         k: {},
         l: {},
         m: {
-          fieldId: "m_124",
+          fieldId: "m_124", 
           type: "calculated",
-          value: "96",
+          value: "8.21", // ✅ FIXED: Updated to match corrected Excel formula result
           section: "mechanicalLoads",
           dependencies: ["cooling_daysActiveCooling", "h_124"], // Added h_124 dependency
         },
@@ -3183,13 +3204,44 @@ window.TEUI.SectionModules.sect13 = (function () {
     );
   }
 
+  /**
+   * ✅ RESTORED: Calculate Mitigated CED (m_129) with working S13's approach
+   */
   function calculateMitigatedCED() {
-    const d129 = getModeAwareGlobalValue("d_129") || 0;
-    const h124 = getModeAwareGlobalValue("h_124") || 0;
-    const d123 = getModeAwareGlobalValue("d_123") || 0;
+    // Use global parser directly (mode-aware via temporary mode switching)
+    const d129 = window.TEUI.parseNumeric(getFieldValue("d_129")) || 0;
+    const h124 = window.TEUI.parseNumeric(getFieldValue("h_124")) || 0;
+    const d123 = window.TEUI.parseNumeric(getFieldValue("d_123")) || 0;
+
     let m129_calculated = d129 - h124 - d123;
-    const m129 = Math.max(0, m129_calculated);
+    const m129 = Math.max(0, m129_calculated); // Clamp to zero
+
     return { m_129: m129 };
+  }
+
+  /**
+   * ✅ ADDED: Calculate days of active cooling required (Excel formula from COOLING-TARGET.csv)
+   */
+  function calculateDaysActiveCooling(currentFreeCoolingLimit) {
+    // ✅ EXCEL PARITY: Use exact Excel formula from COOLING-TARGET.csv line 55
+    // Excel: =E52/(E54*24) where E52=(E50-E51), E54=REPORT!M19
+    
+    const d_129 = window.TEUI.parseNumeric(getFieldValue("d_129")) || 0; // E50: Seasonal Cooling Load
+    const h_124 = currentFreeCoolingLimit; // E51: Free Cooling Potential
+    const m_19 = window.TEUI.parseNumeric(getFieldValue("m_19")) || 120; // E54: Cooling Season Days
+    
+    // Calculate E52: Unmet Cooling Load = E50 - E51
+    const unmetCoolingLoad = d_129 - h_124; // E52 = E50 - E51
+    
+    // Calculate E55: Days Active Cooling = E52 / (E54 * 24)
+    let daysActiveCooling = 0;
+    if (m_19 > 0) {
+      daysActiveCooling = unmetCoolingLoad / (m_19 * 24);
+    }
+    
+    console.log(`[S13-AGG m_124 EXCEL] E50(d_129)=${d_129}, E51(h_124)=${h_124}, E52(unmet)=${unmetCoolingLoad}, E54(m_19)=${m_19}, E55(result)=${daysActiveCooling}`);
+    
+    return daysActiveCooling; // Return exact Excel calculation result
   }
 
   //==========================================================================
