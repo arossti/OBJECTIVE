@@ -280,12 +280,10 @@ window.TEUI.SectionModules.sect02 = (function () {
         }, // validate as (Net m²)
         h: {
           fieldId: "h_15",
-          type: "editable", // *** REVERTED TO EDITABLE ***
-          value: "1,427.20", // *** RESTORED value, ensure formatting is consistent ***
-          classes: ["user-input", "editable"], // *** RESTORED classes ***
-          // Removed editable_slider specific config
+          type: "editable",
+          value: "1427.20", // ✅ FIXED: Raw value without comma for calculation stability
+          classes: ["user-input", "editable"],
           section: "buildingInfo",
-          // span: 2 // No longer spanning
         },
         i: {
           fieldId: "i_15_slider",
@@ -1458,10 +1456,10 @@ window.TEUI.SectionModules.sect02 = (function () {
       // ✅ PATTERN A: Save to current state (Target or Reference) via ModeManager
       ModeManager.setValue("h_15", areaValue.toString(), "user-modified");
 
-      // Recalculate after state update
-      calculateAll();
-      // Update DOM with new calculated values
-      ModeManager.updateCalculatedDisplayValues();
+      // ✅ RACE CONDITION FIX: Let StateManager listeners handle the calculation cascade
+      // S04 and S09 have h_15/ref_h_15 listeners that will trigger their calculateAll()
+      // S02 doesn't need to call calculateAll() - it just publishes the area change
+      console.log(`[S02] Area updated to ${areaValue} - letting downstream sections handle calculations`);
     }
   }
 
@@ -1655,27 +1653,26 @@ window.TEUI.SectionModules.sect02 = (function () {
     },
 
     setDefaults: function () {
-      // S02 Target defaults (Validation Case: 2022 reporting year)
-      // ✅ PATTERN A: Defaults are now sourced from field definitions
+      // ✅ ANTI-PATTERN FIX: Field definitions are single source of truth - no hardcoded fallbacks
       this.data = {
-        d_12: getFieldDefault("d_12") || "A-Assembly",
-        d_13: getFieldDefault("d_13") || "OBC SB10 5.5-6 Z6",
-        d_14: getFieldDefault("d_14") || "Utility Bills",
-        d_15: getFieldDefault("d_15") || "Self Reported",
-        h_12: getFieldDefault("h_12") || "2022",
-        h_13: getFieldDefault("h_13") || "50",
-        h_14: getFieldDefault("h_14") || "Three Feathers Terrace",
-        h_15: getFieldDefault("h_15") || "1,427.20", // Critical for e_10
-        i_16: getFieldDefault("i_16") || "Thomson Architecture, Inc.",
-        i_17: getFieldDefault("i_17") || "8154",
-        l_12: getFieldDefault("l_12") || "0.1300",
-        l_13: getFieldDefault("l_13") || "0.5070",
-        l_14: getFieldDefault("l_14") || "1.6200",
-        l_15: getFieldDefault("l_15") || "180.00",
-        l_16: getFieldDefault("l_16") || "1.5000",
+        d_12: getFieldDefault("d_12"),
+        d_13: getFieldDefault("d_13"),
+        d_14: getFieldDefault("d_14"),
+        d_15: getFieldDefault("d_15"),
+        h_12: getFieldDefault("h_12"),
+        h_13: getFieldDefault("h_13"),
+        h_14: getFieldDefault("h_14"),
+        h_15: getFieldDefault("h_15"), // No fallback - field definition is source of truth
+        i_16: getFieldDefault("i_16"),
+        i_17: getFieldDefault("i_17"),
+        l_12: getFieldDefault("l_12"),
+        l_13: getFieldDefault("l_13"),
+        l_14: getFieldDefault("l_14"),
+        l_15: getFieldDefault("l_15"),
+        l_16: getFieldDefault("l_16"),
       };
       console.log(
-        `S02: Target defaults set from field definitions - overriding any localStorage empties`,
+        `S02: Target defaults set from field definitions - single source of truth`,
       );
     },
   };
@@ -1728,30 +1725,29 @@ window.TEUI.SectionModules.sect02 = (function () {
     },
 
     setDefaults: function () {
-      // S02 Reference defaults (Validation Case: 2020 reporting year)
-      // ✅ PATTERN A: Initialize with base defaults, then apply Reference-specific overrides.
+      // ✅ ANTI-PATTERN FIX: Field definitions are single source of truth - no hardcoded fallbacks
       this.data = {
-        // 1. Initialize with base defaults from the single source of truth
-        d_12: getFieldDefault("d_12") || "A-Assembly",
-        d_14: getFieldDefault("d_14") || "Utility Bills",
-        d_15: getFieldDefault("d_15") || "Self Reported",
-        h_13: getFieldDefault("h_13") || "50",
-        h_14: getFieldDefault("h_14") || "Three Feathers Terrace", // Included for completeness
-        h_15: getFieldDefault("h_15") || "1,427.20", // CRITICAL for e_10
-        i_16: getFieldDefault("i_16") || "Thomson Architecture, Inc.",
-        i_17: getFieldDefault("i_17") || "8154",
-        l_12: getFieldDefault("l_12") || "0.1300",
-        l_13: getFieldDefault("l_13") || "0.5070",
-        l_14: getFieldDefault("l_14") || "1.6200",
-        l_15: getFieldDefault("l_15") || "180.00",
-        l_16: getFieldDefault("l_16") || "1.5000",
+        // 1. Initialize with base defaults from field definitions only
+        d_12: getFieldDefault("d_12"),
+        d_14: getFieldDefault("d_14"),
+        d_15: getFieldDefault("d_15"),
+        h_13: getFieldDefault("h_13"),
+        h_14: getFieldDefault("h_14"),
+        h_15: getFieldDefault("h_15"), // No fallback - field definition is source of truth
+        i_16: getFieldDefault("i_16"),
+        i_17: getFieldDefault("i_17"),
+        l_12: getFieldDefault("l_12"),
+        l_13: getFieldDefault("l_13"),
+        l_14: getFieldDefault("l_14"),
+        l_15: getFieldDefault("l_15"),
+        l_16: getFieldDefault("l_16"),
 
-        // 2. Apply Reference State overrides
-        d_13: "OBC SB10 5.5-6 Z6", // Reference building code - same standard as Target
-        h_12: "2022", // Reporting Period - same as Target
+        // 2. Apply Reference State overrides (mode-specific values only)
+        d_13: getFieldDefault("d_13"), // Same standard as Target for S02
+        h_12: getFieldDefault("h_12"), // Same reporting period as Target for S02
       };
       console.log(
-        `S02: Reference defaults set from field definitions with overrides - overriding any localStorage empties`,
+        `S02: Reference defaults set from field definitions - single source of truth with mode overrides`,
       );
     },
   };
@@ -1937,6 +1933,16 @@ window.TEUI.SectionModules.sect02 = (function () {
               const formatType = fieldId === "l_15" ? "cad-2dp" : "cad-4dp";
               displayValue =
                 window.TEUI?.formatNumber?.(numericValue, formatType) ??
+                stateValue;
+            }
+          }
+          
+          // ✅ CRITICAL FIX: Format h_15 area field consistently
+          if (fieldId === "h_15") {
+            const numericValue = window.TEUI?.parseNumeric?.(stateValue, 0);
+            if (numericValue > 0) {
+              displayValue =
+                window.TEUI?.formatNumber?.(numericValue, "number-2dp-comma") ??
                 stateValue;
             }
           }
