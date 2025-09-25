@@ -788,54 +788,62 @@ window.TEUI.SectionModules.sect13 = (function () {
 
   /** [Cooling Calc] Calculate atmospheric values */
   function calculateAtmosphericValues(coolingContext) {
-    // Calculate saturation vapor pressure (Tetens formula)
-    const pSatAvg =
-      610.94 *
-      Math.exp(
-        (17.625 * coolingContext.nightTimeTemp) /
-          (coolingContext.nightTimeTemp + 243.04),
-      );
+    // ✅ CRITICAL FIX: Use A50_temp (calculated temperature) instead of raw nightTimeTemp
+    const t_outdoor = coolingContext.A50_temp;
+    const outdoorRH = coolingContext.coolingSeasonMeanRH;
+    const t_indoor = coolingContext.coolingSetTemp;
+    const indoorRH_percent = window.TEUI.parseNumeric(getFieldValue("d_59")) || 45;
+    const indoorRH = indoorRH_percent / 100;
 
-    // Calculate partial pressure of water vapor
-    const partialPressure = pSatAvg * coolingContext.coolingSeasonMeanRH;
+    // Calculate outdoor saturation vapor pressure using A50_temp
+    coolingContext.pSatAvg =
+      610.94 * Math.exp((17.625 * t_outdoor) / (t_outdoor + 243.04));
+    
+    // Calculate outdoor partial pressure
+    coolingContext.partialPressure = coolingContext.pSatAvg * outdoorRH;
 
     // Calculate indoor saturation vapor pressure
-    const pSatIndoor =
-      610.94 *
-      Math.exp(
-        (17.625 * coolingContext.coolingSetTemp) /
-          (coolingContext.coolingSetTemp + 243.04),
-      );
-
-    // Calculate indoor partial pressure (assuming same RH indoors)
-    const partialPressureIndoor = pSatIndoor * coolingContext.coolingSeasonMeanRH;
-
-    // Store results in cooling context
-    coolingContext.pSatAvg = pSatAvg;
-    coolingContext.partialPressure = partialPressure;
-    coolingContext.pSatIndoor = pSatIndoor;
-    coolingContext.partialPressureIndoor = partialPressureIndoor;
+    coolingContext.pSatIndoor =
+      610.94 * Math.exp((17.625 * t_indoor) / (t_indoor + 243.04));
+    
+    // Calculate indoor partial pressure (using indoor RH, not outdoor RH)
+    coolingContext.partialPressureIndoor = coolingContext.pSatIndoor * indoorRH;
   }
 
   /** [Cooling Calc] Calculate humidity ratios */
   function calculateHumidityRatios(coolingContext) {
-    // Calculate humidity ratio indoor
-    const humidityRatioIndoor =
-      (0.62198 * coolingContext.partialPressureIndoor) /
-      (coolingContext.atmPressure - coolingContext.partialPressureIndoor);
+    const atmPressure = coolingContext.atmPressure || 101325;
+    const pPartialIndoor = coolingContext.partialPressureIndoor;
+    const pSatAvgOutdoor = coolingContext.pSatAvg; // Get Saturation Pressure Outdoor (A56)
 
-    // Calculate humidity ratio at average conditions
-    const humidityRatioAvg =
-      (0.62198 * coolingContext.partialPressure) /
-      (coolingContext.atmPressure - coolingContext.partialPressure);
+    // Calculate Indoor Humidity Ratio (A61)
+    if (atmPressure - pPartialIndoor === 0) {
+      console.warn("Cooling Calc: Division by zero prevented in indoor humidity ratio.");
+      coolingContext.humidityRatioIndoor = 0;
+    } else {
+      coolingContext.humidityRatioIndoor =
+        (0.62198 * pPartialIndoor) / (atmPressure - pPartialIndoor);
+    }
 
-    // Calculate humidity ratio difference
-    const humidityRatioDifference = humidityRatioIndoor - humidityRatioAvg;
+    // ✅ CRITICAL FIX: Calculate Outdoor Humidity Ratio (A62) - CORRECTED FORMULA
+    // First, calculate the outdoor partial pressure *using the required 70% RH* (Excel A57)
+    const outdoorRH_forA62 = 0.7;
+    const pPartialOutdoor_forA62 = pSatAvgOutdoor * outdoorRH_forA62;
 
-    // Store results in cooling context
-    coolingContext.humidityRatioIndoor = humidityRatioIndoor;
-    coolingContext.humidityRatioAvg = humidityRatioAvg;
-    coolingContext.humidityRatioDifference = humidityRatioDifference;
+    if (atmPressure - pSatAvgOutdoor === 0) {
+      console.warn("Cooling Calc: Division by zero prevented in outdoor humidity ratio.");
+      coolingContext.humidityRatioAvg = 0;
+    } else {
+      // Use the partial pressure based on 70% RH (pPartialOutdoor_forA62)
+      // Use pSatAvgOutdoor from context (A56) in denominator
+      coolingContext.humidityRatioAvg =
+        (0.62198 * pPartialOutdoor_forA62) / (atmPressure - pSatAvgOutdoor);
+    }
+
+    // Calculate Difference (A63) - CORRECTED ORDER
+    // Working S13: humidityRatioAvg - humidityRatioIndoor (outdoor - indoor)
+    coolingContext.humidityRatioDifference =
+      coolingContext.humidityRatioAvg - coolingContext.humidityRatioIndoor;
   }
 
   /** [Cooling Calc] Calculate latent load factor */
@@ -877,30 +885,62 @@ window.TEUI.SectionModules.sect13 = (function () {
     return twb;
   }
 
-  /** [Cooling Calc] Calculate free cooling limit */
+  /** [Cooling Calc] Calculate free cooling limit - Excel-compliant methodology */
   function calculateFreeCoolingLimit(coolingContext) {
-    // Get building parameters
-    const volume = coolingContext.buildingVolume;
-    const area = coolingContext.buildingArea;
+    // Add recursion protection
+    if (window.TEUI.sect13.calculatingFreeCooling) {
+      return coolingContext.freeCoolingLimit || 0; // Return cached value if already calculating
+    }
+    window.TEUI.sect13.calculatingFreeCooling = true;
 
-    // Calculate total mass of building air
-    const totalMass = volume * coolingContext.airMass;
+    let potentialLimit = 0;
+    try {
+      // ✅ EXCEL COMPLIANT: Follow Excel A31→A32→A33→Annual methodology
+      
+      // 1. Get ventilation flow rate from h_120 (Excel REPORT!H120)
+      const ventFlowRateM3hr = window.TEUI.parseNumeric(getFieldValue("h_120")) || 0;
+      const ventFlowRateM3s = ventFlowRateM3hr / 3600; // Convert to m³/s
+      const massFlowRateKgS = ventFlowRateM3s * coolingContext.airMass; // kg/s (Excel A30)
 
-    // Calculate temperature differential for free cooling
-    const tempDifferential = Math.max(
-      0,
-      coolingContext.nightTimeTemp - coolingContext.coolingSetTemp,
-    );
+      // 2. Get temperature values from context
+      const Cp = coolingContext.specificHeatCapacity; // J/kg·K (Excel E4)
+      const T_indoor = coolingContext.coolingSetTemp; // °C
+      const T_outdoor_night = coolingContext.nightTimeTemp; // °C
+      const coolingDays = window.TEUI.parseNumeric(getFieldValue("m_19")) || 120; // Excel REPORT!M19
 
-    // Calculate cooling energy potential (simplified)
-    const coolingCapacity =
-      totalMass * coolingContext.specificHeatCapacity * tempDifferential;
+      // 3. Calculate Temperature Difference (Excel A16)
+      const tempDiff = T_outdoor_night - T_indoor; // °C or K difference
 
-    // Convert to kWh/yr and apply occupancy factors
-    const freeCoolingLimit =
-      (coolingCapacity * coolingContext.daysActiveCooling * 24) / (1000 * 1000); // Convert J to kWh
+      // 4. Calculate Sensible Power (Watts) - Excel A31: =A30*E4*A16
+      const sensiblePowerWatts = massFlowRateKgS * Cp * tempDiff;
 
-    return Math.max(0, freeCoolingLimit);
+      // 5. Determine potential SENSIBLE free cooling power
+      let sensibleCoolingPowerWatts = 0;
+      if (tempDiff < 0) {
+        // Only possible if outdoor air is cooler
+        // Use the positive magnitude of heat removal power
+        sensibleCoolingPowerWatts = Math.abs(sensiblePowerWatts);
+      }
+
+      // 6. Convert Sensible Power to Daily Sensible Energy (kWh/day) - Excel A33
+      // Excel A32: =A31*86400 (Joules per day)
+      // Excel A33: =A32/3600000 (kWh per day)
+      // Combined: (J/s) * (86400 s/day) / (3.6e6 J/kWh) = 0.024
+      const dailySensibleCoolingKWh = sensibleCoolingPowerWatts * 0.024;
+
+      // 7. Calculate Annual Potential Limit (kWh/yr) - Excel A33 * M19
+      potentialLimit = dailySensibleCoolingKWh * coolingDays;
+
+      // Store this sensible-only potential limit
+      coolingContext.calculatedPotentialFreeCooling = potentialLimit;
+    } catch (error) {
+      console.error("[S13-AGGRESSIVE Error] Error during calculateFreeCoolingLimit:", error);
+      potentialLimit = 0;
+    } finally {
+      window.TEUI.sect13.calculatingFreeCooling = false;
+    }
+    
+    return Math.max(0, potentialLimit);
   }
 
   /** [Cooling Calc] Orchestrates the internal cooling-related calculations */
