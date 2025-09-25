@@ -156,17 +156,17 @@ window.TEUI.SectionModules.sect04 = (function () {
     },
 
     setDefaults: function () {
-      // ✅ PHASE 5 FIX: Only user input defaults, read from field definitions (single source of truth)
+      // ✅ ANTI-PATTERN FIX: Field definitions are single source of truth - no hardcoded fallbacks
       this.data = {
         // ONLY user input fields - utility bill data (D27-D31)
-        d_27: this.getFieldDefault("d_27") || "132938", // Electricity kWh/yr
-        d_28: this.getFieldDefault("d_28") || "0", // Gas m3/yr
-        d_29: this.getFieldDefault("d_29") || "0", // Propane L/yr
-        d_30: this.getFieldDefault("d_30") || "0", // Oil L/yr
-        d_31: this.getFieldDefault("d_31") || "0", // Wood m3/yr
+        d_27: this.getFieldDefault("d_27"), // Electricity kWh/yr
+        d_28: this.getFieldDefault("d_28"), // Gas m3/yr
+        d_29: this.getFieldDefault("d_29"), // Propane L/yr
+        d_30: this.getFieldDefault("d_30"), // Oil L/yr
+        d_31: this.getFieldDefault("d_31"), // Wood m3/yr
 
         // Only other user-editable field
-        h_35: this.getFieldDefault("h_35") || "1.0", // PER Factor
+        h_35: this.getFieldDefault("h_35"), // PER Factor
 
         // ✅ ALL CALCULATED VALUES REMOVED - they come from calculation functions, not defaults!
         // This eliminates 50+ duplicate defaults that were causing data corruption risk
@@ -244,17 +244,17 @@ window.TEUI.SectionModules.sect04 = (function () {
     },
 
     setDefaults: function () {
-      // ✅ PHASE 5 FIX: Reference mirrors Target for user inputs, read from field definitions
+      // ✅ ANTI-PATTERN FIX: Field definitions are single source of truth - no hardcoded fallbacks
       this.data = {
         // ONLY user input fields - utility bills are "ground truth" (same for both modes)
-        d_27: this.getFieldDefault("d_27") || "132938", // Electricity kWh/yr
-        d_28: this.getFieldDefault("d_28") || "0", // Gas m3/yr
-        d_29: this.getFieldDefault("d_29") || "0", // Propane L/yr
-        d_30: this.getFieldDefault("d_30") || "0", // Oil L/yr
-        d_31: this.getFieldDefault("d_31") || "0", // Wood m3/yr
+        d_27: this.getFieldDefault("d_27"), // Electricity kWh/yr
+        d_28: this.getFieldDefault("d_28"), // Gas m3/yr
+        d_29: this.getFieldDefault("d_29"), // Propane L/yr
+        d_30: this.getFieldDefault("d_30"), // Oil L/yr
+        d_31: this.getFieldDefault("d_31"), // Wood m3/yr
 
         // Only other user-editable field
-        h_35: this.getFieldDefault("h_35") || "1.0", // PER Factor
+        h_35: this.getFieldDefault("h_35"), // PER Factor
 
         // ✅ ALL CALCULATED VALUES REMOVED - Reference calculations produce different values
         // but they come from calculation functions, not defaults!

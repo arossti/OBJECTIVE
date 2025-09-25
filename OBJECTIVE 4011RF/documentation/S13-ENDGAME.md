@@ -235,6 +235,38 @@ This refactor will be considered complete and successful when the following cond
 
 ---
 
+## 🚨 **CRITICAL DISCOVERY: S04 OVER-ENGINEERING CONTAMINATION RISK (Sept 25, 2025)**
+
+**MAJOR ARCHITECTURAL ISSUE IDENTIFIED**: Section 04 is severely over-engineered compared to Excel source.
+
+### **Excel Reality (FORMULAE-3039.csv lines 26-36):**
+- **10 simple rows** with clean formulas: `=D27-D43-I43`, `=F27*L27/1000`
+- **Straightforward calculations**: Read upstream values, apply formula, store result
+- **Minimal complexity**: Direct dependency chain without architectural overhead
+
+### **Current S04.js Reality:**
+- **2,837 lines** of complex dual-state architecture  
+- **100+ fallback contamination patterns**: `|| "Heatpump"`, `|| 0`, `|| "ON"`
+- **Extensive listener infrastructure**: 50+ StateManager listeners for every possible change
+- **Over-engineered state management**: Far beyond Excel's simple calculation model
+
+### **Contamination Risk Assessment:**
+**HIGH PRIORITY**: S04's extensive fallback patterns may be **masking missing ref_ publications** from upstream sections (S07, S13, S15). These fallbacks prevent detection of:
+- Missing `ref_d_113` (S13 heating system)
+- Missing `ref_d_51` (S07 water heating system)  
+- Missing `ref_h_115`, `ref_f_115` (S13 fuel volumes)
+- Missing `ref_e_51`, `ref_k_54` (S07 fuel volumes)
+
+**Strategic Recommendation**: 
+1. **Complete S13 state isolation first** (current priority)
+2. **Audit S04 for Excel simplification** (post-S13 cleanup)
+3. **Remove S04 fallbacks systematically** once upstream ref_ publications verified
+4. **Consider S04 rewrite** following Excel's simple 10-row model
+
+**Reference Documentation**: FORMULAE-3039.csv lines 26-36 show the true S04 complexity should be minimal.
+
+---
+
 ## 4. Reference Contamination Investigation (Sept 24, 2025)
 
 ### **BREAKTHROUGH: S13 Confirmed as Primary Contamination Source**

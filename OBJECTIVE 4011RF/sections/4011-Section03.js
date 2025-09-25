@@ -51,22 +51,20 @@ window.TEUI.SectionModules.sect03 = (function () {
       }
     },
     setDefaults: function () {
-      // ✅ PHASE 3: Read defaults from field definitions (single source of truth)
-      // Climate data will be populated by updateWeatherData() from ClimateValues.js
+      // ✅ ANTI-PATTERN FIX: Field definitions are single source of truth - no hardcoded fallbacks
       this.state = {
-        d_19: getFieldDefault("d_19") || "ON", // Province
-        h_19: getFieldDefault("h_19") || "Alexandria", // City
-        h_20: getFieldDefault("h_20") || "Present", // Timeframe
-        h_21: getFieldDefault("h_21") || "Capacitance", // Capacitance setting
-        h_23: getFieldDefault("h_23") || "18", // Heating setpoint
-        h_24: getFieldDefault("h_24") || "24", // Cooling setpoint
-        m_19: getFieldDefault("m_19") || "120", // Cooling days
-        l_22: getFieldDefault("l_22") || "80", // Elevation
-        l_24: getFieldDefault("l_24") || "24", // Cooling override
-        i_21: getFieldDefault("i_21") || "50", // Capacitance percentage
-        // ✅ Climate data removed - populated by updateWeatherData() from ClimateValues.js
+        d_19: getFieldDefault("d_19"), // Province
+        h_19: getFieldDefault("h_19"), // City
+        h_20: getFieldDefault("h_20"), // Timeframe
+        h_21: getFieldDefault("h_21"), // Capacitance setting
+        m_19: getFieldDefault("m_19"), // Cooling days
+        l_22: getFieldDefault("l_22"), // Elevation
+        l_24: getFieldDefault("l_24"), // Cooling override
+        i_21: getFieldDefault("i_21"), // Capacitance percentage
+        // ✅ CALCULATED FIELDS REMOVED: h_23, h_24 are calculated, not defaults
+        // Climate data populated by calculation engines from ClimateValues.js
       };
-      // console.log("S03 TARGET STATE: Set to defaults");
+      console.log("S03: Target defaults set from field definitions - single source of truth");
     },
     saveState: function () {
       try {
@@ -115,25 +113,24 @@ window.TEUI.SectionModules.sect03 = (function () {
       }
     },
     setDefaults: function () {
-      // ✅ PHASE 3: Initialize with base defaults from field definitions, then apply Reference-specific overrides
+      // ✅ ANTI-PATTERN FIX: Field definitions are single source of truth - no hardcoded fallbacks
       this.state = {
         // 1. Base defaults from field definitions (single source of truth)
-        d_19: getFieldDefault("d_19") || "ON", // Province
-        h_19: getFieldDefault("h_19") || "Alexandria", // City
-        h_20: getFieldDefault("h_20") || "Present", // Timeframe
-        h_21: getFieldDefault("h_21") || "Capacitance", // Capacitance setting
-        h_23: getFieldDefault("h_23") || "18", // Heating setpoint
-        h_24: getFieldDefault("h_24") || "24", // Cooling setpoint
-        m_19: getFieldDefault("m_19") || "120", // Cooling days
-        l_22: getFieldDefault("l_22") || "80", // Elevation
-        l_24: getFieldDefault("l_24") || "24", // Cooling override
-        i_21: getFieldDefault("i_21") || "50", // Capacitance percentage
+        d_19: getFieldDefault("d_19"), // Province
+        h_19: getFieldDefault("h_19"), // City
+        h_20: getFieldDefault("h_20"), // Timeframe
+        h_21: getFieldDefault("h_21"), // Capacitance setting
+        m_19: getFieldDefault("m_19"), // Cooling days
+        l_22: getFieldDefault("l_22"), // Elevation
+        l_24: getFieldDefault("l_24"), // Cooling override
+        i_21: getFieldDefault("i_21"), // Capacitance percentage
 
-        // 2. Reference-specific overrides (only differences from Target)
-        // Both Target and Reference use Ontario/Alexandria for Excel compliance
-        // ✅ Climate data removed - populated by updateWeatherData() from ClimateValues.js
+        // 2. Reference-specific overrides (same as Target for S03 Excel compliance)
+        // Both Target and Reference use Ontario/Alexandria for Excel baseline
+        // ✅ CALCULATED FIELDS REMOVED: h_23, h_24 are calculated, not defaults
+        // Climate data populated by calculation engines from ClimateValues.js
       };
-      // console.log("S03 REFERENCE STATE: Set to Excel compliance defaults (ON/Alexandria)");
+      console.log("S03: Reference defaults set from field definitions - single source of truth");
     },
     saveState: function () {
       try {
