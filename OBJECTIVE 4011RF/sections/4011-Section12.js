@@ -2332,9 +2332,9 @@ window.TEUI.SectionModules.sect12 = (function () {
       }
     });
 
-    console.log(
-      "[Section12] Reference results stored with ref_ prefix for downstream sections",
-    );
+      console.log(
+        "[Section12] Reference results stored with ref_ prefix for downstream sections",
+      );
   }
 
   /**

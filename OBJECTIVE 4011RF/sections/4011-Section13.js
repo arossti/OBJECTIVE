@@ -808,7 +808,7 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /** [Cooling Calc] Calculate latent load factor */
-  function calculateLatentLoadFactor(isReferenceCalculation, coolingContext) {
+  function calculateLatentLoadFactor(coolingContext) {
     // CHUNK 3D: Read from context instead of global state
     const hDiff = coolingContext.humidityRatioDifference;
     // CHUNK 3E: Read from context instead of global state
@@ -838,7 +838,7 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /** [Cooling Calc] Calculate atmospheric values */
-  function calculateAtmosphericValues(isReferenceCalculation, coolingContext) {
+  function calculateAtmosphericValues(coolingContext) {
     // CHUNK 3A: Read from context instead of global state
     const t_outdoor = coolingContext.A50_temp;
     // CHUNK 3K: Read from context instead of global state
@@ -1100,12 +1100,11 @@ window.TEUI.SectionModules.sect13 = (function () {
     updateCoolingInputs(isReferenceCalculation, coolingContext);
 
     // Ensure atmospheric & humidity are calculated BEFORE factors/limits that depend on them
-    calculateAtmosphericValues(isReferenceCalculation, coolingContext);
+    calculateAtmosphericValues(coolingContext);
     calculateHumidityRatios(isReferenceCalculation, coolingContext);
 
     // Now calculate factors/limits that use the results
     coolingContext.latentLoadFactor = calculateLatentLoadFactor(
-      isReferenceCalculation,
       coolingContext,
     );
     // Calculate other intermediate cooling values if needed by core S13 funcs
