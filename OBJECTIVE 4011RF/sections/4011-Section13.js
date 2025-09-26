@@ -1040,7 +1040,7 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /** [Cooling Calc] Update internal state from external sources */
-  function updateCoolingInputs(isReferenceCalculation, coolingContext) {
+  function updateCoolingInputs(coolingContext) {
     const parseNum =
       window.TEUI?.parseNumeric ||
       function (v) {
@@ -1097,7 +1097,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     isReferenceCalculation,
     coolingContext,
   ) {
-    updateCoolingInputs(isReferenceCalculation, coolingContext);
+    updateCoolingInputs(coolingContext);
 
     // Ensure atmospheric & humidity are calculated BEFORE factors/limits that depend on them
     calculateAtmosphericValues(coolingContext);
