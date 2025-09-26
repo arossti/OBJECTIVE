@@ -977,6 +977,7 @@ window.TEUI.SectionModules.sect13 = (function () {
   /** [Cooling Calc] Calculate days of active cooling required */
   function calculateDaysActiveCooling(
     currentFreeCoolingLimit /* h_124 */,
+    isReferenceCalculation,
     coolingContext,
   ) {
     // ✅ EXCEL PARITY: Use exact Excel formula from COOLING-TARGET.csv line 55
@@ -1093,7 +1094,6 @@ window.TEUI.SectionModules.sect13 = (function () {
 
   /** [Cooling Calc] Orchestrates the internal cooling-related calculations */
   function runIntegratedCoolingCalculations(
-    isReferenceCalculation,
     coolingContext,
   ) {
     updateCoolingInputs(coolingContext);
@@ -3339,7 +3339,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         setFieldValue("d_124", percentFreeCooling, "percent-0dp");
 
         // Calculate M124 (Days Active Cooling) - Using corrected Excel formula
-        const activeCoolingDays = calculateDaysActiveCooling(finalFreeCoolingLimit, coolingContext);
+        const activeCoolingDays = calculateDaysActiveCooling(finalFreeCoolingLimit, false, coolingContext);
         setFieldValue("m_124", activeCoolingDays, "number-2dp");
       }
 
@@ -3506,7 +3506,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       // CHUNK 1: Pass the new (but currently unused) context down the chain.
       // The `runIntegratedCoolingCalculations` function and all its children
       // must be updated to accept this new parameter in their signature.
-      runIntegratedCoolingCalculations(false, targetCoolingContext);
+      runIntegratedCoolingCalculations(targetCoolingContext);
 
       // Get external dependency values
       const tedValue = window.TEUI.parseNumeric(getFieldValue("d_127")) || 0;
