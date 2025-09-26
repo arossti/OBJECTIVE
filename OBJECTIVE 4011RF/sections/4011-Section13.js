@@ -910,7 +910,7 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /** [Cooling Calc] Calculate free cooling capacity limit (Potential Annual Sensible kWh) */
-  function calculateFreeCoolingLimit(isReferenceCalculation, coolingContext) {
+  function calculateFreeCoolingLimit(coolingContext) {
     // Add recursion protection
     if (window.TEUI.sect13.calculatingFreeCooling) {
       // CHUNK 3O: Read from context instead of global state
@@ -3294,7 +3294,6 @@ window.TEUI.SectionModules.sect13 = (function () {
       // runIntegratedCoolingCalculations();
 
       potentialLimit = calculateFreeCoolingLimit(
-        isReferenceCalculation,
         coolingContext,
       ); // Calculated Sensible Potential (kWh/yr)
 
