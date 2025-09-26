@@ -1006,7 +1006,7 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /** [Cooling Calc] Calculate wet bulb temperature (Approximation) */
-  function calculateWetBulbTemperature(isReferenceCalculation, coolingContext) {
+  function calculateWetBulbTemperature(coolingContext) {
     // Note: This is an approximation, potentially from COOLING-TARGET.csv E64
     // CHUNK 3G: Read from context instead of global state
     const tdb = coolingContext.nightTimeTemp;
@@ -1108,7 +1108,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       coolingContext,
     );
     // Calculate other intermediate cooling values if needed by core S13 funcs
-    calculateWetBulbTemperature(isReferenceCalculation, coolingContext);
+    calculateWetBulbTemperature(coolingContext);
     // Note: calculateFreeCoolingLimit() is NOT called here, it's called by calculateFreeCooling()
     // Note: calculateDaysActiveCooling() is called within calculateFreeCooling()
   }
