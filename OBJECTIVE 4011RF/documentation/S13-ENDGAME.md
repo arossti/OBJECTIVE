@@ -267,6 +267,59 @@ This refactor will be considered complete and successful when the following cond
 
 ---
 
+## 🔍 **S13-AGGRESSIVE REFERENCE MODEL DEBUGGING (Sept 26, 2025)**
+
+### **Issue Investigation: Reference Model DOM Updates**
+
+**Problem**: S13-AGGRESSIVE Reference model calculations run but don't update downstream S01 e_10 value.
+
+**Symptoms Observed:**
+- **Target Mode**: d_118 slider → immediate multi-field updates across S13 DOM → e_10 changes dynamically ✅
+- **Reference Mode**: d_118 slider → percentage indicator updates, console activity, but NO other DOM field updates → e_10 stays at 152.3 ❌
+- **Expected**: Reference e_10 should be ~211 (vs current 152.3)
+
+**Critical Observation**: Human user sees **dynamic streaming updates across multiple S13 fields** in Target mode (d_121, i_121, m_121, d_122, d_123, etc.) but **only slider percentage updates** in Reference mode. This indicates S13 Reference calculations are disconnected from DOM display layer.
+
+**Investigation Results (Sept 26, 2025):**
+
+#### **✅ S13 Reference Storage Confirmed Working:**
+- **Console logs**: `[Section13] ✅ Re-wrote 34 Reference values` 
+- **Storage mechanism**: `storeReferenceResults()` properly stores ref_m_121 and other values
+- **Contamination fix applied**: Eliminated fallback pattern in `updateCalculatedDisplayValues()`
+
+#### **🚨 Root Cause: Downstream Consumption Issue**
+**Hypothesis**: The issue is NOT in S13 Reference calculations, but in **downstream sections failing to consume ref_m_121**.
+
+**Evidence:**
+1. **S13 Reference calculations run** (console activity confirms)
+2. **S13 stores ref_m_121** (34 Reference values stored)
+3. **S15 likely not reading ref_m_121** (Reference TED calculation missing ventilation component)
+4. **S01 shows wrong e_10** (based on S15's incomplete Reference TED)
+
+**Critical Dependency Chain:**
+```
+S13 ref_m_121 → S15 Reference TED → S01 Reference e_10
+     ✅              ❌              ❌
+```
+
+#### **Next Investigation Priority:**
+**Verify S15 Reference model consumption of S13 values:**
+- Does S15 read `ref_m_121` for Reference TED calculation?
+- Are there missing `ref_` dependencies in S15's Reference model?
+- Is S15 `calculateReferenceModel()` using proper mode-aware external dependency reading?
+
+**Strategic Decision**: Focus on **S15 Reference model audit** before further S13 modifications.
+
+#### **✅ CONCLUSION: S13-AGGRESSIVE vs Working S13**
+**Finding**: The working S13 file handles Reference mode d_118 slider changes correctly with proper DOM updates, while S13-AGGRESSIVE does not. This suggests:
+
+1. **S13-AGGRESSIVE**: Perfect state isolation but Reference DOM update disconnection
+2. **Working S13**: Functional Reference calculations but state contamination issues  
+
+**Recommendation**: **Continue S13 refactor work with the working S13.js file** and apply state isolation lessons from S13-AGGRESSIVE selectively, rather than fixing S13-AGGRESSIVE's Reference DOM issues.
+
+---
+
 ## 4. Reference Contamination Investigation (Sept 24, 2025)
 
 ### **BREAKTHROUGH: S13 Confirmed as Primary Contamination Source**
