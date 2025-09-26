@@ -501,32 +501,38 @@ Given the 100% Excel parity achievement (h_10 = 93.7) and the graveyard of faile
 
 **Why Pattern 1 Fails Here**: Removing `isReferenceCalculation` parameter eliminates the function's ability to distinguish calculation contexts, causing it to read wrong state values.
 
-### **🏗️ ARCHITECTURAL DECISION POINT**
+### **🏗️ ARCHITECTURAL DECISION: SMART REACTIVE + S13 HYBRID**
 
-**Two Paths Forward:**
+**DECISION MADE (Sept 26, 2025)**: Pivot to **Smart Reactive System** approach from SEPT15-RACE-MITIGATION.md
 
-#### **Path A: Hybrid Architecture (RECOMMENDED)**
-- **Safe functions** → Pattern 1 (9 completed ✅)
-- **State-reading orchestrators** → Keep Pattern 2 with enhanced context awareness
-- **Best of both worlds**: Simple functions get Pattern 1 benefits, complex functions retain necessary context
+#### **✅ CHOSEN PATH: Smart Reactive System + S13 Hybrid**
+- **Root Cause Fix**: Address StateManager calculated value propagation limitation
+- **S13 Hybrid Preserved**: Keep 9 successful Pattern 1 conversions, pause further internal refactoring
+- **Target Works Principle**: If Target calculations work, Reference should use identical trigger patterns
+- **Strategic Benefits**: Fix underlying architecture issues that affect ALL sections, not just S13
 
-#### **Path B: Full Pattern 1 (High Risk)**
-- Convert ALL functions including orchestrators
-- Requires complete cooling context redesign
-- Risk: Repeat S13-AGGRESSIVE failure patterns
+### **🎯 FINAL STRATEGY: ORCHESTRATOR-FIRST APPROACH**
 
-### **🎯 RECOMMENDED STRATEGY: HYBRID ARCHITECTURE**
+**Phase 1: Smart Reactive Implementation**
+1. **Implement Smart Reactive System** (SEPT15-RACE-MITIGATION.md Appendix D)
+2. **Replace listener chaos** with requestAnimationFrame batching
+3. **Use proven Calculator.js calcOrder** for deterministic execution
+4. **Fix StateManager propagation** without breaking existing architecture
 
-**Phase 2 Modified Approach:**
-1. **Continue Pattern 1** for remaining simple calculation functions (15 more)
-2. **Preserve Pattern 2** for complex orchestrators (calculateCoolingSystem, calculateHeatingSystem, etc.)
-3. **Enhanced context awareness** for Pattern 2 functions without breaking working logic
+**Phase 2: Return to S13-ENDGAME**
+1. **Resume S13 refactoring** with clean calculation context from orchestrator
+2. **Continue Pattern 1 conversions** with reduced external interference
+3. **Complete remaining 24 functions** in stable orchestrator environment
 
 **Rationale**: 
-- **Preserve what works** (calculateCoolingSystem functional logic)
-- **Maximize gains** (24 simple functions can safely go Pattern 1)
-- **Minimize risk** (avoid repeating AGGRESSIVE failure)
-- **Architectural integrity** (hybrid approach documented in CHEATSHEET as valid)
+- **Fix Root Cause**: StateManager limitation affects ALL sections, not just S13
+- **"Target Works" Insight**: Reference model should use identical patterns to working Target model
+- **Strategic Efficiency**: Solve architecture problem once, benefit all sections
+- **Risk Reduction**: Clean foundation before continuing complex S13 work
 
-**Next Steps**: Continue with safe Pattern 1 conversions, document hybrid architecture as final S13 solution.
+**Next Steps**: 
+1. Update S13-ENDGAME documentation ✅
+2. Create ORCHESTRATOR branch ✅  
+3. Implement Smart Reactive System
+4. Return to S13 with clean foundation
 
