@@ -863,7 +863,7 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /** [Cooling Calc] Calculate humidity ratios */
-  function calculateHumidityRatios(isReferenceCalculation, coolingContext) {
+  function calculateHumidityRatios(coolingContext) {
     // CHUNK 3L: Read from context instead of global state
     const atmPressure = coolingContext.atmPressure || 101325;
     // CHUNK 3M: Read from context instead of global state
@@ -1022,7 +1022,7 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /** [Cooling Calc] Calculate the intermediate temperature A50 based on Excel logic */
-  function calculateA50Temp(isReferenceCalculation, coolingContext) {
+  function calculateA50Temp(coolingContext) {
     // Based on Excel E64 = E60 - (E60 - (E60 - (100 - E59)/5)) * (0.1 + 0.9 * (E59 / 100))
     // CHUNK 3A: Read from context instead of global state
     const E60 = coolingContext.nightTimeTemp;
@@ -1089,7 +1089,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       coolingContext.ventilationMethod || "Constant";
 
     // Calculate the intermediate A50 temperature needed for atmospheric calcs
-    calculateA50Temp(isReferenceCalculation, coolingContext);
+    calculateA50Temp(coolingContext);
   }
 
   /** [Cooling Calc] Orchestrates the internal cooling-related calculations */
@@ -1101,7 +1101,7 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     // Ensure atmospheric & humidity are calculated BEFORE factors/limits that depend on them
     calculateAtmosphericValues(coolingContext);
-    calculateHumidityRatios(isReferenceCalculation, coolingContext);
+    calculateHumidityRatios(coolingContext);
 
     // Now calculate factors/limits that use the results
     coolingContext.latentLoadFactor = calculateLatentLoadFactor(
