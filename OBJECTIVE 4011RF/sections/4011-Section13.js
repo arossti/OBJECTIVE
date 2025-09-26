@@ -977,7 +977,6 @@ window.TEUI.SectionModules.sect13 = (function () {
   /** [Cooling Calc] Calculate days of active cooling required */
   function calculateDaysActiveCooling(
     currentFreeCoolingLimit /* h_124 */,
-    isReferenceCalculation,
     coolingContext,
   ) {
     // ✅ EXCEL PARITY: Use exact Excel formula from COOLING-TARGET.csv line 55
@@ -3340,7 +3339,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         setFieldValue("d_124", percentFreeCooling, "percent-0dp");
 
         // Calculate M124 (Days Active Cooling) - Using corrected Excel formula
-        const activeCoolingDays = calculateDaysActiveCooling(finalFreeCoolingLimit, false, coolingContext);
+        const activeCoolingDays = calculateDaysActiveCooling(finalFreeCoolingLimit, coolingContext);
         setFieldValue("m_124", activeCoolingDays, "number-2dp");
       }
 
