@@ -68,7 +68,7 @@
  * - Days of active cooling may be negative if free cooling > cooling load
  *
  * The module is designed to work independently but integrates with StateManager
- * when available. It provides fallback calculations when external data is not available, but it may be better to error with N/A if no data is available.
+ * when available. It provides fallback calculations when external data is not available.
  */
 
 // Ensure namespace exists
@@ -90,14 +90,14 @@ window.TEUI.CoolingCalculations = (function () {
 
     // Calculated values
     freeCoolingLimit: 0, // A33 - Free cooling capacity
-    daysActiveCooling: 0, // E55 - Days active cooling required (calculated as 120 in Canada, increasing to 140 in the near future) user-defined at m_19 in S03
+    daysActiveCooling: 0, // E55 - Days active cooling required
 
     // Building-specific values that might be provided
     buildingVolume: 8000, // A9/D105 - Volume of space in m3
     buildingArea: 1427.2, // A15/H15 - Conditioned area in m2
 
     // Weather data
-    coolingDegreeDays: 196, // A21/D21 - Cooling degree days - this should read from S03's d_21
+    coolingDegreeDays: 196, // A21/D21 - Cooling degree days
 
     // Misc state
     initialized: false,

@@ -67,17 +67,21 @@ const referenceCooling = CoolingReference.calculateAll(referenceInputs);
 
 ## 📋 **IMPLEMENTATION WORKPLAN**
 
-### **Phase 1: Extract and Document (Priority)**
-1. **Create 4012-CoolingTarget.js** 
-   - Extract cooling logic from current S13
-   - **Clear variable names** matching COOLING-TARGET.csv rows
-   - **Document every equation** with Excel cell references (A6, A33, E55, etc.)
-   - **Pure functions** - no shared state, no context objects
+### **Phase 1: Restore Proven Chassis (SMART APPROACH)**
+1. **✅ Copy ARCHIVE 4011-Cooling.js** to current OBJECTIVE 4011RF ✅
+   - **Proven working foundation** from 4 months ago
+   - **Simple, clean architecture** before S13 internalization
+   - **Excel validated calculations** already implemented
 
-2. **Validate Against Excel**
-   - **Test identical results** to current S13 cooling engine
-   - **Use COOLING-TARGET.csv** as validation source
-   - **Preserve all working calculations** - zero formula changes
+2. **Port S13 Improvements** to restored chassis:
+   - **User-editable COP** for Electricity/Gas/Oil heating systems (was fixed at 2.7)
+   - **Complete m_124 calculation** (Days Active Cooling - now working in S13)
+   - **Enhanced ventilation integration** (improvements from S13 development)
+
+3. **Validate Hybrid Results**
+   - **Test restored chassis** against current S13 cooling engine
+   - **Verify Excel parity** maintained with ported improvements
+   - **Ensure no regression** from proven ARCHIVE baseline
 
 ### **Phase 2: Reference Model Creation**
 1. **Create 4012-CoolingReference.js**
