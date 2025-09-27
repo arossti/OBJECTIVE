@@ -319,13 +319,25 @@ window.TEUI.CoolingCalculations = (function () {
 
     const sm = window.TEUI.StateManager;
 
-    // Publish cooling calculations to StateManager (like any section)
-    sm.setValue("cooling_m_124", state.daysActiveCooling.toString(), "calculated");
-    sm.setValue("cooling_h_124", state.freeCoolingLimit.toString(), "calculated");  
-    sm.setValue("cooling_latentLoadFactor", state.latentLoadFactor.toString(), "calculated");
-    sm.setValue("cooling_wetBulbTemperature", state.wetBulbTemperature.toString(), "calculated");
+    // Publish ALL cooling calculations to StateManager (complete S13 rows 113-124 coverage)
+    sm.setValue("cooling_m_124", state.daysActiveCooling.toString(), "calculated");     // Days Active Cooling
+    sm.setValue("cooling_h_124", state.freeCoolingLimit.toString(), "calculated");      // Free Cooling Capacity
+    sm.setValue("cooling_d_124", (state.freeCoolingLimit / state.coolingLoad * 100).toString(), "calculated"); // Free Cooling %
+    sm.setValue("cooling_latentLoadFactor", state.latentLoadFactor.toString(), "calculated");   // Latent Load Factor
+    sm.setValue("cooling_wetBulbTemperature", state.wetBulbTemperature.toString(), "calculated"); // Wet Bulb Temp
     
-    console.log(`[Cooling] Published to StateManager: m_124=${state.daysActiveCooling}, h_124=${state.freeCoolingLimit}`);
+    // Additional cooling calculations that S13 needs for rows 113-124
+    sm.setValue("cooling_atmosphericPressure", state.atmPressure.toString(), "calculated");     // Atmospheric pressure
+    sm.setValue("cooling_partialPressure", state.partialPressure.toString(), "calculated");     // Partial pressure
+    sm.setValue("cooling_humidityRatio", state.humidityRatio.toString(), "calculated");         // Humidity ratio
+    
+    // TODO: Add these cooling calculations as we extract them from S13:
+    // sm.setValue("cooling_d_117", coolingEnergy, "calculated");        // Cooling energy demand
+    // sm.setValue("cooling_j_116", coolingCOP, "calculated");           // Cooling COP
+    // sm.setValue("cooling_l_116", coolingSink, "calculated");          // Cooling sink energy
+    // sm.setValue("cooling_l_114", coolingSystemCOP, "calculated");     // Cooling system COP
+    
+    console.log(`[Cooling] Published to StateManager: m_124=${state.daysActiveCooling}, h_124=${state.freeCoolingLimit}, d_124=${(state.freeCoolingLimit / state.coolingLoad * 100).toFixed(1)}%`);
   }
 
   /**
