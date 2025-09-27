@@ -1120,11 +1120,53 @@ section.ModeManager.setValue(fieldId, value, "user-modified");
 
 ---
 
+## 🚀 **ORCHESTRATOR INTEGRATION PATTERNS** _(Sept 26, 2025)_
+
+### **✅ STABLE ORCHESTRATOR FOUNDATION AVAILABLE**
+
+**Status**: CTO's directed graph solution implemented in `4012-Orchestrator.js`
+**Branch**: `ORCHESTRATOR` branch contains stable foundation ready for integration
+**Integration**: Surgical listener replacement proven effective
+
+#### **🔧 ORCHESTRATOR INTEGRATION PATTERN:**
+```javascript
+// REPLACE: Individual section listeners that don't fire for calculated values
+window.TEUI.StateManager.addListener("d_20", (newValue) => {
+  console.log(`[S12] Target HDD changed: d_20=${newValue} → triggering calculations`);
+  calculateAll(); // ❌ OLD: Section-only calculation
+});
+
+// WITH: Orchestrator-coordinated cross-section cascade  
+window.TEUI.StateManager.addListener("d_20", (newValue) => {
+  console.log(`[S12] Target HDD changed: d_20=${newValue} → triggering orchestrator`);
+  if (window.TEUI?.Orchestrator?.runDirectedGraph) {
+    window.TEUI.Orchestrator.runDirectedGraph(); // ✅ NEW: Complete directed graph execution
+  } else {
+    calculateAll(); // Fallback protection
+  }
+});
+```
+
+#### **🎯 WHEN TO USE ORCHESTRATOR INTEGRATION:**
+- **Calculated value propagation failures** (S03 d_20 → S12 not working)
+- **Cross-section coordination issues** (values not reaching downstream sections)
+- **Initialization sequence problems** (incomplete calculation cascades)
+- **Performance optimization** (eliminate competing trigger mechanisms)
+
+#### **⚠️ INTEGRATION WARNINGS:**
+- **Never add orchestrator ON TOP of existing triggers** (causes infinite loops)
+- **Always include fallback protection** (`calculateAll()` if orchestrator unavailable)  
+- **Test incrementally** - one listener replacement at a time
+- **Preserve user interaction patterns** - orchestrator for calculated propagation only
+
+---
+
 🛑 **FINAL REMINDER FOR AI AGENTS** 🛑
 
 **MANDATORY ORDER**: 
 1. **Preventative QA/QC** (Phases A-D above) for new refactors
 2. **Diagnostic Repair** (Phase E above) for existing contamination issues
+3. **Orchestrator Integration** (Available for calculated value propagation issues)
 
 **IF ANY STEP FAILS**: Go back to the longer, more complete DUAL-STATE-IMPLEMENTATION-GUIDE.md and follow the patterns exactly as documented. Do NOT improvise or "fix" things differently than shown.
 
