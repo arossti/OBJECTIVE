@@ -873,50 +873,56 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /** [Cooling Calc] Calculate humidity ratios */
-  function calculateHumidityRatios(coolingContext) {
-    // CHUNK 3L: Read from context instead of global state
-    const atmPressure = coolingContext.atmPressure || 101325;
-    // CHUNK 3M: Read from context instead of global state
-    const pPartialIndoor = coolingContext.partialPressureIndoor;
-    // CHUNK 3B: Read from context instead of global state
-    const pSatAvgOutdoor = coolingContext.pSatAvg; // Get Saturation Pressure Outdoor (A56)
+  // 🚫 COOLING.JS TRANSITION: Function moved to 4012-Cooling.js module
+  // function calculateHumidityRatios(coolingContext) {
+  //   // CHUNK 3L: Read from context instead of global state
+  //   const atmPressure = coolingContext.atmPressure || 101325;
+  //   // CHUNK 3M: Read from context instead of global state
+  //   const pPartialIndoor = coolingContext.partialPressureIndoor;
+  //   // CHUNK 3B: Read from context instead of global state
+  //   const pSatAvgOutdoor = coolingContext.pSatAvg; // Get Saturation Pressure Outdoor (A56)
+  //
+  //   // Calculate Indoor Humidity Ratio (A61)
+  //   if (atmPressure - pPartialIndoor === 0) {
+  //     console.warn(
+  //       "Cooling Calc: Division by zero prevented in indoor humidity ratio.",
+  //     );
+  //     // CHUNK 3I: Write to context instead of global state
+  //     coolingContext.humidityRatioIndoor = 0;
+  //   } else {
+  //     // CHUNK 3I: Write to context instead of global state
+  //     coolingContext.humidityRatioIndoor =
+  //       (0.62198 * pPartialIndoor) / (atmPressure - pPartialIndoor);
+  //   }
+  //
+  //   // Calculate Outdoor Humidity Ratio (A62) - CORRECTED FORMULA
+  //   // First, calculate the outdoor partial pressure *using the required 70% RH* (Excel A57)
+  //   const outdoorRH_forA62 = 0.7;
+  //   const pPartialOutdoor_forA62 = pSatAvgOutdoor * outdoorRH_forA62;
+  //
+  //   if (atmPressure - pSatAvgOutdoor === 0) {
+  //     // CHUNK 3B: Check denominator using pSatAvgOutdoor from context (A56)
+  //     console.warn(
+  //       "Cooling Calc: Division by zero prevented in outdoor humidity ratio.",
+  //     );
+  //     // CHUNK 3C: Write to context instead of global state
+  //     coolingContext.humidityRatioAvg = 0;
+  //   } else {
+  //     // Use the partial pressure based on 70% RH (pPartialOutdoor_forA62)
+  //     // CHUNK 3C: Write to context instead of global state
+  //     coolingContext.humidityRatioAvg =
+  //       (0.62198 * pPartialOutdoor_forA62) / (atmPressure - pSatAvgOutdoor); // CHUNK 3B: USE pSatAvgOutdoor from context (A56) in denominator
+  //   }
+  //
+  //   // Calculate Difference (A63)
+  //   // CHUNK 3D & 3I: Write to context instead of global state
+  //   coolingContext.humidityRatioDifference =
+  //     coolingContext.humidityRatioAvg - coolingContext.humidityRatioIndoor;
+  // }
 
-    // Calculate Indoor Humidity Ratio (A61)
-    if (atmPressure - pPartialIndoor === 0) {
-      console.warn(
-        "Cooling Calc: Division by zero prevented in indoor humidity ratio.",
-      );
-      // CHUNK 3I: Write to context instead of global state
-      coolingContext.humidityRatioIndoor = 0;
-    } else {
-      // CHUNK 3I: Write to context instead of global state
-      coolingContext.humidityRatioIndoor =
-        (0.62198 * pPartialIndoor) / (atmPressure - pPartialIndoor);
-    }
-
-    // Calculate Outdoor Humidity Ratio (A62) - CORRECTED FORMULA
-    // First, calculate the outdoor partial pressure *using the required 70% RH* (Excel A57)
-    const outdoorRH_forA62 = 0.7;
-    const pPartialOutdoor_forA62 = pSatAvgOutdoor * outdoorRH_forA62;
-
-    if (atmPressure - pSatAvgOutdoor === 0) {
-      // CHUNK 3B: Check denominator using pSatAvgOutdoor from context (A56)
-      console.warn(
-        "Cooling Calc: Division by zero prevented in outdoor humidity ratio.",
-      );
-      // CHUNK 3C: Write to context instead of global state
-      coolingContext.humidityRatioAvg = 0;
-    } else {
-      // Use the partial pressure based on 70% RH (pPartialOutdoor_forA62)
-      // CHUNK 3C: Write to context instead of global state
-      coolingContext.humidityRatioAvg =
-        (0.62198 * pPartialOutdoor_forA62) / (atmPressure - pSatAvgOutdoor); // CHUNK 3B: USE pSatAvgOutdoor from context (A56) in denominator
-    }
-
-    // Calculate Difference (A63)
-    // CHUNK 3D & 3I: Write to context instead of global state
-    coolingContext.humidityRatioDifference =
-      coolingContext.humidityRatioAvg - coolingContext.humidityRatioIndoor;
+  // 🔄 COOLING.JS INTEGRATION: Read humidity ratios from StateManager
+  function getCoolingHumidityRatios() {
+    return window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_humidityRatio")) || 0;
   }
 
   /** [Cooling Calc] Calculate free cooling capacity limit (Potential Annual Sensible kWh) */
@@ -1131,7 +1137,8 @@ window.TEUI.SectionModules.sect13 = (function () {
     coolingContext.atmPressure = atmosphericValues.atmosphericPressure;
     coolingContext.partialPressure = atmosphericValues.partialPressure;
     coolingContext.humidityRatio = atmosphericValues.humidityRatio;
-    calculateHumidityRatios(coolingContext);
+    // 🔄 COOLING.JS INTEGRATION: Read humidity ratios from Cooling.js
+    coolingContext.humidityRatioDifference = getCoolingHumidityRatios();
 
     // Now calculate factors/limits that use the results
     coolingContext.latentLoadFactor = calculateLatentLoadFactor(
