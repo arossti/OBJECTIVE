@@ -86,18 +86,18 @@ window.TEUI.CoolingCalculations = (function () {
     airMass: 1.204, // E3 - Mass of air kg/m3
     specificHeatCapacity: 1005, // E4 - Specific heat capacity of air J/(kg•K)
     latentHeatVaporization: 2501000, // E6 - Latent heat of vaporization J/kg
-    coolingSetTemp: 24, // A8 - Indoor design temperature / cooling setpoint
+    coolingSetTemp: null, // A8 - Indoor design temperature from S03 h_24 (REQUIRED from StateManager)
 
     // Calculated values
     freeCoolingLimit: 0, // A33 - Free cooling capacity
     daysActiveCooling: 0, // E55 - Days active cooling required
 
-    // Building-specific values that might be provided
-    buildingVolume: 8000, // A9/D105 - Volume of space in m3
-    buildingArea: 1427.2, // A15/H15 - Conditioned area in m2
+    // Building-specific values - MUST be read from StateManager (no defaults per CHEATSHEET)
+    buildingVolume: null, // A9/D105 - Volume from S12 d_105 (REQUIRED from StateManager)
+    buildingArea: null, // A15/H15 - Conditioned area from S02 h_15 (REQUIRED from StateManager)
 
-    // Weather data
-    coolingDegreeDays: 196, // A21/D21 - Cooling degree days
+    // Weather data - MUST be read from StateManager (no defaults per CHEATSHEET)
+    coolingDegreeDays: null, // A21/D21 - CDD from S03 d_21 (REQUIRED from StateManager)
 
     // Misc state
     initialized: false,
@@ -353,7 +353,7 @@ window.TEUI.CoolingCalculations = (function () {
 
     // Register dependencies on climate data
     sm.registerDependency("d_21", "cooling_freeCoolingLimit"); // CDD affects free cooling
-    sm.registerDependency("d_24", "cooling_latentLoadFactor"); // Cooling setpoint affects latent load
+    sm.registerDependency("h_24", "cooling_latentLoadFactor"); // Cooling setpoint affects latent load
 
     // Register dependencies on building data
     sm.registerDependency("d_105", "cooling_freeCoolingLimit"); // Building volume affects cooling
@@ -385,28 +385,35 @@ window.TEUI.CoolingCalculations = (function () {
     // Try to get values from StateManager if available
     if (typeof window.TEUI.StateManager !== "undefined") {
       // Get cooling setpoint
-      const coolingSetpoint = window.TEUI.StateManager.getValue("d_24");
-      if (coolingSetpoint) {
-        state.coolingSetTemp = parseFloat(coolingSetpoint);
+      // Get cooling setpoint temperature from S03 (REQUIRED)
+      const coolingSetpoint = window.TEUI.StateManager.getValue("h_24");
+      if (!coolingSetpoint) {
+        throw new Error("[Cooling] REQUIRED h_24 (cooling setpoint) missing from S03 - cannot calculate cooling");
       }
+      state.coolingSetTemp = parseFloat(coolingSetpoint);
 
-      // Get CDD
+      // 🚨 CHEATSHEET COMPLIANCE: REQUIRE values from StateManager (no fallback defaults)
+      
+      // Get CDD from S03 (REQUIRED)
       const cdd = window.TEUI.StateManager.getValue("d_21");
-      if (cdd) {
-        state.coolingDegreeDays = parseFloat(cdd);
+      if (!cdd) {
+        throw new Error("[Cooling] REQUIRED d_21 (CDD) missing from S03 - cannot calculate cooling");
       }
+      state.coolingDegreeDays = parseFloat(cdd);
 
-      // Get building volume
+      // Get building volume from S12 (REQUIRED)
       const volume = window.TEUI.StateManager.getValue("d_105");
-      if (volume) {
-        state.buildingVolume = parseFloat(volume.replace(/,/g, ""));
+      if (!volume) {
+        throw new Error("[Cooling] REQUIRED d_105 (building volume) missing from S12 - cannot calculate cooling");
       }
+      state.buildingVolume = parseFloat(volume.replace(/,/g, ""));
 
-      // Get building area
+      // Get building area from S02 (REQUIRED)
       const area = window.TEUI.StateManager.getValue("h_15");
-      if (area) {
-        state.buildingArea = parseFloat(area.replace(/,/g, ""));
+      if (!area) {
+        throw new Error("[Cooling] REQUIRED h_15 (conditioned area) missing from S02 - cannot calculate cooling");
       }
+      state.buildingArea = parseFloat(area.replace(/,/g, ""));
 
       // Get cooling load
       const coolingLoad = window.TEUI.StateManager.getValue("d_129");
