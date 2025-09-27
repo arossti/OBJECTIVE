@@ -2921,13 +2921,16 @@ window.TEUI.SectionModules.sect13 = (function () {
    * Calculate cooling system values
    */
   function calculateCoolingSystem(
+    isReferenceCalculation = false,
     coolingContext,
   ) {
     // ✅ PATTERN 1: Mode-aware reading (automatic with temporary mode switching)
     const coolingSystemType = ModeManager.getValue("d_116") || "No Cooling";
-    const heatingSystemType = ModeManager.getValue("d_113"); // Pattern 1: Mode-aware reading
+    const heatingSystemType = isReferenceCalculation
+      ? getSectionValue("d_113", true) // Reference reads Reference state
+      : TargetState.getValue("d_113"); // Target reads Target state
     // ✅ CONTAMINATION FIX: Mode-aware reading of cooling demand from S14
-    const coolingDemand_m129 = ModeManager.currentMode === "reference"
+    const coolingDemand_m129 = isReferenceCalculation
       ? parseFloat(window.TEUI?.StateManager?.getValue("ref_m_129")) || 0 // Reference: read ref_m_129
       : window.TEUI.parseNumeric(getFieldValue("m_129")) || 0; // Target: read m_129
     const copcool_hp_j113 =
@@ -3458,6 +3461,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       };
       // CHUNK 3E-3G FIX: Pass the reference context to calculateCoolingSystem
       const coolingResults = calculateCoolingSystem(
+        true,
         referenceCoolingContext,
       );
       const mitigatedResults = calculateMitigatedCED(true);
@@ -3520,6 +3524,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         h_124: calculateFreeCooling(false, targetCoolingContext),
       };
       const coolingResults = calculateCoolingSystem(
+        false,
         targetCoolingContext,
       );
       const mitigatedResults = calculateMitigatedCED(
