@@ -277,8 +277,8 @@ window.TEUI.CoolingCalculations = (function () {
     let d_117 = 0; // Heatpump Cooling Electrical Load
     let l_114 = 0; // Cooling system COP
     
-    // Get M129 (mitigated cooling load) - this should come from S14 or be calculated here
-    const m_129 = state.coolingLoad || 0; // TODO: This might need to be calculated differently
+    // Get M129 (mitigated cooling load) from S13 via StateManager
+    const m_129 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("m_129")) || 0;
     
     if (state.coolingSystem && state.coolingSystem !== "No Cooling") {
       if (state.heatingSystem === "Heatpump") {
@@ -384,9 +384,8 @@ window.TEUI.CoolingCalculations = (function () {
     sm.setValue("cooling_partialPressure", state.partialPressure.toString(), "calculated");     // Partial pressure
     sm.setValue("cooling_humidityRatio", state.humidityRatio.toString(), "calculated");         // Humidity ratio
     
-    // Cross-section outputs for S14
-    sm.setValue("d_129", state.coolingLoad.toString(), "calculated");  // Cooling load for S14
-    sm.setValue("m_129", state.coolingLoad.toString(), "calculated");  // Mitigated cooling load for S14
+    // Note: d_129 is calculated by S14, m_129 is calculated by S13
+    // Cooling.js READS these values, does not publish them
     
     console.log(`[Cooling] Published to StateManager: m_124=${state.daysActiveCooling}, h_124=${state.freeCoolingLimit}, d_124=${(state.freeCoolingLimit / state.coolingLoad * 100).toFixed(1)}%`);
   }
