@@ -975,34 +975,40 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /** [Cooling Calc] Calculate days of active cooling required */
-  function calculateDaysActiveCooling(
-    currentFreeCoolingLimit /* h_124 */,
-    isReferenceCalculation,
-    coolingContext,
-  ) {
-    // ✅ EXCEL PARITY: Use exact Excel formula from COOLING-TARGET.csv line 55
-    // Excel: =E52/(E54*24) where E52=(E50-E51), E54=REPORT!M19
-    
-    const d_129 = window.TEUI.parseNumeric(getFieldValue("d_129")) || 0; // E50: Seasonal Cooling Load
-    const h_124 = currentFreeCoolingLimit; // E51: Free Cooling Potential
-    const m_19 = window.TEUI.parseNumeric(getFieldValue("m_19")) || 120; // E54: Cooling Season Days
-    
-    // Calculate E52: Unmet Cooling Load = E50 - E51
-    const unmetCoolingLoad = d_129 - h_124; // E52 = E50 - E51
-    
-    // Calculate E55: Days Active Cooling = E52 / (E54 * 24)
-    let daysActiveCooling = 0;
-    if (m_19 > 0) {
-      daysActiveCooling = unmetCoolingLoad / (m_19 * 24);
-    }
-    
-    // ✅ EXCEL COMMENT: "Obviously negative days of free cooling is not possible - 
-    // the goal here is to get close to zero - anything less than zero is overkill ventilation-wise"
-    // So we preserve the raw calculation (can be negative) as per Excel methodology
-    
-    console.log(`[S13 m_124 EXCEL] E50(d_129)=${d_129}, E51(h_124)=${h_124}, E52(unmet)=${unmetCoolingLoad}, E54(m_19)=${m_19}, E55(result)=${daysActiveCooling}`);
-    
-    return daysActiveCooling; // Return exact Excel calculation result
+  // 🚫 COOLING.JS TRANSITION: Function moved to 4012-Cooling.js module
+  // function calculateDaysActiveCooling(
+  //   currentFreeCoolingLimit /* h_124 */,
+  //   isReferenceCalculation,
+  //   coolingContext,
+  // ) {
+  //   // ✅ EXCEL PARITY: Use exact Excel formula from COOLING-TARGET.csv line 55
+  //   // Excel: =E52/(E54*24) where E52=(E50-E51), E54=REPORT!M19
+  //   
+  //   const d_129 = window.TEUI.parseNumeric(getFieldValue("d_129")) || 0; // E50: Seasonal Cooling Load
+  //   const h_124 = currentFreeCoolingLimit; // E51: Free Cooling Potential
+  //   const m_19 = window.TEUI.parseNumeric(getFieldValue("m_19")) || 120; // E54: Cooling Season Days
+  //   
+  //   // Calculate E52: Unmet Cooling Load = E50 - E51
+  //   const unmetCoolingLoad = d_129 - h_124; // E52 = E50 - E51
+  //   
+  //   // Calculate E55: Days Active Cooling = E52 / (E54 * 24)
+  //   let daysActiveCooling = 0;
+  //   if (m_19 > 0) {
+  //     daysActiveCooling = unmetCoolingLoad / (m_19 * 24);
+  //   }
+  //   
+  //   // ✅ EXCEL COMMENT: "Obviously negative days of free cooling is not possible - 
+  //   // the goal here is to get close to zero - anything less than zero is overkill ventilation-wise"
+  //   // So we preserve the raw calculation (can be negative) as per Excel methodology
+  //   
+  //   console.log(`[S13 m_124 EXCEL] E50(d_129)=${d_129}, E51(h_124)=${h_124}, E52(unmet)=${unmetCoolingLoad}, E54(m_19)=${m_19}, E55(result)=${daysActiveCooling}`);
+  //   
+  //   return daysActiveCooling; // Return exact Excel calculation result
+  // }
+
+  // 🔄 COOLING.JS INTEGRATION: Read m_124 from StateManager instead of calculating
+  function getCoolingDaysActive() {
+    return window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_m_124")) || 0;
   }
 
   /** [Cooling Calc] Calculate wet bulb temperature (Approximation) */
@@ -3338,8 +3344,8 @@ window.TEUI.SectionModules.sect13 = (function () {
         }
         setFieldValue("d_124", percentFreeCooling, "percent-0dp");
 
-        // Calculate M124 (Days Active Cooling) - Using corrected Excel formula
-        const activeCoolingDays = calculateDaysActiveCooling(finalFreeCoolingLimit, false, coolingContext);
+        // 🔄 COOLING.JS INTEGRATION: Read M124 from Cooling.js via StateManager
+        const activeCoolingDays = getCoolingDaysActive();
         setFieldValue("m_124", activeCoolingDays, "number-2dp");
       }
 
