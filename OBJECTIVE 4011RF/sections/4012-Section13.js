@@ -838,28 +838,38 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /** [Cooling Calc] Calculate atmospheric values */
-  function calculateAtmosphericValues(coolingContext) {
-    // CHUNK 3A: Read from context instead of global state
-    const t_outdoor = coolingContext.A50_temp;
-    // CHUNK 3K: Read from context instead of global state
-    const outdoorRH = coolingContext.coolingSeasonMeanRH;
-    // CHUNK 3H: Read from context instead of global state
-    const t_indoor = coolingContext.coolingSetTemp;
-    const indoorRH_percent =
-      window.TEUI.parseNumeric(getFieldValue("d_59")) || 45;
-    const indoorRH = indoorRH_percent / 100;
+  // 🚫 COOLING.JS TRANSITION: Function moved to 4012-Cooling.js module
+  // function calculateAtmosphericValues(coolingContext) {
+  //   // CHUNK 3A: Read from context instead of global state
+  //   const t_outdoor = coolingContext.A50_temp;
+  //   // CHUNK 3K: Read from context instead of global state
+  //   const outdoorRH = coolingContext.coolingSeasonMeanRH;
+  //   // CHUNK 3H: Read from context instead of global state
+  //   const t_indoor = coolingContext.coolingSetTemp;
+  //   const indoorRH_percent =
+  //     window.TEUI.parseNumeric(getFieldValue("d_59")) || 45;
+  //   const indoorRH = indoorRH_percent / 100;
+  //
+  //   // CHUNK 3B: Write to context instead of global state
+  //   coolingContext.pSatAvg =
+  //     610.94 * Math.exp((17.625 * t_outdoor) / (t_outdoor + 243.04));
+  //   // CHUNK 3M: Write to context instead of global state
+  //   coolingContext.partialPressure = coolingContext.pSatAvg * outdoorRH;
+  //
+  //   // CHUNK 3N: Write to context instead of global state
+  //   coolingContext.pSatIndoor =
+  //     610.94 * Math.exp((17.625 * t_indoor) / (t_indoor + 243.04));
+  //   // CHUNK 3M & 3N: Write to context instead of global state
+  //   coolingContext.partialPressureIndoor = coolingContext.pSatIndoor * indoorRH;
+  // }
 
-    // CHUNK 3B: Write to context instead of global state
-    coolingContext.pSatAvg =
-      610.94 * Math.exp((17.625 * t_outdoor) / (t_outdoor + 243.04));
-    // CHUNK 3M: Write to context instead of global state
-    coolingContext.partialPressure = coolingContext.pSatAvg * outdoorRH;
-
-    // CHUNK 3N: Write to context instead of global state
-    coolingContext.pSatIndoor =
-      610.94 * Math.exp((17.625 * t_indoor) / (t_indoor + 243.04));
-    // CHUNK 3M & 3N: Write to context instead of global state
-    coolingContext.partialPressureIndoor = coolingContext.pSatIndoor * indoorRH;
+  // 🔄 COOLING.JS INTEGRATION: Read atmospheric values from StateManager
+  function getCoolingAtmosphericValues() {
+    return {
+      atmosphericPressure: window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_atmosphericPressure")) || 101325,
+      partialPressure: window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_partialPressure")) || 0,
+      humidityRatio: window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_humidityRatio")) || 0
+    };
   }
 
   /** [Cooling Calc] Calculate humidity ratios */
@@ -1116,8 +1126,11 @@ window.TEUI.SectionModules.sect13 = (function () {
   ) {
     updateCoolingInputs(coolingContext);
 
-    // Ensure atmospheric & humidity are calculated BEFORE factors/limits that depend on them
-    calculateAtmosphericValues(coolingContext);
+    // 🔄 COOLING.JS INTEGRATION: Read atmospheric values from Cooling.js
+    const atmosphericValues = getCoolingAtmosphericValues();
+    coolingContext.atmPressure = atmosphericValues.atmosphericPressure;
+    coolingContext.partialPressure = atmosphericValues.partialPressure;
+    coolingContext.humidityRatio = atmosphericValues.humidityRatio;
     calculateHumidityRatios(coolingContext);
 
     // Now calculate factors/limits that use the results
