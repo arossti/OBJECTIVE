@@ -930,39 +930,39 @@ window.TEUI.SectionModules.sect13 = (function () {
   //     // CHUNK 3J: Read from context instead of global state
   //     const massFlowRateKgS = ventFlowRateM3s * coolingContext.airMass; // kg/s
 
-      // CHUNK 3F: Read from context instead of global state
-      const Cp = coolingContext.specificHeatCapacity; // J/kg·K
-      // CHUNK 3H: Read from context instead of global state
-      const T_indoor = coolingContext.coolingSetTemp; // °C
-      // CHUNK 3G: Read from context instead of global state
-      const T_outdoor_night = coolingContext.nightTimeTemp; // °C
-      const coolingDays =
-        window.TEUI.parseNumeric(getFieldValue("m_19")) || 120;
-
-      // 2. Calculate Temperature Difference
-      const tempDiff = T_outdoor_night - T_indoor; // °C or K difference
-
-      // 3. Calculate Sensible Power (Watts) - Based on Excel A55 / A31
-      const sensiblePowerWatts = massFlowRateKgS * Cp * tempDiff;
-
-      // 4. Determine potential SENSIBLE free cooling power
-      let sensibleCoolingPowerWatts = 0;
-      if (tempDiff < 0) {
-        // Only possible if outdoor air is cooler
-        // Use the positive magnitude of heat removal power
-        sensibleCoolingPowerWatts = Math.abs(sensiblePowerWatts);
-      }
-
-      // 5. Convert Sensible Power to Daily Sensible Energy (kWh/day) - Based on Excel A33
-      // Correct Factor: (J/s) * (86400 s/day) / (3.6e6 J/kWh) = 0.024
-      const dailySensibleCoolingKWh = sensibleCoolingPowerWatts * 0.024;
-
-      // 6. Calculate Annual Potential Limit (kWh/yr) - Based on Excel A33 * M19
-      potentialLimit = dailySensibleCoolingKWh * coolingDays;
-
-      // Store this sensible-only potential limit
-      // CHUNK 3O: Write to context instead of global state
-      coolingContext.calculatedPotentialFreeCooling = potentialLimit;
+  //     // CHUNK 3F: Read from context instead of global state
+  //     const Cp = coolingContext.specificHeatCapacity; // J/kg·K
+  //     // CHUNK 3H: Read from context instead of global state
+  //     const T_indoor = coolingContext.coolingSetTemp; // °C
+  //     // CHUNK 3G: Read from context instead of global state
+  //     const T_outdoor_night = coolingContext.nightTimeTemp; // °C
+  //     const coolingDays =
+  //       window.TEUI.parseNumeric(getFieldValue("m_19")) || 120;
+  //
+  //     // 2. Calculate Temperature Difference
+  //     const tempDiff = T_outdoor_night - T_indoor; // °C or K difference
+  //
+  //     // 3. Calculate Sensible Power (Watts) - Based on Excel A55 / A31
+  //     const sensiblePowerWatts = massFlowRateKgS * Cp * tempDiff;
+  //
+  //     // 4. Determine potential SENSIBLE free cooling power
+  //     let sensibleCoolingPowerWatts = 0;
+  //     if (tempDiff < 0) {
+  //       // Only possible if outdoor air is cooler
+  //       // Use the positive magnitude of heat removal power
+  //       sensibleCoolingPowerWatts = Math.abs(sensiblePowerWatts);
+  //     }
+  //
+  //     // 5. Convert Sensible Power to Daily Sensible Energy (kWh/day) - Based on Excel A33
+  //     // Correct Factor: (J/s) * (86400 s/day) / (3.6e6 J/kWh) = 0.024
+  //     const dailySensibleCoolingKWh = sensibleCoolingPowerWatts * 0.024;
+  //
+  //     // 6. Calculate Annual Potential Limit (kWh/yr) - Based on Excel A33 * M19
+  //     potentialLimit = dailySensibleCoolingKWh * coolingDays;
+  //
+  //     // Store this sensible-only potential limit
+  //     // CHUNK 3O: Write to context instead of global state
+  //     coolingContext.calculatedPotentialFreeCooling = potentialLimit;
   //   } catch (error) {
   //     console.error(
   //       "[S13 Error] Error during calculateFreeCoolingLimit:",
