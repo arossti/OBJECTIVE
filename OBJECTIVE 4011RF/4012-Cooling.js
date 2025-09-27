@@ -588,11 +588,11 @@ window.TEUI.CoolingCalculations = (function () {
     },
 
     // 📊 STATEMANAGER METHODS: Standard section integration pattern
-    performCalculations: performCalculations, // Trigger full calculation cycle
+    calculateAll: calculateAll, // Trigger full calculation cycle
     
     // Method to recalculate cooling (standard section pattern)
-    calculateAll: function() {
-      performCalculations(); // Recalculate and publish to StateManager
+    recalculate: function() {
+      calculateAll(); // Recalculate and publish to StateManager
     },
 
     // Method to update cooling load and recalculate days of active cooling

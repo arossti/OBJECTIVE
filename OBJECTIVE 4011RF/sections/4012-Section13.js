@@ -1018,19 +1018,25 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /** [Cooling Calc] Calculate wet bulb temperature (Approximation) */
-  function calculateWetBulbTemperature(coolingContext) {
-    // Note: This is an approximation, potentially from COOLING-TARGET.csv E64
-    // CHUNK 3G: Read from context instead of global state
-    const tdb = coolingContext.nightTimeTemp;
-    // CHUNK 3K: Read from context instead of global state
-    const rh = coolingContext.coolingSeasonMeanRH * 100;
-    const twbSimple =
-      tdb - (tdb - (tdb - (100 - rh) / 5)) * (0.1 + 0.9 * (rh / 100));
-    const twbCorrected =
-      tdb - (tdb - (tdb - (100 - rh) / 5)) * (0.3 + 0.7 * (rh / 100));
-    // CHUNK 3O: Write to context instead of global state
-    coolingContext.wetBulbTemperature = (twbSimple + twbCorrected) / 2;
-    return coolingContext.wetBulbTemperature;
+  // 🚫 COOLING.JS TRANSITION: Function moved to 4012-Cooling.js module
+  // function calculateWetBulbTemperature(coolingContext) {
+  //   // Note: This is an approximation, potentially from COOLING-TARGET.csv E64
+  //   // CHUNK 3G: Read from context instead of global state
+  //   const tdb = coolingContext.nightTimeTemp;
+  //   // CHUNK 3K: Read from context instead of global state
+  //   const rh = coolingContext.coolingSeasonMeanRH * 100;
+  //   const twbSimple =
+  //     tdb - (tdb - (tdb - (100 - rh) / 5)) * (0.1 + 0.9 * (rh / 100));
+  //   const twbCorrected =
+  //     tdb - (tdb - (tdb - (100 - rh) / 5)) * (0.3 + 0.7 * (rh / 100));
+  //   // CHUNK 3O: Write to context instead of global state
+  //   coolingContext.wetBulbTemperature = (twbSimple + twbCorrected) / 2;
+  //   return coolingContext.wetBulbTemperature;
+  // }
+
+  // 🔄 COOLING.JS INTEGRATION: Read wet bulb temperature from StateManager
+  function getCoolingWetBulbTemperature() {
+    return window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_wetBulbTemperature")) || 0;
   }
 
   /** [Cooling Calc] Calculate the intermediate temperature A50 based on Excel logic */
@@ -1118,8 +1124,8 @@ window.TEUI.SectionModules.sect13 = (function () {
     coolingContext.latentLoadFactor = calculateLatentLoadFactor(
       coolingContext,
     );
-    // Calculate other intermediate cooling values if needed by core S13 funcs
-    calculateWetBulbTemperature(coolingContext);
+    // 🔄 COOLING.JS INTEGRATION: Read wet bulb temperature from Cooling.js
+    coolingContext.wetBulbTemperature = getCoolingWetBulbTemperature();
     // Note: calculateFreeCoolingLimit() is NOT called here, it's called by calculateFreeCooling()
     // Note: calculateDaysActiveCooling() is called within calculateFreeCooling()
   }
