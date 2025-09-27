@@ -3488,10 +3488,12 @@ window.TEUI.SectionModules.sect13 = (function () {
       const ventilationRatesResults = calculateVentilationRates(true, referenceCoolingContext);
       const ventilationEnergyResults = calculateVentilationEnergy(true);
       // CHUNK 3E-3G FIX: Pass the reference context to calculateCoolingVentilation
-      const coolingVentilationResults = calculateCoolingVentilation(
-        true,
-        referenceCoolingContext,
-      );
+      // 🔄 COOLING.JS INTEGRATION: Read cooling ventilation from StateManager
+      const coolingVentilationResults = {
+        d_122: window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_d_122")) || 0,
+        d_123: window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_d_123")) || 0,
+        i_122: window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_latentLoadFactor")) || 0
+      };
       // CHUNK 3E-3G FIX: Pass the reference context to calculateFreeCooling
       const freeCoolingResults = {
         h_124: calculateFreeCooling(true, referenceCoolingContext),
@@ -3501,7 +3503,10 @@ window.TEUI.SectionModules.sect13 = (function () {
         true,
         referenceCoolingContext,
       );
-      const mitigatedResults = calculateMitigatedCED(true);
+      // 🔄 COOLING.JS INTEGRATION: Read m_129 from Cooling.js
+      const mitigatedResults = {
+        m_129: window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("m_129")) || 0
+      };
 
       // Store Reference Model results with ref_ prefix for downstream sections
       storeReferenceResults(
@@ -3553,10 +3558,12 @@ window.TEUI.SectionModules.sect13 = (function () {
       const heatingResults = calculateHeatingSystem(copResults, tedValue);
       const ventilationRatesResults = calculateVentilationRates(false, targetCoolingContext);
       const ventilationEnergyResults = calculateVentilationEnergy(false);
-      const coolingVentilationResults = calculateCoolingVentilation(
-        false,
-        targetCoolingContext,
-      );
+      // 🔄 COOLING.JS INTEGRATION: Read cooling ventilation from StateManager
+      const coolingVentilationResults = {
+        d_122: window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_d_122")) || 0,
+        d_123: window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_d_123")) || 0,
+        i_122: window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_latentLoadFactor")) || 0
+      };
       const freeCoolingResults = {
         h_124: calculateFreeCooling(false, targetCoolingContext),
       };
@@ -3564,10 +3571,10 @@ window.TEUI.SectionModules.sect13 = (function () {
         false,
         targetCoolingContext,
       );
-      const mitigatedResults = calculateMitigatedCED(
-        false,
-        targetCoolingContext,
-      );
+      // 🔄 COOLING.JS INTEGRATION: Read m_129 from Cooling.js
+      const mitigatedResults = {
+        m_129: window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("m_129")) || 0
+      };
 
       // Update DOM with Target calculation results
       updateTargetModelDOMValues(
@@ -3779,36 +3786,31 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /**
-   * Calculate Mitigated CED (m_129)
+   * Calculate Mitigated CED (m_129) - MOVED TO COOLING.JS
    */
-  function calculateMitigatedCED(
-    isReferenceCalculation = false,
-    coolingContext,
-  ) {
-    // Use global parser directly
-    const d129 = window.TEUI.parseNumeric(getFieldValue("d_129")) || 0;
-    const h124 = window.TEUI.parseNumeric(getFieldValue("h_124")) || 0;
-    const d123 = window.TEUI.parseNumeric(getFieldValue("d_123")) || 0;
-
-    // Logging removed
-    // console.warn(`[S13 Debug MitigatedCED Inputs] Unmitigated(d129): ${d129.toFixed(2)}, FreeCooling(h124): ${h124.toFixed(2)}, VentRecovery(d123): ${d123.toFixed(2)}`);
-
-    let m129_calculated = d129 - h124 - d123;
-    const m129 = Math.max(0, m129_calculated); // Clamp to zero
-
-    // Logging removed
-    // console.warn(`[S13 Debug MitigatedCED Output] MitigatedLoad(m129): ${m129.toFixed(2)}`);
-
-    // Only update DOM for Target calculations
-    if (!isReferenceCalculation) {
-      setFieldValue("m_129", m129, "number-2dp-comma");
-    }
-
-    // Return calculated value for Reference engine storage
-    return {
-      m_129: m129,
-    };
-  }
+  // 🚫 COOLING.JS TRANSITION: Function moved to 4012-Cooling.js module
+  // function calculateMitigatedCED(
+  //   isReferenceCalculation = false,
+  //   coolingContext,
+  // ) {
+  //   // Use global parser directly
+  //   const d129 = window.TEUI.parseNumeric(getFieldValue("d_129")) || 0;
+  //   const h124 = window.TEUI.parseNumeric(getFieldValue("h_124")) || 0;
+  //   const d123 = window.TEUI.parseNumeric(getFieldValue("d_123")) || 0;
+  //
+  //   let m129_calculated = d129 - h124 - d123;
+  //   const m129 = Math.max(0, m129_calculated); // Clamp to zero
+  //
+  //   // Only update DOM for Target calculations
+  //   if (!isReferenceCalculation) {
+  //     setFieldValue("m_129", m129, "number-2dp-comma");
+  //   }
+  //
+  //   // Return calculated value for Reference engine storage
+  //   return {
+  //     m_129: m129,
+  //   };
+  // }
 
   //==========================================================================
   // SIMPLIFIED REFERENCE MODEL FUNCTIONS (Pattern 2 - Like S14/S15)

@@ -112,6 +112,7 @@ window.TEUI.CoolingCalculations = (function () {
 
     // Misc state
     initialized: false,
+    calculating: false, // Recursion protection
   };
 
   /**
@@ -330,8 +331,18 @@ window.TEUI.CoolingCalculations = (function () {
    * Calculate all values needed for cooling calculations
    */
   function calculateAll() {
-    // First calculate latent load factor
-    state.latentLoadFactor = calculateLatentLoadFactor();
+    // Recursion protection
+    if (state.calculating) {
+      console.log("[Cooling] ⚠️ Already calculating - skipping to prevent recursion");
+      return;
+    }
+    
+    state.calculating = true;
+    console.log("[Cooling] 🚀 Starting cooling calculations...");
+    
+    try {
+      // First calculate latent load factor
+      state.latentLoadFactor = calculateLatentLoadFactor();
 
     // Calculate atmospheric values
     calculateAtmosphericValues();
@@ -354,8 +365,11 @@ window.TEUI.CoolingCalculations = (function () {
     // 📊 STATEMANAGER: Publish results like any other section
     updateStateManager();
 
-    // Dispatch event to notify S13 that cooling calculations are ready
-    dispatchCoolingEvent();
+      // Dispatch event to notify S13 that cooling calculations are ready
+      dispatchCoolingEvent();
+    } finally {
+      state.calculating = false;
+    }
   }
 
   /**
