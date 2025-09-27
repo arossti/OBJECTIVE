@@ -68,18 +68,30 @@ const referenceCooling = CoolingReference.calculateAll(referenceInputs);
 ## 📋 **IMPLEMENTATION WORKPLAN**
 
 ### **Phase 1: Restore Proven Chassis (SMART APPROACH)**
-1. **✅ Copy ARCHIVE 4011-Cooling.js** to current OBJECTIVE 4011RF ✅
+1. **✅ Copy ARCHIVE 4011-Cooling.js** to current OBJECTIVE 4011RF as **4012-Cooling.js** ✅
    - **Proven working foundation** from 4 months ago
    - **Simple, clean architecture** before S13 internalization
    - **Excel validated calculations** already implemented
+   - **Renamed to avoid confusion** with ARCHIVE original
 
-2. **Port S13 Improvements** to restored chassis:
+2. **✅ Create S13 Backup** - **4012-Section13.js** ✅
+   - **Preserve current working S13** with 9/33 Pattern 1 conversions
+   - **Safe fallback** if cooling extraction goes wrong
+   - **Working baseline** for comparison and validation
+
+3. **CAREFULLY Extract S13 Improvements** to 4012-Cooling.js:
    - **User-editable COP** for Electricity/Gas/Oil heating systems (was fixed at 2.7)
    - **Complete m_124 calculation** (Days Active Cooling - now working in S13)
    - **Enhanced ventilation integration** (improvements from S13 development)
 
-3. **Validate Hybrid Results**
-   - **Test restored chassis** against current S13 cooling engine
+4. **🚨 CRITICAL: Avoid Duplicate Defaults (CHEATSHEET Compliance)**
+   - **Building volume/area**: Should ONLY come from S02/S12, NOT cooling files
+   - **Climate data**: Should ONLY come from S03, NOT cooling files  
+   - **Single source of truth**: Cooling engine reads from StateManager, never hardcodes
+   - **NO duplicate defaults** across files (violates CHEATSHEET Phase 5)
+
+5. **Validate Hybrid Results**
+   - **Test 4012-Cooling.js** against current S13 cooling engine
    - **Verify Excel parity** maintained with ported improvements
    - **Ensure no regression** from proven ARCHIVE baseline
 
