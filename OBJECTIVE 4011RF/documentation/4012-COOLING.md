@@ -193,3 +193,36 @@ const referenceCooling = CoolingReference.calculateAll(referenceInputs);
 **Strategic Goal**: **Transform the cooling "dark matter" into transparent, maintainable components** that any AI agent can understand and modify safely.
 
 **This approach solves the core problem**: Make cooling calculations **as simple as Excel worksheets** while preserving all working functionality and tight ventilation integration.
+
+---
+
+## 🚗 **SIDECAR ARCHITECTURE: S13 ↔ COOLING INTEGRATION**
+
+### **🎯 DIRECT INTEGRATION PATTERN (NO STATEMANAGER OVERHEAD)**
+
+**Cooling.js as S13 Sidecar:**
+- **Input**: S13 passes parameters directly to Cooling.js functions
+- **Processing**: Cooling.js performs calculations using Excel formulas  
+- **Output**: S13 receives results directly and writes to its own fields
+
+```javascript
+// S13 calls Cooling.js directly (sidecar pattern)
+const coolingResults = window.TEUI.CoolingEngine.calculateCooling({
+  coolingSetTemp: ModeManager.getValue("h_24"),  // From S03
+  buildingVolume: ModeManager.getValue("d_105"), // From S12  
+  indoorRH: ModeManager.getValue("i_59"),        // From S08
+  // ... other cross-section inputs
+});
+
+// S13 writes results directly to its own fields (no StateManager roundtrip)
+setFieldValue("m_124", coolingResults.daysActiveCooling, "number-2dp");
+setFieldValue("h_124", coolingResults.freeCoolingLimit, "number-0dp");
+setFieldValue("d_117", coolingResults.coolingEnergy, "number-2dp");
+```
+
+### **✅ SIDECAR BENEFITS:**
+- **No StateManager roundtrips** for internal S13 ↔ Cooling communication
+- **Synchronous execution** (no async/timing issues)
+- **Clean separation** of cooling logic from ventilation logic
+- **Dual-state ready** (separate Target/Reference cooling files)
+- **Performance optimized** (direct function calls)
