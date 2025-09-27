@@ -910,24 +910,25 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /** [Cooling Calc] Calculate free cooling capacity limit (Potential Annual Sensible kWh) */
-  function calculateFreeCoolingLimit(coolingContext) {
-    // Add recursion protection
-    if (window.TEUI.sect13.calculatingFreeCooling) {
-      // CHUNK 3O: Read from context instead of global state
-      return coolingContext.freeCoolingLimit || 0; // Return cached value if already calculating
-    }
-    window.TEUI.sect13.calculatingFreeCooling = true;
+  // 🚫 COOLING.JS TRANSITION: Function moved to 4012-Cooling.js module
+  // function calculateFreeCoolingLimit(coolingContext) {
+  //   // Add recursion protection
+  //   if (window.TEUI.sect13.calculatingFreeCooling) {
+  //     // CHUNK 3O: Read from context instead of global state
+  //     return coolingContext.freeCoolingLimit || 0; // Return cached value if already calculating
+  //   }
+  //   window.TEUI.sect13.calculatingFreeCooling = true;
 
-    let potentialLimit = 0; // Initialize potentialLimit
-    try {
-      // --- Calculation based on SENSIBLE Component Only (Excel A33 * M19) ---
+  //   let potentialLimit = 0; // Initialize potentialLimit
+  //   try {
+  //     // --- Calculation based on SENSIBLE Component Only (Excel A33 * M19) ---
 
-      // 1. Get necessary values
-      const ventFlowRateM3hr =
-        window.TEUI.parseNumeric(getFieldValue("h_120")) || 0;
-      const ventFlowRateM3s = ventFlowRateM3hr / 3600;
-      // CHUNK 3J: Read from context instead of global state
-      const massFlowRateKgS = ventFlowRateM3s * coolingContext.airMass; // kg/s
+  //     // 1. Get necessary values
+  //     const ventFlowRateM3hr =
+  //       window.TEUI.parseNumeric(getFieldValue("h_120")) || 0;
+  //     const ventFlowRateM3s = ventFlowRateM3hr / 3600;
+  //     // CHUNK 3J: Read from context instead of global state
+  //     const massFlowRateKgS = ventFlowRateM3s * coolingContext.airMass; // kg/s
 
       // CHUNK 3F: Read from context instead of global state
       const Cp = coolingContext.specificHeatCapacity; // J/kg·K
@@ -962,16 +963,21 @@ window.TEUI.SectionModules.sect13 = (function () {
       // Store this sensible-only potential limit
       // CHUNK 3O: Write to context instead of global state
       coolingContext.calculatedPotentialFreeCooling = potentialLimit;
-    } catch (error) {
-      console.error(
-        "[S13 Error] Error during calculateFreeCoolingLimit:",
-        error,
-      );
-      potentialLimit = 0;
-    } finally {
-      window.TEUI.sect13.calculatingFreeCooling = false;
-    }
-    return potentialLimit;
+  //   } catch (error) {
+  //     console.error(
+  //       "[S13 Error] Error during calculateFreeCoolingLimit:",
+  //       error,
+  //     );
+  //     potentialLimit = 0;
+  //   } finally {
+  //     window.TEUI.sect13.calculatingFreeCooling = false;
+  //   }
+  //   return potentialLimit;
+  // }
+
+  // 🔄 COOLING.JS INTEGRATION: Read h_124 from StateManager instead of calculating
+  function getCoolingFreeCoolingLimit() {
+    return window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_h_124")) || 0;
   }
 
   /** [Cooling Calc] Calculate days of active cooling required */
@@ -3298,9 +3304,8 @@ window.TEUI.SectionModules.sect13 = (function () {
       // REMOVED: Call moved to calculateAll
       // runIntegratedCoolingCalculations();
 
-      potentialLimit = calculateFreeCoolingLimit(
-        coolingContext,
-      ); // Calculated Sensible Potential (kWh/yr)
+      // 🔄 COOLING.JS INTEGRATION: Read h_124 from Cooling.js via StateManager
+      potentialLimit = getCoolingFreeCoolingLimit(); // Read from Cooling.js calculations
 
       if (setbackValueStr) {
         // const parsedFactor = window.TEUI.parseNumeric(setbackValueStr); // OLD - assumed decimal
