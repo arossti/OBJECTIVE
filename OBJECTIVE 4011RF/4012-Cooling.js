@@ -79,14 +79,16 @@ window.TEUI.CoolingCalculations = (function () {
   // Private state to store calculation values and intermediate results
   const state = {
     // Default values from COOLING-TARGET.csv - these can be overridden
-    nightTimeTemp: 20.43, // A3 - Free cooling limit (Night-time temp outside in ºC)
-    coolingSeasonMeanRH: 0.5585, // A4 - Cooling season mean RH at 15h00 LST (Jun-Sept)
+    // TODO: Future build - these will come from S03 climate data as user inputs
+    nightTimeTemp: 20.43, // A3 - Night-Time Temp Outside in ºC (USER DEFINED - future S03 integration)
+    coolingSeasonMeanRH: 0.5585, // A4 - Cooling Season Mean RH (USER DEFINED - future S03 integration)
     latentLoadFactor: 0, // A6 - Will be calculated (1 + RH/Temp ratio)
     groundTemp: 10, // A7 - Temperature of ground in ºC (can simulate radiant cooling)
     airMass: 1.204, // E3 - Mass of air kg/m3
     specificHeatCapacity: 1005, // E4 - Specific heat capacity of air J/(kg•K)
     latentHeatVaporization: 2501000, // E6 - Latent heat of vaporization J/kg
     coolingSetTemp: null, // A8 - Indoor design temperature from S03 h_24 (REQUIRED from StateManager)
+    indoorRH: null, // A52 - Indoor RH% from S08 i_59 (REQUIRED from StateManager for latent load)
 
     // Calculated values
     freeCoolingLimit: 0, // A33 - Free cooling capacity
@@ -133,8 +135,8 @@ window.TEUI.CoolingCalculations = (function () {
         (17.625 * state.coolingSetTemp) / (state.coolingSetTemp + 243.04),
       );
 
-    // Calculate indoor partial pressure
-    const partialPressureIndoor = pSatIndoor * 0.45; // Assuming 45% indoor RH
+    // Calculate indoor partial pressure using dynamic indoor RH% from S08
+    const partialPressureIndoor = pSatIndoor * (state.indoorRH || 0.45); // A52: Indoor RH% from S08 i_59, fallback 45%
 
     // Update state with calculated values
     state.pSatAvg = pSatAvg;
@@ -358,6 +360,7 @@ window.TEUI.CoolingCalculations = (function () {
     // Register dependencies on building data
     sm.registerDependency("d_105", "cooling_freeCoolingLimit"); // Building volume affects cooling
     sm.registerDependency("h_15", "cooling_freeCoolingLimit"); // Building area affects cooling intensity
+    sm.registerDependency("i_59", "cooling_latentLoadFactor"); // Indoor RH% from S08 affects latent load
 
     // Listen for cooling load updates
     sm.addListener("d_129", function (newValue) {
@@ -365,6 +368,15 @@ window.TEUI.CoolingCalculations = (function () {
       state.coolingLoad = parseFloat(newValue.replace(/,/g, "")) || 0;
       calculateDaysActiveCooling();
       updateStateManager();
+    });
+
+    // Listen for indoor RH% changes from S08 i_59 slider
+    sm.addListener("i_59", function (newValue) {
+      console.log(`[Cooling] Indoor RH% changed: i_59=${newValue}% → updating latent load calculations`);
+      state.indoorRH = parseFloat(newValue) / 100; // Convert percentage to decimal
+      calculateLatentLoadFactor(); // Recalculate latent load factor
+      calculateFreeCoolingLimit(); // Recalculate free cooling with new latent load
+      updateStateManager(); // Update StateManager with new cooling values
     });
   }
 
@@ -414,6 +426,13 @@ window.TEUI.CoolingCalculations = (function () {
         throw new Error("[Cooling] REQUIRED h_15 (conditioned area) missing from S02 - cannot calculate cooling");
       }
       state.buildingArea = parseFloat(area.replace(/,/g, ""));
+
+      // Get indoor RH% from S08 (REQUIRED for latent load calculations)
+      const indoorRH = window.TEUI.StateManager.getValue("i_59");
+      if (!indoorRH) {
+        throw new Error("[Cooling] REQUIRED i_59 (indoor RH%) missing from S08 - cannot calculate latent cooling load");
+      }
+      state.indoorRH = parseFloat(indoorRH) / 100; // Convert percentage to decimal
 
       // Get cooling load
       const coolingLoad = window.TEUI.StateManager.getValue("d_129");
