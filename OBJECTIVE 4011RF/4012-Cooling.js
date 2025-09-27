@@ -303,25 +303,29 @@ window.TEUI.CoolingCalculations = (function () {
     // Calculate days of active cooling required
     calculateDaysActiveCooling();
 
-    // 🚗 SIDECAR: Results available for S13 direct access (no StateManager needed)
-    // S13 can call getCoolingResults() for immediate access to calculated values
+    // 📊 STATEMANAGER: Publish results like any other section
+    updateStateManager();
 
     // Dispatch event to notify S13 that cooling calculations are ready
     dispatchCoolingEvent();
   }
 
   /**
-   * 🚗 SIDECAR PATTERN: Direct results for S13 (no StateManager overhead)
-   * Returns calculated cooling values directly to S13 for immediate use
+   * 📊 STATEMANAGER INTEGRATION: Publish calculated cooling values (like any section)
+   * S13 reads these values from StateManager for display and further calculations
    */
-  function getCoolingResults() {
-    return {
-      daysActiveCooling: state.daysActiveCooling,        // m_124 field
-      freeCoolingLimit: state.freeCoolingLimit,          // h_124 field  
-      latentLoadFactor: state.latentLoadFactor,          // Used in cooling energy calcs
-      wetBulbTemperature: state.wetBulbTemperature,      // Used in atmospheric calcs
-      // Add other cooling results that S13 needs
-    };
+  function updateStateManager() {
+    if (typeof window.TEUI.StateManager === "undefined") return;
+
+    const sm = window.TEUI.StateManager;
+
+    // Publish cooling calculations to StateManager (like any section)
+    sm.setValue("cooling_m_124", state.daysActiveCooling.toString(), "calculated");
+    sm.setValue("cooling_h_124", state.freeCoolingLimit.toString(), "calculated");  
+    sm.setValue("cooling_latentLoadFactor", state.latentLoadFactor.toString(), "calculated");
+    sm.setValue("cooling_wetBulbTemperature", state.wetBulbTemperature.toString(), "calculated");
+    
+    console.log(`[Cooling] Published to StateManager: m_124=${state.daysActiveCooling}, h_124=${state.freeCoolingLimit}`);
   }
 
   /**
@@ -362,7 +366,7 @@ window.TEUI.CoolingCalculations = (function () {
       // Update cooling load and recalculate
       state.coolingLoad = parseFloat(newValue.replace(/,/g, "")) || 0;
       calculateDaysActiveCooling();
-      dispatchCoolingEvent(); // 🚗 SIDECAR: Notify S13 of updated results
+      updateStateManager(); // 📊 STATEMANAGER: Publish updated results
     });
 
     // Listen for indoor RH% changes from S08 i_59 slider
@@ -371,7 +375,7 @@ window.TEUI.CoolingCalculations = (function () {
       state.indoorRH = parseFloat(newValue) / 100; // Convert percentage to decimal
       calculateLatentLoadFactor(); // Recalculate latent load factor
       calculateFreeCoolingLimit(); // Recalculate free cooling with new latent load
-      dispatchCoolingEvent(); // 🚗 SIDECAR: Notify S13 of updated cooling calculations
+      updateStateManager(); // 📊 STATEMANAGER: Publish updated cooling calculations
     });
   }
 
@@ -479,30 +483,19 @@ window.TEUI.CoolingCalculations = (function () {
       }
     },
 
-    // 🚗 SIDECAR METHODS: Direct access for S13 integration
-    getCoolingResults: getCoolingResults,
+    // 📊 STATEMANAGER METHODS: Standard section integration pattern
+    performCalculations: performCalculations, // Trigger full calculation cycle
     
-    // Method to calculate cooling for given inputs (sidecar pattern)
-    calculateCooling: function(inputs) {
-      // Update state with provided inputs
-      if (inputs.coolingSetTemp) state.coolingSetTemp = inputs.coolingSetTemp;
-      if (inputs.buildingVolume) state.buildingVolume = inputs.buildingVolume;
-      if (inputs.buildingArea) state.buildingArea = inputs.buildingArea;
-      if (inputs.indoorRH) state.indoorRH = inputs.indoorRH;
-      if (inputs.coolingLoad) state.coolingLoad = inputs.coolingLoad;
-      
-      // Perform calculations
-      performCalculations();
-      
-      // Return results directly
-      return getCoolingResults();
+    // Method to recalculate cooling (standard section pattern)
+    calculateAll: function() {
+      performCalculations(); // Recalculate and publish to StateManager
     },
 
     // Method to update cooling load and recalculate days of active cooling
     updateCoolingLoad: function (load) {
       state.coolingLoad = load;
       calculateDaysActiveCooling();
-      dispatchCoolingEvent(); // 🚗 SIDECAR: Notify S13 instead of StateManager
+      updateStateManager(); // 📊 STATEMANAGER: Publish updated results
     },
 
     // Debug method to get all state values

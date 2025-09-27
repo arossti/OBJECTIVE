@@ -196,33 +196,33 @@ const referenceCooling = CoolingReference.calculateAll(referenceInputs);
 
 ---
 
-## 🚗 **SIDECAR ARCHITECTURE: S13 ↔ COOLING INTEGRATION**
+## 📊 **STATEMANAGER INTEGRATION: STANDARD SECTION PATTERN**
 
-### **🎯 DIRECT INTEGRATION PATTERN (NO STATEMANAGER OVERHEAD)**
+### **🎯 CONSISTENT ARCHITECTURE (SINGLE SOURCE OF TRUTH)**
 
-**Cooling.js as S13 Sidecar:**
-- **Input**: S13 passes parameters directly to Cooling.js functions
-- **Processing**: Cooling.js performs calculations using Excel formulas  
-- **Output**: S13 receives results directly and writes to its own fields
+**Cooling.js as Standard Module:**
+- **Input**: Reads cross-section dependencies from StateManager (h_15, d_105, i_59, etc.)
+- **Processing**: Performs calculations using Excel formulas in isolation
+- **Output**: Publishes results to StateManager for S13 consumption
 
 ```javascript
-// S13 calls Cooling.js directly (sidecar pattern)
-const coolingResults = window.TEUI.CoolingEngine.calculateCooling({
-  coolingSetTemp: ModeManager.getValue("h_24"),  // From S03
-  buildingVolume: ModeManager.getValue("d_105"), // From S12  
-  indoorRH: ModeManager.getValue("i_59"),        // From S08
-  // ... other cross-section inputs
-});
+// Cooling.js reads inputs from StateManager (like any section)
+const coolingSetTemp = StateManager.getValue("h_24");  // From S03
+const buildingVolume = StateManager.getValue("d_105"); // From S12  
+const indoorRH = StateManager.getValue("i_59");        // From S08
 
-// S13 writes results directly to its own fields (no StateManager roundtrip)
-setFieldValue("m_124", coolingResults.daysActiveCooling, "number-2dp");
-setFieldValue("h_124", coolingResults.freeCoolingLimit, "number-0dp");
-setFieldValue("d_117", coolingResults.coolingEnergy, "number-2dp");
+// Cooling.js publishes results to StateManager (like any section)
+StateManager.setValue("cooling_m_124", daysActiveCooling, "calculated");
+StateManager.setValue("cooling_h_124", freeCoolingLimit, "calculated");
+
+// S13 reads from StateManager (standard pattern)
+const m_124 = ModeManager.getValue("cooling_m_124"); // Automatic Target/Reference
+setFieldValue("m_124", m_124, "number-2dp");
 ```
 
-### **✅ SIDECAR BENEFITS:**
-- **No StateManager roundtrips** for internal S13 ↔ Cooling communication
-- **Synchronous execution** (no async/timing issues)
-- **Clean separation** of cooling logic from ventilation logic
-- **Dual-state ready** (separate Target/Reference cooling files)
-- **Performance optimized** (direct function calls)
+### **✅ STATEMANAGER BENEFITS:**
+- **Architectural consistency** (README.md compliance)
+- **Single source of truth** (all values flow through StateManager)
+- **Automatic dual-state** (ref_ prefixes work automatically for Reference model)
+- **Clear maintenance** (one pattern across all modules)
+- **AI agent friendly** (consistent patterns, smaller S13 file)
