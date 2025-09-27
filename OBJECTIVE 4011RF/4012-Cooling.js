@@ -102,6 +102,11 @@ window.TEUI.CoolingCalculations = (function () {
     coolingElectricalLoad: 0, // d_117 - Heatpump cooling electrical load
     coolingSystemCOP: 0, // l_114 - Cooling system COP
     ventilationCoolingEnergy: 0, // d_123 - Cooling season ventilation energy
+    ventilationCoolingIncoming: 0, // d_122 - Incoming cooling season ventilation energy
+    
+    // S14 integration calculations (moved from S14/S13)
+    cedUnmitigated: 0, // d_129 - CED Cooling Unmitigated
+    cedMitigated: 0, // m_129 - CED Mitigated
 
     // Building-specific values - MUST be read from StateManager (no defaults per CHEATSHEET)
     buildingVolume: null, // A9/D105 - Volume from S12 d_105 (REQUIRED from StateManager)
@@ -305,6 +310,77 @@ window.TEUI.CoolingCalculations = (function () {
   }
 
   /**
+   * Calculate ventilation cooling energy (d_122, d_123) - moved from S13
+   */
+  function calculateVentilationCoolingEnergy() {
+    // Read required inputs from StateManager
+    const ventilationRateLs = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("d_120")) || 0;
+    const cdd = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("d_21")) || 0;
+    const occupiedHours = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("i_63")) || 0;
+    const totalHours = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("j_63")) || 8760;
+    const occupancyFactor = totalHours > 0 ? occupiedHours / totalHours : 0;
+    const coolingSystem = window.TEUI.StateManager.getValue("d_116") || "No Cooling";
+    const summerBoost = window.TEUI.StateManager.getValue("l_119") || "None";
+    const sre = (window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("d_118")) || 0) / 100;
+    
+    let d_122 = 0; // Incoming cooling season ventilation energy
+    let d_123 = 0; // Outgoing cooling season ventilation energy
+    
+    // Simplified calculation based on S13 logic
+    if (coolingSystem === "Cooling") {
+      const baseConstant = 1.21;
+      const summerBoostFactor = summerBoost === "None" ? 1.0 : window.TEUI.parseNumeric(summerBoost) || 1.0;
+      
+      // Basic ventilation cooling energy calculation
+      d_122 = ((baseConstant * ventilationRateLs * cdd * 24) / 1000) * occupancyFactor * state.latentLoadFactor * summerBoostFactor;
+      d_123 = d_122 * sre; // Recovery = incoming * SRE efficiency
+    }
+    
+    state.ventilationCoolingIncoming = d_122; // d_122
+    state.ventilationCoolingEnergy = d_123; // d_123
+    
+    console.log(`[Cooling] Ventilation cooling: d_122=${d_122.toFixed(2)}, d_123=${d_123.toFixed(2)}`);
+  }
+
+  /**
+   * Calculate CED Unmitigated (d_129) - Excel: K71+K79+K97+K104+K103+D122
+   */
+  function calculateCEDUnmitigated() {
+    // Read the required values from StateManager
+    const k71 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("k_71")) || 0; // S09
+    const k79 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("k_79")) || 0; // S10  
+    const k98 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("k_98")) || 0; // S11
+    const k104 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("k_104")) || 0; // S12
+    const k103 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("k_103")) || 0; // S11
+    const d122 = state.ventilationCoolingIncoming; // Use our calculated d_122
+    
+    // Excel formula: D129 = K71+K79+K97+K104+K103+D122
+    const cedUnmitigated = k71 + k79 + k98 + k104 + k103 + d122;
+    
+    state.cedUnmitigated = cedUnmitigated;
+    console.log(`[Cooling] CED Unmitigated: d_129=${cedUnmitigated} = k71(${k71}) + k79(${k79}) + k98(${k98}) + k104(${k104}) + k103(${k103}) + d122(${d122})`);
+    
+    return cedUnmitigated;
+  }
+
+  /**
+   * Calculate CED Mitigated (m_129) - Excel: MAX(0, D129 - H124 - D123)
+   */
+  function calculateCEDMitigated() {
+    const d129 = state.cedUnmitigated; // Use our calculated d_129
+    const h124 = state.freeCoolingLimit; // Free cooling capacity
+    const d123 = state.ventilationCoolingEnergy; // Cooling season ventilation energy
+    
+    // Excel formula: M129 = MAX(0, D129 - H124 - D123)
+    const cedMitigated = Math.max(0, d129 - h124 - d123);
+    
+    state.cedMitigated = cedMitigated;
+    console.log(`[Cooling] CED Mitigated: m_129=${cedMitigated} = MAX(0, d129(${d129}) - h124(${h124}) - d123(${d123}))`);
+    
+    return cedMitigated;
+  }
+
+  /**
    * Calculate wet bulb temperature from dry bulb and RH
    * This implements formulas in cells E64-E66 of COOLING-TARGET.csv
    */
@@ -359,8 +435,15 @@ window.TEUI.CoolingCalculations = (function () {
     // Calculate days of active cooling required
     calculateDaysActiveCooling();
 
+    // Calculate ventilation cooling energy (d_122, d_123) - moved from S13
+    calculateVentilationCoolingEnergy();
+
     // Calculate cooling system integration (d_117, l_114, cross-section outputs)
     calculateCoolingSystemIntegration();
+
+    // Calculate CED values (moved from S14/S13 for tight cooling integration)
+    calculateCEDUnmitigated(); // d_129
+    calculateCEDMitigated(); // m_129
 
     // 📊 STATEMANAGER: Publish results like any other section
     updateStateManager();
@@ -398,8 +481,13 @@ window.TEUI.CoolingCalculations = (function () {
     sm.setValue("cooling_partialPressure", state.partialPressure.toString(), "calculated");     // Partial pressure
     sm.setValue("cooling_humidityRatio", state.humidityRatio.toString(), "calculated");         // Humidity ratio
     
-    // Note: d_129 is calculated by S14, m_129 is calculated by S13
-    // Cooling.js READS these values, does not publish them
+    // Cross-section outputs for S14 (moved from S14/S13 for tight cooling integration)
+    sm.setValue("d_129", state.cedUnmitigated.toString(), "calculated");  // CED Unmitigated for S14
+    sm.setValue("m_129", state.cedMitigated.toString(), "calculated");   // CED Mitigated for S14
+    
+    // Also publish d_122 and d_123 directly for S13 consumption
+    sm.setValue("d_122", state.ventilationCoolingIncoming.toString(), "calculated"); // S13 reads this directly
+    sm.setValue("d_123", state.ventilationCoolingEnergy.toString(), "calculated"); // S13 reads this directly
     
     console.log(`[Cooling] Published to StateManager: m_124=${state.daysActiveCooling}, h_124=${state.freeCoolingLimit}, d_124=${(state.freeCoolingLimit / state.coolingLoad * 100).toFixed(1)}%`);
   }
