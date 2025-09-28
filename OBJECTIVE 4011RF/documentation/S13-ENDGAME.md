@@ -40,6 +40,25 @@
 - **After**: -19.98 days (realistic), fully responsive to ventilation changes
 - **Fix**: Implemented complete COOLING-TARGET E37→E50→E51→E52→E55 calculation chain with proper daily/seasonal value relationships
 
+### **🚨 CRITICAL TODO: ModeManager Integration Required (Sept 28, 2025)**
+
+**URGENT ARCHITECTURAL DEBT**: Current S13 chassis (4012-Section13.js) is based on old S13 file that predates dual-state architecture.
+
+**Issues Identified:**
+- **Logs.md errors**: `Section sect13 has no ModeManager - using direct write for l_119`
+- **Missing dual-state support**: Current S13 lacks ModeManager infrastructure needed for Reference mode
+- **Architecture gap**: 4011-Section13.js has complete dual-state implementation that needs to be ported
+
+**Required Tomorrow:**
+1. **Port ModeManager from 4011-Section13.js**: Complete dual-state architecture with TargetState/ReferenceState objects
+2. **Implement Pattern A compliance**: Following proven 4011-Section13.js methodology  
+3. **Add Reference mode support**: Enable ref_ prefixed value publishing for downstream sections
+4. **Fix FieldManager integration**: Resolve "no ModeManager" errors in Logs.md
+
+**Reference Implementation**: Use `4011-Section13.js` as the architectural template - it contains the complete, working dual-state pattern that current S13 chassis lacks.
+
+**Strategic Priority**: ModeManager integration is prerequisite for Reference-Cooling.js implementation and complete dual-state system stability.
+
 ---
 
 ## 1. Executive Summary
