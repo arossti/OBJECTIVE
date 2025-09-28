@@ -221,16 +221,32 @@ const referenceCooling = CoolingReference.calculateAll(referenceInputs);
 - **Need**: Port exact S13 calculations to replace ARCHIVE simplifications
 - **Challenge**: Complex psychrometric formulas from S13 need careful extraction
 
-### **📋 NEXT SESSION PRIORITIES:**
+### **🚨 CRITICAL ARCHITECTURAL PIVOT DECISION** _(Sept 27, 2025 - 11:45pm)_
 
-**Immediate Debug Tasks:**
-1. **Fix h_124 NaN calculation** - Debug free cooling limit formula
-2. **Port exact S13 formulas** - Replace ARCHIVE approximations with working S13 calculations  
-3. **Validate calculation chain** - Ensure d_122 → d_129 → m_129 → h_10 flow works
-4. **Complete S13 migration** - Comment out remaining cooling functions
-5. **Test complete integration** - Restore Excel parity and cooling benefits
+**FUNDAMENTAL PROBLEM IDENTIFIED:**
+- **4012-Cooling.js approach failing** - JavaScript errors, 0 calculations, complex debugging
+- **Advanced dual-state S13 too complex** - 4,137 lines, calculateCoolingSystem breaking point
+- **Months of work at risk** - Going in circles, not reaching stable solution
 
-**Strategic Goal**: **Fix Cooling.js calculation issues and complete S13 simplification** to achieve the AI-agent friendly architecture.
+**ARCHITECTURAL PIVOT DECISION:**
+1. **✅ ABANDON current advanced S13** - Too complex, unmaintainable
+2. **✅ REVERT to May 2025 S13.js** - Simple, proven working foundation  
+3. **✅ KEEP 4012-Cooling.js approach** - But rebuild S13 to work with it
+4. **✅ SYSTEMATIC REBUILD PLAN** - Port all functionality from 4012-Section13-OFFLINE.js to simple S13
+
+**WHAT THIS MEANS:**
+- **Current 4012-Section13-OFFLINE.js** = Advanced dual-state with all features (BACKUP)
+- **New working S13** = May 2025 simple chassis + all advanced features rebuilt methodically
+- **4012-Cooling.js** = Continue extraction approach but with simpler S13 integration
+- **Rebuild strategy** = Small, testable chunks, commit each working piece
+
+**NEXT SESSION PRIORITIES:**
+1. **Complete S13 rebuild** - Port advanced features to simple S13 chassis
+2. **Fix 4012-Cooling.js integration** - Ensure it works with rebuilt S13
+3. **Systematic validation** - Test each feature as it's ported
+4. **Preserve dual-state architecture** - But in simpler, maintainable form
+
+**Strategic Goal**: **Build maintainable dual-state S13 that works with extracted cooling engine** - No more going in circles.
 
 ---
 
