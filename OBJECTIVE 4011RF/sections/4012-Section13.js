@@ -1503,15 +1503,9 @@ window.TEUI.SectionModules.sect13 = (function () {
       sm.addListener("i_71", calculateAll); // Total Occ Gains
       sm.addListener("i_79", calculateAll); // Total App Gains
       sm.addListener("d_127", calculateHeatingSystem); // TED (from S14, for d_114)
-      // Listener for m_129 (CED Mitigated) from S14 to update S13 coolingState
-      sm.addListener("m_129", () => {
-        coolingState.coolingLoad =
-          window.TEUI.parseNumeric(getFieldValue("m_129")) || 0;
-        calculateCoolingSystem(); // Maybe recalculate cooling system loads?
-        // Re-calculate days active cooling AFTER load is updated
-        calculateDaysActiveCooling(coolingState.freeCoolingLimit);
-        setCalculatedValue("m_124", coolingState.daysActiveCooling, "integer");
-      });
+      // ✅ REMOVED: Old competing m_129 listener that was overwriting Cooling.js m_124 results
+      // This was setting coolingState.daysActiveCooling to default 120, overriding Cooling.js calculations
+      // Now Cooling.js handles m_129 → m_124 calculation chain internally
       // *** MOVED: Listener for d_113 to handle ghosting (Correct location) ***
       sm.addListener("d_113", handleHeatingSystemChangeForGhosting);
     } else {
@@ -2236,9 +2230,9 @@ window.TEUI.SectionModules.sect13 = (function () {
       }
       setCalculatedValue("d_124", percentFreeCooling, "percent-0dp");
 
-      // Calculate M124 (Days Active Cooling) - Set to TBD for now
-      // calculateDaysActiveCooling(finalFreeCoolingLimit);
-      setCalculatedValue("m_124", "TBD", "raw"); // Set display to TBD
+      // 🔄 COOLING.JS INTEGRATION: Read M124 from Cooling.js via StateManager
+      const activeCoolingDays = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_m_124")) || 0;
+      setCalculatedValue("m_124", activeCoolingDays, "calculated");
     } catch (error) {
       console.error("[S13 Error] Error during calculateFreeCooling:", error);
       finalFreeCoolingLimit = 0;
