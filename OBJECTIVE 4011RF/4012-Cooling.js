@@ -239,30 +239,88 @@ window.TEUI.CoolingCalculations = (function () {
    * This implements the formula in cell E55 of COOLING-TARGET.csv
    */
   function calculateDaysActiveCooling() {
-    // ✅ EXCEL PARITY: Use exact Excel formula from time machine backup 4011-Section13.js
-    // Excel: =E52/(E54*24) where E52=(E50-E51), E54=REPORT!M19
+    // ✅ EXCEL PARITY: Implement COOLING-TARGET.csv internal logic for E55 calculation
+    // COOLING-TARGET E55: =E52/(E54*24) where E52=(E50-E51)
+    // E50 = E37*E45 = (REPORT!M129 * REPORT!D21)  
+    // E51 = E36*E45 = (daily_free_cooling_kWh * REPORT!D21)
+    // E54 = REPORT!M19 = cooling season days
     
-    const d_129 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("d_129")) || 0; // E50: Seasonal Cooling Load
-    const h_124 = state.freeCoolingLimit || 0; // E51: Free Cooling Potential
-    const m_19 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("m_19")) || 120; // E54: Cooling Season Days
+    // Get base values from StateManager
+    const m_129_annual = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("m_129")) || 0; // Annual mitigated cooling load
+    const d_21 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("d_21")) || 120; // E45: CDD
+    const m_19 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("m_19")) || 120; // E54: Cooling season days
     
-    // Calculate E52: Unmet Cooling Load = E50 - E51
-    const unmetCoolingLoad = d_129 - h_124; // E52 = E50 - E51
+    // ✅ CRITICAL FIX: E37 should be daily mitigated cooling load, not annual
+    // E37 = m_129 / CDD = daily cooling load that gets multiplied back by CDD in E50
+    const E37_daily_mitigated_cooling = d_21 > 0 ? m_129_annual / d_21 : 0;
     
-    // Calculate E55: Days Active Cooling = E52 / (E54 * 24)
-    let daysActiveCooling = 0;
+    // Calculate COOLING-TARGET internal values
+    // E36 = A33 = Daily free cooling potential (kWh/day) - calculated from ventilation physics
+    const E36_daily_free_cooling_kWh = calculateDailyFreeCoolingPotential(); // A33 equivalent
+    
+    // COOLING-TARGET E50: Seasonal cooling load = E37 * E45
+    const E50_seasonal_cooling_load = E37_daily_mitigated_cooling * d_21;
+    
+    // COOLING-TARGET E51: Seasonal free cooling potential = E36 * E45  
+    const E51_seasonal_free_cooling = E36_daily_free_cooling_kWh * d_21;
+    
+    // COOLING-TARGET E52: Unmet cooling load = E50 - E51
+    const E52_unmet_cooling_load = E50_seasonal_cooling_load - E51_seasonal_free_cooling;
+    
+    // COOLING-TARGET E55: Days active cooling = E52 / (E54 * 24)
+    let E55_days_active_cooling = 0;
     if (m_19 > 0) {
-      daysActiveCooling = unmetCoolingLoad / (m_19 * 24);
+      E55_days_active_cooling = E52_unmet_cooling_load / (m_19 * 24);
     }
     
     // ✅ EXCEL COMMENT: "Obviously negative days of free cooling is not possible - 
     // the goal here is to get close to zero - anything less than zero is overkill ventilation-wise"
     // So we preserve the raw calculation (can be negative) as per Excel methodology
     
-    console.log(`[Cooling m_124 EXCEL] E50(d_129)=${d_129}, E51(h_124)=${h_124}, E52(unmet)=${unmetCoolingLoad}, E54(m_19)=${m_19}, E55(result)=${daysActiveCooling}`);
+    console.log(`[Cooling m_124 COOLING-TARGET] m_129_annual=${m_129_annual}, E37_daily=${E37_daily_mitigated_cooling}, E45(d_21)=${d_21}, E50=${E50_seasonal_cooling_load}, E51=${E51_seasonal_free_cooling}, E52=${E52_unmet_cooling_load}, E54(m_19)=${m_19}, E55(result)=${E55_days_active_cooling}`);
     
-    state.daysActiveCooling = daysActiveCooling;
-    return daysActiveCooling; // Return exact Excel calculation result
+    state.daysActiveCooling = E55_days_active_cooling;
+    return E55_days_active_cooling; // Return exact COOLING-TARGET Excel calculation result
+  }
+
+  /**
+   * Calculate daily free cooling potential (COOLING-TARGET A33/E36)
+   * Implements the physics chain: A28→A29→A30→A31→A32→A33
+   */
+  function calculateDailyFreeCoolingPotential() {
+    // COOLING-TARGET A28: Ventilation Rate l/s (with summer boost)
+    // =IF(REPORT!L119="None", REPORT!D120, REPORT!D120*REPORT!L119)
+    const d_120 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("d_120")) || 0; // Base ventilation rate l/s
+    const l_119 = window.TEUI.StateManager.getValue("l_119") || "None"; // Summer boost factor
+    
+    let A28_ventilation_rate_ls = d_120;
+    if (l_119 !== "None" && l_119 !== "") {
+      const boostFactor = window.TEUI.parseNumeric(l_119) || 1.0;
+      A28_ventilation_rate_ls = d_120 * boostFactor;
+    }
+    
+    // COOLING-TARGET A29: m3/second = A28/1000
+    const A29_ventilation_rate_m3s = A28_ventilation_rate_ls / 1000;
+    
+    // COOLING-TARGET A30: Mass-Flow Rate = A29 * E3 (air density)
+    const A30_mass_flow_rate_kgs = A29_ventilation_rate_m3s * state.airMass; // E3 = 1.204 kg/m3
+    
+    // COOLING-TARGET A16: Temp difference = A8 - A3 (indoor - outdoor night temp)
+    const h_24 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("h_24")) || 24; // A8: Indoor setpoint
+    const A16_temp_diff = h_24 - state.nightTimeTemp; // A8 - A3
+    
+    // COOLING-TARGET A31: Heat removal power = A30 * E4 * A16 (J/s or Watts)
+    const A31_heat_removal_watts = A30_mass_flow_rate_kgs * state.specificHeatCapacity * A16_temp_diff;
+    
+    // COOLING-TARGET A32: Heat removed in one day (Joules) = A31 * 86400
+    const A32_daily_heat_removal_joules = A31_heat_removal_watts * 86400;
+    
+    // COOLING-TARGET A33: Heat removed in one day (kWh) = A32 / 3600000
+    const A33_daily_free_cooling_kWh = A32_daily_heat_removal_joules / 3600000;
+    
+    console.log(`[Cooling A33 PHYSICS] d_120=${d_120}, l_119=${l_119}, A28=${A28_ventilation_rate_ls}, A29=${A29_ventilation_rate_m3s}, A30=${A30_mass_flow_rate_kgs}, A16=${A16_temp_diff}, A31=${A31_heat_removal_watts}, A32=${A32_daily_heat_removal_joules}, A33=${A33_daily_free_cooling_kWh}`);
+    
+    return A33_daily_free_cooling_kWh; // E36 equivalent
   }
 
   /**
@@ -561,6 +619,31 @@ window.TEUI.CoolingCalculations = (function () {
       state.userCoolingCOP = parseFloat(coolingCOP) || 2.66;
       calculateCoolingSystemIntegration(); // Update cooling calculations with user COP
       updateStateManager();
+    });
+
+    // ✅ FIX: Listen for h_124 (free cooling limit) changes from S13
+    // This fixes the m_124 dependency chain: l_119 → d_122/d_123 → h_124 → m_124
+    sm.addListener("h_124", function (newValue) {
+      console.log(`[Cooling] Free cooling limit changed: h_124=${newValue} → recalculating m_124 (days active cooling)`);
+      state.freeCoolingLimit = parseFloat(newValue.replace(/,/g, "")) || 0;
+      calculateDaysActiveCooling(); // Recalculate m_124 with new h_124
+      updateStateManager(); // Publish updated cooling_m_124 to StateManager
+    });
+
+    // ✅ FIX: Listen for l_119 (summer boost) changes to trigger complete m_124 recalculation
+    // This ensures m_124 updates when ventilation parameters change
+    sm.addListener("l_119", function (newValue) {
+      console.log(`[Cooling] Summer boost changed: l_119=${newValue} → recalculating m_124 with new ventilation rate`);
+      calculateDaysActiveCooling(); // Recalculate m_124 with new l_119 boost factor
+      updateStateManager(); // Publish updated cooling_m_124 to StateManager
+    });
+
+    // ✅ FIX: Listen for d_120 (base ventilation rate) changes
+    // This ensures m_124 updates when base ventilation rate changes  
+    sm.addListener("d_120", function (newValue) {
+      console.log(`[Cooling] Base ventilation rate changed: d_120=${newValue} → recalculating m_124`);
+      calculateDaysActiveCooling(); // Recalculate m_124 with new base ventilation rate
+      updateStateManager(); // Publish updated cooling_m_124 to StateManager
     });
   }
 

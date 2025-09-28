@@ -1,8 +1,44 @@
 # S13-ENDGAME.md: The Final, Architecturally-Compliant Refactor for Section 13
 
 **Version**: 1.0
-**Date**: September 12, 2025 (Updated Sept 23rd, 2025)
+**Date**: September 12, 2025 (Updated Sept 28th, 2025)
 **Status**: This document outlines the definitive and final refactoring plan for Section 13 to achieve perfect dual-state compliance, building upon the critical insights gathered in `S13-MASTER-WORKPLAN.md`.
+
+---
+
+## 📚 **EXCEL REFERENCE SOURCES (Sept 28, 2025)**
+
+**Critical Reference Documents** - The authoritative calculation sources for S13 validation:
+
+### **Primary Excel Sources:**
+1. **FORMULAE-3039.csv** - Main application DOM/REPORT sheet
+   - **Location**: `ARCHIVE/4011GS/OBJECTIVE-4011GS-2025.06.21-SOLSTICE-BASELINE/sources of truth 3037/FORMULAE-3039.csv`
+   - **Content**: Lines 112-146 contain complete S13 (Mechanical Loads) formulas
+   - **Purpose**: Gold standard for all S13 calculations, field definitions, and expected results
+
+2. **COOLING-TARGET.csv** - Cooling physics and ventilation calculations  
+   - **Location**: `ARCHIVE/4011GS/OBJECTIVE-4011GS-2025.06.21-SOLSTICE-BASELINE/sources of truth 3037/COOLING-TARGET.csv`
+   - **Content**: Lines 1-77 contain cooling load methodology, ventilation impacts, free cooling calculations
+   - **Purpose**: Authoritative source for cooling-ventilation interactions, m_124 calculations, latent load factors
+
+### **Key Excel Formula References:**
+- **Row 124 (V.4.1)**: `=H124/D129` (Free Cooling %), `=IF(ISNUMBER(SEARCH("Constant",G118)),'COOLING-TARGET'!A33*M19,(K120*'COOLING-TARGET'!A33*M19))` (Free Cooling Limit), `='COOLING-TARGET'!E55` (Days Active Cooling)
+- **m_124 Formula**: COOLING-TARGET.csv line 55: `=E52/(E54*24)` where E52=(E50-E51), E54=REPORT!M19
+- **Ventilation Dependencies**: G118 (method), K120 (setback), L119 (summer boost) all affect cooling calculations
+
+**Usage**: These documents serve as the definitive validation source for all S13 calculations. Any discrepancies between JavaScript results and Excel formulas indicate implementation bugs that must be resolved.
+
+### **🔧 COOLING-TARGET Variable Mapping (Sept 28, 2025):**
+**CRITICAL RESOURCE CREATED**: `COOLING-TARGET-VARIABLES.json` 
+- **Location**: `OBJECTIVE 4011RF/documentation/COOLING-TARGET-VARIABLES.json`
+- **Purpose**: Comprehensive mapping of COOLING-TARGET.csv internal variables (A1-E77) to our DOM elements
+- **Value**: Essential for future agents to understand Excel cooling physics and implement proper parity
+- **Key Insight**: COOLING-TARGET uses internal daily calculations (E37) that get multiplied by CDD (E45) to produce seasonal values (E50/E51)
+
+**✅ BREAKTHROUGH ACHIEVED (Sept 28, 2025)**: m_124 calculation fixed using proper COOLING-TARGET Excel logic
+- **Before**: 670.16 days (absurd), no response to l_119 changes
+- **After**: -19.98 days (realistic), fully responsive to ventilation changes
+- **Fix**: Implemented complete COOLING-TARGET E37→E50→E51→E52→E55 calculation chain with proper daily/seasonal value relationships
 
 ---
 
