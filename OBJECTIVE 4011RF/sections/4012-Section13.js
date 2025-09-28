@@ -1238,7 +1238,7 @@ window.TEUI.SectionModules.sect13 = (function () {
           classes: ["label", "flex-cell"],
         },
         j: {
-          content: "Cooling Days", //Days Active Cooling Required (Experimental)
+          content: "Days Active Cooling Required (Experimental)", //Days Active Cooling Required (Experimental)
           classes: ["label", "flex-cell"],
         },
         k: {},
@@ -1482,8 +1482,8 @@ window.TEUI.SectionModules.sect13 = (function () {
       // Listener for d_119 (Per Person Rate) changes
       sm.addListener("d_119", calculateVentilationRates);
 
-      // Listener for l_119 (Summer Boost) changes
-      sm.addListener("l_119", calculateCoolingVentilation);
+      // ✅ REMOVED: l_119 listener moved to Cooling.js for proper m_124 calculation chain
+      // sm.addListener("l_119", calculateCoolingVentilation); // Now handled by Cooling.js
 
       // --- Listeners for m_129 Dependencies --- Corrected in troubleshooting
       sm.addListener("d_129", calculateMitigatedCED); // d_129 from S14
@@ -1605,11 +1605,11 @@ window.TEUI.SectionModules.sect13 = (function () {
         // if (fieldId === 'l_118') {
         //     console.log(`[S13 DEBUG l_118] Attempting to set StateManager for l_118 to: "${valueToStore}". Display will be: "${formattedDisplay}"`);
         // }
-        window.TEUI.StateManager.setValue(
-          fieldId,
-          valueToStore,
-          "user-modified",
-        );
+          window.TEUI.StateManager.setValue(
+            fieldId,
+            valueToStore,
+            "user-modified",
+          );
         // ADDED: Explicitly trigger calculateAll after user modifies AFUE
         if (fieldId === "j_115") {
           // console.log("[S13 DEBUG] j_115 changed by user, explicitly calling calculateAll().")
@@ -1997,7 +1997,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       ref_intensity_T117 > 0 ? intensity_f117 / ref_intensity_T117 : 0;
     setCalculatedValue("m_117", m117_value, "percent-0dp");
 
-    calculateCoolingVentilation();
+      calculateCoolingVentilation();
   }
 
   /**
@@ -2150,10 +2150,10 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     setCalculatedValue("i_122", latentLoadFactor_i122, "percent-0dp");
     setCalculatedValue(
-      "d_122",
-      ventEnergyCoolingIncoming_d122,
-      "number-2dp-comma",
-    );
+        "d_122",
+        ventEnergyCoolingIncoming_d122,
+        "number-2dp-comma",
+      );
     setCalculatedValue("d_123", ventEnergyRecovered_d123, "number-2dp-comma");
 
     return {
@@ -2221,13 +2221,13 @@ window.TEUI.SectionModules.sect13 = (function () {
       setCalculatedValue("h_124", finalFreeCoolingLimit, "number-2dp-comma");
       coolingState.freeCoolingLimit = finalFreeCoolingLimit; // Keep local state consistent
 
-      // Calculate D124 (% Free Cooling Capacity)
-      const coolingLoadUnmitigated =
-        window.TEUI.parseNumeric(getFieldValue("d_129")) || 0;
-      let percentFreeCooling = 0;
-      if (coolingLoadUnmitigated > 0) {
-        percentFreeCooling = finalFreeCoolingLimit / coolingLoadUnmitigated;
-      }
+        // Calculate D124 (% Free Cooling Capacity)
+        const coolingLoadUnmitigated =
+          window.TEUI.parseNumeric(getFieldValue("d_129")) || 0;
+        let percentFreeCooling = 0;
+        if (coolingLoadUnmitigated > 0) {
+          percentFreeCooling = finalFreeCoolingLimit / coolingLoadUnmitigated;
+        }
       setCalculatedValue("d_124", percentFreeCooling, "percent-0dp");
 
       // 🔄 COOLING.JS INTEGRATION: Read M124 from Cooling.js via StateManager

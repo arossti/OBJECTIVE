@@ -107,6 +107,21 @@ window.TEUI.CoolingCalculations = (function () {
     // S14 integration calculations (moved from S14/S13)
     cedUnmitigated: 0, // d_129 - CED Cooling Unmitigated
     cedMitigated: 0, // m_129 - CED Mitigated
+    
+    // Atmospheric calculation properties (initialized by calculateAtmosphericValues)
+    atmPressure: null, // Atmospheric pressure (calculated)
+    partialPressure: null, // Partial pressure of water vapor
+    pSatAvg: null, // Average saturation pressure
+    pSatIndoor: null, // Indoor saturation pressure  
+    partialPressureIndoor: null, // Indoor partial pressure
+    
+    // Humidity calculation properties (initialized by calculateHumidityRatios)
+    humidityRatioIndoor: null, // Indoor humidity ratio
+    humidityRatioAvg: null, // Average humidity ratio
+    humidityRatioDifference: null, // Humidity ratio difference
+    
+    // Temperature calculations
+    wetBulbTemperature: null, // Wet bulb temperature
 
     // Building-specific values - MUST be read from StateManager (no defaults per CHEATSHEET)
     buildingVolume: null, // A9/D105 - Volume from S12 d_105 (REQUIRED from StateManager)
@@ -525,11 +540,19 @@ window.TEUI.CoolingCalculations = (function () {
     sm.setValue("cooling_d_123", state.ventilationCoolingEnergy.toString(), "calculated"); // Cooling season ventilation energy
     
     // Intermediate cooling calculations for S13 integration
-    sm.setValue("cooling_latentLoadFactor", state.latentLoadFactor.toString(), "calculated");   // Latent Load Factor
-    sm.setValue("cooling_wetBulbTemperature", state.wetBulbTemperature.toString(), "calculated"); // Wet Bulb Temp
-    sm.setValue("cooling_atmosphericPressure", state.atmPressure.toString(), "calculated");     // Atmospheric pressure
-    sm.setValue("cooling_partialPressure", state.partialPressure.toString(), "calculated");     // Partial pressure
-    sm.setValue("cooling_humidityRatio", state.humidityRatio.toString(), "calculated");         // Humidity ratio
+    sm.setValue("cooling_latentLoadFactor", (state.latentLoadFactor || 0).toString(), "calculated");   // Latent Load Factor
+    sm.setValue("cooling_wetBulbTemperature", (state.wetBulbTemperature || 0).toString(), "calculated"); // Wet Bulb Temp
+    
+    // ✅ FIX: Add null checks for properties that may not be initialized
+    if (state.atmPressure !== undefined) {
+      sm.setValue("cooling_atmosphericPressure", state.atmPressure.toString(), "calculated");     // Atmospheric pressure
+    }
+    if (state.partialPressure !== undefined) {
+      sm.setValue("cooling_partialPressure", state.partialPressure.toString(), "calculated");     // Partial pressure  
+    }
+    if (state.humidityRatioDifference !== undefined) {
+      sm.setValue("cooling_humidityRatio", state.humidityRatioDifference.toString(), "calculated");         // Humidity ratio difference
+    }
     
     // Cross-section outputs for S14 (moved from S14/S13 for tight cooling integration)
     sm.setValue("d_129", state.cedUnmitigated.toString(), "calculated");  // CED Unmitigated for S14
@@ -700,6 +723,11 @@ window.TEUI.CoolingCalculations = (function () {
         throw new Error("[Cooling] REQUIRED i_59 (indoor RH%) missing from S08 - cannot calculate latent cooling load");
       }
       state.indoorRH = parseFloat(indoorRH) / 100; // Convert percentage to decimal
+      
+      // Calculate atmospheric pressure from elevation (COOLING-TARGET E15 logic)
+      const elevation = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("l_22")) || 80; // Project elevation from S03
+      const seaLevelPressure = 101325; // E13 - Standard atmospheric pressure at sea level
+      state.atmPressure = seaLevelPressure * Math.exp(-elevation / 8434); // E15 logic
 
       // Get S13 system integration values
       const heatingSystem = window.TEUI.StateManager.getValue("d_113");
