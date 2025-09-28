@@ -161,20 +161,12 @@ window.TEUI.SectionModules.sect08 = (function () {
       // Bridge to global StateManager for backward compatibility
       if (this.currentMode === "target") {
         window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
-        // ✅ DEBUG: Log i_59 publishing for Cooling.js integration
-        if (fieldId === "i_59") {
-          console.log(`[S08] ✅ Published i_59=${value}% to StateManager for Cooling.js`);
-        }
       } else if (this.currentMode === "reference") {
         window.TEUI.StateManager.setValue(
           `ref_${fieldId}`,
           value,
           "user-modified",
         );
-        // ✅ DEBUG: Log ref_i_59 publishing for future Reference-Cooling.js
-        if (fieldId === "i_59") {
-          console.log(`[S08] ✅ Published ref_i_59=${value}% to StateManager for Reference-Cooling.js`);
-        }
       }
     },
     getValue: function (fieldId) {
