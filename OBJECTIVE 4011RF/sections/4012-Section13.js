@@ -2149,12 +2149,11 @@ window.TEUI.SectionModules.sect13 = (function () {
     // console.warn(`[S13 Debug CoolVent Outputs] Incoming(d122): ${ventEnergyCoolingIncoming_d122.toFixed(2)}, Recovered(d123): ${ventEnergyRecovered_d123.toFixed(2)}`);
 
     setCalculatedValue("i_122", latentLoadFactor_i122, "percent-0dp");
-    setCalculatedValue(
-        "d_122",
-        ventEnergyCoolingIncoming_d122,
-        "number-2dp-comma",
-      );
-    setCalculatedValue("d_123", ventEnergyRecovered_d123, "number-2dp-comma");
+    // ✅ REMOVED: d_122/d_123 calculations moved to Cooling.js - S13 now reads these values
+    const d_122_from_cooling = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("d_122")) || 0;
+    const d_123_from_cooling = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("d_123")) || 0;
+    setCalculatedValue("d_122", d_122_from_cooling, "number-2dp-comma");
+    setCalculatedValue("d_123", d_123_from_cooling, "number-2dp-comma");
 
     return {
       incoming: ventEnergyCoolingIncoming_d122,

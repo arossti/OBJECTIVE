@@ -58,6 +58,12 @@
         "excel_formula": "=REPORT!D102",
         "description": "Surface Area Ag in m2",
         "our_equivalent": "d_102"
+      },
+      "A52": {
+        "excel_formula": "=REPORT!I59",
+        "description": "A.5 Cooling Season Interior RH in % from FACTS",
+        "our_equivalent": "i_59 (S08 cooling season indoor RH% slider)",
+        "note": "Different from d_59 which is heating season indoor humidity"
       }
     },
 

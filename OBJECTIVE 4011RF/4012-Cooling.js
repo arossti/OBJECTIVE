@@ -108,20 +108,20 @@ window.TEUI.CoolingCalculations = (function () {
     cedUnmitigated: 0, // d_129 - CED Cooling Unmitigated
     cedMitigated: 0, // m_129 - CED Mitigated
     
-    // Atmospheric calculation properties (initialized by calculateAtmosphericValues)
-    atmPressure: null, // Atmospheric pressure (calculated)
-    partialPressure: null, // Partial pressure of water vapor
-    pSatAvg: null, // Average saturation pressure
-    pSatIndoor: null, // Indoor saturation pressure  
-    partialPressureIndoor: null, // Indoor partial pressure
+    // Atmospheric calculation properties (from COOLING-TARGET.csv)
+    atmPressure: 101325, // E13/E15 - Standard atmospheric pressure, adjusted for elevation
+    partialPressure: 0, // Calculated - Partial pressure of water vapor
+    pSatAvg: 0, // Calculated - Average saturation pressure
+    pSatIndoor: 0, // Calculated - Indoor saturation pressure  
+    partialPressureIndoor: 0, // Calculated - Indoor partial pressure
     
-    // Humidity calculation properties (initialized by calculateHumidityRatios)
-    humidityRatioIndoor: null, // Indoor humidity ratio
-    humidityRatioAvg: null, // Average humidity ratio
-    humidityRatioDifference: null, // Humidity ratio difference
+    // Humidity calculation properties (from COOLING-TARGET.csv)
+    humidityRatioIndoor: 0, // Calculated - Indoor humidity ratio
+    humidityRatioAvg: 0, // Calculated - Average humidity ratio
+    humidityRatioDifference: 0, // Calculated - Humidity ratio difference
     
     // Temperature calculations
-    wetBulbTemperature: null, // Wet bulb temperature
+    wetBulbTemperature: 0, // Calculated - Wet bulb temperature
 
     // Building-specific values - MUST be read from StateManager (no defaults per CHEATSHEET)
     buildingVolume: null, // A9/D105 - Volume from S12 d_105 (REQUIRED from StateManager)
@@ -166,7 +166,16 @@ window.TEUI.CoolingCalculations = (function () {
       );
 
     // Calculate indoor partial pressure using dynamic indoor RH% from S08
-    const partialPressureIndoor = pSatIndoor * (state.indoorRH || 0.45); // A52: Indoor RH% from S08 i_59, fallback 45%
+    // ✅ FULLY DYNAMIC: A52 = REPORT!D59 (our i_59 field) - no hardcoded fallbacks
+    if (!state.indoorRH) {
+      console.warn("[Cooling] state.indoorRH not initialized - reading directly from StateManager i_59");
+      const i_59_value = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("i_59"));
+      if (!i_59_value) {
+        throw new Error("[Cooling] CRITICAL: A52 (indoor RH%) missing from S08 i_59 - required for humidity calculations");
+      }
+      state.indoorRH = i_59_value / 100; // Convert percentage to decimal
+    }
+    const partialPressureIndoor = pSatIndoor * state.indoorRH; // A52: Indoor RH% from S08 i_59
 
     // Update state with calculated values
     state.pSatAvg = pSatAvg;
@@ -247,6 +256,18 @@ window.TEUI.CoolingCalculations = (function () {
     console.log(`[Cooling] Free cooling calc: massFlow=${massFlowRateKgS.toFixed(3)} kg/s, ΔT=${tempDiff.toFixed(1)}°C → ${dailySensibleCoolingKWh.toFixed(2)} kWh/day → ${potentialLimit.toFixed(2)} kWh/yr`);
     
     return potentialLimit;
+  }
+
+  /**
+   * Update atmospheric pressure based on elevation from S03
+   * Implements COOLING-TARGET E15 logic: E13 * EXP(-E14/8434)
+   */
+  function updateAtmosphericPressure() {
+    const elevation = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("l_22")) || 80; // Project elevation from S03
+    const seaLevelPressure = 101325; // E13 - Standard atmospheric pressure at sea level
+    state.atmPressure = seaLevelPressure * Math.exp(-elevation / 8434); // E15 logic
+    
+    console.log(`[Cooling] Atmospheric pressure updated: elevation=${elevation}m → atmPressure=${state.atmPressure.toFixed(0)}Pa`);
   }
 
   /**
@@ -543,16 +564,10 @@ window.TEUI.CoolingCalculations = (function () {
     sm.setValue("cooling_latentLoadFactor", (state.latentLoadFactor || 0).toString(), "calculated");   // Latent Load Factor
     sm.setValue("cooling_wetBulbTemperature", (state.wetBulbTemperature || 0).toString(), "calculated"); // Wet Bulb Temp
     
-    // ✅ FIX: Add null checks for properties that may not be initialized
-    if (state.atmPressure !== undefined) {
-      sm.setValue("cooling_atmosphericPressure", state.atmPressure.toString(), "calculated");     // Atmospheric pressure
-    }
-    if (state.partialPressure !== undefined) {
-      sm.setValue("cooling_partialPressure", state.partialPressure.toString(), "calculated");     // Partial pressure  
-    }
-    if (state.humidityRatioDifference !== undefined) {
-      sm.setValue("cooling_humidityRatio", state.humidityRatioDifference.toString(), "calculated");         // Humidity ratio difference
-    }
+    // Atmospheric and humidity calculations for S13 integration
+    sm.setValue("cooling_atmosphericPressure", state.atmPressure.toString(), "calculated");     // Atmospheric pressure
+    sm.setValue("cooling_partialPressure", state.partialPressure.toString(), "calculated");     // Partial pressure  
+    sm.setValue("cooling_humidityRatio", state.humidityRatioDifference.toString(), "calculated");         // Humidity ratio difference
     
     // Cross-section outputs for S14 (moved from S14/S13 for tight cooling integration)
     sm.setValue("d_129", state.cedUnmitigated.toString(), "calculated");  // CED Unmitigated for S14
@@ -668,6 +683,15 @@ window.TEUI.CoolingCalculations = (function () {
       calculateDaysActiveCooling(); // Recalculate m_124 with new base ventilation rate
       updateStateManager(); // Publish updated cooling_m_124 to StateManager
     });
+
+    // ✅ FIX: Listen for l_22 (elevation) changes from S03 location selection
+    // This ensures atmospheric pressure updates when location changes
+    sm.addListener("l_22", function (newValue) {
+      console.log(`[Cooling] Elevation changed: l_22=${newValue}m → updating atmospheric pressure`);
+      updateAtmosphericPressure(); // Recalculate atmospheric pressure
+      // Atmospheric pressure affects humidity calculations, so recalculate everything
+      calculateAll();
+    });
   }
 
   /**
@@ -725,9 +749,7 @@ window.TEUI.CoolingCalculations = (function () {
       state.indoorRH = parseFloat(indoorRH) / 100; // Convert percentage to decimal
       
       // Calculate atmospheric pressure from elevation (COOLING-TARGET E15 logic)
-      const elevation = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("l_22")) || 80; // Project elevation from S03
-      const seaLevelPressure = 101325; // E13 - Standard atmospheric pressure at sea level
-      state.atmPressure = seaLevelPressure * Math.exp(-elevation / 8434); // E15 logic
+      updateAtmosphericPressure(); // Calculate initial atmospheric pressure from S03 elevation
 
       // Get S13 system integration values
       const heatingSystem = window.TEUI.StateManager.getValue("d_113");
