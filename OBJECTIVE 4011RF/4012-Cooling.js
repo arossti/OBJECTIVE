@@ -194,52 +194,44 @@ window.TEUI.CoolingCalculations = (function () {
    * This implements the formulas leading to cell A33 in COOLING-TARGET.csv
    */
   function calculateFreeCoolingLimit() {
-    // First calculate air parameters if not done yet
-    if (!state.pSatAvg) {
-      calculateAtmosphericValues();
-      calculateHumidityRatios();
+    // ✅ EXCEL PARITY: Use exact S13 formula instead of simplified approximation
+    // Based on S13's calculateFreeCoolingLimit function (Excel A33 * M19)
+    
+    // Get necessary values
+    const ventFlowRateM3hr = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("h_120")) || 0;
+    const ventFlowRateM3s = ventFlowRateM3hr / 3600;
+    const massFlowRateKgS = ventFlowRateM3s * state.airMass; // kg/s
+    
+    const Cp = state.specificHeatCapacity; // J/kg·K
+    const T_indoor = state.coolingSetTemp; // °C
+    const T_outdoor_night = state.nightTimeTemp; // °C
+    const coolingDays = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("m_19")) || 120;
+    
+    // Calculate Temperature Difference
+    const tempDiff = T_outdoor_night - T_indoor; // °C or K difference
+    
+    // Calculate Sensible Power (Watts) - Based on Excel A55 / A31
+    const sensiblePowerWatts = massFlowRateKgS * Cp * tempDiff;
+    
+    // Determine potential SENSIBLE free cooling power
+    let sensibleCoolingPowerWatts = 0;
+    if (tempDiff < 0) {
+      // Only possible if outdoor air is cooler
+      sensibleCoolingPowerWatts = Math.abs(sensiblePowerWatts);
     }
-
-    // Get more building values if available
-    const volume = state.buildingVolume;
-    const area = state.buildingArea;
-
-    // Calculate total mass of building air
-    const totalMass = volume * state.airMass;
-
-    // Calculate cooling energy potential
-    // This is a simplified approximation based on the air volume's ability to remove heat
-    // The exact formula in Excel is complex, but this captures the essence
-    const temperatureDifference = state.coolingSetTemp - state.nightTimeTemp;
-
-    // Calculate maximum free cooling limit
-    // Basic formula: Mass * SpecificHeatCapacity * ΔT / 1000 (to convert to kWh)
-    // Plus adjustment for latent load based on humidity ratios
-    const sensibleCooling =
-      (totalMass * state.specificHeatCapacity * temperatureDifference) / 1000;
-    const latentAdjustment =
-      (totalMass *
-        state.latentHeatVaporization *
-        state.humidityRatioDifference) /
-      1000;
-
-    // Free cooling limit is the total cooling energy potential per day
-    // multiplied by effective cooling days (120 days is default cooling season)
-    const dailyFreeCooling =
-      sensibleCooling - latentAdjustment > 0
-        ? sensibleCooling - latentAdjustment
-        : 0;
-
-    // Calculate cooling limit per square meter and total
-    const coolingLimitPerM2 = dailyFreeCooling / area;
-    const totalFreeCoolingLimit = coolingLimitPerM2 * area * 120; // 120 cooling days
-
-    // Update state
-    state.dailyFreeCooling = dailyFreeCooling;
-    state.coolingLimitPerM2 = coolingLimitPerM2;
-    state.freeCoolingLimit = totalFreeCoolingLimit;
-
-    return state.freeCoolingLimit;
+    
+    // Convert Sensible Power to Daily Sensible Energy (kWh/day) - Based on Excel A33
+    const dailySensibleCoolingKWh = sensibleCoolingPowerWatts * 0.024; // Correct Factor: (J/s) * (86400 s/day) / (3.6e6 J/kWh) = 0.024
+    
+    // Calculate Annual Potential Limit (kWh/yr) - Based on Excel A33 * M19
+    const potentialLimit = dailySensibleCoolingKWh * coolingDays;
+    
+    // Store the Excel-based calculation result
+    state.freeCoolingLimit = potentialLimit;
+    
+    console.log(`[Cooling] Free cooling calc: massFlow=${massFlowRateKgS.toFixed(3)} kg/s, ΔT=${tempDiff.toFixed(1)}°C → ${dailySensibleCoolingKWh.toFixed(2)} kWh/day → ${potentialLimit.toFixed(2)} kWh/yr`);
+    
+    return potentialLimit;
   }
 
   /**
@@ -247,12 +239,12 @@ window.TEUI.CoolingCalculations = (function () {
    * This implements the formula in cell E55 of COOLING-TARGET.csv
    */
   function calculateDaysActiveCooling() {
-    // ✅ EXCEL PARITY: Use exact Excel formula from COOLING-TARGET.csv line 55 (corrected from S13)
+    // ✅ EXCEL PARITY: Use exact Excel formula from time machine backup 4011-Section13.js
     // Excel: =E52/(E54*24) where E52=(E50-E51), E54=REPORT!M19
     
-    const d_129 = state.coolingLoad || 0; // E50: Seasonal Cooling Load
+    const d_129 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("d_129")) || 0; // E50: Seasonal Cooling Load
     const h_124 = state.freeCoolingLimit || 0; // E51: Free Cooling Potential
-    const m_19 = window.TEUI?.StateManager?.getValue("m_19") || 120; // E54: Cooling Season Days
+    const m_19 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("m_19")) || 120; // E54: Cooling Season Days
     
     // Calculate E52: Unmet Cooling Load = E50 - E51
     const unmetCoolingLoad = d_129 - h_124; // E52 = E50 - E51
@@ -260,7 +252,7 @@ window.TEUI.CoolingCalculations = (function () {
     // Calculate E55: Days Active Cooling = E52 / (E54 * 24)
     let daysActiveCooling = 0;
     if (m_19 > 0) {
-      daysActiveCooling = unmetCoolingLoad / (parseFloat(m_19) * 24);
+      daysActiveCooling = unmetCoolingLoad / (m_19 * 24);
     }
     
     // ✅ EXCEL COMMENT: "Obviously negative days of free cooling is not possible - 
@@ -417,8 +409,8 @@ window.TEUI.CoolingCalculations = (function () {
     console.log("[Cooling] 🚀 Starting cooling calculations...");
     
     try {
-      // First calculate latent load factor
-      state.latentLoadFactor = calculateLatentLoadFactor();
+    // First calculate latent load factor
+    state.latentLoadFactor = calculateLatentLoadFactor();
 
     // Calculate atmospheric values
     calculateAtmosphericValues();
@@ -449,7 +441,7 @@ window.TEUI.CoolingCalculations = (function () {
     updateStateManager();
 
       // Dispatch event to notify S13 that cooling calculations are ready
-      dispatchCoolingEvent();
+    dispatchCoolingEvent();
     } finally {
       state.calculating = false;
     }
@@ -617,7 +609,7 @@ window.TEUI.CoolingCalculations = (function () {
       if (!area) {
         throw new Error("[Cooling] REQUIRED h_15 (conditioned area) missing from S02 - cannot calculate cooling");
       }
-      state.buildingArea = parseFloat(area.replace(/,/g, ""));
+        state.buildingArea = parseFloat(area.replace(/,/g, ""));
 
       // Get indoor RH% from S08 (REQUIRED for latent load calculations)
       const indoorRH = window.TEUI.StateManager.getValue("i_59");
