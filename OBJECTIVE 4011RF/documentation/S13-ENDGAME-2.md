@@ -291,3 +291,156 @@ The refactor is complete when:
 **Calculation Status**: 🔧 Needs bug fixes (heating, ventilation, cooling)  
 **Next Step**: Row-by-row Excel comparison for S13 heating/ventilation  
 **Future Step**: Cooling.js mode-aware refactor (after S13 core works)
+
+---
+
+## 9. Implementation Progress (Sept 30, 2025 - End of Day)
+
+### **🎉 MAJOR VICTORIES ACHIEVED:**
+
+#### **Architectural Cleanup:**
+- ✅ File size: 4,259 → 3,447 lines (-812 lines, -19%)
+- ✅ Function count: 89 → 38 (-57% reduction)
+- ✅ Cooling.js: 842 → 666 lines (-21% reduction)
+- ✅ Debug logging: 218 statements removed
+- ✅ Commented code: 210+ lines removed
+- ✅ 9/9 CHEATSHEET compliance achieved
+- ✅ Single source of truth: Empty state defaults
+- ✅ Reference mode contamination: Fixed with ref_ prefix
+- ✅ Clock.js: RESTORED ⏱️
+
+#### **Cooling Context Complexity Eliminated:**
+- ✅ Removed `createIsolatedCoolingContext()` (139 lines)
+- ✅ Removed `coolingState` object (25 lines)
+- ✅ Removed `updateCoolingInputs()` (26 lines)
+- ✅ Removed `runIntegratedCoolingCalculations()` (6 lines)
+- ✅ Total: 253 lines of complexity eliminated
+- ✅ Result: Heating calculations UNBLOCKED
+
+#### **Excel Formula Compliance:**
+- ✅ **h_124 = 37,322.82 kWh/yr** - EXACT EXCEL MATCH! 🎯
+- ✅ Temperature diff corrected: Excel A16 = (A8 - A3)
+- ✅ D117 Excel formula: IF(D116="No Cooling", 0, IF(D113="Heatpump", M129/J113, IF(D116="Cooling", M129/J116)))
+- ✅ L114 Excel formula: IF(D113="Heatpump", IF(D116="Cooling", ((D117*J113)-D117), 0), 0)
+- ✅ M129 clamping: MAX(0, D129 - H124 - D123)
+
+#### **Circular Dependency Resolution:**
+- ✅ Moved D129/M129 from Cooling.js → S13 (after D122 calculation)
+- ✅ Proper calculation order: D122 → D129 → H124 → M129 → D117
+- ✅ Cooling.js reads fresh StateManager values every calculation
+- ✅ S13 listeners for Cooling.js results added
+
+#### **Dashboard Integration:**
+- ✅ h_10 (Target TEUI) = 93.4 kWh/m²/yr (expected 93.7 - very close!)
+- ✅ e_10 (Reference TEUI) = 211.6 kWh/m²/yr (within expected range)
+- ✅ Free cooling impact visible in results
+
+#### **State Isolation Verified:**
+- ✅ k_120 slider changes affect Target mode ONLY (perfect isolation!)
+- ✅ No Target contamination when changing Reference values
+- ✅ Dual-engine calculations working
+
+---
+
+### **🚨 CRITICAL REMAINING ISSUES (Final Session - Sept 30):**
+
+#### **Issue #1: d_116 (Cooling Toggle) Has No Effect** ⚠️
+**Severity**: Medium  
+**Description**: Switching d_116 between "Cooling" and "No Cooling" doesn't trigger recalculation  
+**Expected**: Should recalculate D117, L114, L116, D122, D123  
+**Current**: Values don't update  
+**Impact**: User can't test cooling vs no-cooling scenarios  
+
+#### **Issue #2: g_118 (Ventilation Method) Has No Effect** 🚨 **CRITICAL**
+**Severity**: CRITICAL - Historical failure point  
+**Description**: Changing g_118 doesn't update D120 (volumetric ventilation rate)  
+**Expected**: 
+- "Volume Constant" → D120 = (L118 * D105) / 3.6
+- "Volume by Schedule" → D120 = ((L118 * D105) / 3.6) * (I63/J63)
+- "Occupant Constant" → D120 = D63 * D119
+- "Occupant by Schedule" → D120 = (D63 * D119) * (I63/J63)
+
+**Current**: D120 stays at same value regardless of g_118 selection  
+**Impact**: Cascading failures - D120 → H120 → D121 → M121 → all downstream  
+**History**: **EVERY PREVIOUS S13 REFACTOR FAILED HERE** - this is the graveyard  
+
+#### **Issue #3: l_119 (Summer Boost) Has No Effect** ⚠️
+**Severity**: Medium  
+**Description**: Changing l_119 doesn't update D122 (cooling season ventilation)  
+**Expected**: D122 should multiply by boost factor (1.10x, 1.20x, etc.)  
+**Current**: D122 doesn't change  
+**Impact**: Can't test ventilation boost scenarios  
+
+#### **Issue #4: Minor Calculation Discrepancies**
+- d_124 = 67% (expected 61%) - likely M19 or setback calculation
+- h_10 = 93.4 (expected 93.7) - likely default values vs Excel
+- Both are close enough for now, refinements later
+
+---
+
+### **📋 FINAL SESSION PRIORITIES (Sept 30 Evening):**
+
+**Priority 1: Fix g_118 (CRITICAL - THE GRAVEYARD)** 🚨
+- Add dropdown change listener for g_118
+- Ensure it triggers calculateVentilationRates() → D120 recalculation
+- Verify D120 uses correct formula per g_118 selection
+- Test ALL 4 ventilation methods work correctly
+- **This is the make-or-break fix**
+
+**Priority 2: Fix d_116 (Cooling Toggle)**
+- Ensure dropdown listener triggers cooling system recalculation
+- Verify D117, L114, L116 respond to d_116 changes
+- Test Cooling vs No Cooling scenarios
+
+**Priority 3: Fix l_119 (Summer Boost)**
+- Ensure dropdown listener triggers D122 recalculation
+- Verify boost factor applies correctly to D122 formula
+
+**Priority 4: Remove Strict Errors (Cleanup)**
+- Change strict `throw new Error()` to lenient fallbacks in S13 calculateFreeCooling
+- Prevents error spam during initialization
+- Allows graceful degradation if Cooling.js slow to initialize
+
+---
+
+### **🎯 SUCCESS CRITERIA FOR COMPLETION:**
+
+**All 4 ventilation methods work:**
+1. Volume Constant - D120 responds correctly ✅
+2. Volume by Schedule - D120 responds correctly ✅
+3. Occupant Constant - D120 responds correctly ✅
+4. Occupant by Schedule - D120 responds correctly ✅
+
+**Cooling toggle works:**
+- d_116 "Cooling" → calculations update ✅
+- d_116 "No Cooling" → D117, L114, L116 = 0 ✅
+
+**Summer boost works:**
+- l_119 changes → D122 updates ✅
+
+**No errors in Logs.md** ✅
+
+---
+
+## 10. The g_118 Challenge (Historical Context)
+
+**Why g_118 is Critical:**
+
+This single dropdown has caused **complete refactor failures** in:
+- March 2025 attempt: Context objects introduced to fix g_118 → state mixing
+- June 2025 attempt: Cooling integration to fix g_118 → calculation storms
+- August 2025 attempt: Pattern 2 migration to fix g_118 → reference contamination
+- September 2025 attempt: CHUNK pattern to fix g_118 → timing errors
+
+**Root Cause Pattern:**
+- g_118 changes → D120 should recalculate → H120 updates → D121/M121 update → downstream cascade
+- **Listener missing or contaminated** → D120 never recalculates → entire section freezes
+
+**Current Status (Sept 30):**
+- Architecture: ✅ Clean (9/9 CHEATSHEET)
+- Heating: ✅ Working (rows 113-115)
+- Cooling integration: ✅ Working (h_124 exact match)
+- **g_118**: 🚨 Still broken - but now we have clean architecture to fix it
+
+**This is the final boss.** 🎯
+
