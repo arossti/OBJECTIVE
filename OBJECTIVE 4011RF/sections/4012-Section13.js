@@ -1787,8 +1787,10 @@ window.TEUI.SectionModules.sect13 = (function () {
 
       // Listener for d_116 (Cooling System) changes
       sm.addListener("d_116", () => {
-        // PROPER FIX: Let the dropdown change handler trigger proper calculations
-        // This listener just logs the change - calculations handled by dropdown handler
+        // This listener ensures that changes to d_116 from any source
+        // (not just the dropdown) trigger a full recalculation.
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
       });
 
       // Listener for d_118 (Ventilation Efficiency) changes
@@ -2332,9 +2334,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     isReferenceCalculation = false
   ) {
     const coolingSystemType = ModeManager.getValue("d_116") || "No Cooling";
-    const heatingSystemType = isReferenceCalculation
-      ? getSectionValue("d_113", true)
-      : TargetState.getValue("d_113");
+    const heatingSystemType = ModeManager.getValue("d_113");
     
     // Read M129 from Cooling.js (now calculated there)
     const coolingDemand_m129 = isReferenceCalculation
