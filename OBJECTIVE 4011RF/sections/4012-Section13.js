@@ -791,33 +791,8 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
 
-  // 🔄 COOLING.JS INTEGRATION: Read atmospheric values from StateManager
-  function getCoolingAtmosphericValues() {
-    return {
-      atmosphericPressure:
-        window.TEUI.parseNumeric(
-          window.TEUI.StateManager.getValue("cooling_atmosphericPressure"),
-        ) || 101325,
-      partialPressure:
-        window.TEUI.parseNumeric(
-          window.TEUI.StateManager.getValue("cooling_partialPressure"),
-        ) || 0,
-      humidityRatio:
-        window.TEUI.parseNumeric(
-          window.TEUI.StateManager.getValue("cooling_humidityRatio"),
-        ) || 0,
-    };
-  }
 
 
-  // 🔄 COOLING.JS INTEGRATION: Read humidity ratios from StateManager
-  function getCoolingHumidityRatios() {
-    return (
-      window.TEUI.parseNumeric(
-        window.TEUI.StateManager.getValue("cooling_humidityRatio"),
-      ) || 0
-    );
-  }
 
   /** [Cooling Calc] Calculate free cooling capacity limit (Potential Annual Sensible kWh) */
   // 🚫 COOLING.JS TRANSITION: Function moved to 4012-Cooling.js module
@@ -879,14 +854,6 @@ window.TEUI.SectionModules.sect13 = (function () {
   //   return potentialLimit;
   // }
 
-  // 🔄 COOLING.JS INTEGRATION: Read h_124 from StateManager instead of calculating
-  function getCoolingFreeCoolingLimit() {
-    return (
-      window.TEUI.parseNumeric(
-        window.TEUI.StateManager.getValue("cooling_h_124"),
-      ) || 0
-    );
-  }
 
   /** [Cooling Calc] Calculate days of active cooling required */
   // 🚫 COOLING.JS TRANSITION: Function moved to 4012-Cooling.js module
@@ -919,14 +886,6 @@ window.TEUI.SectionModules.sect13 = (function () {
   //   return daysActiveCooling; // Return exact Excel calculation result
   // }
 
-  // 🔄 COOLING.JS INTEGRATION: Read m_124 from StateManager instead of calculating
-  function getCoolingDaysActive() {
-    return (
-      window.TEUI.parseNumeric(
-        window.TEUI.StateManager.getValue("cooling_m_124"),
-      ) || 0
-    );
-  }
 
   /** [Cooling Calc] Calculate wet bulb temperature (Approximation) */
   // 🚫 COOLING.JS TRANSITION: Function moved to 4012-Cooling.js module
@@ -942,14 +901,6 @@ window.TEUI.SectionModules.sect13 = (function () {
   //   return coolingContext.wetBulbTemperature;
   // }
 
-  // 🔄 COOLING.JS INTEGRATION: Read wet bulb temperature from StateManager
-  function getCoolingWetBulbTemperature() {
-    return (
-      window.TEUI.parseNumeric(
-        window.TEUI.StateManager.getValue("cooling_wetBulbTemperature"),
-      ) || 0
-    );
-  }
 
   /** [Cooling Calc] Calculate the intermediate temperature A50 based on Excel logic */
   function calculateA50Temp(coolingContext) {
@@ -998,20 +949,13 @@ window.TEUI.SectionModules.sect13 = (function () {
   function runIntegratedCoolingCalculations(coolingContext) {
     updateCoolingInputs(coolingContext);
 
-    // 🔄 COOLING.JS INTEGRATION: Read atmospheric values from Cooling.js
-    const atmosphericValues = getCoolingAtmosphericValues();
-    coolingContext.atmPressure = atmosphericValues.atmosphericPressure;
-    coolingContext.partialPressure = atmosphericValues.partialPressure;
-    coolingContext.humidityRatio = atmosphericValues.humidityRatio;
-    // 🔄 COOLING.JS INTEGRATION: Read humidity ratios from Cooling.js
-    coolingContext.humidityRatioDifference = getCoolingHumidityRatios();
-
-    // Now calculate factors/limits that use the results
+    // Read cooling calculations from 4012-Cooling.js via StateManager
+    // TODO: These need ref_ variants for proper Reference mode isolation
+    coolingContext.atmPressure = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_atmosphericPressure")) || 101325;
+    coolingContext.partialPressure = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_partialPressure")) || 0;
+    coolingContext.humidityRatioDifference = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_humidityRatio")) || 0;
     coolingContext.latentLoadFactor = calculateLatentLoadFactor(coolingContext);
-    // 🔄 COOLING.JS INTEGRATION: Read wet bulb temperature from Cooling.js
-    coolingContext.wetBulbTemperature = getCoolingWetBulbTemperature();
-    // Note: calculateFreeCoolingLimit() is NOT called here, it's called by calculateFreeCooling()
-    // Note: calculateDaysActiveCooling() is called within calculateFreeCooling()
+    coolingContext.wetBulbTemperature = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_wetBulbTemperature")) || 0;
   }
 
   // --- End of Integrated Cooling Logic ---
@@ -3077,8 +3021,8 @@ window.TEUI.SectionModules.sect13 = (function () {
     try {
       // runIntegratedCoolingCalculations();
 
-      // 🔄 COOLING.JS INTEGRATION: Read h_124 from Cooling.js via StateManager
-      potentialLimit = getCoolingFreeCoolingLimit(); // Read from Cooling.js calculations
+      // Read h_124 from Cooling.js via StateManager
+      potentialLimit = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_h_124")) || 0;
 
       if (setbackValueStr) {
         // const parsedFactor = window.TEUI.parseNumeric(setbackValueStr); // OLD - assumed decimal
@@ -3122,8 +3066,8 @@ window.TEUI.SectionModules.sect13 = (function () {
         }
         setFieldValue("d_124", percentFreeCooling, "percent-0dp");
 
-        // 🔄 COOLING.JS INTEGRATION: Read M124 from Cooling.js via StateManager
-        const activeCoolingDays = getCoolingDaysActive();
+        // Read m_124 from Cooling.js via StateManager
+        const activeCoolingDays = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_m_124")) || 0;
         setFieldValue("m_124", activeCoolingDays, "number-2dp");
       }
 
