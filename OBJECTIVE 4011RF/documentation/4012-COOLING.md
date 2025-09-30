@@ -319,3 +319,280 @@ This flaw means that the **Reference model's cooling calculations are being cont
 **Next Steps:**
 
 The `createIsolatedCoolingContext` function must be modified to read the correctly prefixed `ref_` values from the `StateManager` when `mode` is `'reference'`. This will ensure the Reference cooling calculations use the correct, isolated data set.
+
+---
+
+## 📋 EXCEL RESPONSIBILITY MAPPING (Sept 30, 2025)
+
+### Purpose:
+Map clear boundaries between S13 and Cooling.js based on Excel source of truth.
+
+### Source Files:
+- FORMULAE-3039.csv Lines 112-125: S13 "Mechanical Loads" 
+- COOLING-TARGET.csv Lines 1-77: "COOLING-TARGET" worksheet
+
+---
+
+### S13 EXCEL RESPONSIBILITIES (FORMULAE-3039.csv Rows 113-124)
+
+**M.1-M.3: Heating & Cooling Systems**
+- D113, F113, H113, J113, J114, L113, L114, D114, F114
+- D115, F115, H115, J115, L115
+- D116, J116, L116, D117, F117, J117
+
+**V.1-V.2: Ventilation Rates & Heating Season**
+- D118, G118, L118, D119, F119, H119, L119, D120, F120, H120, K120
+- D121, I121, M121
+
+**V.3-V.4: Cooling Season & Free Cooling**
+- D122 (uses I122 from Cooling.js), D123
+- H124 (reads A33 from Cooling.js + applies setback), M124 (reads from Cooling.js), D124
+
+---
+
+### COOLING.JS EXCEL RESPONSIBILITIES (COOLING-TARGET.csv)
+
+**Physics Constants:** E3, E4, E6 (air mass, specific heat, latent heat)
+
+**Core Calculations:**
+- **A6**: Latent Load Factor → `cooling_latentLoadFactor`
+- **A33**: Daily Free Cooling (kWh/day) → used by S13 H124
+- **A56-A63**: Atmospheric/humidity (internal)
+- **E55**: Days Active Cooling → `cooling_m_124`
+- **E64-E66**: Wet Bulb Temperature → `cooling_wetBulbTemperature`
+
+---
+
+### 🚨 CURRENT CODE ISSUES
+
+**Cooling.js is DUPLICATING S13 Excel responsibilities:**
+1. `calculateVentilationCoolingEnergy()` → Calculates D122/D123 (S13 rows 122-123)
+2. `calculateCoolingSystemIntegration()` → Calculates D117/L114 (S13 rows 117/114)
+3. `calculateCEDUnmitigated/Mitigated()` → Calculates D129/M129 (S14 row 129!)
+
+**ACTION REQUIRED:**
+- Remove functions 1-3 from Cooling.js
+- Keep S13 calculations for its own rows
+- Move D129/M129 to S14 where they belong per FORMULAE
+
+---
+
+### WORKPLAN: Clean Cooling.js to Core Physics
+
+**Step 1:** Remove D122/D123 calculation (belongs in S13)
+**Step 2:** Remove D117/L114 calculation (belongs in S13)  
+**Step 3:** Remove D129/M129 calculation (belongs in S14)
+**Step 4:** Keep only: A6, A33 (daily), E55, atmospheric/humidity, wet bulb
+**Step 5:** Test Excel parity after cleanup
+
+
+---
+
+## ⚠️ CRITICAL CORRECTION: D129/M129 EXCEPTION
+
+**D129/M129 (CED Unmitigated/Mitigated) STAY in Cooling.js!**
+
+These were INTENTIONALLY moved from S14 to Cooling.js to solve dependency timing issues.
+Even though they're S14 row 129 in FORMULAE, they must remain in Cooling.js for proper calculation order.
+
+**CORRECTED Action Items:**
+1. ✅ Keep D129/M129 in Cooling.js (dependency timing exception)
+2. ❌ Remove D122/D123 from Cooling.js → S13 owns these (rows 122-123)
+3. ❌ Remove D117/L114 from Cooling.js → S13 owns these (rows 117/114)
+
+
+---
+
+## 🔍 FUNCTION-BY-FUNCTION DUPLICATION ANALYSIS
+
+### Current State (Sept 30, 2025)
+
+| Function | Cooling.js | S13.js | Excel Location | Who Should Own? | Action |
+|----------|-----------|--------|----------------|-----------------|---------|
+| **Latent Load Factor** | ✅ calculateLatentLoadFactor() | ✅ calculateLatentLoadFactor() | COOLING A6 | **Cooling.js** | ❌ Remove from S13 |
+| **Atmospheric Values** | ✅ calculateAtmosphericValues() | ❌ (commented out) | COOLING A56-A63 | **Cooling.js** | ✅ Already removed from S13 |
+| **Humidity Ratios** | ✅ calculateHumidityRatios() | ❌ (commented out) | COOLING A61-A63 | **Cooling.js** | ✅ Already removed from S13 |
+| **Wet Bulb Temp** | ✅ calculateWetBulbTemperature() | ❌ (commented out) | COOLING E64-E66 | **Cooling.js** | ✅ Already removed from S13 |
+| **Daily Free Cooling** | ✅ calculateDailyFreeCoolingPotential() | ❌ None | COOLING A33 | **Cooling.js** | ✅ Correct |
+| **Free Cooling Limit** | ✅ calculateFreeCoolingLimit() | ✅ calculateFreeCooling() | COOLING A33, FORMULAE H124 | **BOTH (different)** | ⚠️ Review |
+| **Days Active Cooling** | ✅ calculateDaysActiveCooling() | ❌ (commented out) | COOLING E55 | **Cooling.js** | ✅ Already removed from S13 |
+| **Ventilation Cooling Energy** | ✅ calculateVentilationCoolingEnergy() | ✅ calculateCoolingVentilation() | FORMULAE D122/D123 | **S13.js** | ❌ Remove from Cooling.js |
+| **Cooling System Integration** | ✅ calculateCoolingSystemIntegration() | ✅ calculateCoolingSystem() | FORMULAE D117/L114 | **S13.js** | ❌ Remove from Cooling.js |
+| **CED Unmitigated** | ✅ calculateCEDUnmitigated() | ❌ (commented out) | FORMULAE D129 | **Cooling.js** | ✅ Keep (timing exception) |
+| **CED Mitigated** | ✅ calculateCEDMitigated() | ❌ (commented out) | FORMULAE M129 | **Cooling.js** | ✅ Keep (timing exception) |
+| **COP Values** | ❌ None | ✅ calculateCOPValues() | FORMULAE H113/J113 | **S13.js** | ✅ Correct |
+| **Heating System** | ❌ None | ✅ calculateHeatingSystem() | FORMULAE D114-L115 | **S13.js** | ✅ Correct |
+| **Ventilation Rates** | ❌ None | ✅ calculateVentilationRates() | FORMULAE D119-H120 | **S13.js** | ✅ Correct |
+| **Ventilation Energy** | ❌ None | ✅ calculateVentilationEnergy() | FORMULAE D121/M121 | **S13.js** | ✅ Correct |
+
+---
+
+### 🎯 CLEANUP ACTIONS REQUIRED
+
+#### **Action 1: Remove calculateLatentLoadFactor from S13**
+- **Current**: S13 has duplicate `calculateLatentLoadFactor(coolingContext)` 
+- **Excel**: COOLING-TARGET A6 = `1+A64/A55`
+- **Decision**: Cooling.js owns this, S13 should READ from `cooling_latentLoadFactor`
+- **File**: S13.js ~line 780
+
+#### **Action 2: Remove calculateVentilationCoolingEnergy from Cooling.js**
+- **Current**: Cooling.js calculates D122/D123
+- **Excel**: FORMULAE-3039 rows 122-123 (Section 13 owns these)
+- **Decision**: S13 owns these calculations, just READS I122 from Cooling.js
+- **File**: 4012-Cooling.js lines 398-429
+
+#### **Action 3: Remove calculateCoolingSystemIntegration from Cooling.js**
+- **Current**: Cooling.js calculates D117/L114
+- **Excel**: FORMULAE-3039 rows 117/114 (Section 13 owns these)
+- **Decision**: S13 owns these calculations (already has calculateCoolingSystem)
+- **File**: 4012-Cooling.js lines 363-396
+
+#### **Action 4: Clarify H124 Calculation Split**
+- **Cooling.js**: Calculates A33 (daily free cooling kWh)
+- **S13.js**: Applies M19 (seasonal days) and K120 (setback factor)
+- **Decision**: Both correct - different responsibilities
+- **No action needed** - this is proper separation
+
+#### **Action 5: Review A50 Temperature Calculation**
+- **Current**: S13 has `calculateA50Temp(coolingContext)` ~line 815
+- **Excel**: Not in COOLING-TARGET.csv (seems to be internal S13 logic)
+- **Decision**: Keep in S13 (not a Cooling.js responsibility)
+
+---
+
+### 📊 FINAL COOLING.JS SCOPE (After Cleanup)
+
+**Cooling.js SHOULD ONLY contain:**
+1. ✅ calculateLatentLoadFactor() → A6
+2. ✅ calculateAtmosphericValues() → A56-A63 (internal)
+3. ✅ calculateHumidityRatios() → A61-A63 (internal)
+4. ✅ calculateWetBulbTemperature() → E64-E66
+5. ✅ calculateDailyFreeCoolingPotential() → A28-A33 (daily kWh)
+6. ✅ calculateDaysActiveCooling() → E55
+7. ✅ calculateCEDUnmitigated() → D129 (EXCEPTION for timing)
+8. ✅ calculateCEDMitigated() → M129 (EXCEPTION for timing)
+
+**Cooling.js will REMOVE:**
+- ❌ calculateVentilationCoolingEnergy() (S13 owns D122/D123)
+- ❌ calculateCoolingSystemIntegration() (S13 owns D117/L114)
+- ❌ calculateFreeCoolingLimit() annual (S13 orchestrates H124 from daily A33)
+
+
+---
+
+## 💡 S13-ENDGAME-2.md INSIGHTS: Pure Function Architecture
+
+Per S13-ENDGAME-2.md, the goal is **"One Engine, Two Data Sources"**:
+
+### The Vision:
+- **S13 Orchestrator**: Builds `context` objects (targetContext/referenceContext), calls calculation modules
+- **Calculation Modules**: Pure functions that accept context, return results (know nothing about Target/Reference)
+
+### Current Problem:
+Both S13 and Cooling.js build "context" objects (`coolingContext`, `coolingState`), creating confusion about:
+- Who owns which calculations?
+- Which context to use?
+- When to update shared state vs isolated context?
+
+### The Solution (per S13-ENDGAME-2.md):
+
+**S13 should:**
+1. Build ONE context object per model (targetContext, referenceContext)
+2. Pass context to pure calculation modules
+3. Handle ALL StateManager reads/writes (orchestration)
+
+**Cooling.js should:**
+1. Accept context object as input
+2. Perform pure calculations
+3. Return result object (no StateManager interaction)
+
+### Revised Architecture:
+
+```javascript
+// S13 Orchestrator (Target Model)
+function calculateTargetModel() {
+  const targetContext = {
+    // S13 section-local values
+    heatingSystem: TargetState.getValue("d_113"),
+    hspf: TargetState.getValue("f_113"),
+    ventilationMethod: TargetState.getValue("g_118"),
+    
+    // Upstream dependencies from StateManager
+    ted: StateManager.getValue("d_127"),
+    cdd: StateManager.getValue("d_21"),
+    buildingVolume: StateManager.getValue("d_105"),
+    buildingArea: StateManager.getValue("h_15"),
+    
+    // Physics constants
+    airMass: 1.204,
+    specificHeat: 1005,
+  };
+  
+  // Call pure calculation modules
+  const coolingResults = CoolingEngine.calculate(targetContext);
+  const heatingResults = HeatingEngine.calculate(targetContext);
+  const ventResults = VentilationEngine.calculate(targetContext);
+  
+  // Orchestrator publishes results to StateManager
+  publishToStateManager(coolingResults, heatingResults, ventResults);
+}
+
+// Cooling.js Pure Engine
+const CoolingEngine = {
+  calculate(context) {
+    // Pure calculations - no StateManager reads
+    const latentLoadFactor = this.calculateLatentLoadFactor(context);
+    const dailyFreeCooling = this.calculateDailyFreeCooling(context);
+    const daysActive = this.calculateDaysActive(context);
+    
+    return {
+      latentLoadFactor,
+      dailyFreeCooling,
+      daysActive
+    };
+  }
+};
+```
+
+---
+
+## 🎯 FINAL WORKPLAN: Cooling.js Cleanup
+
+### Step 1: Remove D122/D123 from Cooling.js ✅ Ready
+**Reason**: S13 owns rows 122-123 per FORMULAE-3039.csv
+**File**: 4012-Cooling.js lines 398-429 `calculateVentilationCoolingEnergy()`
+**Impact**: S13 keeps its `calculateCoolingVentilation()` function
+
+### Step 2: Remove D117/L114 from Cooling.js ✅ Ready
+**Reason**: S13 owns rows 117/114 per FORMULAE-3039.csv
+**File**: 4012-Cooling.js lines 363-396 `calculateCoolingSystemIntegration()`
+**Impact**: S13 keeps its `calculateCoolingSystem()` function
+
+### Step 3: Keep D129/M129 in Cooling.js ✅ No Change
+**Reason**: Intentionally moved for dependency timing (EXCEPTION)
+**File**: 4012-Cooling.js lines 431-467
+**Impact**: None - this is correct
+
+### Step 4: Remove S13 Duplicate Latent Load ✅ Ready
+**Reason**: Cooling.js owns A6 per COOLING-TARGET.csv
+**File**: 4012-Section13.js ~line 780 `calculateLatentLoadFactor()`
+**Impact**: S13 reads from `cooling_latentLoadFactor` instead
+
+### Step 5: Verify H124 Separation ✅ Already Correct
+**Cooling.js**: Provides A33 (daily kWh)
+**S13**: Multiplies by M19, applies K120 setback → H124
+**No change needed** - proper separation
+
+---
+
+## ✅ READY TO PROCEED
+
+**Documentation complete!** 
+
+Next steps (await user approval):
+1. Execute Step 1: Remove D122/D123 from Cooling.js
+2. Execute Step 2: Remove D117/L114 from Cooling.js
+3. Execute Step 4: Remove duplicate latent load from S13
+4. Test Excel parity after each step
+5. Commit working changes
+
