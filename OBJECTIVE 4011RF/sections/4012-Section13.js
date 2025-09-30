@@ -1,8 +1,7 @@
 /**
- * 4011-Section13.js - COOLING COMMENTED OUT - BUT AI AGENTS STRTRUGGLING TO READ COMMENTED OUT FUNCTIONS!! formerly 4011-Section13-CONTEXT.js.
- * Mechanical Loads (Section 13) module for TEUI Calculator 4.011
- * HSPF fixed to work in both states (post Aug 31 refactor)
- * This section no longer needs to integrate with 4011-Cooling.js for complex cooling calculations - file still suffers from state mixing on ventilation changes
+ * 4012-Section13.js - Mechanical Loads (Section 13) module for TEUI Calculator 4.012 Sept 30, 2025.
+ * Represents separation of Cooling.js functions from S13 responsibilities. Calculation parity lost and needs row-by-row review. HSPF fixed (now broken again)to work in both states (post Aug 31 refactor)
+ * This sections is designed to integrate with 4012-Cooling.js for complex cooling calculations - file still suffers from state mixing on ventilation changes
  * and requires SectionIntegrator and StateManager connections to function properly.
  */
 
@@ -44,23 +43,9 @@ window.TEUI.SectionModules.sect13 = (function () {
       }
     },
     setDefaults: function () {
-    // Read defaults from the single source of truth (sectionRows)
-      this.state = {
-        d_113: getFieldDefault("d_113") || "Heatpump",
-        f_113: getFieldDefault("f_113") || "12.5",
-        d_116: getFieldDefault("d_116") || "Cooling",
-        f_117: getFieldDefault("f_117") || "18.0",
-        d_118: getFieldDefault("d_118") || "89",
-        f_118: getFieldDefault("f_118") || "0.89",
-        d_119: getFieldDefault("d_119") || "14.00",
-        f_119: getFieldDefault("f_119") || "0.75",
-        g_118: getFieldDefault("g_118") || "Volume by Schedule",
-        j_115: getFieldDefault("j_115") || "0.98",
-        j_116: getFieldDefault("j_116") || "3.3",
-        l_118: getFieldDefault("l_118") || "3.0",
-        l_119: getFieldDefault("l_119") || "None",
-        k_120: getFieldDefault("k_120") || "90",
-      };
+      // SINGLE SOURCE OF TRUTH: Field definitions in sectionRows (per CHEATSHEET)
+      // Initialize empty state - values read from field definitions via getFieldDefault()
+      this.state = {};
     },
     saveState: function () {
       localStorage.setItem("S13_TARGET_STATE", JSON.stringify(this.state));
@@ -72,7 +57,8 @@ window.TEUI.SectionModules.sect13 = (function () {
       }
     },
     getValue: function (fieldId) {
-      return this.state[fieldId];
+      // CHEATSHEET PATTERN: Fallback to field definitions (single source of truth)
+      return this.state[fieldId] !== undefined ? this.state[fieldId] : getFieldDefault(fieldId);
     },
   };
 
@@ -88,42 +74,25 @@ window.TEUI.SectionModules.sect13 = (function () {
       }
     },
     setDefaults: function () {
-    // Get current reference standard from dropdown d_13
+      // CHEATSHEET PATTERN: Initialize from field definitions, then apply Reference overrides
       const currentStandard =
         window.TEUI?.StateManager?.getValue?.("d_13") || "OBC SB10 5.5-6 Z6";
       const referenceValues =
         window.TEUI?.ReferenceValues?.[currentStandard] || {};
 
-    // Initialize from sectionRows defaults, then apply selective overrides
-      this.state = {
-        // --- Foundation: Initialize from Target field definitions (sectionRows) ---
-        d_113: getFieldDefault("d_113") || "Heatpump",
-        f_113: getFieldDefault("f_113") || "12.5",
-        d_116: getFieldDefault("d_116") || "Cooling",
-        f_117: getFieldDefault("f_117") || "18.0",
-        d_118: getFieldDefault("d_118") || "89",
-        f_118: getFieldDefault("f_118") || "0.89",
-        d_119: getFieldDefault("d_119") || "14.00",
-        f_119: getFieldDefault("f_119") || "0.75",
-        g_118: getFieldDefault("g_118") || "Volume by Schedule",
-        j_115: getFieldDefault("j_115") || "0.98",
-        j_116: getFieldDefault("j_116") || "3.3",
-        l_118: getFieldDefault("l_118") || "3.0",
-        l_119: getFieldDefault("l_119") || "None",
-        k_120: getFieldDefault("k_120") || "90",
-      };
-
-      // --- Selective Reference Overrides ---
-      // Apply correct reference values from ReferenceValues.js based on d_13 selection
+      // Step 1: Initialize empty (values come from field definitions via getFieldDefault)
+      this.state = {};
+      
+      // Step 2: Apply Reference-specific overrides from building codes
+      this.state.d_113 = "Electricity";
       this.state.f_113 = referenceValues.f_113 || "7.1";
-      this.state.j_115 = referenceValues.j_115 || "0.90";
-      this.state.f_117 = referenceValues.f_117 || "15.0";
-      this.state.j_116 = referenceValues.j_116 || "3.3";
+      this.state.d_116 = "No Cooling";
       this.state.d_118 = referenceValues.d_118 || "81";
-      this.state.f_118 = referenceValues.f_118 || "0.60";
       this.state.d_119 = referenceValues.d_119 || "8.33";
+      this.state.g_118 = "Volume Constant";
+      this.state.j_115 = referenceValues.j_115 || "0.90";
+      this.state.j_116 = referenceValues.j_116 || "2.66";
       this.state.l_118 = referenceValues.l_118 || "3.50";
-      this.state.f_119 = referenceValues.f_119 || "0.50";
     },
     // MANDATORY: Include onReferenceStandardChange for d_13 changes
     onReferenceStandardChange: function () {
@@ -192,7 +161,8 @@ window.TEUI.SectionModules.sect13 = (function () {
       }
     },
     getValue: function (fieldId) {
-      return this.state[fieldId];
+      // CHEATSHEET PATTERN: Check state first (Reference overrides), then field definitions
+      return this.state[fieldId] !== undefined ? this.state[fieldId] : getFieldDefault(fieldId);
     },
   };
 
@@ -1175,7 +1145,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         j: {
           fieldId: "j_115",
           type: "editable",
-          value: "0.98", // RESTORED default value
+          value: "0.90",
           section: "mechanicalLoads",
         },
         k: {
@@ -1231,7 +1201,10 @@ window.TEUI.SectionModules.sect13 = (function () {
         i: {},
         j: {
           fieldId: "j_116",
+          type: "editable",
+          value: "2.66",
           section: "mechanicalLoads",
+          classes: ["user-input", "editable"],
         },
         k: {
           content: "M.3.4 Sink",
