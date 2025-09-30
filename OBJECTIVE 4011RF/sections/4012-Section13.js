@@ -652,7 +652,6 @@ window.TEUI.SectionModules.sect13 = (function () {
     humidityRatioAvg: 0,
     humidityRatioDifference: 0,
     wetBulbTemperature: 0,
-    A50_temp: 0, // Added for A50 temperature calculation
     ventilationMethod: "", // Added for g_118
   };
 
@@ -681,9 +680,6 @@ window.TEUI.SectionModules.sect13 = (function () {
     }
 
     // CHUNK 3A "MICRO-STEP":
-    // Add A50_temp - an internal calculated value, not an upstream dependency
-    // This will be calculated fresh for each context, avoiding shared state contamination
-    context.A50_temp = null; // Will be calculated by calculateA50Temp function
 
     // CHUNK 3B "MICRO-STEP":
     // Add pSatAvg - average saturation pressure, calculated internally
@@ -777,34 +773,6 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /** [Cooling Calc] Calculate latent load factor */
-  function calculateLatentLoadFactor(coolingContext) {
-    const hDiff = coolingContext.humidityRatioDifference;
-    const LHV = coolingContext.latentHeatVaporization;
-    const Cp = coolingContext.specificHeatCapacity;
-    // CHUNK 3G & 3H: Read from context instead of global state
-    const Tdiff = coolingContext.nightTimeTemp - coolingContext.coolingSetTemp;
-
-    // Check for division by zero or invalid inputs
-    if (
-      Cp === 0 ||
-      Tdiff === 0 ||
-      isNaN(hDiff) ||
-      isNaN(LHV) ||
-      isNaN(Cp) ||
-      isNaN(Tdiff)
-    ) {
-      console.warn("Latent Load Factor: Invalid inputs or division by zero.");
-      return 1.0;
-    }
-
-    const ratio = (hDiff * LHV) / (Cp * Tdiff);
-    const factor = 1 + ratio;
-    const finalFactor = Math.max(1.0, factor);
-    return finalFactor;
-  }
-
-
-
 
 
   /** [Cooling Calc] Calculate free cooling capacity limit (Potential Annual Sensible kWh) */
@@ -812,21 +780,6 @@ window.TEUI.SectionModules.sect13 = (function () {
 
 
   /** [Cooling Calc] Calculate the intermediate temperature A50 based on Excel logic */
-  function calculateA50Temp(coolingContext) {
-    // Based on Excel E64 = E60 - (E60 - (E60 - (100 - E59)/5)) * (0.1 + 0.9 * (E59 / 100))
-    const E60 = coolingContext.nightTimeTemp;
-    const E59 = (coolingContext.coolingSeasonMeanRH || 0.5585) * 100; // Use context value or default
-
-    const term1 = (100 - E59) / 5;
-    const term2 = E60 - term1;
-    const term3 = E60 - term2;
-    const term4 = 0.1 + 0.9 * (E59 / 100);
-    const A50 = E60 - term3 * term4;
-
-    coolingContext.A50_temp = A50;
-    return A50;
-  }
-
   /** [Cooling Calc] Update internal state from external sources */
   function updateCoolingInputs(coolingContext) {
     const parseNum =
@@ -851,7 +804,6 @@ window.TEUI.SectionModules.sect13 = (function () {
     // Upstream values are now set correctly in createIsolatedCoolingContext() with mode-awareness
     
     // Calculate the intermediate A50 temperature needed for atmospheric calcs
-    calculateA50Temp(coolingContext);
   }
 
   /** [Cooling Calc] Orchestrates the internal cooling-related calculations */
@@ -872,7 +824,9 @@ window.TEUI.SectionModules.sect13 = (function () {
     if (!humidRatio && humidRatio !== 0) throw new Error("[S13] REQUIRED cooling_humidityRatio missing from Cooling.js");
     coolingContext.humidityRatioDifference = window.TEUI.parseNumeric(humidRatio);
     
-    coolingContext.latentLoadFactor = calculateLatentLoadFactor(coolingContext);
+    const latentLoad = window.TEUI.StateManager.getValue("cooling_latentLoadFactor");
+    if (!latentLoad && latentLoad !== 0) throw new Error("[S13] REQUIRED cooling_latentLoadFactor missing from Cooling.js");
+    coolingContext.latentLoadFactor = window.TEUI.parseNumeric(latentLoad);
     
     const wetBulb = window.TEUI.StateManager.getValue("cooling_wetBulbTemperature");
     if (!wetBulb && wetBulb !== 0) throw new Error("[S13] REQUIRED cooling_wetBulbTemperature missing from Cooling.js");

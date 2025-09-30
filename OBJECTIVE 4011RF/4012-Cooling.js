@@ -90,19 +90,9 @@ window.TEUI.CoolingCalculations = (function () {
     coolingSetTemp: null, // A8 - Indoor design temperature from S03 h_24 (REQUIRED from StateManager)
     indoorRH: null, // A52 - Indoor RH% from S08 i_59 (REQUIRED from StateManager for latent load)
 
-    // S13 system integration state
-    heatingSystem: null, // d_113 - Heating system type from S13
-    coolingSystem: null, // d_116 - Cooling system type from S13
-    heatingCOP: null, // j_113 - Heating COP from S13 (for heatpump cooling)
-    userCoolingCOP: 2.66, // j_116 - User cooling COP from S13 (default 2.66)
-
-    // Calculated values
-    freeCoolingLimit: 0, // A33 - Free cooling capacity
+    // Calculated values (COOLING-TARGET.csv only)
+    freeCoolingLimit: 0, // A33 - Free cooling capacity (daily kWh)
     daysActiveCooling: 0, // E55 - Days active cooling required
-    coolingElectricalLoad: 0, // d_117 - Heatpump cooling electrical load
-    coolingSystemCOP: 0, // l_114 - Cooling system COP
-    ventilationCoolingEnergy: 0, // d_123 - Cooling season ventilation energy
-    ventilationCoolingIncoming: 0, // d_122 - Incoming cooling season ventilation energy
     
     // S14 integration calculations (moved from S14/S13)
     cedUnmitigated: 0, // d_129 - CED Cooling Unmitigated
@@ -360,70 +350,6 @@ window.TEUI.CoolingCalculations = (function () {
    * Calculate cooling system integration with S13 heating systems
    * Implements Excel formulas for d_117, l_114, and cross-section outputs
    */
-  function calculateCoolingSystemIntegration() {
-    // Excel D117 formula: IF(D116="No Cooling", 0, IF(D113="Heatpump", M129/J113, IF(D116="Cooling", M129/J116)))
-    
-    let d_117 = 0; // Heatpump Cooling Electrical Load
-    let l_114 = 0; // Cooling system COP
-    
-    // Get M129 (mitigated cooling load) from S13 via StateManager
-    const m_129 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("m_129")) || 0;
-    
-    if (state.coolingSystem && state.coolingSystem !== "No Cooling") {
-      if (state.heatingSystem === "Heatpump") {
-        // Heatpump cooling: use heating COP (j_113)
-        if (state.heatingCOP > 0) {
-          d_117 = m_129 / state.heatingCOP;
-          l_114 = state.heatingCOP; // Use heating COP for cooling
-        }
-      } else if (state.coolingSystem === "Cooling") {
-        // Dedicated cooling system: use user cooling COP (j_116)
-        if (state.userCoolingCOP > 0) {
-          d_117 = m_129 / state.userCoolingCOP;
-          l_114 = state.userCoolingCOP; // Use user cooling COP
-        }
-      }
-    }
-    
-    // Store calculated values
-    state.coolingElectricalLoad = d_117; // d_117
-    state.coolingSystemCOP = l_114; // l_114
-    
-    console.log(`[Cooling] System integration: d_113=${state.heatingSystem}, d_116=${state.coolingSystem}, j_113=${state.heatingCOP}, j_116=${state.userCoolingCOP} → d_117=${d_117}, l_114=${l_114}`);
-  }
-
-  /**
-   * Calculate ventilation cooling energy (d_122, d_123) - moved from S13
-   */
-  function calculateVentilationCoolingEnergy() {
-    // Read required inputs from StateManager
-    const ventilationRateLs = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("d_120")) || 0;
-    const cdd = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("d_21")) || 0;
-    const occupiedHours = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("i_63")) || 0;
-    const totalHours = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("j_63")) || 8760;
-    const occupancyFactor = totalHours > 0 ? occupiedHours / totalHours : 0;
-    const coolingSystem = window.TEUI.StateManager.getValue("d_116") || "No Cooling";
-    const summerBoost = window.TEUI.StateManager.getValue("l_119") || "None";
-    const sre = (window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("d_118")) || 0) / 100;
-    
-    let d_122 = 0; // Incoming cooling season ventilation energy
-    let d_123 = 0; // Outgoing cooling season ventilation energy
-    
-    // Simplified calculation based on S13 logic
-    if (coolingSystem === "Cooling") {
-      const baseConstant = 1.21;
-      const summerBoostFactor = summerBoost === "None" ? 1.0 : window.TEUI.parseNumeric(summerBoost) || 1.0;
-      
-      // Basic ventilation cooling energy calculation
-      d_122 = ((baseConstant * ventilationRateLs * cdd * 24) / 1000) * occupancyFactor * state.latentLoadFactor * summerBoostFactor;
-      d_123 = d_122 * sre; // Recovery = incoming * SRE efficiency
-    }
-    
-    state.ventilationCoolingIncoming = d_122; // d_122
-    state.ventilationCoolingEnergy = d_123; // d_123
-    
-    console.log(`[Cooling] Ventilation cooling: d_122=${d_122.toFixed(2)}, d_123=${d_123.toFixed(2)}`);
-  }
 
   /**
    * Calculate CED Unmitigated (d_129) - Excel: K71+K79+K97+K104+K103+D122
@@ -518,12 +444,6 @@ window.TEUI.CoolingCalculations = (function () {
     // Calculate days of active cooling required
     calculateDaysActiveCooling();
 
-    // Calculate ventilation cooling energy (d_122, d_123) - moved from S13
-    calculateVentilationCoolingEnergy();
-
-    // Calculate cooling system integration (d_117, l_114, cross-section outputs)
-    calculateCoolingSystemIntegration();
-
     // Calculate CED values (moved from S14/S13 for tight cooling integration)
     calculateCEDUnmitigated(); // d_129
     calculateCEDMitigated(); // m_129
@@ -552,10 +472,7 @@ window.TEUI.CoolingCalculations = (function () {
     sm.setValue("cooling_h_124", state.freeCoolingLimit.toString(), "calculated");      // Free Cooling Capacity
     sm.setValue("cooling_d_124", (state.freeCoolingLimit / state.coolingLoad * 100).toString(), "calculated"); // Free Cooling %
     
-    // Cooling system integration values (Excel formulas)
-    sm.setValue("cooling_d_117", state.coolingElectricalLoad.toString(), "calculated"); // Heatpump cooling electrical load
-    sm.setValue("cooling_l_114", state.coolingSystemCOP.toString(), "calculated");      // Cooling system COP
-    sm.setValue("cooling_d_123", state.ventilationCoolingEnergy.toString(), "calculated"); // Cooling season ventilation energy
+    // D117, L114, D122, D123 are calculated by S13, not Cooling.js
     
     // Intermediate cooling calculations for S13 integration
     sm.setValue("cooling_latentLoadFactor", (state.latentLoadFactor || 0).toString(), "calculated");   // Latent Load Factor
@@ -569,10 +486,6 @@ window.TEUI.CoolingCalculations = (function () {
     // Cross-section outputs for S14 (moved from S14/S13 for tight cooling integration)
     sm.setValue("cooling_d_129", state.cedUnmitigated.toString(), "calculated");  // CED Unmitigated for S14
     sm.setValue("cooling_m_129", state.cedMitigated.toString(), "calculated");   // CED Mitigated for S14
-    
-    // Also publish d_122 and d_123 directly for S13 consumption
-    sm.setValue("cooling_d_122", state.ventilationCoolingIncoming.toString(), "calculated"); // S13 reads this directly
-    sm.setValue("cooling_d_123", state.ventilationCoolingEnergy.toString(), "calculated"); // S13 reads this directly
     
     console.log(`[Cooling] Published to StateManager: m_124=${state.daysActiveCooling}, h_124=${state.freeCoolingLimit}, d_124=${(state.freeCoolingLimit / state.coolingLoad * 100).toFixed(1)}%`);
   }
@@ -628,34 +541,7 @@ window.TEUI.CoolingCalculations = (function () {
       updateStateManager(); // 📊 STATEMANAGER: Publish updated cooling calculations
     });
 
-    // Listen for S13 system integration fields
-    sm.addListener("d_113", function (heatingSystem) {
-      console.log(`[Cooling] Heating system changed: d_113=${heatingSystem} → updating cooling COP logic`);
-      state.heatingSystem = heatingSystem;
-      calculateCoolingSystemIntegration(); // Update cooling calculations based on heating system
-      updateStateManager();
-    });
-
-    sm.addListener("d_116", function (coolingSystem) {
-      console.log(`[Cooling] Cooling system changed: d_116=${coolingSystem} → updating active cooling calculations`);
-      state.coolingSystem = coolingSystem;
-      calculateCoolingSystemIntegration(); // Enable/disable active cooling calculations
-      updateStateManager();
-    });
-
-    sm.addListener("j_113", function (heatingCOP) {
-      console.log(`[Cooling] Heating COP changed: j_113=${heatingCOP} → updating heatpump cooling COP`);
-      state.heatingCOP = parseFloat(heatingCOP) || 0;
-      calculateCoolingSystemIntegration(); // Update cooling calculations with heating COP
-      updateStateManager();
-    });
-
-    sm.addListener("j_116", function (coolingCOP) {
-      console.log(`[Cooling] User cooling COP changed: j_116=${coolingCOP} → updating cooling calculations`);
-      state.userCoolingCOP = parseFloat(coolingCOP) || 2.66;
-      calculateCoolingSystemIntegration(); // Update cooling calculations with user COP
-      updateStateManager();
-    });
+    // D117/L114 now calculated by S13, not Cooling.js - listeners removed
 
     // ✅ FIX: Listen for h_124 (free cooling limit) changes from S13
     // This fixes the m_124 dependency chain: l_119 → d_122/d_123 → h_124 → m_124
@@ -749,20 +635,7 @@ window.TEUI.CoolingCalculations = (function () {
       // Calculate atmospheric pressure from elevation (COOLING-TARGET E15 logic)
       updateAtmosphericPressure(); // Calculate initial atmospheric pressure from S03 elevation
 
-      // Get S13 system integration values
-      const heatingSystem = window.TEUI.StateManager.getValue("d_113");
-      if (heatingSystem) state.heatingSystem = heatingSystem;
-      
-      const coolingSystem = window.TEUI.StateManager.getValue("d_116");
-      if (coolingSystem) state.coolingSystem = coolingSystem;
-      
-      const heatingCOP = window.TEUI.StateManager.getValue("j_113");
-      if (heatingCOP) state.heatingCOP = parseFloat(heatingCOP);
-      
-      const userCoolingCOP = window.TEUI.StateManager.getValue("j_116");
-      if (userCoolingCOP) state.userCoolingCOP = parseFloat(userCoolingCOP);
-
-      // Get cooling load
+      // Get cooling load (for D129/M129 calculations)
       const coolingLoad = window.TEUI.StateManager.getValue("d_129");
       if (coolingLoad) {
         state.coolingLoad = parseFloat(coolingLoad.replace(/,/g, ""));
