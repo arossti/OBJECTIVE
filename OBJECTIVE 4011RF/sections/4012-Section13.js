@@ -758,18 +758,19 @@ window.TEUI.SectionModules.sect13 = (function () {
     context.calculatedPotentialFreeCooling = null; // Will be calculated by calculateFreeCoolingLimit
     context.wetBulbTemperature = null; // Will be calculated by calculateWetBulbTemperature
 
-    // Initialize from proper sources (not just copying from global state)
+    // ✅ MODE-AWARE: Read upstream dependencies with correct prefix for Reference mode
+    const prefix = isReference ? "ref_" : "";
     context.coolingLoad =
-      window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("l_128")) ||
+      window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue(`${prefix}l_128`)) ||
       0;
     context.coolingDegreeDays =
-      window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("d_21")) ||
+      window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue(`${prefix}d_21`)) ||
       196;
     context.buildingVolume =
-      window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("d_105")) ||
+      window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue(`${prefix}d_105`)) ||
       8000;
     context.buildingArea =
-      window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("h_15")) ||
+      window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue(`${prefix}h_15`)) ||
       1427.2;
 
     // ... all other properties remain cloned from the old global state for now ...
@@ -1014,35 +1015,9 @@ window.TEUI.SectionModules.sect13 = (function () {
     // TODO: This value should eventually be dynamic, likely from Section 03 weather data or user input
     coolingContext.coolingSeasonMeanRH = 0.5585; // Default A4 (55.85%) NOT A57 (70%) used elsewhere
 
-    // Fetch elevation
-    // TODO: Should be dynamic from weather data lookup in Section 03
-    const projectElevation = parseNum(getValue("l_22")) || 80; // Read from Sec 03, fallback to 80m
-    const seaLevelPressure = 101325; // E13
-    // FINAL SWITCH: Update isolated context instead of global state
-    coolingContext.atmPressure =
-      seaLevelPressure * Math.exp(-projectElevation / 8434); // E15 logic
-
-    // Check for user override for cooling setpoint in l_24, otherwise use h_24
-    const coolingSetTempOverride_l24 = parseNum(getValue("l_24"));
-    if (coolingSetTempOverride_l24 && !isNaN(coolingSetTempOverride_l24)) {
-      // FINAL SWITCH: Update isolated context instead of global state
-      coolingContext.coolingSetTemp = coolingSetTempOverride_l24;
-    } else {
-      // FINAL SWITCH: Update isolated context instead of global state
-      coolingContext.coolingSetTemp = parseNum(getValue("h_24")) || 24; // Fallback to h_24 or default 24
-    }
-
-    // FINAL SWITCH: Update isolated context instead of global state
-    coolingContext.coolingDegreeDays = parseNum(getValue("d_21")) || 196;
-    coolingContext.buildingVolume = parseNum(getValue("d_105")) || 8000;
-    coolingContext.buildingArea = parseNum(getValue("h_15")) || 1427.2;
-    coolingContext.coolingLoad = getNumericValue("l_128") || 0; // Read mitigated cooling load from S14 - Note: May cause dependency loop issues if S14 reads S13 outputs
-    // ✅ PATTERN 1 TEST: Use ModeManager.getValue() instead of getFieldValue()
-    // This will automatically read from correct state based on current mode
-    // FINAL SWITCH: Update isolated context instead of global state
-    coolingContext.ventilationMethod =
-      coolingContext.ventilationMethod || "Constant";
-
+    // ⚠️ DEPRECATED: This function should only handle calculations, NOT read upstream values
+    // Upstream values are now set correctly in createIsolatedCoolingContext() with mode-awareness
+    
     // Calculate the intermediate A50 temperature needed for atmospheric calcs
     calculateA50Temp(coolingContext);
   }
