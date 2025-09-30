@@ -1193,12 +1193,12 @@ window.TEUI.SectionModules.sect13 = (function () {
         },
         e: {},
         f: {},
-        g: {
-          content: "M.3.3 COPcool", //ONLY when Dedicated Cooling
+        g: {},
+        h: {},
+        i: {
+          content: "M.3.3 COPcool",
           classes: ["label-prefix"],
         },
-        h: {},
-        i: {},
         j: {
           fieldId: "j_116",
           type: "editable",
