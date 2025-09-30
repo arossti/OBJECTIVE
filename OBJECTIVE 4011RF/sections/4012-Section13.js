@@ -2127,8 +2127,15 @@ window.TEUI.SectionModules.sect13 = (function () {
     if (fieldId === "d_116") {
       const currentHeatingSystem = ModeManager.getValue("d_113") || "Heatpump";
       
-      // When switching TO "Cooling" from "No Cooling", restore j_116 default
-      if (newValue === "Cooling" && currentHeatingSystem !== "Heatpump") {
+      if (newValue === "No Cooling") {
+        // When switching TO "No Cooling", set j_116 to 0
+        ModeManager.setValue("j_116", "0", "system-update");
+        const j116Element = document.querySelector('[data-field-id="j_116"]');
+        if (j116Element) {
+          j116Element.textContent = "0.00";
+        }
+      } else if (newValue === "Cooling" && currentHeatingSystem !== "Heatpump") {
+        // When switching TO "Cooling" (non-Heatpump), restore j_116 default
         const currentJ116 = ModeManager.getValue("j_116");
         if (!currentJ116 || currentJ116 === "0") {
           const defaultJ116 = getFieldDefault("j_116") || "2.66";
@@ -2404,11 +2411,8 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     // Only update DOM for Target calculations
     if (!isReferenceCalculation) {
-      // J116: Only write if Heatpump (displays J113), otherwise user editable
-      if (heatingSystemType === "Heatpump") {
-        setFieldValue("j_116", j_116_display, "number-1dp"); // Show J113 value
-      }
-      // Else: j_116 is user editable, don't overwrite
+      // J116: ALWAYS set (0 for No Cooling, j_113 for Heatpump, user value for dedicated)
+      setFieldValue("j_116", j_116_display, "number-2dp");
       
       setFieldValue("l_116", coolingSink_l116, "number-2dp-comma");
       setFieldValue("l_114", coolingSink_l114, "number-2dp-comma");
@@ -2982,7 +2986,7 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     // Cooling System Results
     if (coolingResults.j_116 !== undefined)
-      setFieldValue("j_116", coolingResults.j_116, "number-1dp");
+      setFieldValue("j_116", coolingResults.j_116, "number-2dp");
     if (coolingResults.l_116 !== undefined)
       setFieldValue("l_116", coolingResults.l_116, "number-2dp-comma");
     if (coolingResults.l_114 !== undefined)
