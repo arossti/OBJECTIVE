@@ -328,15 +328,15 @@ window.TEUI.SectionModules.sect13 = (function () {
       const fieldsToSync = [
         "d_113",
         "f_113",
-        "j_115",
         "d_116",
-        "f_117",
         "j_116",
         "d_118",
-        "f_118",
+        "g_118",
         "d_119",
+        "j_115",
         "l_118",
-        "f_119",
+        "l_119",
+        "k_120",
       ];
 
       fieldsToSync.forEach((fieldId) => {
@@ -2703,13 +2703,9 @@ window.TEUI.SectionModules.sect13 = (function () {
     // console.warn(`[S13 Debug FreeCool Inputs] Vent Method(g118): ${ventilationMethod}, Setback Factor(k120 str): ${setbackValueStr}, Vent Rate(h120): ${ventRateM3hr_h120.toFixed(2)}`);
 
     try {
-
-      // Read h_124 from Cooling.js via StateManager (STRICT - no fallback)
+      // Leniently read h_124 from Cooling.js - will be 0 on first pass
       const h_124_raw = window.TEUI.StateManager.getValue("cooling_h_124");
-      if (!h_124_raw && h_124_raw !== 0) {
-        throw new Error("[S13] REQUIRED cooling_h_124 missing from Cooling.js - cannot calculate free cooling");
-      }
-      potentialLimit = window.TEUI.parseNumeric(h_124_raw);
+      potentialLimit = window.TEUI.parseNumeric(h_124_raw) || 0;
 
       if (setbackValueStr) {
         // const parsedFactor = window.TEUI.parseNumeric(setbackValueStr); // OLD - assumed decimal
@@ -2834,6 +2830,9 @@ window.TEUI.SectionModules.sect13 = (function () {
       const ventilationRatesResults = calculateVentilationRates(true);
       const ventilationEnergyResults = calculateVentilationEnergy(true);
       
+      // ✅ CALCULATION ORDER FIX: Call Cooling.js directly before it's needed
+      window.TEUI.CoolingCalculations.calculateAll();
+
       // Cooling season ventilation (D122/D123) - S13 calculates these
       const coolingVentilationResults = calculateCoolingVentilation(true);
       
@@ -2891,6 +2890,9 @@ window.TEUI.SectionModules.sect13 = (function () {
       const ventilationRatesResults = calculateVentilationRates(false);
       const ventilationEnergyResults = calculateVentilationEnergy(false);
       
+      // ✅ CALCULATION ORDER FIX: Call Cooling.js directly before it's needed
+      window.TEUI.CoolingCalculations.calculateAll();
+
       // Cooling season ventilation (D122/D123) - S13 calculates these
       const coolingVentilationResults = calculateCoolingVentilation(false);
       

@@ -493,7 +493,7 @@ TEUI.Calculator = (function () {
       "sect12", // Volume Metrics (defines areas for S10, S11)
       "sect10", // Radiant Gains (i80 for S15)
       "sect11", // Transmission Losses
-      "cooling", // 🔥 COOLING MODULE: Calculate d_122, d_123, d_129, m_129, h_124, m_124 for S13/S14
+      // "cooling", // MOVED: Now called directly by S13 to guarantee order
       "sect07", // Water Use (k51 for S15)
       "sect13", // Mechanical Loads (reads cooling values, calculates ventilation)
       "sect06", // Renewable Energy (m43 for S15)
@@ -512,10 +512,11 @@ TEUI.Calculator = (function () {
         // Special handling for Cooling module
         if (window.TEUI?.CoolingCalculations?.calculateAll) {
           try {
-            console.log("[Calculator] 🔥 Executing cooling module calculations");
+            console.log("[Calculator] 🌀 Calling CoolingCalculations module...");
             window.TEUI.CoolingCalculations.calculateAll();
+            console.log("[Calculator] ✅ CoolingCalculations module finished.");
           } catch (error) {
-            console.error(`Error calculating cooling module:`, error);
+            console.error("[Calculator] ❌ Error in Cooling module:", error);
           }
         } else {
           console.warn("[Calculator] ⚠️ Cooling module not available");
