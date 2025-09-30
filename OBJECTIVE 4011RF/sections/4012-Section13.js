@@ -2331,18 +2331,19 @@ window.TEUI.SectionModules.sect13 = (function () {
    * Calculate cooling system values
    */
   function calculateCoolingSystem(
-    isReferenceCalculation = false
+    isReferenceCalculation = false,
+    copResults = {}
   ) {
     const coolingSystemType = ModeManager.getValue("d_116") || "No Cooling";
     const heatingSystemType = ModeManager.getValue("d_113");
     
-    // Read M129 from Cooling.js (now calculated there)
+    // Read M129 from StateManager (calculated in this section)
     const coolingDemand_m129 = isReferenceCalculation
       ? parseFloat(window.TEUI?.StateManager?.getValue("ref_m_129")) || 0
       : window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("m_129")) || 0;
     
-    // Read J113 (heatpump cooling COP)
-    const copcool_hp_j113 = window.TEUI.parseNumeric(getFieldValue("j_113")) || 0;
+    // Use fresh j_113 value from copResults, not stale DOM
+    const copcool_hp_j113 = copResults.j_113 || 0;
     
     // Read J116 (dedicated cooling COP) - 0 is valid for No Cooling
     const j116_raw = getSectionValue("j_116", isReferenceCalculation);
@@ -2846,7 +2847,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       
       // Cooling system (D117, L114, L116) - needs M129
       const mitigatedResults = calculateCEDMitigated(true);
-      const coolingResults = calculateCoolingSystem(true);
+      const coolingResults = calculateCoolingSystem(true, copResults);
 
       // Store Reference Model results with ref_ prefix for downstream sections
       storeReferenceResults(
@@ -2903,7 +2904,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       
       // Cooling system (D117, L114, L116) - needs M129
       const mitigatedResults = calculateCEDMitigated(false);
-      const coolingResults = calculateCoolingSystem(false);
+      const coolingResults = calculateCoolingSystem(false, copResults);
 
       // Update DOM with Target calculation results
       updateTargetModelDOMValues(
@@ -2945,9 +2946,9 @@ window.TEUI.SectionModules.sect13 = (function () {
     if (copResults.h_113 !== undefined)
       setFieldValue("h_113", copResults.h_113, "number-2dp");
     if (copResults.j_113 !== undefined)
-      setFieldValue("j_113", copResults.j_113, "number-1dp");
+      setFieldValue("j_113", copResults.j_113, "number-2dp");
     if (copResults.j_114 !== undefined)
-      setFieldValue("j_114", copResults.j_114, "number-1dp");
+      setFieldValue("j_114", copResults.j_114, "number-2dp");
 
     // Heating System Results
     if (heatingResults.d_114 !== undefined)
