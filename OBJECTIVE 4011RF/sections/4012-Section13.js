@@ -3297,8 +3297,25 @@ window.TEUI.SectionModules.sect13 = (function () {
     const isCoolingActive = currentCoolingSystem === "Cooling";
 
 
-    // Row 116 fields after the dropdown: ghost only when "No Cooling" selected
-    setFieldGhosted("j_116", !isCoolingActive); // COPcool - ghost when No Cooling
+    // Row 116 j_116 field: Ghost when "No Cooling" OR when "Heatpump" (calculated from j_113)
+    const shouldGhostJ116 = !isCoolingActive || isHP; // Ghost if No Cooling OR Heatpump
+    setFieldGhosted("j_116", shouldGhostJ116);
+    
+    // When switching TO non-Heatpump with Cooling active, ensure j_116 has user default
+    if (!isHP && isCoolingActive) {
+      const currentJ116 = ModeManager.getValue("j_116");
+      if (!currentJ116 || currentJ116 === "0") {
+        // Reset to field definition default if empty or 0
+        const defaultJ116 = getFieldDefault("j_116") || "2.66";
+        ModeManager.setValue("j_116", defaultJ116, "system-update");
+        const j116Element = document.querySelector('[data-field-id="j_116"]');
+        if (j116Element && j116Element.getAttribute("contenteditable") === "true") {
+          j116Element.textContent = window.TEUI.formatNumber(parseFloat(defaultJ116), "number-2dp");
+        }
+      }
+    }
+    
+    // Row 116 other fields: Ghost only when "No Cooling"
     setFieldGhosted("l_116", !isCoolingActive); // Sink - ghost when No Cooling
     setFieldGhosted("m_116", !isCoolingActive); // Reference % - ghost when No Cooling
 
