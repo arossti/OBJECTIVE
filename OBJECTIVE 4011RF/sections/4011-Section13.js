@@ -1,5 +1,5 @@
 /**
- * 4011-Section13.js - formerly 4011-Section13-CONTEXT.js. 
+ * 4011-Section13.js - FOR REFERENCE ONLY - NOT IN ACTIVE APP LOOP - formerly 4011-Section13-CONTEXT.js. 
  * Mechanical Loads (Section 13) module for TEUI Calculator 4.011
  * HSPF fixed to work in both states (post Aug 31 refactor)
  * This section no longer needs to integrate with 4011-Cooling.js for complex cooling calculations - file still suffers from state mixing on ventilation changes
@@ -838,221 +838,187 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /** [Cooling Calc] Calculate atmospheric values */
-  // 🚫 COOLING.JS TRANSITION: Function moved to 4012-Cooling.js module
-  // function calculateAtmosphericValues(coolingContext) {
-  //   // CHUNK 3A: Read from context instead of global state
-  //   const t_outdoor = coolingContext.A50_temp;
-  //   // CHUNK 3K: Read from context instead of global state
-  //   const outdoorRH = coolingContext.coolingSeasonMeanRH;
-  //   // CHUNK 3H: Read from context instead of global state
-  //   const t_indoor = coolingContext.coolingSetTemp;
-  //   const indoorRH_percent =
-  //     window.TEUI.parseNumeric(getFieldValue("d_59")) || 45;
-  //   const indoorRH = indoorRH_percent / 100;
-  //
-  //   // CHUNK 3B: Write to context instead of global state
-  //   coolingContext.pSatAvg =
-  //     610.94 * Math.exp((17.625 * t_outdoor) / (t_outdoor + 243.04));
-  //   // CHUNK 3M: Write to context instead of global state
-  //   coolingContext.partialPressure = coolingContext.pSatAvg * outdoorRH;
-  //
-  //   // CHUNK 3N: Write to context instead of global state
-  //   coolingContext.pSatIndoor =
-  //     610.94 * Math.exp((17.625 * t_indoor) / (t_indoor + 243.04));
-  //   // CHUNK 3M & 3N: Write to context instead of global state
-  //   coolingContext.partialPressureIndoor = coolingContext.pSatIndoor * indoorRH;
-  // }
+  function calculateAtmosphericValues(coolingContext) {
+    // CHUNK 3A: Read from context instead of global state
+    const t_outdoor = coolingContext.A50_temp;
+    // CHUNK 3K: Read from context instead of global state
+    const outdoorRH = coolingContext.coolingSeasonMeanRH;
+    // CHUNK 3H: Read from context instead of global state
+    const t_indoor = coolingContext.coolingSetTemp;
+    const indoorRH_percent =
+      window.TEUI.parseNumeric(getFieldValue("d_59")) || 45;
+    const indoorRH = indoorRH_percent / 100;
 
-  // 🔄 COOLING.JS INTEGRATION: Read atmospheric values from StateManager
-  function getCoolingAtmosphericValues() {
-    return {
-      atmosphericPressure: window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_atmosphericPressure")) || 101325,
-      partialPressure: window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_partialPressure")) || 0,
-      humidityRatio: window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_humidityRatio")) || 0
-    };
+    // CHUNK 3B: Write to context instead of global state
+    coolingContext.pSatAvg =
+      610.94 * Math.exp((17.625 * t_outdoor) / (t_outdoor + 243.04));
+    // CHUNK 3M: Write to context instead of global state
+    coolingContext.partialPressure = coolingContext.pSatAvg * outdoorRH;
+
+    // CHUNK 3N: Write to context instead of global state
+    coolingContext.pSatIndoor =
+      610.94 * Math.exp((17.625 * t_indoor) / (t_indoor + 243.04));
+    // CHUNK 3M & 3N: Write to context instead of global state
+    coolingContext.partialPressureIndoor = coolingContext.pSatIndoor * indoorRH;
   }
 
   /** [Cooling Calc] Calculate humidity ratios */
-  // 🚫 COOLING.JS TRANSITION: Function moved to 4012-Cooling.js module
-  // function calculateHumidityRatios(coolingContext) {
-  //   // CHUNK 3L: Read from context instead of global state
-  //   const atmPressure = coolingContext.atmPressure || 101325;
-  //   // CHUNK 3M: Read from context instead of global state
-  //   const pPartialIndoor = coolingContext.partialPressureIndoor;
-  //   // CHUNK 3B: Read from context instead of global state
-  //   const pSatAvgOutdoor = coolingContext.pSatAvg; // Get Saturation Pressure Outdoor (A56)
-  //
-  //   // Calculate Indoor Humidity Ratio (A61)
-  //   if (atmPressure - pPartialIndoor === 0) {
-  //     console.warn(
-  //       "Cooling Calc: Division by zero prevented in indoor humidity ratio.",
-  //     );
-  //     // CHUNK 3I: Write to context instead of global state
-  //     coolingContext.humidityRatioIndoor = 0;
-  //   } else {
-  //     // CHUNK 3I: Write to context instead of global state
-  //     coolingContext.humidityRatioIndoor =
-  //       (0.62198 * pPartialIndoor) / (atmPressure - pPartialIndoor);
-  //   }
-  //
-  //   // Calculate Outdoor Humidity Ratio (A62) - CORRECTED FORMULA
-  //   // First, calculate the outdoor partial pressure *using the required 70% RH* (Excel A57)
-  //   const outdoorRH_forA62 = 0.7;
-  //   const pPartialOutdoor_forA62 = pSatAvgOutdoor * outdoorRH_forA62;
-  //
-  //   if (atmPressure - pSatAvgOutdoor === 0) {
-  //     // CHUNK 3B: Check denominator using pSatAvgOutdoor from context (A56)
-  //     console.warn(
-  //       "Cooling Calc: Division by zero prevented in outdoor humidity ratio.",
-  //     );
-  //     // CHUNK 3C: Write to context instead of global state
-  //     coolingContext.humidityRatioAvg = 0;
-  //   } else {
-  //     // Use the partial pressure based on 70% RH (pPartialOutdoor_forA62)
-  //     // CHUNK 3C: Write to context instead of global state
-  //     coolingContext.humidityRatioAvg =
-  //       (0.62198 * pPartialOutdoor_forA62) / (atmPressure - pSatAvgOutdoor); // CHUNK 3B: USE pSatAvgOutdoor from context (A56) in denominator
-  //   }
-  //
-  //   // Calculate Difference (A63)
-  //   // CHUNK 3D & 3I: Write to context instead of global state
-  //   coolingContext.humidityRatioDifference =
-  //     coolingContext.humidityRatioAvg - coolingContext.humidityRatioIndoor;
-  // }
+  function calculateHumidityRatios(coolingContext) {
+    // CHUNK 3L: Read from context instead of global state
+    const atmPressure = coolingContext.atmPressure || 101325;
+    // CHUNK 3M: Read from context instead of global state
+    const pPartialIndoor = coolingContext.partialPressureIndoor;
+    // CHUNK 3B: Read from context instead of global state
+    const pSatAvgOutdoor = coolingContext.pSatAvg; // Get Saturation Pressure Outdoor (A56)
 
-  // 🔄 COOLING.JS INTEGRATION: Read humidity ratios from StateManager
-  function getCoolingHumidityRatios() {
-    return window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_humidityRatio")) || 0;
+    // Calculate Indoor Humidity Ratio (A61)
+    if (atmPressure - pPartialIndoor === 0) {
+      console.warn(
+        "Cooling Calc: Division by zero prevented in indoor humidity ratio.",
+      );
+      // CHUNK 3I: Write to context instead of global state
+      coolingContext.humidityRatioIndoor = 0;
+    } else {
+      // CHUNK 3I: Write to context instead of global state
+      coolingContext.humidityRatioIndoor =
+        (0.62198 * pPartialIndoor) / (atmPressure - pPartialIndoor);
+    }
+
+    // Calculate Outdoor Humidity Ratio (A62) - CORRECTED FORMULA
+    // First, calculate the outdoor partial pressure *using the required 70% RH* (Excel A57)
+    const outdoorRH_forA62 = 0.7;
+    const pPartialOutdoor_forA62 = pSatAvgOutdoor * outdoorRH_forA62;
+
+    if (atmPressure - pSatAvgOutdoor === 0) {
+      // CHUNK 3B: Check denominator using pSatAvgOutdoor from context (A56)
+      console.warn(
+        "Cooling Calc: Division by zero prevented in outdoor humidity ratio.",
+      );
+      // CHUNK 3C: Write to context instead of global state
+      coolingContext.humidityRatioAvg = 0;
+    } else {
+      // Use the partial pressure based on 70% RH (pPartialOutdoor_forA62)
+      // CHUNK 3C: Write to context instead of global state
+      coolingContext.humidityRatioAvg =
+        (0.62198 * pPartialOutdoor_forA62) / (atmPressure - pSatAvgOutdoor); // CHUNK 3B: USE pSatAvgOutdoor from context (A56) in denominator
+    }
+
+    // Calculate Difference (A63)
+    // CHUNK 3D & 3I: Write to context instead of global state
+    coolingContext.humidityRatioDifference =
+      coolingContext.humidityRatioAvg - coolingContext.humidityRatioIndoor;
   }
 
   /** [Cooling Calc] Calculate free cooling capacity limit (Potential Annual Sensible kWh) */
-  // 🚫 COOLING.JS TRANSITION: Function moved to 4012-Cooling.js module
-  // function calculateFreeCoolingLimit(coolingContext) {
-  //   // Add recursion protection
-  //   if (window.TEUI.sect13.calculatingFreeCooling) {
-  //     // CHUNK 3O: Read from context instead of global state
-  //     return coolingContext.freeCoolingLimit || 0; // Return cached value if already calculating
-  //   }
-  //   window.TEUI.sect13.calculatingFreeCooling = true;
+  function calculateFreeCoolingLimit(coolingContext) {
+    // Add recursion protection
+    if (window.TEUI.sect13.calculatingFreeCooling) {
+      // CHUNK 3O: Read from context instead of global state
+      return coolingContext.freeCoolingLimit || 0; // Return cached value if already calculating
+    }
+    window.TEUI.sect13.calculatingFreeCooling = true;
 
-  //   let potentialLimit = 0; // Initialize potentialLimit
-  //   try {
-  //     // --- Calculation based on SENSIBLE Component Only (Excel A33 * M19) ---
+    let potentialLimit = 0; // Initialize potentialLimit
+    try {
+      // --- Calculation based on SENSIBLE Component Only (Excel A33 * M19) ---
 
-  //     // 1. Get necessary values
-  //     const ventFlowRateM3hr =
-  //       window.TEUI.parseNumeric(getFieldValue("h_120")) || 0;
-  //     const ventFlowRateM3s = ventFlowRateM3hr / 3600;
-  //     // CHUNK 3J: Read from context instead of global state
-  //     const massFlowRateKgS = ventFlowRateM3s * coolingContext.airMass; // kg/s
+      // 1. Get necessary values
+      const ventFlowRateM3hr =
+        window.TEUI.parseNumeric(getFieldValue("h_120")) || 0;
+      const ventFlowRateM3s = ventFlowRateM3hr / 3600;
+      // CHUNK 3J: Read from context instead of global state
+      const massFlowRateKgS = ventFlowRateM3s * coolingContext.airMass; // kg/s
 
-  //     // CHUNK 3F: Read from context instead of global state
-  //     const Cp = coolingContext.specificHeatCapacity; // J/kg·K
-  //     // CHUNK 3H: Read from context instead of global state
-  //     const T_indoor = coolingContext.coolingSetTemp; // °C
-  //     // CHUNK 3G: Read from context instead of global state
-  //     const T_outdoor_night = coolingContext.nightTimeTemp; // °C
-  //     const coolingDays =
-  //       window.TEUI.parseNumeric(getFieldValue("m_19")) || 120;
-  //
-  //     // 2. Calculate Temperature Difference
-  //     const tempDiff = T_outdoor_night - T_indoor; // °C or K difference
-  //
-  //     // 3. Calculate Sensible Power (Watts) - Based on Excel A55 / A31
-  //     const sensiblePowerWatts = massFlowRateKgS * Cp * tempDiff;
-  //
-  //     // 4. Determine potential SENSIBLE free cooling power
-  //     let sensibleCoolingPowerWatts = 0;
-  //     if (tempDiff < 0) {
-  //       // Only possible if outdoor air is cooler
-  //       // Use the positive magnitude of heat removal power
-  //       sensibleCoolingPowerWatts = Math.abs(sensiblePowerWatts);
-  //     }
-  //
-  //     // 5. Convert Sensible Power to Daily Sensible Energy (kWh/day) - Based on Excel A33
-  //     // Correct Factor: (J/s) * (86400 s/day) / (3.6e6 J/kWh) = 0.024
-  //     const dailySensibleCoolingKWh = sensibleCoolingPowerWatts * 0.024;
-  //
-  //     // 6. Calculate Annual Potential Limit (kWh/yr) - Based on Excel A33 * M19
-  //     potentialLimit = dailySensibleCoolingKWh * coolingDays;
-  //
-  //     // Store this sensible-only potential limit
-  //     // CHUNK 3O: Write to context instead of global state
-  //     coolingContext.calculatedPotentialFreeCooling = potentialLimit;
-  //   } catch (error) {
-  //     console.error(
-  //       "[S13 Error] Error during calculateFreeCoolingLimit:",
-  //       error,
-  //     );
-  //     potentialLimit = 0;
-  //   } finally {
-  //     window.TEUI.sect13.calculatingFreeCooling = false;
-  //   }
-  //   return potentialLimit;
-  // }
+      // CHUNK 3F: Read from context instead of global state
+      const Cp = coolingContext.specificHeatCapacity; // J/kg·K
+      // CHUNK 3H: Read from context instead of global state
+      const T_indoor = coolingContext.coolingSetTemp; // °C
+      // CHUNK 3G: Read from context instead of global state
+      const T_outdoor_night = coolingContext.nightTimeTemp; // °C
+      const coolingDays =
+        window.TEUI.parseNumeric(getFieldValue("m_19")) || 120;
 
-  // 🔄 COOLING.JS INTEGRATION: Read h_124 from StateManager instead of calculating
-  function getCoolingFreeCoolingLimit() {
-    return window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_h_124")) || 0;
+      // 2. Calculate Temperature Difference
+      const tempDiff = T_outdoor_night - T_indoor; // °C or K difference
+
+      // 3. Calculate Sensible Power (Watts) - Based on Excel A55 / A31
+      const sensiblePowerWatts = massFlowRateKgS * Cp * tempDiff;
+
+      // 4. Determine potential SENSIBLE free cooling power
+      let sensibleCoolingPowerWatts = 0;
+      if (tempDiff < 0) {
+        // Only possible if outdoor air is cooler
+        // Use the positive magnitude of heat removal power
+        sensibleCoolingPowerWatts = Math.abs(sensiblePowerWatts);
+      }
+
+      // 5. Convert Sensible Power to Daily Sensible Energy (kWh/day) - Based on Excel A33
+      // Correct Factor: (J/s) * (86400 s/day) / (3.6e6 J/kWh) = 0.024
+      const dailySensibleCoolingKWh = sensibleCoolingPowerWatts * 0.024;
+
+      // 6. Calculate Annual Potential Limit (kWh/yr) - Based on Excel A33 * M19
+      potentialLimit = dailySensibleCoolingKWh * coolingDays;
+
+      // Store this sensible-only potential limit
+      // CHUNK 3O: Write to context instead of global state
+      coolingContext.calculatedPotentialFreeCooling = potentialLimit;
+    } catch (error) {
+      console.error(
+        "[S13 Error] Error during calculateFreeCoolingLimit:",
+        error,
+      );
+      potentialLimit = 0;
+    } finally {
+      window.TEUI.sect13.calculatingFreeCooling = false;
+    }
+    return potentialLimit;
   }
 
   /** [Cooling Calc] Calculate days of active cooling required */
-  // 🚫 COOLING.JS TRANSITION: Function moved to 4012-Cooling.js module
-  // function calculateDaysActiveCooling(
-  //   currentFreeCoolingLimit /* h_124 */,
-  //   isReferenceCalculation,
-  //   coolingContext,
-  // ) {
-  //   // ✅ EXCEL PARITY: Use exact Excel formula from COOLING-TARGET.csv line 55
-  //   // Excel: =E52/(E54*24) where E52=(E50-E51), E54=REPORT!M19
-  //   
-  //   const d_129 = window.TEUI.parseNumeric(getFieldValue("d_129")) || 0; // E50: Seasonal Cooling Load
-  //   const h_124 = currentFreeCoolingLimit; // E51: Free Cooling Potential
-  //   const m_19 = window.TEUI.parseNumeric(getFieldValue("m_19")) || 120; // E54: Cooling Season Days
-  //   
-  //   // Calculate E52: Unmet Cooling Load = E50 - E51
-  //   const unmetCoolingLoad = d_129 - h_124; // E52 = E50 - E51
-  //   
-  //   // Calculate E55: Days Active Cooling = E52 / (E54 * 24)
-  //   let daysActiveCooling = 0;
-  //   if (m_19 > 0) {
-  //     daysActiveCooling = unmetCoolingLoad / (m_19 * 24);
-  //   }
-  //   
-  //   // ✅ EXCEL COMMENT: "Obviously negative days of free cooling is not possible - 
-  //   // the goal here is to get close to zero - anything less than zero is overkill ventilation-wise"
-  //   // So we preserve the raw calculation (can be negative) as per Excel methodology
-  //   
-  //   console.log(`[S13 m_124 EXCEL] E50(d_129)=${d_129}, E51(h_124)=${h_124}, E52(unmet)=${unmetCoolingLoad}, E54(m_19)=${m_19}, E55(result)=${daysActiveCooling}`);
-  //   
-  //   return daysActiveCooling; // Return exact Excel calculation result
-  // }
-
-  // 🔄 COOLING.JS INTEGRATION: Read m_124 from StateManager instead of calculating
-  function getCoolingDaysActive() {
-    return window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_m_124")) || 0;
+  function calculateDaysActiveCooling(
+    currentFreeCoolingLimit /* h_124 */,
+    isReferenceCalculation,
+    coolingContext,
+  ) {
+    // ✅ EXCEL PARITY: Use exact Excel formula from COOLING-TARGET.csv line 55
+    // Excel: =E52/(E54*24) where E52=(E50-E51), E54=REPORT!M19
+    
+    const d_129 = window.TEUI.parseNumeric(getFieldValue("d_129")) || 0; // E50: Seasonal Cooling Load
+    const h_124 = currentFreeCoolingLimit; // E51: Free Cooling Potential
+    const m_19 = window.TEUI.parseNumeric(getFieldValue("m_19")) || 120; // E54: Cooling Season Days
+    
+    // Calculate E52: Unmet Cooling Load = E50 - E51
+    const unmetCoolingLoad = d_129 - h_124; // E52 = E50 - E51
+    
+    // Calculate E55: Days Active Cooling = E52 / (E54 * 24)
+    let daysActiveCooling = 0;
+    if (m_19 > 0) {
+      daysActiveCooling = unmetCoolingLoad / (m_19 * 24);
+    }
+    
+    // ✅ EXCEL COMMENT: "Obviously negative days of free cooling is not possible - 
+    // the goal here is to get close to zero - anything less than zero is overkill ventilation-wise"
+    // So we preserve the raw calculation (can be negative) as per Excel methodology
+    
+    console.log(`[S13 m_124 EXCEL] E50(d_129)=${d_129}, E51(h_124)=${h_124}, E52(unmet)=${unmetCoolingLoad}, E54(m_19)=${m_19}, E55(result)=${daysActiveCooling}`);
+    
+    return daysActiveCooling; // Return exact Excel calculation result
   }
 
   /** [Cooling Calc] Calculate wet bulb temperature (Approximation) */
-  // 🚫 COOLING.JS TRANSITION: Function moved to 4012-Cooling.js module
-  // function calculateWetBulbTemperature(coolingContext) {
-  //   // Note: This is an approximation, potentially from COOLING-TARGET.csv E64
-  //   // CHUNK 3G: Read from context instead of global state
-  //   const tdb = coolingContext.nightTimeTemp;
-  //   // CHUNK 3K: Read from context instead of global state
-  //   const rh = coolingContext.coolingSeasonMeanRH * 100;
-  //   const twbSimple =
-  //     tdb - (tdb - (tdb - (100 - rh) / 5)) * (0.1 + 0.9 * (rh / 100));
-  //   const twbCorrected =
-  //     tdb - (tdb - (tdb - (100 - rh) / 5)) * (0.3 + 0.7 * (rh / 100));
-  //   // CHUNK 3O: Write to context instead of global state
-  //   coolingContext.wetBulbTemperature = (twbSimple + twbCorrected) / 2;
-  //   return coolingContext.wetBulbTemperature;
-  // }
-
-  // 🔄 COOLING.JS INTEGRATION: Read wet bulb temperature from StateManager
-  function getCoolingWetBulbTemperature() {
-    return window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_wetBulbTemperature")) || 0;
+  function calculateWetBulbTemperature(coolingContext) {
+    // Note: This is an approximation, potentially from COOLING-TARGET.csv E64
+    // CHUNK 3G: Read from context instead of global state
+    const tdb = coolingContext.nightTimeTemp;
+    // CHUNK 3K: Read from context instead of global state
+    const rh = coolingContext.coolingSeasonMeanRH * 100;
+    const twbSimple =
+      tdb - (tdb - (tdb - (100 - rh) / 5)) * (0.1 + 0.9 * (rh / 100));
+    const twbCorrected =
+      tdb - (tdb - (tdb - (100 - rh) / 5)) * (0.3 + 0.7 * (rh / 100));
+    // CHUNK 3O: Write to context instead of global state
+    coolingContext.wetBulbTemperature = (twbSimple + twbCorrected) / 2;
+    return coolingContext.wetBulbTemperature;
   }
 
   /** [Cooling Calc] Calculate the intermediate temperature A50 based on Excel logic */
@@ -1132,20 +1098,16 @@ window.TEUI.SectionModules.sect13 = (function () {
   ) {
     updateCoolingInputs(coolingContext);
 
-    // 🔄 COOLING.JS INTEGRATION: Read atmospheric values from Cooling.js
-    const atmosphericValues = getCoolingAtmosphericValues();
-    coolingContext.atmPressure = atmosphericValues.atmosphericPressure;
-    coolingContext.partialPressure = atmosphericValues.partialPressure;
-    coolingContext.humidityRatio = atmosphericValues.humidityRatio;
-    // 🔄 COOLING.JS INTEGRATION: Read humidity ratios from Cooling.js
-    coolingContext.humidityRatioDifference = getCoolingHumidityRatios();
+    // Ensure atmospheric & humidity are calculated BEFORE factors/limits that depend on them
+    calculateAtmosphericValues(coolingContext);
+    calculateHumidityRatios(coolingContext);
 
     // Now calculate factors/limits that use the results
     coolingContext.latentLoadFactor = calculateLatentLoadFactor(
       coolingContext,
     );
-    // 🔄 COOLING.JS INTEGRATION: Read wet bulb temperature from Cooling.js
-    coolingContext.wetBulbTemperature = getCoolingWetBulbTemperature();
+    // Calculate other intermediate cooling values if needed by core S13 funcs
+    calculateWetBulbTemperature(coolingContext);
     // Note: calculateFreeCoolingLimit() is NOT called here, it's called by calculateFreeCooling()
     // Note: calculateDaysActiveCooling() is called within calculateFreeCooling()
   }
@@ -3330,8 +3292,9 @@ window.TEUI.SectionModules.sect13 = (function () {
       // REMOVED: Call moved to calculateAll
       // runIntegratedCoolingCalculations();
 
-      // 🔄 COOLING.JS INTEGRATION: Read h_124 from Cooling.js via StateManager
-      potentialLimit = getCoolingFreeCoolingLimit(); // Read from Cooling.js calculations
+      potentialLimit = calculateFreeCoolingLimit(
+        coolingContext,
+      ); // Calculated Sensible Potential (kWh/yr)
 
       if (setbackValueStr) {
         // const parsedFactor = window.TEUI.parseNumeric(setbackValueStr); // OLD - assumed decimal
@@ -3375,8 +3338,8 @@ window.TEUI.SectionModules.sect13 = (function () {
         }
         setFieldValue("d_124", percentFreeCooling, "percent-0dp");
 
-        // 🔄 COOLING.JS INTEGRATION: Read M124 from Cooling.js via StateManager
-        const activeCoolingDays = getCoolingDaysActive();
+        // Calculate M124 (Days Active Cooling) - Using corrected Excel formula
+        const activeCoolingDays = calculateDaysActiveCooling(finalFreeCoolingLimit, false, coolingContext);
         setFieldValue("m_124", activeCoolingDays, "number-2dp");
       }
 
@@ -3488,12 +3451,10 @@ window.TEUI.SectionModules.sect13 = (function () {
       const ventilationRatesResults = calculateVentilationRates(true, referenceCoolingContext);
       const ventilationEnergyResults = calculateVentilationEnergy(true);
       // CHUNK 3E-3G FIX: Pass the reference context to calculateCoolingVentilation
-      // 🔄 COOLING.JS INTEGRATION: Read cooling ventilation from StateManager
-      const coolingVentilationResults = {
-        d_122: window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_d_122")) || 0,
-        d_123: window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_d_123")) || 0,
-        i_122: window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_latentLoadFactor")) || 0
-      };
+      const coolingVentilationResults = calculateCoolingVentilation(
+        true,
+        referenceCoolingContext,
+      );
       // CHUNK 3E-3G FIX: Pass the reference context to calculateFreeCooling
       const freeCoolingResults = {
         h_124: calculateFreeCooling(true, referenceCoolingContext),
@@ -3503,10 +3464,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         true,
         referenceCoolingContext,
       );
-      // 🔄 COOLING.JS INTEGRATION: Read m_129 from Cooling.js
-      const mitigatedResults = {
-        m_129: window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("m_129")) || 0
-      };
+      const mitigatedResults = calculateMitigatedCED(true);
 
       // Store Reference Model results with ref_ prefix for downstream sections
       storeReferenceResults(
@@ -3558,12 +3516,10 @@ window.TEUI.SectionModules.sect13 = (function () {
       const heatingResults = calculateHeatingSystem(copResults, tedValue);
       const ventilationRatesResults = calculateVentilationRates(false, targetCoolingContext);
       const ventilationEnergyResults = calculateVentilationEnergy(false);
-      // 🔄 COOLING.JS INTEGRATION: Read cooling ventilation from StateManager
-      const coolingVentilationResults = {
-        d_122: window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_d_122")) || 0,
-        d_123: window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_d_123")) || 0,
-        i_122: window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_latentLoadFactor")) || 0
-      };
+      const coolingVentilationResults = calculateCoolingVentilation(
+        false,
+        targetCoolingContext,
+      );
       const freeCoolingResults = {
         h_124: calculateFreeCooling(false, targetCoolingContext),
       };
@@ -3571,10 +3527,10 @@ window.TEUI.SectionModules.sect13 = (function () {
         false,
         targetCoolingContext,
       );
-      // 🔄 COOLING.JS INTEGRATION: Read m_129 from Cooling.js
-      const mitigatedResults = {
-        m_129: window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("m_129")) || 0
-      };
+      const mitigatedResults = calculateMitigatedCED(
+        false,
+        targetCoolingContext,
+      );
 
       // Update DOM with Target calculation results
       updateTargetModelDOMValues(
@@ -3786,31 +3742,36 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /**
-   * Calculate Mitigated CED (m_129) - MOVED TO COOLING.JS
+   * Calculate Mitigated CED (m_129)
    */
-  // 🚫 COOLING.JS TRANSITION: Function moved to 4012-Cooling.js module
-  // function calculateMitigatedCED(
-  //   isReferenceCalculation = false,
-  //   coolingContext,
-  // ) {
-  //   // Use global parser directly
-  //   const d129 = window.TEUI.parseNumeric(getFieldValue("d_129")) || 0;
-  //   const h124 = window.TEUI.parseNumeric(getFieldValue("h_124")) || 0;
-  //   const d123 = window.TEUI.parseNumeric(getFieldValue("d_123")) || 0;
-  //
-  //   let m129_calculated = d129 - h124 - d123;
-  //   const m129 = Math.max(0, m129_calculated); // Clamp to zero
-  //
-  //   // Only update DOM for Target calculations
-  //   if (!isReferenceCalculation) {
-  //     setFieldValue("m_129", m129, "number-2dp-comma");
-  //   }
-  //
-  //   // Return calculated value for Reference engine storage
-  //   return {
-  //     m_129: m129,
-  //   };
-  // }
+  function calculateMitigatedCED(
+    isReferenceCalculation = false,
+    coolingContext,
+  ) {
+    // Use global parser directly
+    const d129 = window.TEUI.parseNumeric(getFieldValue("d_129")) || 0;
+    const h124 = window.TEUI.parseNumeric(getFieldValue("h_124")) || 0;
+    const d123 = window.TEUI.parseNumeric(getFieldValue("d_123")) || 0;
+
+    // Logging removed
+    // console.warn(`[S13 Debug MitigatedCED Inputs] Unmitigated(d129): ${d129.toFixed(2)}, FreeCooling(h124): ${h124.toFixed(2)}, VentRecovery(d123): ${d123.toFixed(2)}`);
+
+    let m129_calculated = d129 - h124 - d123;
+    const m129 = Math.max(0, m129_calculated); // Clamp to zero
+
+    // Logging removed
+    // console.warn(`[S13 Debug MitigatedCED Output] MitigatedLoad(m129): ${m129.toFixed(2)}`);
+
+    // Only update DOM for Target calculations
+    if (!isReferenceCalculation) {
+      setFieldValue("m_129", m129, "number-2dp-comma");
+    }
+
+    // Return calculated value for Reference engine storage
+    return {
+      m_129: m129,
+    };
+  }
 
   //==========================================================================
   // SIMPLIFIED REFERENCE MODEL FUNCTIONS (Pattern 2 - Like S14/S15)

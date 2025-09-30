@@ -570,12 +570,12 @@ window.TEUI.CoolingCalculations = (function () {
     sm.setValue("cooling_humidityRatio", state.humidityRatioDifference.toString(), "calculated");         // Humidity ratio difference
     
     // Cross-section outputs for S14 (moved from S14/S13 for tight cooling integration)
-    sm.setValue("d_129", state.cedUnmitigated.toString(), "calculated");  // CED Unmitigated for S14
-    sm.setValue("m_129", state.cedMitigated.toString(), "calculated");   // CED Mitigated for S14
+    sm.setValue("cooling_d_129", state.cedUnmitigated.toString(), "calculated");  // CED Unmitigated for S14
+    sm.setValue("cooling_m_129", state.cedMitigated.toString(), "calculated");   // CED Mitigated for S14
     
     // Also publish d_122 and d_123 directly for S13 consumption
-    sm.setValue("d_122", state.ventilationCoolingIncoming.toString(), "calculated"); // S13 reads this directly
-    sm.setValue("d_123", state.ventilationCoolingEnergy.toString(), "calculated"); // S13 reads this directly
+    sm.setValue("cooling_d_122", state.ventilationCoolingIncoming.toString(), "calculated"); // S13 reads this directly
+    sm.setValue("cooling_d_123", state.ventilationCoolingEnergy.toString(), "calculated"); // S13 reads this directly
     
     console.log(`[Cooling] Published to StateManager: m_124=${state.daysActiveCooling}, h_124=${state.freeCoolingLimit}, d_124=${(state.freeCoolingLimit / state.coolingLoad * 100).toFixed(1)}%`);
   }
@@ -622,8 +622,9 @@ window.TEUI.CoolingCalculations = (function () {
     });
 
     // Listen for indoor RH% changes from S08 i_59 slider
+    console.log(`[Cooling] 🔗 Registering i_59 listener for indoor humidity changes`);
     sm.addListener("i_59", function (newValue) {
-      console.log(`[Cooling] Indoor RH% changed: i_59=${newValue}% → updating latent load calculations`);
+      console.log(`[Cooling] 🌡️ Indoor RH% changed: i_59=${newValue}% → updating latent load calculations`);
       state.indoorRH = parseFloat(newValue) / 100; // Convert percentage to decimal
       calculateLatentLoadFactor(); // Recalculate latent load factor
       calculateFreeCoolingLimit(); // Recalculate free cooling with new latent load

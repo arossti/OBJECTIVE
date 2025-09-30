@@ -280,3 +280,42 @@ setFieldValue("m_124", m_124, "number-2dp");
 - **Automatic dual-state** (ref_ prefixes work automatically for Reference model)
 - **Clear maintenance** (one pattern across all modules)
 - **AI agent friendly** (consistent patterns, smaller S13 file)
+
+---
+
+## 🚨 **S13 STATE CONTAMINATION ANALYSIS (Sept 30, 2025)**
+
+### **TODO: Fix Upstream Dependency Contamination in `createIsolatedCoolingContext`**
+
+**Analysis by AI Assistant:**
+
+A critical state contamination issue has been identified within `4012-Section13.js` that undermines the dual-state architecture, specifically in how the cooling context is prepared for Reference model calculations.
+
+**Root Cause:**
+
+The function `createIsolatedCoolingContext(mode)` is responsible for gathering the necessary data for cooling calculations. While it correctly reads section-local values like `g_118` (ventilation method) from the appropriate `TargetState` or `ReferenceState`, it fails to do so for critical **upstream dependencies**.
+
+Specifically, when creating the context for the Reference model (`mode === 'reference'`), the function reads values like:
+- `coolingDegreeDays` (from `d_21`)
+- `buildingVolume` (from `d_105`)
+- `buildingArea` (from `h_15`)
+
+...directly from the global `StateManager` **without the required `ref_` prefix**.
+
+```javascript
+// Problematic code in createIsolatedCoolingContext('reference'):
+context.coolingDegreeDays =
+  window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("d_21")) || 196; // ❌ SHOULD BE ref_d_21
+context.buildingVolume =
+  window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("d_105")) || 8000; // ❌ SHOULD BE ref_d_105
+context.buildingArea =
+  window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue("h_15")) || 1427.2; // ❌ SHOULD BE ref_h_15
+```
+
+**Impact:**
+
+This flaw means that the **Reference model's cooling calculations are being contaminated with Target model data**. The Reference cooling engine is incorrectly using Target climate data (from S03) and Target building geometry (from S02/S12), leading to inaccurate Reference results and breaking the principle of perfect state isolation.
+
+**Next Steps:**
+
+The `createIsolatedCoolingContext` function must be modified to read the correctly prefixed `ref_` values from the `StateManager` when `mode` is `'reference'`. This will ensure the Reference cooling calculations use the correct, isolated data set.

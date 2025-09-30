@@ -3,12 +3,12 @@
  * [SECTION NAME] (Section XX) module for TEUI Calculator 4.012 - DUAL-STATE ARCHITECTURE TEMPLATE
  *
  * 🏆 TEMPLATE FOR DUAL-STATE SECTION MODULES (Pattern A Architecture)
- * 
+ *
  * This template demonstrates the MANDATORY dual-state architecture patterns based on:
  * - Section04 (Excel-compliant refactor success story)
  * - 4012-CHEATSHEET.md (comprehensive compliance guide)
  * - Pattern A self-contained state objects
- * 
+ *
  * ✅ FEATURES INCLUDED:
  * - TargetState and ReferenceState objects with localStorage persistence
  * - ModeManager facade for dual-state coordination
@@ -27,7 +27,7 @@
  * 5. **Mode-Aware DOM Updates**: Calculations MUST ONLY update DOM when their mode matches current UI mode
  *
  * 📋 MANDATORY QA/QC CHECKLIST PHASES:
- * 
+ *
  * **Phase 1: Pattern B Contamination Scan**
  * - Scan for prefixes: grep -n "target_\|ref_" sections/4011-SectionXX.js
  * - Look for toxic patterns: getValue("target_d_20"), calculateAll() in switchMode()
@@ -104,28 +104,28 @@
  * - Example: window.TEUI.formatNumber(123.456, "number-2dp-comma") → "123.46"
  *
  * 🏛️ REFERENCE OVERRIDES SYSTEM (Master-Reference-Roadmap.md Integration):
- * 
+ *
  * ✅ DYNAMIC REFERENCE STANDARDS: ReferenceState.setDefaults() integrates with ReferenceValues.js
  * - Reads current standard from d_13: window.TEUI.StateManager.getValue("d_13")
  * - Applies building code values: window.TEUI.ReferenceValues[standard]
  * - Foundation + Selective Overrides: Start with field definitions, override specific code values
- * 
+ *
  * ✅ REFERENCE STANDARD CHANGE HANDLING: onReferenceStandardChange() function
  * - Listens to d_13 changes: StateManager.addListener("d_13", callback)
  * - Preserves user modifications while updating code minimums
  * - Only refreshes UI if currently in Reference mode
- * 
+ *
  * ✅ MASTER REFERENCE TOGGLE INTEGRATION: Three setup modes supported
  * - Mirror Target: Copy all Target values to Reference (identical models)
  * - Mirror Target + Reference: Copy Target + apply ReferenceValues overlay (code compliance)
  * - Independent Models: Complete freedom (custom comparisons)
- * 
+ *
  * 🎯 REFERENCE OVERRIDE EXAMPLES (from S11/S13 proven patterns):
  * ```javascript
  * // Performance values from building code
  * this.data.f_85 = referenceValues.f_85 || "5.30"; // RSI values
  * this.data.g_88 = referenceValues.g_88 || "1.990"; // U-values
- * 
+ *
  * // System type overrides for Reference model
  * this.data.d_113 = "Electricity"; // Reference uses electric heating
  * this.data.d_116 = "No Cooling"; // Reference has no cooling
@@ -148,7 +148,7 @@
  * ```
  *
  * 📚 IMPLEMENTATION PATTERNS FROM EXISTING SECTIONS:
- * 
+ *
  * ✅ FIELD DEFINITIONS: Single source of truth in sectionRows (like Section04)
  * ✅ STATE OBJECTS: TargetState/ReferenceState with localStorage (like Section04)
  * ✅ MODE MANAGER: Facade pattern for dual-state coordination (like Section04)
@@ -160,7 +160,7 @@
  *
  * 📋 OPTIMAL FILE STRUCTURE (Based on S10/S11/S13 Complex Sections):
  * 1. Field Definitions (sectionRows) - Data foundation
- * 2. Accessor Methods (getFields, getLayout) - FieldManager integration  
+ * 2. Accessor Methods (getFields, getLayout) - FieldManager integration
  * 3. State Objects (TargetState, ReferenceState) - Dual-state architecture
  * 4. ModeManager - Facade coordination with d_13 listener
  * 5. Helper Functions - Global dependencies and field utilities
@@ -171,7 +171,7 @@
  *
  * 🚫 DO NOT CREATE:
  * - New CSS classes or inline styles
- * - Local number formatting functions  
+ * - Local number formatting functions
  * - Custom elegant formatting functions
  * - New ghosting CSS classes
  * - Duplicate default values in state objects
@@ -502,7 +502,9 @@ window.TEUI.SectionModules.sectXX = (function () {
         // Example: d_xx: getFieldDefault("d_xx") || "default_value",
         // Add your section's user input fields here
       };
-      console.log("SXX: Target defaults set from field definitions - single source of truth");
+      console.log(
+        "SXX: Target defaults set from field definitions - single source of truth",
+      );
     },
 
     loadState: function () {
@@ -570,8 +572,10 @@ window.TEUI.SectionModules.sectXX = (function () {
       // Example patterns from S11/S13:
       // this.data.f_xx = referenceValues.f_xx || "code_minimum_value"; // Performance values
       // this.data.d_yy = "Reference_System_Type"; // System type overrides
-      
-      console.log(`SXX: Reference defaults loaded from standard: ${currentStandard}`);
+
+      console.log(
+        `SXX: Reference defaults loaded from standard: ${currentStandard}`,
+      );
     },
 
     // ✅ MANDATORY: Include onReferenceStandardChange for d_13 changes (Master-Reference-Roadmap.md)
@@ -579,7 +583,7 @@ window.TEUI.SectionModules.sectXX = (function () {
       console.log("SXX: Reference standard changed, reloading defaults");
       this.setDefaults();
       this.saveState();
-      
+
       // Only refresh UI if currently in reference mode
       if (ModeManager.currentMode === "reference") {
         ModeManager.refreshUI();
@@ -677,7 +681,9 @@ window.TEUI.SectionModules.sectXX = (function () {
     },
 
     refreshUI: function () {
-      console.log(`[SXX] Refreshing UI for ${this.currentMode.toUpperCase()} mode`);
+      console.log(
+        `[SXX] Refreshing UI for ${this.currentMode.toUpperCase()} mode`,
+      );
 
       const sectionElement = document.getElementById("sectionXX"); // Replace with actual section ID
       if (!sectionElement) return;
@@ -691,7 +697,9 @@ window.TEUI.SectionModules.sectXX = (function () {
         const stateValue = currentState.getValue(fieldId);
         if (stateValue === undefined || stateValue === null) return;
 
-        const element = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
+        const element = sectionElement.querySelector(
+          `[data-field-id="${fieldId}"]`,
+        );
         if (!element) return;
 
         if (element.hasAttribute("contenteditable")) {
@@ -707,14 +715,16 @@ window.TEUI.SectionModules.sectXX = (function () {
           }
         }
       });
-      
+
       // ✅ ELEGANT FORMATTING: CSS classes handle visual states automatically
     },
 
     updateCalculatedDisplayValues: function () {
       if (!window.TEUI?.StateManager) return;
 
-      console.log(`[SXX] 🔄 Updating calculated display values for ${this.currentMode} mode`);
+      console.log(
+        `[SXX] 🔄 Updating calculated display values for ${this.currentMode} mode`,
+      );
 
       // All calculated fields in this section
       const calculatedFields = [
@@ -740,7 +750,10 @@ window.TEUI.SectionModules.sectXX = (function () {
         if (element && !element.hasAttribute("contenteditable")) {
           const numericValue = window.TEUI.parseNumeric(valueToDisplay);
           if (!isNaN(numericValue)) {
-            const formattedValue = window.TEUI.formatNumber(numericValue, "number-2dp-comma");
+            const formattedValue = window.TEUI.formatNumber(
+              numericValue,
+              "number-2dp-comma",
+            );
             element.textContent = formattedValue;
           }
         }
@@ -783,10 +796,12 @@ window.TEUI.SectionModules.sectXX = (function () {
    * ✅ USES GLOBAL FORMATTING: Uses window.TEUI.formatNumber() from StateManager
    */
   function setFieldValue(fieldId, value, formatType = "number-2dp-comma") {
-    const valueToStore = value !== null && value !== undefined ? String(value) : "0";
+    const valueToStore =
+      value !== null && value !== undefined ? String(value) : "0";
 
     // Store in current state
-    const currentState = ModeManager.currentMode === "target" ? TargetState : ReferenceState;
+    const currentState =
+      ModeManager.currentMode === "target" ? TargetState : ReferenceState;
     currentState.setValue(fieldId, valueToStore, "calculated");
 
     // Store in StateManager for cross-section communication
@@ -796,22 +811,30 @@ window.TEUI.SectionModules.sectXX = (function () {
       }
     } else {
       if (window.TEUI?.StateManager) {
-        window.TEUI.StateManager.setValue(`ref_${fieldId}`, valueToStore, "calculated");
+        window.TEUI.StateManager.setValue(
+          `ref_${fieldId}`,
+          valueToStore,
+          "calculated",
+        );
       }
     }
 
     // ✅ GLOBAL FORMATTING: Update DOM using global formatNumber function
     // Only update DOM if we're in the correct mode to prevent cross-mode contamination
-    const shouldUpdateDOM = (ModeManager.currentMode === "target") || 
-                           (ModeManager.currentMode === "reference");
-    
+    const shouldUpdateDOM =
+      ModeManager.currentMode === "target" ||
+      ModeManager.currentMode === "reference";
+
     if (shouldUpdateDOM) {
       const element = document.querySelector(`[data-field-id="${fieldId}"]`);
       if (element && !element.hasAttribute("contenteditable")) {
         const numericValue = window.TEUI.parseNumeric(value);
         if (!isNaN(numericValue)) {
           // ✅ USE GLOBAL: window.TEUI.formatNumber() from StateManager
-          const formattedValue = window.TEUI.formatNumber(numericValue, formatType);
+          const formattedValue = window.TEUI.formatNumber(
+            numericValue,
+            formatType,
+          );
           element.textContent = formattedValue;
         }
       }
@@ -844,7 +867,7 @@ window.TEUI.SectionModules.sectXX = (function () {
    */
   function calculateTargetModel() {
     console.log("[SXX] Calculating Target model");
-    
+
     // Temporarily switch to target mode for calculations
     const originalMode = ModeManager.currentMode;
     ModeManager.currentMode = "target";
@@ -856,7 +879,6 @@ window.TEUI.SectionModules.sectXX = (function () {
       // const externalValue = getGlobalNumericValue("d_20"); // Climate data
       // const result = userInput * externalValue;
       // setFieldValue("f_xx", result);
-
     } finally {
       ModeManager.currentMode = originalMode;
     }
@@ -868,7 +890,7 @@ window.TEUI.SectionModules.sectXX = (function () {
    */
   function calculateReferenceModel() {
     console.log("[SXX] Calculating Reference model");
-    
+
     // Temporarily switch to reference mode for calculations
     const originalMode = ModeManager.currentMode;
     ModeManager.currentMode = "reference";
@@ -880,7 +902,6 @@ window.TEUI.SectionModules.sectXX = (function () {
       // const externalValue = getGlobalNumericValue("d_20"); // Reads ref_d_20 automatically
       // const result = userInput * externalValue;
       // setFieldValue("f_xx", result);
-
     } finally {
       ModeManager.currentMode = originalMode;
     }
@@ -892,11 +913,11 @@ window.TEUI.SectionModules.sectXX = (function () {
    */
   function calculateAll() {
     console.log("[SXX] Starting complete dual-engine calculations");
-    
+
     // ✅ DUAL-ENGINE PATTERN: Always run both Target and Reference calculations
     calculateTargetModel();
     calculateReferenceModel();
-    
+
     console.log("[SXX] ✅ Complete dual-engine calculations finished");
   }
 
@@ -910,7 +931,11 @@ window.TEUI.SectionModules.sectXX = (function () {
    */
   function injectHeaderControls() {
     const sectionHeader = document.querySelector("#sectionXX .section-header"); // Replace with actual section ID
-    if (!sectionHeader || sectionHeader.querySelector(".local-controls-container")) return;
+    if (
+      !sectionHeader ||
+      sectionHeader.querySelector(".local-controls-container")
+    )
+      return;
 
     // Create controls container with CSS class
     const controlsContainer = document.createElement("div");
@@ -940,12 +965,12 @@ window.TEUI.SectionModules.sectXX = (function () {
     // Toggle switch with CSS classes
     const toggleSwitch = document.createElement("div");
     toggleSwitch.className = "form-check form-switch";
-    
+
     const toggleInput = document.createElement("input");
     toggleInput.className = "form-check-input";
     toggleInput.type = "checkbox";
     toggleInput.id = "modeToggle";
-    
+
     const toggleLabel = document.createElement("label");
     toggleLabel.className = "form-check-label";
     toggleLabel.setAttribute("for", "modeToggle");
@@ -1010,33 +1035,33 @@ window.TEUI.SectionModules.sectXX = (function () {
   function handleConditionalGhosting(selectedValue) {
     // Example: Ghost certain fields based on dropdown selection
     // Replace with your section's specific ghosting logic
-    
+
     // Example pattern from Section07:
     // const isUserDefined = selectedValue === "User Defined";
     // setFieldGhosted("field_id_1", !isUserDefined);
     // setFieldGhosted("field_id_2", !isUserDefined);
-    
+
     // Example pattern from Section13:
     // const isHeatpump = selectedValue === "Heatpump";
     // const isGas = selectedValue === "Gas";
     // setFieldGhosted("gas_field", !isGas);
     // setFieldGhosted("heatpump_field", !isHeatpump);
-    
+
     console.log(`[SXX] Conditional ghosting applied for: ${selectedValue}`);
   }
 
   //==========================================================================
   // ELEGANT INPUT FORMATTING (Uses existing CSS classes from 4011-styles.css)
   //==========================================================================
-  
+
   /**
    * ✅ NO NEW FUNCTIONS NEEDED: Elegant input formatting is handled by existing CSS classes:
-   * 
+   *
    * FROM 4011-styles.css (lines 1985-2011):
    * - .user-input:not(.user-modified) → Grey italic for defaults
-   * - .user-input.user-modified → Blue bold for user inputs  
+   * - .user-input.user-modified → Blue bold for user inputs
    * - .user-input.editing-intent → Blue underline while editing
-   * 
+   *
    * The event handlers below automatically apply these classes based on user interaction.
    * No custom formatting functions needed - CSS handles all visual states.
    */
@@ -1054,11 +1079,13 @@ window.TEUI.SectionModules.sectXX = (function () {
     if (!sectionElement) return;
 
     // ✅ CRITICAL: Set up editable field handlers (from Section04 pattern)
-    const editableFields = sectionElement.querySelectorAll(".editable.user-input");
+    const editableFields = sectionElement.querySelectorAll(
+      ".editable.user-input",
+    );
     editableFields.forEach((field) => {
       if (!field.hasEditableListeners) {
         field.setAttribute("contenteditable", "true");
-        
+
         // Add focus styling and original value tracking
         field.addEventListener("focus", function () {
           this.classList.add("editing");
@@ -1075,30 +1102,45 @@ window.TEUI.SectionModules.sectXX = (function () {
 
           // Only update if value has changed
           if (this.dataset.originalValue !== newValue) {
-            console.log(`[SXX] User modified ${fieldId}: ${this.dataset.originalValue} → ${newValue}`);
-            
+            console.log(
+              `[SXX] User modified ${fieldId}: ${this.dataset.originalValue} → ${newValue}`,
+            );
+
             // Parse and validate
             const numericValue = window.TEUI.parseNumeric(newValue, NaN);
             if (!isNaN(numericValue)) {
               // Format and store
-              const formattedValue = window.TEUI.formatNumber(numericValue, "number-2dp-comma");
+              const formattedValue = window.TEUI.formatNumber(
+                numericValue,
+                "number-2dp-comma",
+              );
               this.textContent = formattedValue;
-              
+
               // ✅ ELEGANT FORMATTING: Mark as user-modified for blue styling
               this.classList.add("user-modified");
-              
+
               // ✅ CRITICAL: Use ModeManager for dual-state aware storage
-              ModeManager.setValue(fieldId, numericValue.toString(), "user-modified");
-              
+              ModeManager.setValue(
+                fieldId,
+                numericValue.toString(),
+                "user-modified",
+              );
+
               // ✅ CRITICAL: Recalculate and update display
               calculateAll();
               ModeManager.updateCalculatedDisplayValues();
             } else {
               // Revert to previous value
               const previousValue = ModeManager.getValue(fieldId) || "0";
-              const prevNumericValue = window.TEUI.parseNumeric(previousValue, 0);
-              this.textContent = window.TEUI.formatNumber(prevNumericValue, "number-2dp-comma");
-              
+              const prevNumericValue = window.TEUI.parseNumeric(
+                previousValue,
+                0,
+              );
+              this.textContent = window.TEUI.formatNumber(
+                prevNumericValue,
+                "number-2dp-comma",
+              );
+
               // ✅ ELEGANT FORMATTING: Remove user-modified for default grey styling
               this.classList.remove("user-modified");
             }
@@ -1117,7 +1159,7 @@ window.TEUI.SectionModules.sectXX = (function () {
             this.blur(); // Remove focus to trigger the blur event
           }
         });
-        
+
         field.hasEditableListeners = true;
       }
     });
@@ -1131,27 +1173,29 @@ window.TEUI.SectionModules.sectXX = (function () {
           if (!fieldId) return;
 
           console.log(`[SXX] Dropdown changed ${fieldId}: ${this.value}`);
-          
+
           // ✅ ELEGANT FORMATTING: Mark dropdown as user-modified
           this.classList.add("user-modified");
-          
+
           // ✅ CRITICAL: Use ModeManager for dual-state aware storage
           ModeManager.setValue(fieldId, this.value, "user-modified");
-          
+
           // ✅ GHOSTING: Apply conditional formatting based on selection
           handleConditionalGhosting(this.value);
-          
+
           // ✅ CRITICAL: Recalculate and update display
           calculateAll();
           ModeManager.updateCalculatedDisplayValues();
         });
-        
+
         dropdown.hasDropdownListeners = true;
       }
     });
 
     // ✅ CRITICAL: Set up slider handlers
-    const sliders = sectionElement.querySelectorAll('input[type="range"][data-field-id]');
+    const sliders = sectionElement.querySelectorAll(
+      'input[type="range"][data-field-id]',
+    );
     sliders.forEach((slider) => {
       if (!slider.hasSliderListeners) {
         slider.addEventListener("input", function (e) {
@@ -1159,21 +1203,21 @@ window.TEUI.SectionModules.sectXX = (function () {
           if (!fieldId) return;
 
           console.log(`[SXX] Slider changed ${fieldId}: ${this.value}`);
-          
+
           // Update display if present
           const display = this.nextElementSibling;
           if (display) {
             display.textContent = this.value;
           }
-          
+
           // ✅ CRITICAL: Use ModeManager for dual-state aware storage
           ModeManager.setValue(fieldId, this.value, "user-modified");
-          
+
           // ✅ CRITICAL: Recalculate and update display
           calculateAll();
           ModeManager.updateCalculatedDisplayValues();
         });
-        
+
         slider.hasSliderListeners = true;
       }
     });
@@ -1190,23 +1234,28 @@ window.TEUI.SectionModules.sectXX = (function () {
       // Based on S14 proven pattern (lines 1358-1404) and S15 pattern (lines 2139-2268)
       const dependencies = [
         // Building Geometry (Independent Models: different building sizes)
-        "h_15", "ref_h_15",     // Conditioned area
-        
+        "h_15",
+        "ref_h_15", // Conditioned area
+
         // Climate Data (Independent Models: different locations/climates)
-        "d_20", "ref_d_20",     // Heating degree days
-        "d_21", "ref_d_21",     // Cooling degree days
-        
+        "d_20",
+        "ref_d_20", // Heating degree days
+        "d_21",
+        "ref_d_21", // Cooling degree days
+
         // Location Data (Independent Models: different provinces/years)
-        "d_19", "ref_d_19",     // Province (affects emission factors)
-        "h_12", "ref_h_12",     // Reporting year (affects emission factors)
-        
+        "d_19",
+        "ref_d_19", // Province (affects emission factors)
+        "h_12",
+        "ref_h_12", // Reporting year (affects emission factors)
+
         // Cross-Section Dependencies (Independent Models: different performance)
         // Add your section's specific external dependencies here as pairs:
         // "field_id", "ref_field_id",   // Description of dependency
-        
+
         // Example patterns from S14/S15:
         // "k_71", "ref_k_71",     // S09 Internal gains
-        // "i_80", "ref_i_80",     // S10 Utilization factors  
+        // "i_80", "ref_i_80",     // S10 Utilization factors
         // "i_98", "ref_i_98",     // S11 Envelope losses
         // "m_121", "ref_m_121",   // S13 Ventilation loads
       ];
@@ -1217,10 +1266,14 @@ window.TEUI.SectionModules.sectXX = (function () {
         window.TEUI.StateManager.addListener(fieldId, calculateAndRefresh);
       });
 
-      console.log(`[SXX] Added ${uniqueDependencies.length} dual-engine dependency listeners`);
+      console.log(
+        `[SXX] Added ${uniqueDependencies.length} dual-engine dependency listeners`,
+      );
     }
 
-    console.log("SXX: Event handlers initialized with proper dual-state handling");
+    console.log(
+      "SXX: Event handlers initialized with proper dual-state handling",
+    );
   }
 
   /**
@@ -1229,33 +1282,34 @@ window.TEUI.SectionModules.sectXX = (function () {
    * ✅ PATTERN A: Complete dual-state initialization
    */
   function onSectionRendered() {
-    console.log("SXX: Section rendered - initializing Pattern A dual-state module");
-    
+    console.log(
+      "SXX: Section rendered - initializing Pattern A dual-state module",
+    );
+
     // ✅ CRITICAL: Initialize dual-state architecture first
     ModeManager.initialize();
-    
+
     // ✅ ADD: Header controls for mode switching
     injectHeaderControls();
-    
+
     // ✅ ELEGANT FORMATTING: Handled automatically by CSS classes and event handlers
-    
+
     // Initialize event handlers
     initializeEventHandlers();
-    
+
     // ✅ CRITICAL: Run initial calculations for both engines
     calculateAll();
-    
+
     // ✅ CRITICAL: Update DOM with calculated values
     ModeManager.updateCalculatedDisplayValues();
-    
+
     // ✅ CRITICAL: Refresh UI to show current mode values
     ModeManager.refreshUI();
-    
+
     // ✅ ELEGANT FORMATTING: CSS classes handle visual states automatically
-    
+
     console.log("SXX: Pattern A dual-state initialization complete");
   }
-
 
   // Expose ModeManager globally for cross-section integration
   window.TEUI.sectXX = window.TEUI.sectXX || {};
@@ -1264,33 +1318,33 @@ window.TEUI.SectionModules.sectXX = (function () {
   //==========================================================================
   // PUBLIC API (MINIMAL INTERFACE)
   //==========================================================================
-  
+
   return {
     // Standard section interface - REQUIRED
     getFields: getFields,
     getDropdownOptions: getDropdownOptions,
     getLayout: getLayout,
-    
+
     // Initialization - REQUIRED
     onSectionRendered: onSectionRendered,
     initializeEventHandlers: initializeEventHandlers,
-    
+
     // Calculations - REQUIRED
     calculateAll: calculateAll,
-    
+
     // Dual-state management - REQUIRED
     ModeManager: ModeManager,
-    
+
     // Individual calculation engines - OPTIONAL (for debugging)
     calculateTargetModel: calculateTargetModel,
     calculateReferenceModel: calculateReferenceModel,
-    
+
     // Helper functions - OPTIONAL (for cross-section use)
     getGlobalNumericValue: getGlobalNumericValue,
     getGlobalStringValue: getGlobalStringValue,
     setFieldValue: setFieldValue,
     getFieldDefault: getFieldDefault,
-    
+
     // Ghosting functions - OPTIONAL (for advanced sections)
     setFieldGhosted: setFieldGhosted,
     handleConditionalGhosting: handleConditionalGhosting,
