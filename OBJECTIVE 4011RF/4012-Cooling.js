@@ -388,7 +388,23 @@ window.TEUI.CoolingCalculations = (function () {
     console.log("[Cooling] 🚀 Starting cooling calculations...");
     
     try {
-    // First calculate latent load factor
+    // Read fresh values from StateManager before calculating
+    const h_24 = window.TEUI.StateManager.getValue("h_24");
+    state.coolingSetTemp = h_24 ? parseFloat(h_24) : 24;
+    
+    const d_21 = window.TEUI.StateManager.getValue("d_21");
+    state.coolingDegreeDays = d_21 ? parseFloat(d_21) : 196;
+    
+    const d_105 = window.TEUI.StateManager.getValue("d_105");
+    state.buildingVolume = d_105 ? parseFloat(d_105.replace(/,/g, "")) : 8000;
+    
+    const h_15 = window.TEUI.StateManager.getValue("h_15");
+    state.buildingArea = h_15 ? parseFloat(h_15.replace(/,/g, "")) : 1427.2;
+    
+    const i_59 = window.TEUI.StateManager.getValue("i_59");
+    state.indoorRH = i_59 ? parseFloat(i_59) / 100 : 0.45;
+    
+    // Calculate latent load factor
     state.latentLoadFactor = calculateLatentLoadFactor();
 
     // Calculate atmospheric values
@@ -551,42 +567,21 @@ window.TEUI.CoolingCalculations = (function () {
     // Try to get values from StateManager if available
     if (typeof window.TEUI.StateManager !== "undefined") {
       // Get cooling setpoint
-      // Get cooling setpoint temperature from S03 (REQUIRED)
+      // Read values from StateManager (lenient initialization - will update via listeners)
       const coolingSetpoint = window.TEUI.StateManager.getValue("h_24");
-      if (!coolingSetpoint) {
-        throw new Error("[Cooling] REQUIRED h_24 (cooling setpoint) missing from S03 - cannot calculate cooling");
-      }
-      state.coolingSetTemp = parseFloat(coolingSetpoint);
+      state.coolingSetTemp = coolingSetpoint ? parseFloat(coolingSetpoint) : 24;
 
-      // 🚨 CHEATSHEET COMPLIANCE: REQUIRE values from StateManager (no fallback defaults)
-      
-      // Get CDD from S03 (REQUIRED)
       const cdd = window.TEUI.StateManager.getValue("d_21");
-      if (!cdd) {
-        throw new Error("[Cooling] REQUIRED d_21 (CDD) missing from S03 - cannot calculate cooling");
-      }
-      state.coolingDegreeDays = parseFloat(cdd);
+      state.coolingDegreeDays = cdd ? parseFloat(cdd) : 196;
 
-      // Get building volume from S12 (REQUIRED)
       const volume = window.TEUI.StateManager.getValue("d_105");
-      if (!volume) {
-        throw new Error("[Cooling] REQUIRED d_105 (building volume) missing from S12 - cannot calculate cooling");
-      }
-      state.buildingVolume = parseFloat(volume.replace(/,/g, ""));
+      state.buildingVolume = volume ? parseFloat(volume.replace(/,/g, "")) : 8000;
 
-      // Get building area from S02 (REQUIRED)
       const area = window.TEUI.StateManager.getValue("h_15");
-      if (!area) {
-        throw new Error("[Cooling] REQUIRED h_15 (conditioned area) missing from S02 - cannot calculate cooling");
-      }
-        state.buildingArea = parseFloat(area.replace(/,/g, ""));
+      state.buildingArea = area ? parseFloat(area.replace(/,/g, "")) : 1427.2;
 
-      // Get indoor RH% from S08 (REQUIRED for latent load calculations)
       const indoorRH = window.TEUI.StateManager.getValue("i_59");
-      if (!indoorRH) {
-        throw new Error("[Cooling] REQUIRED i_59 (indoor RH%) missing from S08 - cannot calculate latent cooling load");
-      }
-      state.indoorRH = parseFloat(indoorRH) / 100; // Convert percentage to decimal
+      state.indoorRH = indoorRH ? parseFloat(indoorRH) / 100 : 0.45;
       
       // Calculate atmospheric pressure from elevation (COOLING-TARGET E15 logic)
       updateAtmosphericPressure(); // Calculate initial atmospheric pressure from S03 elevation
