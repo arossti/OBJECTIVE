@@ -214,17 +214,17 @@ window.TEUI.CoolingCalculations = (function () {
     const T_outdoor_night = state.nightTimeTemp; // °C
     const coolingDays = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("m_19")) || 120;
     
-    // Calculate Temperature Difference
-    const tempDiff = T_outdoor_night - T_indoor; // °C or K difference
+    // Excel A16: Temp Diff = A8 - A3 (Indoor - Outdoor)
+    const tempDiff = T_indoor - T_outdoor_night; // Match Excel A16 formula
     
-    // Calculate Sensible Power (Watts) - Based on Excel A55 / A31
+    // Excel A31: Q̇ = ṁ * cₚ * ΔT (Heat Removal Power in Watts)
     const sensiblePowerWatts = massFlowRateKgS * Cp * tempDiff;
     
-    // Determine potential SENSIBLE free cooling power
+    // Free cooling only works when indoor is warmer than outdoor (tempDiff > 0)
     let sensibleCoolingPowerWatts = 0;
-    if (tempDiff < 0) {
-      // Only possible if outdoor air is cooler
-      sensibleCoolingPowerWatts = Math.abs(sensiblePowerWatts);
+    if (tempDiff > 0) {
+      // Indoor warmer than outdoor = cooling potential exists
+      sensibleCoolingPowerWatts = sensiblePowerWatts; // Use positive value directly
     }
     
     // Convert Sensible Power to Daily Sensible Energy (kWh/day) - Based on Excel A33

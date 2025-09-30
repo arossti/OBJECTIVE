@@ -2209,6 +2209,11 @@ window.TEUI.SectionModules.sect13 = (function () {
       calculateAll();
       ModeManager.updateCalculatedDisplayValues();
     });
+
+    // Listen for Cooling.js results to trigger S13 recalculations
+    sm.addListener("cooling_latentLoadFactor", calculateAndRefresh); // i_122 affects D122/D123
+    sm.addListener("cooling_h_124", calculateAndRefresh); // Free cooling capacity affects H124, D124
+    sm.addListener("cooling_m_124", calculateAndRefresh); // Days active cooling affects M124
   }
 
   /**
