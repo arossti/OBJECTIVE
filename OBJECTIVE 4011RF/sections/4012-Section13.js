@@ -120,6 +120,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       if (ModeManager.currentMode === "reference") {
         ModeManager.refreshUI();
         calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
       }
     },
     saveState: function () {
@@ -242,10 +243,11 @@ window.TEUI.SectionModules.sect13 = (function () {
         let valueToDisplay;
 
         if (this.currentMode === "reference") {
-          // In Reference mode, try to show ref_ values, fallback to regular values
-          valueToDisplay =
-            window.TEUI.StateManager.getValue(`ref_${fieldId}`) ||
-            window.TEUI.StateManager.getValue(fieldId);
+          // STRICT MODE: Reference shows ONLY ref_ values (no Target contamination per CHEATSHEET Phase 6)
+          valueToDisplay = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
+          if (valueToDisplay === null || valueToDisplay === undefined) {
+            valueToDisplay = "0"; // Show 0 if Reference not calculated yet, NEVER Target value
+          }
         } else {
           // In Target mode, show regular values
           valueToDisplay = window.TEUI.StateManager.getValue(fieldId);
@@ -296,6 +298,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       this.refreshUI();
       this.updateConditionalUI();
       calculateAll();
+      this.updateCalculatedDisplayValues();
     },
     getCurrentState: function () {
       return this.currentMode === "target" ? TargetState : ReferenceState;
@@ -2103,6 +2106,7 @@ window.TEUI.SectionModules.sect13 = (function () {
 
         // This ensures proper cooling context is created and passed
         calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
       }
     }
   }
@@ -2158,11 +2162,15 @@ window.TEUI.SectionModules.sect13 = (function () {
 
         if (fieldId === "j_115") {
           calculateAll(); // Keep this trigger for AFUE changes
+          ModeManager.updateCalculatedDisplayValues();
         }
         if (fieldId === "j_116") {
+          calculateAll();
+          ModeManager.updateCalculatedDisplayValues();
         }
         if (fieldId === "l_118") {
           calculateAll();
+          ModeManager.updateCalculatedDisplayValues();
         }
         if (fieldId === "d_119") {
           calculateAll();
@@ -2404,15 +2412,19 @@ window.TEUI.SectionModules.sect13 = (function () {
     // Listen for Reference climate data changes to trigger recalculation
     sm.addListener("ref_d_20", (newValue) => {
       calculateAll();
+      ModeManager.updateCalculatedDisplayValues();
     });
     sm.addListener("ref_d_21", (newValue) => {
       calculateAll();
+      ModeManager.updateCalculatedDisplayValues();
     });
     sm.addListener("ref_d_22", (newValue) => {
       calculateAll();
+      ModeManager.updateCalculatedDisplayValues();
     });
     sm.addListener("ref_h_22", (newValue) => {
       calculateAll();
+      ModeManager.updateCalculatedDisplayValues();
     });
   }
 
@@ -3653,5 +3665,6 @@ window.TEUI.SectionModules.sect13 = (function () {
 window.TEUI.sect13.calculateAll = function () {
   if (window.TEUI.SectionModules.sect13) {
     window.TEUI.SectionModules.sect13.calculateAll();
+    window.TEUI.SectionModules.sect13.ModeManager.updateCalculatedDisplayValues();
   }
 };
