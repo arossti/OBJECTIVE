@@ -2628,6 +2628,50 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /**
+   * Calculate CED Unmitigated (d_129) - Excel: K71+K79+K98+K104+K103+D122
+   * Moved from Cooling.js - needs D122 from S13
+   */
+  function calculateCEDUnmitigated(isReferenceCalculation = false) {
+    // Read from appropriate state based on mode
+    const k71 = getGlobalNumericValue(isReferenceCalculation ? "ref_k_71" : "k_71");
+    const k79 = getGlobalNumericValue(isReferenceCalculation ? "ref_k_79" : "k_79");
+    const k98 = getGlobalNumericValue(isReferenceCalculation ? "ref_k_98" : "k_98");
+    const k104 = getGlobalNumericValue(isReferenceCalculation ? "ref_k_104" : "k_104");
+    const k103 = getGlobalNumericValue(isReferenceCalculation ? "ref_k_103" : "k_103");
+    const d122 = window.TEUI.parseNumeric(getFieldValue("d_122")) || 0; // From S13's own calculation
+    
+    // Excel formula: D129 = K71+K79+K98+K104+K103+D122
+    const cedUnmitigated = k71 + k79 + k98 + k104 + k103 + d122;
+    
+    // Only update DOM for Target calculations
+    if (!isReferenceCalculation) {
+      setFieldValue("d_129", cedUnmitigated, "number-2dp-comma");
+    }
+    
+    return { d_129: cedUnmitigated };
+  }
+
+  /**
+   * Calculate CED Mitigated (m_129) - Excel: MAX(0, D129 - H124 - D123)
+   * Moved from Cooling.js - needs D123 from S13
+   */
+  function calculateCEDMitigated(isReferenceCalculation = false) {
+    const d129 = window.TEUI.parseNumeric(getFieldValue("d_129")) || 0;
+    const h124 = window.TEUI.parseNumeric(getFieldValue("h_124")) || 0;
+    const d123 = window.TEUI.parseNumeric(getFieldValue("d_123")) || 0;
+    
+    // Excel formula: M129 = MAX(0, D129 - H124 - D123)
+    const cedMitigated = Math.max(0, d129 - h124 - d123);
+    
+    // Only update DOM for Target calculations
+    if (!isReferenceCalculation) {
+      setFieldValue("m_129", cedMitigated, "number-2dp-comma");
+    }
+    
+    return { m_129: cedMitigated };
+  }
+
+  /**
    * Calculate free cooling capacity and related metrics
    */
   function calculateFreeCooling(
@@ -2782,38 +2826,28 @@ window.TEUI.SectionModules.sect13 = (function () {
       const heatingResults = calculateHeatingSystem(copResults, tedValueRef);
       const ventilationRatesResults = calculateVentilationRates(true);
       const ventilationEnergyResults = calculateVentilationEnergy(true);
-      // 🔄 COOLING.JS INTEGRATION: Read cooling ventilation from StateManager
-      const coolingVentilationResults = {
-        d_122:
-          window.TEUI.parseNumeric(
-            window.TEUI.StateManager.getValue("cooling_d_122"),
-          ) || 0,
-        d_123:
-          window.TEUI.parseNumeric(
-            window.TEUI.StateManager.getValue("cooling_d_123"),
-          ) || 0,
-        i_122:
-          window.TEUI.parseNumeric(
-            window.TEUI.StateManager.getValue("cooling_latentLoadFactor"),
-          ) || 0,
-      };
+      
+      // Cooling season ventilation (D122/D123) - S13 calculates these
+      const coolingVentilationResults = calculateCoolingVentilation(true);
+      
+      // CED calculations (D129/M129) - now in S13, after D122 exists
+      const unmitigatedResults = calculateCEDUnmitigated(true);
+      
+      // Free cooling (H124) - needs D129
       const freeCoolingResults = {
         h_124: calculateFreeCooling(true),
       };
+      
+      // Cooling system (D117, L114, L116) - needs M129
+      const mitigatedResults = calculateCEDMitigated(true);
       const coolingResults = calculateCoolingSystem(true);
-      // 🔄 COOLING.JS INTEGRATION: Read m_129 from Cooling.js
-      const mitigatedResults = {
-        m_129:
-          window.TEUI.parseNumeric(
-            window.TEUI.StateManager.getValue("m_129"),
-          ) || 0,
-      };
 
       // Store Reference Model results with ref_ prefix for downstream sections
       storeReferenceResults(
         copResults,
         heatingResults,
         coolingResults,
+        unmitigatedResults,
         mitigatedResults,
         ventilationRatesResults,
         ventilationEnergyResults,
@@ -2849,32 +2883,21 @@ window.TEUI.SectionModules.sect13 = (function () {
       const heatingResults = calculateHeatingSystem(copResults, tedValue);
       const ventilationRatesResults = calculateVentilationRates(false);
       const ventilationEnergyResults = calculateVentilationEnergy(false);
-      // 🔄 COOLING.JS INTEGRATION: Read cooling ventilation from StateManager
-      const coolingVentilationResults = {
-        d_122:
-          window.TEUI.parseNumeric(
-            window.TEUI.StateManager.getValue("cooling_d_122"),
-          ) || 0,
-        d_123:
-          window.TEUI.parseNumeric(
-            window.TEUI.StateManager.getValue("cooling_d_123"),
-          ) || 0,
-        i_122:
-          window.TEUI.parseNumeric(
-            window.TEUI.StateManager.getValue("cooling_latentLoadFactor"),
-          ) || 0,
-      };
+      
+      // Cooling season ventilation (D122/D123) - S13 calculates these
+      const coolingVentilationResults = calculateCoolingVentilation(false);
+      
+      // CED calculations (D129/M129) - now in S13, after D122 exists
+      const unmitigatedResults = calculateCEDUnmitigated(false);
+      
+      // Free cooling (H124) - needs D129
       const freeCoolingResults = {
         h_124: calculateFreeCooling(false),
       };
+      
+      // Cooling system (D117, L114, L116) - needs M129
+      const mitigatedResults = calculateCEDMitigated(false);
       const coolingResults = calculateCoolingSystem(false);
-      // 🔄 COOLING.JS INTEGRATION: Read m_129 from Cooling.js
-      const mitigatedResults = {
-        m_129:
-          window.TEUI.parseNumeric(
-            window.TEUI.StateManager.getValue("m_129"),
-          ) || 0,
-      };
 
       // Update DOM with Target calculation results
       updateTargetModelDOMValues(
@@ -2885,6 +2908,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         ventilationEnergyResults,
         coolingVentilationResults,
         freeCoolingResults,
+        unmitigatedResults,
         mitigatedResults,
       );
 
@@ -2908,6 +2932,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     ventilationEnergyResults,
     coolingVentilationResults,
     freeCoolingResults,
+    unmitigatedResults,
     mitigatedResults,
   ) {
     // COP Values
@@ -3006,7 +3031,9 @@ window.TEUI.SectionModules.sect13 = (function () {
     if (freeCoolingResults.h_124 !== undefined)
       setFieldValue("h_124", freeCoolingResults.h_124, "number-2dp-comma");
 
-    // Mitigated CED Results
+    // CED Results
+    if (unmitigatedResults.d_129 !== undefined)
+      setFieldValue("d_129", unmitigatedResults.d_129, "number-2dp-comma");
     if (mitigatedResults.m_129 !== undefined)
       setFieldValue("m_129", mitigatedResults.m_129, "number-2dp-comma");
   }
@@ -3019,6 +3046,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     copResults,
     heatingResults,
     coolingResults,
+    unmitigatedResults,
     mitigatedResults,
     ventilationRatesResults,
     ventilationEnergyResults,
@@ -3032,6 +3060,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       ...copResults,
       ...heatingResults,
       ...coolingResults,
+      ...unmitigatedResults,
       ...mitigatedResults,
       ...ventilationRatesResults,
       ...ventilationEnergyResults,

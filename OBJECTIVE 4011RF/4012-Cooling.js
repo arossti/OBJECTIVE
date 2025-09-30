@@ -94,10 +94,6 @@ window.TEUI.CoolingCalculations = (function () {
     freeCoolingLimit: 0, // A33 - Free cooling capacity (daily kWh)
     daysActiveCooling: 0, // E55 - Days active cooling required
     
-    // S14 integration calculations (moved from S14/S13)
-    cedUnmitigated: 0, // d_129 - CED Cooling Unmitigated
-    cedMitigated: 0, // m_129 - CED Mitigated
-    
     // Atmospheric calculation properties (from COOLING-TARGET.csv)
     atmPressure: 101325, // E13/E15 - Standard atmospheric pressure, adjusted for elevation
     partialPressure: 0, // Calculated - Partial pressure of water vapor
@@ -354,40 +350,6 @@ window.TEUI.CoolingCalculations = (function () {
   /**
    * Calculate CED Unmitigated (d_129) - Excel: K71+K79+K97+K104+K103+D122
    */
-  function calculateCEDUnmitigated() {
-    // Read the required values from StateManager
-    const k71 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("k_71")) || 0; // S09
-    const k79 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("k_79")) || 0; // S10  
-    const k98 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("k_98")) || 0; // S11
-    const k104 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("k_104")) || 0; // S12
-    const k103 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("k_103")) || 0; // S11
-    const d122 = state.ventilationCoolingIncoming; // Use our calculated d_122
-    
-    // Excel formula: D129 = K71+K79+K97+K104+K103+D122
-    const cedUnmitigated = k71 + k79 + k98 + k104 + k103 + d122;
-    
-    state.cedUnmitigated = cedUnmitigated;
-    console.log(`[Cooling] CED Unmitigated: d_129=${cedUnmitigated} = k71(${k71}) + k79(${k79}) + k98(${k98}) + k104(${k104}) + k103(${k103}) + d122(${d122})`);
-    
-    return cedUnmitigated;
-  }
-
-  /**
-   * Calculate CED Mitigated (m_129) - Excel: MAX(0, D129 - H124 - D123)
-   */
-  function calculateCEDMitigated() {
-    const d129 = state.cedUnmitigated; // Use our calculated d_129
-    const h124 = state.freeCoolingLimit; // Free cooling capacity
-    const d123 = state.ventilationCoolingEnergy; // Cooling season ventilation energy
-    
-    // Excel formula: M129 = MAX(0, D129 - H124 - D123)
-    const cedMitigated = Math.max(0, d129 - h124 - d123);
-    
-    state.cedMitigated = cedMitigated;
-    console.log(`[Cooling] CED Mitigated: m_129=${cedMitigated} = MAX(0, d129(${d129}) - h124(${h124}) - d123(${d123}))`);
-    
-    return cedMitigated;
-  }
 
   /**
    * Calculate wet bulb temperature from dry bulb and RH
@@ -445,8 +407,6 @@ window.TEUI.CoolingCalculations = (function () {
     calculateDaysActiveCooling();
 
     // Calculate CED values (moved from S14/S13 for tight cooling integration)
-    calculateCEDUnmitigated(); // d_129
-    calculateCEDMitigated(); // m_129
 
     // 📊 STATEMANAGER: Publish results like any other section
     updateStateManager();
@@ -484,10 +444,6 @@ window.TEUI.CoolingCalculations = (function () {
     sm.setValue("cooling_humidityRatio", state.humidityRatioDifference.toString(), "calculated");         // Humidity ratio difference
     
     // Cross-section outputs for S14 (moved from S14/S13 for tight cooling integration)
-    sm.setValue("cooling_d_129", state.cedUnmitigated.toString(), "calculated");  // CED Unmitigated for S14
-    sm.setValue("cooling_m_129", state.cedMitigated.toString(), "calculated");   // CED Mitigated for S14
-    
-    console.log(`[Cooling] Published to StateManager: m_124=${state.daysActiveCooling}, h_124=${state.freeCoolingLimit}, d_124=${(state.freeCoolingLimit / state.coolingLoad * 100).toFixed(1)}%`);
   }
 
   /**
