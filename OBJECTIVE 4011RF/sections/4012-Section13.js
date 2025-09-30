@@ -2125,8 +2125,22 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     // Special handling for cooling system changes (d_116)
     if (fieldId === "d_116") {
-      // Re-apply ghosting when cooling system changes
       const currentHeatingSystem = ModeManager.getValue("d_113") || "Heatpump";
+      
+      // When switching TO "Cooling" from "No Cooling", restore j_116 default
+      if (newValue === "Cooling" && currentHeatingSystem !== "Heatpump") {
+        const currentJ116 = ModeManager.getValue("j_116");
+        if (!currentJ116 || currentJ116 === "0") {
+          const defaultJ116 = getFieldDefault("j_116") || "2.66";
+          ModeManager.setValue("j_116", defaultJ116, "system-update");
+          const j116Element = document.querySelector('[data-field-id="j_116"]');
+          if (j116Element && j116Element.getAttribute("contenteditable") === "true") {
+            j116Element.textContent = window.TEUI.formatNumber(parseFloat(defaultJ116), "number-2dp");
+          }
+        }
+      }
+      
+      // Re-apply ghosting when cooling system changes
       handleHeatingSystemChangeForGhosting(currentHeatingSystem);
     }
 
