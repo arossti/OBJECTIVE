@@ -744,20 +744,33 @@ window.TEUI.SectionModules.sect13 = (function () {
     context.calculatedPotentialFreeCooling = null; // Will be calculated by calculateFreeCoolingLimit
     context.wetBulbTemperature = null; // Will be calculated by calculateWetBulbTemperature
 
-    // ✅ MODE-AWARE: Read upstream dependencies with correct prefix for Reference mode
+    // MODE-AWARE: Read upstream dependencies with correct prefix for Reference mode
     const prefix = isReference ? "ref_" : "";
-    context.coolingLoad =
-      window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue(`${prefix}l_128`)) ||
-      0;
-    context.coolingDegreeDays =
-      window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue(`${prefix}d_21`)) ||
-      196;
-    context.buildingVolume =
-      window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue(`${prefix}d_105`)) ||
-      8000;
-    context.buildingArea =
-      window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue(`${prefix}h_15`)) ||
-      1427.2;
+    
+    // STRICT MODE: Error on missing required values (no fallbacks per CHEATSHEET)
+    const l_128_raw = window.TEUI.StateManager?.getValue(`${prefix}l_128`);
+    if (!l_128_raw && l_128_raw !== 0) {
+      throw new Error(`[S13] REQUIRED ${prefix}l_128 missing - cannot create cooling context`);
+    }
+    context.coolingLoad = window.TEUI.parseNumeric(l_128_raw);
+    
+    const d_21_raw = window.TEUI.StateManager?.getValue(`${prefix}d_21`);
+    if (!d_21_raw && d_21_raw !== 0) {
+      throw new Error(`[S13] REQUIRED ${prefix}d_21 (CDD) missing from S03 - cannot create cooling context`);
+    }
+    context.coolingDegreeDays = window.TEUI.parseNumeric(d_21_raw);
+    
+    const d_105_raw = window.TEUI.StateManager?.getValue(`${prefix}d_105`);
+    if (!d_105_raw && d_105_raw !== 0) {
+      throw new Error(`[S13] REQUIRED ${prefix}d_105 (volume) missing from S12 - cannot create cooling context`);
+    }
+    context.buildingVolume = window.TEUI.parseNumeric(d_105_raw);
+    
+    const h_15_raw = window.TEUI.StateManager?.getValue(`${prefix}h_15`);
+    if (!h_15_raw && h_15_raw !== 0) {
+      throw new Error(`[S13] REQUIRED ${prefix}h_15 (area) missing from S02 - cannot create cooling context`);
+    }
+    context.buildingArea = window.TEUI.parseNumeric(h_15_raw);
 
     // ... all other properties remain cloned from the old global state for now ...
     return context;
@@ -796,110 +809,6 @@ window.TEUI.SectionModules.sect13 = (function () {
 
   /** [Cooling Calc] Calculate free cooling capacity limit (Potential Annual Sensible kWh) */
   // 🚫 COOLING.JS TRANSITION: Function moved to 4012-Cooling.js module
-  // function calculateFreeCoolingLimit(coolingContext) {
-  //   // Add recursion protection
-  //   if (window.TEUI.sect13.calculatingFreeCooling) {
-  //     return coolingContext.freeCoolingLimit || 0; // Return cached value if already calculating
-  //   }
-  //   window.TEUI.sect13.calculatingFreeCooling = true;
-
-  //   let potentialLimit = 0; // Initialize potentialLimit
-  //   try {
-  //     // --- Calculation based on SENSIBLE Component Only (Excel A33 * M19) ---
-
-  //     // 1. Get necessary values
-  //     const ventFlowRateM3hr =
-  //       window.TEUI.parseNumeric(getFieldValue("h_120")) || 0;
-  //     const ventFlowRateM3s = ventFlowRateM3hr / 3600;
-  //     const massFlowRateKgS = ventFlowRateM3s * coolingContext.airMass; // kg/s
-
-  //     const Cp = coolingContext.specificHeatCapacity; // J/kg·K
-  //     const T_indoor = coolingContext.coolingSetTemp; // °C
-  //     const T_outdoor_night = coolingContext.nightTimeTemp; // °C
-  //     const coolingDays =
-  //       window.TEUI.parseNumeric(getFieldValue("m_19")) || 120;
-  //
-  //     // 2. Calculate Temperature Difference
-  //     const tempDiff = T_outdoor_night - T_indoor; // °C or K difference
-  //
-  //     // 3. Calculate Sensible Power (Watts) - Based on Excel A55 / A31
-  //     const sensiblePowerWatts = massFlowRateKgS * Cp * tempDiff;
-  //
-  //     // 4. Determine potential SENSIBLE free cooling power
-  //     let sensibleCoolingPowerWatts = 0;
-  //     if (tempDiff < 0) {
-  //       // Only possible if outdoor air is cooler
-  //       // Use the positive magnitude of heat removal power
-  //       sensibleCoolingPowerWatts = Math.abs(sensiblePowerWatts);
-  //     }
-  //
-  //     // 5. Convert Sensible Power to Daily Sensible Energy (kWh/day) - Based on Excel A33
-  //     // Correct Factor: (J/s) * (86400 s/day) / (3.6e6 J/kWh) = 0.024
-  //     const dailySensibleCoolingKWh = sensibleCoolingPowerWatts * 0.024;
-  //
-  //     // 6. Calculate Annual Potential Limit (kWh/yr) - Based on Excel A33 * M19
-  //     potentialLimit = dailySensibleCoolingKWh * coolingDays;
-  //
-  //     // Store this sensible-only potential limit
-  //     coolingContext.calculatedPotentialFreeCooling = potentialLimit;
-  //   } catch (error) {
-  //     console.error(
-  //       "[S13 Error] Error during calculateFreeCoolingLimit:",
-  //       error,
-  //     );
-  //     potentialLimit = 0;
-  //   } finally {
-  //     window.TEUI.sect13.calculatingFreeCooling = false;
-  //   }
-  //   return potentialLimit;
-  // }
-
-
-  /** [Cooling Calc] Calculate days of active cooling required */
-  // 🚫 COOLING.JS TRANSITION: Function moved to 4012-Cooling.js module
-  // function calculateDaysActiveCooling(
-  //   currentFreeCoolingLimit /* h_124 */,
-  //   isReferenceCalculation,
-  //   coolingContext,
-  // ) {
-  //   // ✅ EXCEL PARITY: Use exact Excel formula from COOLING-TARGET.csv line 55
-  //   // Excel: =E52/(E54*24) where E52=(E50-E51), E54=REPORT!M19
-  //
-  //   const d_129 = window.TEUI.parseNumeric(getFieldValue("d_129")) || 0; // E50: Seasonal Cooling Load
-  //   const h_124 = currentFreeCoolingLimit; // E51: Free Cooling Potential
-  //   const m_19 = window.TEUI.parseNumeric(getFieldValue("m_19")) || 120; // E54: Cooling Season Days
-  //
-  //   // Calculate E52: Unmet Cooling Load = E50 - E51
-  //   const unmetCoolingLoad = d_129 - h_124; // E52 = E50 - E51
-  //
-  //   // Calculate E55: Days Active Cooling = E52 / (E54 * 24)
-  //   let daysActiveCooling = 0;
-  //   if (m_19 > 0) {
-  //     daysActiveCooling = unmetCoolingLoad / (m_19 * 24);
-  //   }
-  //
-  //   // ✅ EXCEL COMMENT: "Obviously negative days of free cooling is not possible -
-  //   // the goal here is to get close to zero - anything less than zero is overkill ventilation-wise"
-  //   // So we preserve the raw calculation (can be negative) as per Excel methodology
-  //
-  //
-  //   return daysActiveCooling; // Return exact Excel calculation result
-  // }
-
-
-  /** [Cooling Calc] Calculate wet bulb temperature (Approximation) */
-  // 🚫 COOLING.JS TRANSITION: Function moved to 4012-Cooling.js module
-  // function calculateWetBulbTemperature(coolingContext) {
-  //   // Note: This is an approximation, potentially from COOLING-TARGET.csv E64
-  //   const tdb = coolingContext.nightTimeTemp;
-  //   const rh = coolingContext.coolingSeasonMeanRH * 100;
-  //   const twbSimple =
-  //     tdb - (tdb - (tdb - (100 - rh) / 5)) * (0.1 + 0.9 * (rh / 100));
-  //   const twbCorrected =
-  //     tdb - (tdb - (tdb - (100 - rh) / 5)) * (0.3 + 0.7 * (rh / 100));
-  //   coolingContext.wetBulbTemperature = (twbSimple + twbCorrected) / 2;
-  //   return coolingContext.wetBulbTemperature;
-  // }
 
 
   /** [Cooling Calc] Calculate the intermediate temperature A50 based on Excel logic */
@@ -950,12 +859,24 @@ window.TEUI.SectionModules.sect13 = (function () {
     updateCoolingInputs(coolingContext);
 
     // Read cooling calculations from 4012-Cooling.js via StateManager
-    // TODO: These need ref_ variants for proper Reference mode isolation
-    coolingContext.atmPressure = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_atmosphericPressure")) || 101325;
-    coolingContext.partialPressure = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_partialPressure")) || 0;
-    coolingContext.humidityRatioDifference = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_humidityRatio")) || 0;
+    // STRICT MODE: Error if Cooling.js hasn't provided required values
+    const atmPress = window.TEUI.StateManager.getValue("cooling_atmosphericPressure");
+    if (!atmPress) throw new Error("[S13] REQUIRED cooling_atmosphericPressure missing from Cooling.js");
+    coolingContext.atmPressure = window.TEUI.parseNumeric(atmPress);
+    
+    const partPress = window.TEUI.StateManager.getValue("cooling_partialPressure");
+    if (!partPress && partPress !== 0) throw new Error("[S13] REQUIRED cooling_partialPressure missing from Cooling.js");
+    coolingContext.partialPressure = window.TEUI.parseNumeric(partPress);
+    
+    const humidRatio = window.TEUI.StateManager.getValue("cooling_humidityRatio");
+    if (!humidRatio && humidRatio !== 0) throw new Error("[S13] REQUIRED cooling_humidityRatio missing from Cooling.js");
+    coolingContext.humidityRatioDifference = window.TEUI.parseNumeric(humidRatio);
+    
     coolingContext.latentLoadFactor = calculateLatentLoadFactor(coolingContext);
-    coolingContext.wetBulbTemperature = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_wetBulbTemperature")) || 0;
+    
+    const wetBulb = window.TEUI.StateManager.getValue("cooling_wetBulbTemperature");
+    if (!wetBulb && wetBulb !== 0) throw new Error("[S13] REQUIRED cooling_wetBulbTemperature missing from Cooling.js");
+    coolingContext.wetBulbTemperature = window.TEUI.parseNumeric(wetBulb);
   }
 
   // --- End of Integrated Cooling Logic ---
@@ -3021,8 +2942,12 @@ window.TEUI.SectionModules.sect13 = (function () {
     try {
       // runIntegratedCoolingCalculations();
 
-      // Read h_124 from Cooling.js via StateManager
-      potentialLimit = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_h_124")) || 0;
+      // Read h_124 from Cooling.js via StateManager (STRICT - no fallback)
+      const h_124_raw = window.TEUI.StateManager.getValue("cooling_h_124");
+      if (!h_124_raw && h_124_raw !== 0) {
+        throw new Error("[S13] REQUIRED cooling_h_124 missing from Cooling.js - cannot calculate free cooling");
+      }
+      potentialLimit = window.TEUI.parseNumeric(h_124_raw);
 
       if (setbackValueStr) {
         // const parsedFactor = window.TEUI.parseNumeric(setbackValueStr); // OLD - assumed decimal
@@ -3066,8 +2991,12 @@ window.TEUI.SectionModules.sect13 = (function () {
         }
         setFieldValue("d_124", percentFreeCooling, "percent-0dp");
 
-        // Read m_124 from Cooling.js via StateManager
-        const activeCoolingDays = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_m_124")) || 0;
+        // Read m_124 from Cooling.js via StateManager (STRICT - no fallback)
+        const m_124_raw = window.TEUI.StateManager.getValue("cooling_m_124");
+        if (!m_124_raw && m_124_raw !== 0) {
+          throw new Error("[S13] REQUIRED cooling_m_124 missing from Cooling.js");
+        }
+        const activeCoolingDays = window.TEUI.parseNumeric(m_124_raw);
         setFieldValue("m_124", activeCoolingDays, "number-2dp");
       }
 
@@ -3451,31 +3380,6 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /**
-   * Calculate Mitigated CED (m_129) - MOVED TO COOLING.JS
-   */
-  // 🚫 COOLING.JS TRANSITION: Function moved to 4012-Cooling.js module
-  // function calculateMitigatedCED(
-  //   isReferenceCalculation = false,
-  //   coolingContext,
-  // ) {
-  //   // Use global parser directly
-  //   const d129 = window.TEUI.parseNumeric(getFieldValue("d_129")) || 0;
-  //   const h124 = window.TEUI.parseNumeric(getFieldValue("h_124")) || 0;
-  //   const d123 = window.TEUI.parseNumeric(getFieldValue("d_123")) || 0;
-  //
-  //   let m129_calculated = d129 - h124 - d123;
-  //   const m129 = Math.max(0, m129_calculated); // Clamp to zero
-  //
-  //   // Only update DOM for Target calculations
-  //   if (!isReferenceCalculation) {
-  //     setFieldValue("m_129", m129, "number-2dp-comma");
-  //   }
-  //
-  //   // Return calculated value for Reference engine storage
-  //   return {
-  //     m_129: m129,
-  //   };
-  // }
 
   //==========================================================================
   // SIMPLIFIED REFERENCE MODEL FUNCTIONS (Pattern 2 - Like S14/S15)
