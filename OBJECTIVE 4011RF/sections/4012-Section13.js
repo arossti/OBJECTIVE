@@ -2126,29 +2126,10 @@ window.TEUI.SectionModules.sect13 = (function () {
     // Special handling for cooling system changes (d_116)
     if (fieldId === "d_116") {
       const currentHeatingSystem = ModeManager.getValue("d_113") || "Heatpump";
-      
-      if (newValue === "No Cooling") {
-        // When switching TO "No Cooling", set j_116 to 0
-        ModeManager.setValue("j_116", "0", "system-update");
-        const j116Element = document.querySelector('[data-field-id="j_116"]');
-        if (j116Element) {
-          j116Element.textContent = "0.00";
-        }
-      } else if (newValue === "Cooling" && currentHeatingSystem !== "Heatpump") {
-        // When switching TO "Cooling" (non-Heatpump), restore j_116 default
-        const currentJ116 = ModeManager.getValue("j_116");
-        if (!currentJ116 || currentJ116 === "0") {
-          const defaultJ116 = getFieldDefault("j_116") || "2.66";
-          ModeManager.setValue("j_116", defaultJ116, "system-update");
-          const j116Element = document.querySelector('[data-field-id="j_116"]');
-          if (j116Element && j116Element.getAttribute("contenteditable") === "true") {
-            j116Element.textContent = window.TEUI.formatNumber(parseFloat(defaultJ116), "number-2dp");
-          }
-        }
-      }
-      
       // Re-apply ghosting when cooling system changes
       handleHeatingSystemChangeForGhosting(currentHeatingSystem);
+      // Note: j_116 value will be set correctly by calculateCoolingSystem()
+      // (0 for No Cooling, j_113 for Heatpump, user value for dedicated)
     }
 
     // Special handling for ventilation method changes
@@ -2363,10 +2344,12 @@ window.TEUI.SectionModules.sect13 = (function () {
     // Read J113 (heatpump cooling COP)
     const copcool_hp_j113 = window.TEUI.parseNumeric(getFieldValue("j_113")) || 0;
     
-    // Read J116 (dedicated cooling COP) - user editable when not Heatpump
-    const copcool_dedicated_j116 = window.TEUI.parseNumeric(
-      getSectionValue("j_116", isReferenceCalculation),
-    ) || 2.66;
+    // Read J116 (dedicated cooling COP) - 0 is valid for No Cooling
+    const j116_raw = getSectionValue("j_116", isReferenceCalculation);
+    let copcool_dedicated_j116 = 2.66; // Default
+    if (j116_raw !== null && j116_raw !== undefined) {
+      copcool_dedicated_j116 = window.TEUI.parseNumeric(j116_raw); // 0 is valid!
+    }
 
     let coolingLoad_d117 = 0;
     let coolingSink_l116 = 0; // Dedicated Cooling Sink
