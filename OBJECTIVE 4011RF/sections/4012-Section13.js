@@ -2324,78 +2324,73 @@ window.TEUI.SectionModules.sect13 = (function () {
   function calculateCoolingSystem(
     isReferenceCalculation = false
   ) {
-    // ✅ PATTERN 1: Mode-aware reading (automatic with temporary mode switching)
     const coolingSystemType = ModeManager.getValue("d_116") || "No Cooling";
     const heatingSystemType = isReferenceCalculation
-      ? getSectionValue("d_113", true) // Reference reads Reference state
-      : TargetState.getValue("d_113"); // Target reads Target state
-    // Mode-aware reading of cooling demand from S14
+      ? getSectionValue("d_113", true)
+      : TargetState.getValue("d_113");
+    
+    // Read M129 from Cooling.js (now calculated there)
     const coolingDemand_m129 = isReferenceCalculation
-      ? parseFloat(window.TEUI?.StateManager?.getValue("ref_m_129")) || 0 // Reference: read ref_m_129
-      : window.TEUI.parseNumeric(getFieldValue("m_129")) || 0; // Target: read m_129
-    const copcool_hp_j113 =
-      window.TEUI.parseNumeric(getFieldValue("j_113")) || 0;
-    const copcool_dedicated_j116 =
-      window.TEUI.parseNumeric(
-        getSectionValue("j_116", isReferenceCalculation),
-      ) || 3.3; // Fallback to building code default
+      ? parseFloat(window.TEUI?.StateManager?.getValue("ref_m_129")) || 0
+      : window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("m_129")) || 0;
+    
+    // Read J113 (heatpump cooling COP)
+    const copcool_hp_j113 = window.TEUI.parseNumeric(getFieldValue("j_113")) || 0;
+    
+    // Read J116 (dedicated cooling COP) - user editable when not Heatpump
+    const copcool_dedicated_j116 = window.TEUI.parseNumeric(
+      getSectionValue("j_116", isReferenceCalculation),
+    ) || 2.66;
 
-    let copcool_to_use = 0;
     let coolingLoad_d117 = 0;
-    let coolingSink_l116 = 0; // Sink for Dedicated Cooling
-    let coolingSink_l114 = 0; // Initialize Sink for Heatpump Cooling
-    let isCoolingActive = coolingSystemType === "Cooling";
+    let coolingSink_l116 = 0; // Dedicated Cooling Sink
+    let coolingSink_l114 = 0; // Heatpump Cooling Sink
+    let j_116_display = 0; // What to display for j_116
 
-
-    if (isCoolingActive) {
-      if (heatingSystemType === "Heatpump") {
-        copcool_to_use = copcool_hp_j113;
-
-        if (copcool_to_use > 0) {
-          // Clamp the result at 0 to prevent negative electrical load
-          coolingLoad_d117 = Math.max(0, coolingDemand_m129 / copcool_to_use);
-          coolingSink_l114 = coolingLoad_d117 * (copcool_to_use - 1); // Sink depends on clamped load
-        } else {
-          coolingLoad_d117 = 0;
-          coolingSink_l114 = 0;
-        }
-        coolingSink_l116 = 0;
-        // Note: Original logic had a duplicate assignment here `coolingSink_l114 = 0;`, removed.
-      } else {
-        copcool_to_use = copcool_dedicated_j116;
-        if (copcool_to_use > 0) {
-          // Clamp the result at 0 here as well
-          coolingLoad_d117 = Math.max(0, coolingDemand_m129 / copcool_to_use);
-          coolingSink_l116 = coolingLoad_d117 * (copcool_to_use - 1); // Sink depends on clamped load
-        } else {
-          coolingLoad_d117 = 0;
-          coolingSink_l116 = 0;
-        }
-        coolingSink_l114 = 0;
-      }
-    } else {
+    // Excel D117 formula: IF(D116="No Cooling", 0, IF(D113="Heatpump", M129/J113, IF(D116="Cooling", M129/J116)))
+    if (coolingSystemType === "No Cooling") {
       coolingLoad_d117 = 0;
       coolingSink_l116 = 0;
       coolingSink_l114 = 0;
-      copcool_to_use = 0;
+      j_116_display = 0;
+    } else if (heatingSystemType === "Heatpump") {
+      // Heatpump cooling: use J113 (heatpump COP)
+      if (copcool_hp_j113 > 0) {
+        coolingLoad_d117 = coolingDemand_m129 / copcool_hp_j113;
+        // Excel L114 formula: IF(D113="Heatpump", IF(D116="Cooling", ((D117*J113)-D117), 0), 0)
+        coolingSink_l114 = coolingLoad_d117 * (copcool_hp_j113 - 1);
+      }
+      coolingSink_l116 = 0; // No dedicated cooling sink for heatpump
+      j_116_display = copcool_hp_j113; // Display J113 value (calculated, not user input)
+    } else if (coolingSystemType === "Cooling") {
+      // Dedicated cooling system: use J116 (user editable)
+      if (copcool_dedicated_j116 > 0) {
+        coolingLoad_d117 = coolingDemand_m129 / copcool_dedicated_j116;
+        coolingSink_l116 = coolingLoad_d117 * (copcool_dedicated_j116 - 1);
+      }
+      coolingSink_l114 = 0; // No heatpump cooling sink for dedicated
+      j_116_display = copcool_dedicated_j116; // Display user's J116 value
     }
 
+    // Calculate derived values
     const area_h15 = window.TEUI.parseNumeric(getFieldValue("h_15")) || 0;
     const intensity_f117 = area_h15 > 0 ? coolingLoad_d117 / area_h15 : 0;
-    const ceer_j117 = 3.412 * copcool_to_use;
+    const ceer_j117 = 3.412 * j_116_display; // CEER based on displayed COP
 
-    // TODO: Fetch actual Reference values (T116, T117) when available
+    // Reference comparison values
     const ref_cop_cool_T116 = 3.35;
     const ref_intensity_T117 = 138;
-
-    const m116_value =
-      copcool_to_use > 0 ? ref_cop_cool_T116 / copcool_to_use : 0;
-    const m117_value =
-      ref_intensity_T117 > 0 ? intensity_f117 / ref_intensity_T117 : 0;
+    const m116_value = j_116_display > 0 ? ref_cop_cool_T116 / j_116_display : 0;
+    const m117_value = ref_intensity_T117 > 0 ? intensity_f117 / ref_intensity_T117 : 0;
 
     // Only update DOM for Target calculations
     if (!isReferenceCalculation) {
-      setFieldValue("j_116", copcool_to_use, "number-1dp");
+      // J116: Only write if Heatpump (displays J113), otherwise user editable
+      if (heatingSystemType === "Heatpump") {
+        setFieldValue("j_116", j_116_display, "number-1dp"); // Show J113 value
+      }
+      // Else: j_116 is user editable, don't overwrite
+      
       setFieldValue("l_116", coolingSink_l116, "number-2dp-comma");
       setFieldValue("l_114", coolingSink_l114, "number-2dp-comma");
       setFieldValue("d_117", coolingLoad_d117, "number-2dp-comma");
@@ -2404,13 +2399,12 @@ window.TEUI.SectionModules.sect13 = (function () {
       setFieldValue("m_116", m116_value, "percent-0dp");
       setFieldValue("m_117", m117_value, "percent-0dp");
 
-
       calculateCoolingVentilation();
     }
 
     // Return calculated values for Reference engine storage
     return {
-      j_116: copcool_to_use,
+      j_116: j_116_display,
       l_116: coolingSink_l116,
       l_114: coolingSink_l114,
       d_117: coolingLoad_d117,
