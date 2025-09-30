@@ -70,9 +70,6 @@ window.TEUI.SectionModules.sect13 = (function () {
       // ✅ FIXED: Save state for any user action (user or user-modified)
       if (source === "user" || source === "user-modified") {
         this.saveState();
-        console.log(
-          `S13 TargetState: Saved state after ${source} changed ${fieldId} to ${value}`,
-        );
       }
     },
     getValue: function (fieldId) {
@@ -134,9 +131,6 @@ window.TEUI.SectionModules.sect13 = (function () {
     },
     // MANDATORY: Include onReferenceStandardChange for d_13 changes
     onReferenceStandardChange: function () {
-      console.log(
-        "S13: Reference standard changed, updating defaults while preserving user modifications",
-      );
 
       // ✅ S09 PATTERN: Selective update - preserve user-modified values
       const currentStandard =
@@ -180,9 +174,6 @@ window.TEUI.SectionModules.sect13 = (function () {
       // ✅ FIXED: Save state for any user action (user or user-modified)
       if (source === "user" || source === "user-modified") {
         this.saveState();
-        console.log(
-          `S13 ReferenceState: Saved state after ${source} changed ${fieldId} to ${value}`,
-        );
 
         // ✅ CRITICAL FIX: Trigger recalculations when key Reference fields change
         // BUT ONLY when currently in Reference mode (respects mode isolation)
@@ -200,7 +191,6 @@ window.TEUI.SectionModules.sect13 = (function () {
           criticalFields.includes(fieldId) &&
           ModeManager.currentMode === "reference"
         ) {
-          console.log(`[S13] Reference ${fieldId} → ${value}`);
           calculateAll(); // Runs both models - efficient and keeps both current
           ModeManager.updateCalculatedDisplayValues();
         }
@@ -215,11 +205,8 @@ window.TEUI.SectionModules.sect13 = (function () {
   const ModeManager = {
     currentMode: "target",
     initialize: function () {
-      console.log("[S13 DEBUG] ModeManager.initialize() starting...");
       TargetState.initialize();
-      console.log("[S13 DEBUG] TargetState.initialize() completed");
       ReferenceState.initialize();
-      console.log("[S13 DEBUG] ReferenceState.initialize() completed");
 
       // MANDATORY: Listen for reference standard changes
       if (window.TEUI?.StateManager?.addListener) {
@@ -235,7 +222,6 @@ window.TEUI.SectionModules.sect13 = (function () {
       )
         return;
       this.currentMode = mode;
-      console.log(`S13: Switched to ${mode.toUpperCase()} mode`);
 
       this.refreshUI();
       // CRITICAL: Update ghosting for new mode's system
@@ -249,9 +235,6 @@ window.TEUI.SectionModules.sect13 = (function () {
     updateCalculatedDisplayValues: function () {
       if (!window.TEUI?.StateManager) return;
 
-      console.log(
-        `[Section13] 🔄 Updating calculated display values for ${this.currentMode} mode`,
-      );
 
       const calculatedFields = [
         // ✅ COMPREHENSIVE: All calculated fields in S13 for complete DOM updates
@@ -333,12 +316,8 @@ window.TEUI.SectionModules.sect13 = (function () {
         }
       });
 
-      console.log(
-        `[Section13] Calculated display values updated for ${this.currentMode} mode`,
-      );
     },
     resetState: function () {
-      console.log("S13: Resetting state and clearing localStorage.");
 
       // ✅ FIXED: Clear user modification flags before resetting defaults
       delete TargetState.state.f_113_userModified;
@@ -350,9 +329,6 @@ window.TEUI.SectionModules.sect13 = (function () {
       TargetState.saveState();
       ReferenceState.setDefaults();
       ReferenceState.saveState();
-      console.log(
-        "S13: States have been reset to defaults, user modifications cleared.",
-      );
 
       this.refreshUI();
       this.updateConditionalUI();
@@ -445,11 +421,9 @@ window.TEUI.SectionModules.sect13 = (function () {
         } else if (dropdown) {
           // ✅ CRITICAL FIX: Update dropdown selections for mode persistence
           dropdown.value = stateValue;
-          // console.log(`[S13 refreshUI] Updated dropdown ${fieldId} to "${stateValue}" for ${this.currentMode} mode`);
         } else if (element.getAttribute("contenteditable") === "true") {
           // ✅ CRITICAL FIX: Update editable fields for mode persistence (d_119, j_115, j_116, l_118)
           element.textContent = stateValue;
-          // console.log(`[S13 refreshUI] Updated editable field ${fieldId} to "${stateValue}" for ${this.currentMode} mode`);
         }
       });
 
@@ -637,7 +611,6 @@ window.TEUI.SectionModules.sect13 = (function () {
 
         // 🔍 ENHANCED DEBUG: Track StateManager publications (commented out for clean logs)
         // if (["d_122", "m_121", "f_114", "d_114", "j_115", "d_117", "f_119", "h_119"].includes(fieldId)) {
-        //   console.log(`[S13 PUBLICATION DEBUG] Target published: ${fieldId}=${valueToStore}`);
         // }
       }
     } else {
@@ -651,7 +624,6 @@ window.TEUI.SectionModules.sect13 = (function () {
 
         // 🔍 ENHANCED DEBUG: Track StateManager publications (commented out for clean logs)
         // if (["d_122", "m_121", "f_114", "d_114", "j_115", "d_117", "f_119", "h_119"].includes(fieldId)) {
-        //   console.log(`[S13 PUBLICATION DEBUG] Reference published: ref_${fieldId}=${valueToStore}`);
         // }
       }
     }
@@ -718,17 +690,8 @@ window.TEUI.SectionModules.sect13 = (function () {
     context.ventilationMethod = stateSource.getValue("g_118");
 
     // 🔍 CRITICAL DEBUG: Track what values we're reading for context creation
-    console.log(
-      `🔍 [S13-CONTEXT] Creating ${mode} context: g_118="${context.ventilationMethod}" from ${mode === "reference" ? "ReferenceState" : "TargetState"}`,
-    );
     if (mode === "reference") {
-      console.log(
-        `🔍 [S13-CONTEXT] ReferenceState.g_118="${ReferenceState.getValue("g_118")}", TargetState.g_118="${TargetState.getValue("g_118")}"`,
-      );
     } else {
-      console.log(
-        `🔍 [S13-CONTEXT] TargetState.g_118="${TargetState.getValue("g_118")}", ReferenceState.g_118="${ReferenceState.getValue("g_118")}"`,
-      );
     }
 
     // CHUNK 3A "MICRO-STEP":
@@ -843,31 +806,6 @@ window.TEUI.SectionModules.sect13 = (function () {
     return finalFactor;
   }
 
-  /** [Cooling Calc] Calculate atmospheric values */
-  // 🚫 COOLING.JS TRANSITION: Function moved to 4012-Cooling.js module
-  // function calculateAtmosphericValues(coolingContext) {
-  //   // CHUNK 3A: Read from context instead of global state
-  //   const t_outdoor = coolingContext.A50_temp;
-  //   // CHUNK 3K: Read from context instead of global state
-  //   const outdoorRH = coolingContext.coolingSeasonMeanRH;
-  //   // CHUNK 3H: Read from context instead of global state
-  //   const t_indoor = coolingContext.coolingSetTemp;
-  //   const indoorRH_percent =
-  //     window.TEUI.parseNumeric(getFieldValue("d_59")) || 45;
-  //   const indoorRH = indoorRH_percent / 100;
-  //
-  //   // CHUNK 3B: Write to context instead of global state
-  //   coolingContext.pSatAvg =
-  //     610.94 * Math.exp((17.625 * t_outdoor) / (t_outdoor + 243.04));
-  //   // CHUNK 3M: Write to context instead of global state
-  //   coolingContext.partialPressure = coolingContext.pSatAvg * outdoorRH;
-  //
-  //   // CHUNK 3N: Write to context instead of global state
-  //   coolingContext.pSatIndoor =
-  //     610.94 * Math.exp((17.625 * t_indoor) / (t_indoor + 243.04));
-  //   // CHUNK 3M & 3N: Write to context instead of global state
-  //   coolingContext.partialPressureIndoor = coolingContext.pSatIndoor * indoorRH;
-  // }
 
   // 🔄 COOLING.JS INTEGRATION: Read atmospheric values from StateManager
   function getCoolingAtmosphericValues() {
@@ -887,53 +825,6 @@ window.TEUI.SectionModules.sect13 = (function () {
     };
   }
 
-  /** [Cooling Calc] Calculate humidity ratios */
-  // 🚫 COOLING.JS TRANSITION: Function moved to 4012-Cooling.js module
-  // function calculateHumidityRatios(coolingContext) {
-  //   // CHUNK 3L: Read from context instead of global state
-  //   const atmPressure = coolingContext.atmPressure || 101325;
-  //   // CHUNK 3M: Read from context instead of global state
-  //   const pPartialIndoor = coolingContext.partialPressureIndoor;
-  //   // CHUNK 3B: Read from context instead of global state
-  //   const pSatAvgOutdoor = coolingContext.pSatAvg; // Get Saturation Pressure Outdoor (A56)
-  //
-  //   // Calculate Indoor Humidity Ratio (A61)
-  //   if (atmPressure - pPartialIndoor === 0) {
-  //     console.warn(
-  //       "Cooling Calc: Division by zero prevented in indoor humidity ratio.",
-  //     );
-  //     // CHUNK 3I: Write to context instead of global state
-  //     coolingContext.humidityRatioIndoor = 0;
-  //   } else {
-  //     // CHUNK 3I: Write to context instead of global state
-  //     coolingContext.humidityRatioIndoor =
-  //       (0.62198 * pPartialIndoor) / (atmPressure - pPartialIndoor);
-  //   }
-  //
-  //   // Calculate Outdoor Humidity Ratio (A62) - CORRECTED FORMULA
-  //   // First, calculate the outdoor partial pressure *using the required 70% RH* (Excel A57)
-  //   const outdoorRH_forA62 = 0.7;
-  //   const pPartialOutdoor_forA62 = pSatAvgOutdoor * outdoorRH_forA62;
-  //
-  //   if (atmPressure - pSatAvgOutdoor === 0) {
-  //     // CHUNK 3B: Check denominator using pSatAvgOutdoor from context (A56)
-  //     console.warn(
-  //       "Cooling Calc: Division by zero prevented in outdoor humidity ratio.",
-  //     );
-  //     // CHUNK 3C: Write to context instead of global state
-  //     coolingContext.humidityRatioAvg = 0;
-  //   } else {
-  //     // Use the partial pressure based on 70% RH (pPartialOutdoor_forA62)
-  //     // CHUNK 3C: Write to context instead of global state
-  //     coolingContext.humidityRatioAvg =
-  //       (0.62198 * pPartialOutdoor_forA62) / (atmPressure - pSatAvgOutdoor); // CHUNK 3B: USE pSatAvgOutdoor from context (A56) in denominator
-  //   }
-  //
-  //   // Calculate Difference (A63)
-  //   // CHUNK 3D & 3I: Write to context instead of global state
-  //   coolingContext.humidityRatioDifference =
-  //     coolingContext.humidityRatioAvg - coolingContext.humidityRatioIndoor;
-  // }
 
   // 🔄 COOLING.JS INTEGRATION: Read humidity ratios from StateManager
   function getCoolingHumidityRatios() {
@@ -1046,7 +937,6 @@ window.TEUI.SectionModules.sect13 = (function () {
   //   // the goal here is to get close to zero - anything less than zero is overkill ventilation-wise"
   //   // So we preserve the raw calculation (can be negative) as per Excel methodology
   //
-  //   console.log(`[S13 m_124 EXCEL] E50(d_129)=${d_129}, E51(h_124)=${h_124}, E52(unmet)=${unmetCoolingLoad}, E54(m_19)=${m_19}, E55(result)=${daysActiveCooling}`);
   //
   //   return daysActiveCooling; // Return exact Excel calculation result
   // }
@@ -2251,12 +2141,10 @@ window.TEUI.SectionModules.sect13 = (function () {
     // --- StateManager Listeners ---
     if (window.TEUI && window.TEUI.StateManager) {
       const sm = window.TEUI.StateManager; // Alias for brevity
-      console.log("[Section13] 🔗 Attaching StateManager listeners...");
 
       // ✅ CRITICAL FIX: Add StateManager listener for d_113 to eliminate "cooling bump" requirement
       // This ensures complete calculation cycle + downstream updates (A7 proven pattern)
       sm.addListener("d_113", (newValue, oldValue) => {
-        console.log(`[S13] Target d_113 → ${newValue}`);
 
         // ✅ CRITICAL: Apply ghosting for new heating system
         handleHeatingSystemChangeForGhosting(newValue);
@@ -2296,9 +2184,6 @@ window.TEUI.SectionModules.sect13 = (function () {
           }
 
           // ✅ NO CALCULATIONS: Just display updates during dragging
-          console.log(
-            `[S13] HSPF input (live): ${hspfValue.toFixed(1)} - display only`,
-          );
         });
 
         // ✅ PERFORMANCE FIX: Change event for final calculations (after thumb release)
@@ -2306,9 +2191,6 @@ window.TEUI.SectionModules.sect13 = (function () {
           const hspfValue = parseFloat(this.value);
           if (isNaN(hspfValue)) return;
 
-          console.log(
-            `[S13] HSPF change (final): ${hspfValue.toFixed(1)} - triggering calculations`,
-          );
 
           // ✅ DUAL-STATE: Update via ModeManager (handles state isolation)
           ModeManager.setValue("f_113", hspfValue.toString(), "user-modified");
@@ -2346,9 +2228,6 @@ window.TEUI.SectionModules.sect13 = (function () {
           calculateAll();
           ModeManager.updateCalculatedDisplayValues();
 
-          console.log(
-            `[S13] d_118 input (live): ${efficiencyValue}% - with calculations`,
-          );
         });
 
         // Change event for final calculations (after thumb release)
@@ -2356,9 +2235,6 @@ window.TEUI.SectionModules.sect13 = (function () {
           const efficiencyValue = parseFloat(this.value);
           if (isNaN(efficiencyValue)) return;
 
-          console.log(
-            `[S13] d_118 change (final): ${efficiencyValue}% - triggering calculations`,
-          );
 
           // ✅ DUAL-STATE: Update via ModeManager (handles state isolation)
           ModeManager.setValue(
@@ -2381,18 +2257,12 @@ window.TEUI.SectionModules.sect13 = (function () {
 
       // Listener for d_116 (Cooling System) changes
       sm.addListener("d_116", () => {
-        console.log(
-          "[Section13] 📡 🧊 d_116 (COOLING SYSTEM) listener triggered!",
-        );
         // PROPER FIX: Let the dropdown change handler trigger proper calculations
         // This listener just logs the change - calculations handled by dropdown handler
       });
 
       // Listener for d_118 (Ventilation Efficiency) changes
       sm.addListener("d_118", () => {
-        console.log(
-          "[Section13] 📡 🌬️ d_118 (VENTILATION EFFICIENCY) listener triggered!",
-        );
         // Note: Direct slider handlers now provide the immediate calculation flow
       });
 
@@ -2424,30 +2294,18 @@ window.TEUI.SectionModules.sect13 = (function () {
       };
 
       // ✅ SIMPLIFIED: Only essential S03 climate values that S13 actually needs
-      console.log(
-        "[Section13] 🔗 Attaching essential S03 climate listeners...",
-      );
       sm.addListener("d_20", calculateAndRefresh); // HDD - needed for heating calculations
       sm.addListener("d_21", calculateAndRefresh); // CDD - needed for cooling calculations
       // Removed: d_23, d_24, h_23, h_24 - S13 doesn't directly use these (S11/S12 handle them)
       sm.addListener("i_104", () => {
-        console.log(
-          "[Section13] 📡 🔥 i_104 (TRANSMISSION LOSS) listener triggered - S11 thermal bridges changed!",
-        );
         calculateAndRefresh();
       }); // Total Trans Loss
       sm.addListener("k_104", calculateAndRefresh); // Total Ground Loss
       sm.addListener("i_71", () => {
-        console.log(
-          "[Section13] 📡 🔥 i_71 (OCCUPANT GAINS) listener triggered - S10 gains factor changed!",
-        );
         calculateAndRefresh();
       }); // Total Occ Gains
       sm.addListener("i_79", calculateAndRefresh); // Total App Gains
       sm.addListener("d_127", () => {
-        console.log(
-          "[Section13] 📡 🔥 d_127 (TED) listener triggered - S14 energy demand changed!",
-        );
         // ✅ PATTERN 2: Run dual-engine calculations for proper Target/Reference state handling
         calculateAndRefresh();
       }); // TED (from S14, for d_114)
@@ -2460,7 +2318,6 @@ window.TEUI.SectionModules.sect13 = (function () {
         // when S14 changes trigger downstream recalculations
       });
       // ✅ REMOVED: d_113 ghosting listener - handled by dropdown change now
-      console.log("[Section13] ✅ ALL LISTENERS ATTACHED SUCCESSFULLY");
     } else {
       console.error(
         "[Section13] ❌ StateManager not available to add listeners!",
@@ -2469,7 +2326,6 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     // --- Use Event Delegation for k_120 control ---
     if (sectionElement && !sectionElement.hasK120DelegateListener) {
-      //console.log("[S13 Init] Attaching delegated listener for k_120 control to #mechanicalLoads");
       sectionElement.addEventListener("input", handleK120Change);
       sectionElement.addEventListener("change", handleK120Change);
       sectionElement.hasK120DelegateListener = true;
@@ -2527,7 +2383,6 @@ window.TEUI.SectionModules.sect13 = (function () {
     if (!fieldId) return;
 
     // if (fieldId === 'l_118') {
-    //     console.log(`[S13 DEBUG l_118] Blur event triggered for l_118. Current textContent: "${this.textContent}"`);
     // }
 
     const newValue = this.textContent.trim();
@@ -2535,7 +2390,6 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     // --- Add Log for j_115 ---
     // if (fieldId === 'j_115') {
-    //     console.log(`[S13 DEBUG] j_115 Blur: Read "${newValue}", Parsed: ${numericValue}`);
     // }
     // --- End Log ---
 
@@ -2554,11 +2408,9 @@ window.TEUI.SectionModules.sect13 = (function () {
         const valueToStore = numericValue.toString();
         // --- Add Log for j_115 ---
         // if (fieldId === 'j_115') {
-        //     console.log(`[S13 DEBUG] j_115 Blur: Storing "${valueToStore}" in StateManager. Formatted display: "${formattedDisplay}"`);
         // }
         // --- End Log ---
         // if (fieldId === 'l_118') {
-        //     console.log(`[S13 DEBUG l_118] Attempting to set StateManager for l_118 to: "${valueToStore}". Display will be: "${formattedDisplay}"`);
         // }
         // ✅ FIX: Use mode-aware ModeManager.setValue for user inputs (especially j_115 AFUE)
         if (ModeManager && typeof ModeManager.setValue === "function") {
@@ -2574,7 +2426,6 @@ window.TEUI.SectionModules.sect13 = (function () {
 
         // ADDED: Explicitly trigger calculateAll after user modifies AFUE
         if (fieldId === "j_115") {
-          // console.log("[S13 DEBUG] j_115 changed by user, explicitly calling calculateAll().")
           calculateAll(); // Keep this trigger for AFUE changes
         }
         // ADDED: Explicitly trigger calculateAll after user modifies dedicated cooling COP
@@ -2583,7 +2434,6 @@ window.TEUI.SectionModules.sect13 = (function () {
         }
         // ADDED: Explicitly trigger calculateAll after user modifies l_118 (ACH)
         if (fieldId === "l_118") {
-          // console.log("[S13 DEBUG l_118] l_118 changed by user, explicitly calling S13.calculateAll().")
           calculateAll();
         }
         // ADDED: Explicitly trigger calculateAll after user modifies d_119 (Per Person Vent)
@@ -2615,9 +2465,6 @@ window.TEUI.SectionModules.sect13 = (function () {
    * This is a good place to initialize values and run initial calculations
    */
   function onSectionRendered() {
-    console.log(
-      "S13: Section rendered - initializing Pattern A Dual-State Module.",
-    );
 
     // 1. Initialize the ModeManager and its internal states
     ModeManager.initialize();
@@ -2628,8 +2475,6 @@ window.TEUI.SectionModules.sect13 = (function () {
     // Log initial DOM state
     // const d119ElementInitial = document.querySelector('td[data-field-id="d_119"]');
     // const j115ElementInitial = document.querySelector('td[data-field-id="j_115"]');
-    // console.log(`[S13 Init] Initial d_119 textContent: "${d119ElementInitial?.textContent}"`);
-    // console.log(`[S13 Init] Initial j_115 textContent: "${j115ElementInitial?.textContent}"`);
 
     if (window.TEUI?.StateManager?.setValue) {
       // window.TEUI.StateManager.setValue('k_120', '0.9', 'default'); // Default to 90% << OLD BEHAVIOR
@@ -2655,7 +2500,6 @@ window.TEUI.SectionModules.sect13 = (function () {
           // ADDED j_116, l_118
           // Check if StateManager *doesn't* already have a value (to avoid overwriting user/imported data later)
           if (window.TEUI.StateManager.getValue(fieldId) === null) {
-            // console.log(`[S13 Init Defaults] Setting default for ${fieldId} to ${fieldDef.defaultValue}`);
             window.TEUI.StateManager.setValue(
               fieldId,
               fieldDef.defaultValue,
@@ -2663,7 +2507,6 @@ window.TEUI.SectionModules.sect13 = (function () {
             );
           }
           // else {
-          //    console.log(`[S13 Init Defaults] StateManager already has value for ${fieldId}: ${window.TEUI.StateManager.getValue(fieldId)}`);
           // }
         }
       });
@@ -2671,8 +2514,6 @@ window.TEUI.SectionModules.sect13 = (function () {
     // --- END ADDED ---
 
     // Log DOM state BEFORE calculateAll
-    // console.log(`[S13 Init] BEFORE calculateAll - d_119 textContent: "${d119ElementInitial?.textContent}"`);
-    // console.log(`[S13 Init] BEFORE calculateAll - j_115 textContent: "${j115ElementInitial?.textContent}"`);
 
     calculateAll(); // Run initial calculations first
     ModeManager.updateCalculatedDisplayValues(); // ✅ CRITICAL: Update DOM with all calculated values including f_114
@@ -2696,7 +2537,6 @@ window.TEUI.SectionModules.sect13 = (function () {
               numericValue,
               formatType,
             );
-            // console.log(`[S13 Init Display Fix] Setting ${fieldId} textContent to: "${formattedDisplay}" from state value "${stateValue}"`);
             element.textContent = formattedDisplay;
           }
         }
@@ -2714,11 +2554,9 @@ window.TEUI.SectionModules.sect13 = (function () {
     setTimeout(() => {
       // Use timeout to ensure initial state is settled
       const initialHeatingSystem = getFieldValue("d_113") || "Heatpump"; // Get current value or default
-      // console.log(`[S13 Ghosting] Setting initial ghosting based on system: ${initialHeatingSystem}`);
       handleHeatingSystemChangeForGhosting(initialHeatingSystem);
     }, 100); // Short delay might be needed
 
-    console.log("S13: Pattern A initialization complete.");
   }
 
   /**
@@ -2739,9 +2577,6 @@ window.TEUI.SectionModules.sect13 = (function () {
       dropdown.addEventListener("change", handleDropdownChange);
     });
 
-    console.log(
-      `[S13] Set up dropdown event handlers for ${dropdowns.length} dropdowns`,
-    );
   }
 
   /**
@@ -2753,9 +2588,6 @@ window.TEUI.SectionModules.sect13 = (function () {
     if (!fieldId) return;
 
     const newValue = e.target.value;
-    console.log(
-      `[S13] Dropdown change: ${fieldId}="${newValue}" in ${ModeManager.currentMode} mode`,
-    );
 
     // Store via ModeManager (dual-state aware)
     if (ModeManager && typeof ModeManager.setValue === "function") {
@@ -2765,10 +2597,8 @@ window.TEUI.SectionModules.sect13 = (function () {
       // if (fieldId === "d_113") {
       //   if (ModeManager.currentMode === "reference") {
       //     const published = window.TEUI?.StateManager?.getValue("ref_d_113");
-      //     console.log(`[S13 REF DEBUG] Published ref_d_113="${published}" to StateManager`);
       //   } else {
       //     const published = window.TEUI?.StateManager?.getValue("d_113");
-      //     console.log(`[S13 TGT DEBUG] Published d_113="${published}" to StateManager`);
       //   }
       // }
     }
@@ -2787,22 +2617,14 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     // 🔍 DEBUG: Special handling for ventilation method changes
     if (fieldId === "g_118") {
-      console.log(`🔍 [S13-G118] Ventilation method changed to "${newValue}"`);
 
       // Check what l_118 value should be used for this method
       const currentACH = ModeManager.getValue("l_118");
-      console.log(`🔍 [S13-G118] Current l_118 (ACH) value: "${currentACH}"`);
 
       // For Volume Constant, l_118 should be 3.0 by default
       if (newValue === "Volume Constant") {
         const expectedACH = getFieldDefault("l_118") || "3";
-        console.log(
-          `🔍 [S13-G118] Volume Constant selected - expected l_118: "${expectedACH}", current: "${currentACH}"`,
-        );
         if (currentACH !== expectedACH) {
-          console.log(
-            `⚠️ [S13-G118] ACH MISMATCH: expected ${expectedACH}, got ${currentACH} - this may cause calculation drift`,
-          );
         }
       }
     }
@@ -2852,33 +2674,20 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     // CRITICAL: Listen for d_13 changes to update reference indicators
     sm.addListener("d_13", () => {
-      console.log("[Section13] d_13 changed - updating reference indicators");
       updateAllReferenceIndicators();
     });
 
     // ✅ CRITICAL: Listen for Reference climate data changes to trigger recalculation
     sm.addListener("ref_d_20", (newValue) => {
-      console.log(
-        `[S13DEBUG] Reference HDD changed: ref_d_20=${newValue} → triggering Reference calculations`,
-      );
       calculateAll();
     });
     sm.addListener("ref_d_21", (newValue) => {
-      console.log(
-        `[S13DEBUG] Reference CDD changed: ref_d_21=${newValue} → triggering Reference calculations`,
-      );
       calculateAll();
     });
     sm.addListener("ref_d_22", (newValue) => {
-      console.log(
-        `[S13DEBUG] Reference GF HDD changed: ref_d_22=${newValue} → triggering Reference calculations`,
-      );
       calculateAll();
     });
     sm.addListener("ref_h_22", (newValue) => {
-      console.log(
-        `[S13DEBUG] Reference GF CDD changed: ref_h_22=${newValue} → triggering Reference calculations`,
-      );
       calculateAll();
     });
   }
@@ -2921,16 +2730,9 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     const copHeat = copResults.h_113 || 1;
 
-    console.log(
-      `[S13] ${ModeManager.currentMode.toUpperCase()} HEATING: system=${systemType}, ted=${tedValue}, afue=${afue}, cop=${copHeat}`,
-    );
 
     // 🔍 CRITICAL DEBUG: Check if S13 publishes heating system selection
     if (ModeManager.currentMode === "reference") {
-      console.log(
-        `[S13 REF DEBUG] About to calculate with heating system: ${systemType}`,
-      );
-      console.log(`[S13 REF DEBUG] Will S13 publish ref_d_113=${systemType}?`);
     }
 
     let heatingDemand_d114 = 0;
@@ -3027,9 +2829,6 @@ window.TEUI.SectionModules.sect13 = (function () {
     let coolingSink_l114 = 0; // Initialize Sink for Heatpump Cooling
     let isCoolingActive = coolingSystemType === "Cooling";
 
-    console.log(
-      `[Section13] 🧊 COOLING CALC: mode=${isReferenceCalculation ? "REF" : "TGT"}, coolingSystemType="${coolingSystemType}", heatingType="${heatingSystemType}", isCoolingActive=${isCoolingActive}, coolingDemand=${coolingDemand_m129}`,
-    );
 
     if (isCoolingActive) {
       if (heatingSystemType === "Heatpump") {
@@ -3089,9 +2888,6 @@ window.TEUI.SectionModules.sect13 = (function () {
       setFieldValue("m_116", m116_value, "percent-0dp");
       setFieldValue("m_117", m117_value, "percent-0dp");
 
-      console.log(
-        `[Section13] 🧊 COOLING RESULTS: d_117=${coolingLoad_d117}, j_116=${copcool_to_use}, l_116=${coolingSink_l116}, l_114=${coolingSink_l114}`,
-      );
 
       calculateCoolingVentilation();
     }
@@ -3136,7 +2932,6 @@ window.TEUI.SectionModules.sect13 = (function () {
     // ✅ FIXED: Always update state for both Target and Reference calculations
     setFieldValue("f_119", cfm, "number-2dp");
     setFieldValue("h_119", m3hr, "number-2dp");
-    // console.log(`[S13 CalcVentRates] Calculated f_119: ${cfm}, h_119: ${m3hr}`); // Log calculated values
 
     // Now calculate d_120 (Volumetric Rate) as it depends on d_119 and g_118
     // ✅ CONTEXT FIX: Read ventilation method from isolated cooling context
@@ -3154,23 +2949,11 @@ window.TEUI.SectionModules.sect13 = (function () {
     const ach = window.TEUI.parseNumeric(ModeManager.getValue("l_118")) || 0;
 
     // 🔍 DEBUG: Log all input values for d_120 calculation
-    console.log(
-      `🔍 [S13-VENT] calculateVentilationRates: ventMethod="${ventMethod}", ach(l_118)=${ach}, ratePerPerson(d_119)=${ratePerPerson_d119}, volume(d_105)=${volume}`,
-    );
-    console.log(
-      `🔍 [S13-VENT] isReferenceCalculation=${isReferenceCalculation}, hasContext=${!!coolingContext}`,
-    );
     const occupiedHours = window.TEUI.parseNumeric(getFieldValue("i_63")) || 0;
     const totalHours = window.TEUI.parseNumeric(getFieldValue("j_63")) || 8760;
     const occupants_d63 = window.TEUI.parseNumeric(getFieldValue("d_63")) || 0;
 
     // 🔍 DEBUG: Log all input values for d_120 calculation
-    console.log(
-      `🔍 [S13-VENT] calculateVentilationValues: ventMethod="${ventMethod}", ach(l_118)=${ach}, ratePerPerson(d_119)=${ratePerPerson_d119}, volume(d_105)=${volume}`,
-    );
-    console.log(
-      `🔍 [S13-VENT] Supporting values: occupants(d_63)=${occupants_d63}, occupiedHours(i_63)=${occupiedHours}, totalHours(j_63)=${totalHours}`,
-    );
 
     let ventRateLs = 0;
 
@@ -3188,21 +2971,12 @@ window.TEUI.SectionModules.sect13 = (function () {
           : 0;
     } else if (ventMethod === "Volume Constant") {
       ventRateLs = volume > 0 ? (ach * volume) / 3.6 : 0;
-      console.log(
-        `🔍 [S13-VENT] Volume Constant calculation: ventRateLs = (${ach} * ${volume}) / 3.6 = ${ventRateLs}`,
-      );
     } else {
       // Default to Volume Constant
       ventRateLs = volume > 0 ? (ach * volume) / 3.6 : 0;
-      console.log(
-        `🔍 [S13-VENT] Default (Volume Constant) calculation: ventRateLs = (${ach} * ${volume}) / 3.6 = ${ventRateLs}`,
-      );
     }
 
     const ventilationRateLs_d120 = ventRateLs;
-    console.log(
-      `✅ [S13-VENT] Final d_120 result: ${ventilationRateLs_d120} L/s (from method="${ventMethod}", ach=${ach}, volume=${volume})`,
-    );
 
     const ventilationRateM3h_h120 = ventilationRateLs_d120 * 3.6;
 
@@ -3443,25 +3217,15 @@ window.TEUI.SectionModules.sect13 = (function () {
    * ✅ INCLUDES S11 PERSISTENCE PATTERN: Prevents Reference value race conditions
    */
   function calculateAll() {
-    console.log(
-      "[Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...",
-    );
 
     // 🚨 CAPTURE MODE AT START: Prevent race conditions from mode changes during calculation
     const modeAtCalculationStart = ModeManager.currentMode;
-    console.log(
-      `[Section13] 🎯 Mode captured at calculation start: ${modeAtCalculationStart}`,
-    );
 
     // ✅ DUAL-ENGINE: Always run both engines in parallel
     try {
-      console.log("[Section13] 🔄 Starting Reference Model calculations...");
       calculateReferenceModel(); // Reads ReferenceState → stores ref_ prefixed
-      console.log("[Section13] ✅ Reference Model complete");
 
-      console.log("[Section13] 🔄 Starting Target Model calculations...");
       calculateTargetModel(); // Reads TargetState → stores unprefixed
-      console.log("[Section13] ✅ Target Model complete");
 
       // ✅ PHASE 5: S11 PERSISTENCE PATTERN - Re-write Reference results to prevent race conditions
       // ✅ TIMING FIX: Use captured mode instead of current mode to prevent race conditions
@@ -3472,9 +3236,6 @@ window.TEUI.SectionModules.sect13 = (function () {
         const shouldRewrite = modeAtCalculationStart === "reference";
 
         if (shouldRewrite) {
-          console.log(
-            "[Section13] 🔄 Re-writing Reference results to prevent race conditions...",
-          );
           Object.entries(lastReferenceResults).forEach(([fieldId, value]) => {
             if (value !== null && value !== undefined) {
               window.TEUI.StateManager.setValue(
@@ -3484,17 +3245,10 @@ window.TEUI.SectionModules.sect13 = (function () {
               );
             }
           });
-          console.log(
-            `[Section13] ✅ Re-wrote ${Object.keys(lastReferenceResults).length} Reference values`,
-          );
         } else {
-          console.log(
-            `[Section13] ⏭️ Skipping Reference value re-write - triggered in ${modeAtCalculationStart} mode`,
-          );
         }
       }
 
-      console.log("[Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE");
     } catch (error) {
       console.error("[Section13] ❌ ERROR in calculateAll:", error);
     }
@@ -3514,7 +3268,6 @@ window.TEUI.SectionModules.sect13 = (function () {
       // CHUNK 3E-3G FIX: Create isolated context for Reference model
       const referenceCoolingContext = createIsolatedCoolingContext("reference");
 
-      console.log("[Section13] Running Reference Model calculations...");
 
       // ✅ CONTAMINATION FIX: Read ONLY ref_ prefixed values for Reference calculations (no fallbacks)
       // This eliminates the getRefValue fallback contamination pattern found in S14/S15
@@ -3523,9 +3276,6 @@ window.TEUI.SectionModules.sect13 = (function () {
 
       // 🚨 DEBUG: Track what system type the Reference model is using
       const refSystemType = ReferenceState.getValue("d_113");
-      console.log(
-        `[S13 CONTAMINATION DEBUG] calculateReferenceModel: Using system type = ${refSystemType}`,
-      );
 
       // ✅ CRITICAL FIX: Read ONLY ref_d_127 from S14 (no fallback to Target d_127)
       const tedValueRef =
@@ -3584,7 +3334,6 @@ window.TEUI.SectionModules.sect13 = (function () {
         freeCoolingResults,
       );
 
-      console.log("[Section13] Reference Model calculations complete");
     } catch (error) {
       console.error(
         "[Section13] Error in Reference Model calculations:",
@@ -3606,7 +3355,6 @@ window.TEUI.SectionModules.sect13 = (function () {
     const originalMode = ModeManager.currentMode;
     ModeManager.currentMode = "target"; // Temporarily switch mode
 
-    console.log("[Section13] Running Target Model calculations...");
     try {
       // Run cooling physics *first* to update coolingState centrally
       // CHUNK 1: Pass the new (but currently unused) context down the chain.
@@ -3674,7 +3422,6 @@ window.TEUI.SectionModules.sect13 = (function () {
     } finally {
       ModeManager.currentMode = originalMode; // ✅ CRITICAL: Always restore mode
     }
-    console.log("[Section13] Target Model calculations complete");
   }
 
   /**
@@ -3820,21 +3567,6 @@ window.TEUI.SectionModules.sect13 = (function () {
     };
 
     // 🚨 DEBUG: Track what Reference values we're about to store
-    console.log(
-      `[S13 CONTAMINATION DEBUG] storeReferenceResults called during ${ModeManager.currentMode} mode`,
-    );
-    console.log(
-      `[S13 CONTAMINATION DEBUG] Reference heating system: ${ReferenceState.getValue("d_113")}`,
-    );
-    console.log(
-      `[S13 CONTAMINATION DEBUG] Target heating system: ${TargetState.getValue("d_113")}`,
-    );
-    console.log(
-      `[S13 CONTAMINATION DEBUG] Reference h_115 (gas volume): ${allResults.h_115}`,
-    );
-    console.log(
-      `[S13 CONTAMINATION DEBUG] Reference f_115 (oil volume): ${allResults.f_115}`,
-    );
 
     // ✅ PHASE 5: Store Reference results in module-level cache for persistence pattern
     lastReferenceResults = { ...allResults };
@@ -3844,9 +3576,6 @@ window.TEUI.SectionModules.sect13 = (function () {
       if (value !== null && value !== undefined) {
         // 🚨 DEBUG: Track what we're writing to StateManager
         if (fieldId === "h_115" || fieldId === "f_115") {
-          console.log(
-            `[S13 CONTAMINATION DEBUG] Writing ref_${fieldId} = ${value}`,
-          );
         }
         window.TEUI.StateManager.setValue(
           `ref_${fieldId}`,
@@ -3856,12 +3585,6 @@ window.TEUI.SectionModules.sect13 = (function () {
       }
     });
 
-    console.log(
-      "[Section13] Reference results stored with ref_ prefix for downstream sections",
-    );
-    console.log(
-      `[S13 DEBUG] Total Reference results stored: ${Object.keys(allResults).length}`,
-    );
   }
 
   /**
@@ -3915,9 +3638,6 @@ window.TEUI.SectionModules.sect13 = (function () {
     );
 
     // Reading reference TED value (debug logging removed)
-    console.log(
-      `[Section13] 🔥 REF HEATING: systemType="${systemType}", tedReference=${tedReference}, hspf=${hspf}`,
-    );
 
     let heatingDemand_d114 = 0;
     let heatingSink_l113 = 0;
@@ -4017,7 +3737,6 @@ window.TEUI.SectionModules.sect13 = (function () {
    * @param {boolean} shouldBeGhosted
    */
   function setFieldGhosted(fieldId, shouldBeGhosted) {
-    // console.log(`[S13 Ghosting] Setting ghosted=${shouldBeGhosted} for field ${fieldId}`); // Add log
     const valueCell = document.querySelector(`td[data-field-id="${fieldId}"]`);
 
     if (valueCell) {
@@ -4060,7 +3779,6 @@ window.TEUI.SectionModules.sect13 = (function () {
    */
   function handleHeatingSystemChangeForGhosting(newValue) {
     const systemType = newValue; // e.g., "Gas", "Oil", "Heatpump", "Electricity"
-    console.log(`[S13 Ghosting] System changed to: ${systemType}`); // TEMP DEBUG: Enable logging
 
     // Determine active state based on system type
     const isHP = systemType === "Heatpump";
@@ -4098,18 +3816,12 @@ window.TEUI.SectionModules.sect13 = (function () {
       window.TEUI?.StateManager?.getValue("d_116");
     const isCoolingActive = currentCoolingSystem === "Cooling";
 
-    console.log(
-      `[S13 ROW116 DEBUG] systemType=${systemType}, d_116=${currentCoolingSystem}, isCoolingActive=${isCoolingActive}`,
-    ); // TEMP DEBUG
 
     // Row 116 fields after the dropdown: ghost only when "No Cooling" selected
     setFieldGhosted("j_116", !isCoolingActive); // COPcool - ghost when No Cooling
     setFieldGhosted("l_116", !isCoolingActive); // Sink - ghost when No Cooling
     setFieldGhosted("m_116", !isCoolingActive); // Reference % - ghost when No Cooling
 
-    console.log(
-      `[S13 ROW116 DEBUG] Applied ghosting: j_116=${!isCoolingActive}, l_116=${!isCoolingActive}, m_116=${!isCoolingActive}`,
-    ); // TEMP DEBUG
 
     // --- ADDED: Set default AFUE for Gas/Oil ---
     if (isFossilFuel) {
@@ -4147,9 +3859,7 @@ window.TEUI.SectionModules.sect13 = (function () {
 
         if (referenceAFUE !== undefined) {
           newAFUEString = referenceAFUE.toString();
-          // console.log(`[S13 Ghosting] Using ReferenceValue AFUE: ${newAFUEString} for standard ${currentD13}`);
         } else {
-          // console.log(`[S13 Ghosting] No ReferenceValue found for AFUE, using fallback: ${newAFUEString}`);
         }
 
         // For now, this prioritizes ReferenceValue for the standard, then 0.90.
