@@ -67,28 +67,22 @@ window.TEUI.SectionModules.sect07 = (function () {
     // ✅ DUAL-STATE-CHEATSHEET.md COMPLIANCE: Initialize from FieldDefinitions (single source of truth)
     setDefaults: function () {
       console.log(
-        `🔧 [S07] ReferenceState.setDefaults: Initializing from FieldDefinitions`,
+        `🔧 [S07] ReferenceState.setDefaults: Initializing Reference-specific defaults`,
       );
       this.values.d_49 = ModeManager.getFieldDefault("d_49") || "User Defined";
-      this.values.d_51 = ModeManager.getFieldDefault("d_51") || "Heatpump";
+      this.values.d_51 = "Electric"; // Reference default: Electric system
+      this.values.d_52 = "90"; // Reference default: 90% efficiency
       console.log(
-        `✅ [S07] ReferenceState.setDefaults: d_49="${this.values.d_49}", d_51="${this.values.d_51}"`,
+        `✅ [S07] ReferenceState.setDefaults: d_49="${this.values.d_49}", d_51="${this.values.d_51}", d_52="${this.values.d_52}"`,
       );
 
       // ✅ CRITICAL: Publish Reference defaults to StateManager with ref_ prefix
       if (window.TEUI?.StateManager) {
-        window.TEUI.StateManager.setValue(
-          "ref_d_49",
-          this.values.d_49,
-          "default",
-        );
-        window.TEUI.StateManager.setValue(
-          "ref_d_51",
-          this.values.d_51,
-          "default",
-        );
+        window.TEUI.StateManager.setValue("ref_d_49", this.values.d_49, "default");
+        window.TEUI.StateManager.setValue("ref_d_51", this.values.d_51, "default");
+        window.TEUI.StateManager.setValue("ref_d_52", this.values.d_52, "default");
         console.log(
-          `🔗 [S07] ReferenceState.setDefaults: Published to StateManager with ref_ prefix`,
+          `🔗 [S07] ReferenceState.setDefaults: Published d_49, d_51="Electric", d_52="90%" with ref_ prefix`,
         );
       }
     },
