@@ -544,12 +544,203 @@ This single dropdown has caused **complete refactor failures** in:
 
 ---
 
-### **📋 NEXT SESSION PRIORITIES:**
+#### **Bug #4: S03 Location Change State Mixing (CRITICAL PRIORITY)** 🚨
 
-1. **Fix Bug #2** (d_118 slider calculation timing) - HIGH PRIORITY
-2. **Fix Bug #1** (number format timing) - MEDIUM PRIORITY  
-3. **Fix Bug #3** (l_118 formatting) - LOW PRIORITY
-4. **Test g_118 ventilation method dropdown** - THE FINAL BOSS 🎯
+**Symptom**: Changing location at S03 (e.g., h_13 City dropdown) triggers recalculation of BOTH Target AND Reference states with the new location's weather data, instead of only the active mode.
 
-**Status**: Clean architecture achieved, minor timing bugs remain, ready for final boss!
+**Expected Behavior**:
+- In Target mode: Location change updates Target weather data (unprefixed: d_20, d_21, etc.) ONLY
+- In Reference mode: Location change updates Reference weather data (ref_d_20, ref_d_21, etc.) ONLY
+- Opposite mode should remain unchanged
+
+**Current Behavior**: 
+- Location change contaminates BOTH states simultaneously
+- Both Target and Reference recalculate with new weather values
+- Classic state mixing - the S03 issue is NOT RESOLVED
+
+**Probable Root Causes**:
+
+1. **S03 Publishing Pattern Contamination**:
+   - S03 may be publishing weather data without mode awareness
+   - Possible dual-publishing: writes both `d_20` AND `ref_d_20` on every location change
+   - Or: Always publishes unprefixed values regardless of current mode
+   - Check: Does S03 respect ModeManager.currentMode when publishing climate data?
+
+2. **Downstream Consumer Contamination**:
+   - S10, S11, S12, S13, S15 consume weather data from S03
+   - These sections may have getRefValue() fallback contamination
+   - Pattern B antipattern: Reading `ref_d_20` when mode is Target
+   - Check: Do downstream getValue() calls use correct prefix per mode?
+
+3. **StateManager Wildcard Listener Issue** (Known from Memory):
+   - StateManager.setValue() with "calculated" state doesn't trigger wildcard listeners
+   - S03 publishes climate data correctly but listeners never fire
+   - Downstream sections read stale cached values
+   - Orchestrator coordination required (SEPT15-RACE-MITIGATION.md pattern)
+
+4. **S03 Field Definition Defaults**:
+   - S03 may be using shared field defaults for both modes
+   - Location change resets both TargetState AND ReferenceState to same defaults
+   - Check: Are S03 dual-state objects properly separated?
+
+**Direct Weather Data Consumers**:
+- S10: Unknown dependencies (need to verify)
+- S11: Climate data for envelope calculations
+- S12: Climate data for system sizing
+- S13: HDD (d_20), CDD (d_21) for heating/cooling
+- S15: Climate data for aggregation
+
+**Historical Context**: 
+From Memory ID 8850660: "S03 publishes climate data perfectly (verified: d_20=7100 stored correctly), but downstream sections read stale cached values because listeners never fire."
+
+**Impact**: CRITICAL - undermines entire dual-state architecture, prevents independent Target/Reference modeling
+
+**Priority**: CRITICAL (must fix before g_118)
+
+**Investigation Required**:
+1. Add logging to S03 location change handler - which keys are published? With what prefixes?
+2. Add logging to S10/S11/S12/S13/S15 climate data consumers - which keys are read? From which mode?
+3. Check S03 ModeManager.currentMode usage - is it respected?
+4. Review S03 TargetState/ReferenceState objects - are they properly isolated?
+5. Check downstream getValue() calls - any getRefValue() fallbacks or Pattern B contamination?
+
+**Warning**: DO NOT rush to fix this. S03 state isolation has been attempted multiple times (Memory ID 9085566: "12 months of refinement"). Understand the full chain before touching code.
+
+---
+
+#### **Bug #5: g_118 Ventilation Method State Mixing (THE FINAL BOSS)** 🎯💀
+
+**Symptom**: Changing g_118 ventilation method dropdown causes state mixing between Target and Reference modes.
+
+**Expected Behavior**:
+- g_118 change in Target mode → recalculates D120 (Target) ONLY → cascades to H120, D121, M121 (Target)
+- g_118 change in Reference mode → recalculates ref_D120 ONLY → cascades to ref_H120, ref_D121, ref_M121
+- Opposite mode remains untouched
+
+**Current Behavior**: 
+- g_118 change contaminates both states (needs investigation to confirm exact pattern)
+- Calculation cascade affects wrong mode
+- State mixing across Target/Reference boundary
+
+**Historical Context - THE GRAVEYARD**:
+
+This single dropdown has **killed every S13 refactor attempt**:
+- **March 2025**: Context objects introduced to fix g_118 → state mixing
+- **June 2025**: Cooling integration to fix g_118 → calculation storms  
+- **August 2025**: Pattern 2 migration to fix g_118 → reference contamination
+- **September 2025**: CHUNK pattern to fix g_118 → timing errors
+
+**Root Cause Pattern (Hypothesis)**:
+1. **Listener Contamination**: 
+   - g_118 listener may trigger `calculateAll()` without mode parameter
+   - Or: Listener uses wrong mode (calculates Reference when Target is active)
+   - Calculation cascade writes to both prefixed and unprefixed keys
+
+2. **D120 Formula Mode Blindness**:
+   - D120 calculation reads from multiple sources: L118, D105, I63, J63, D63, D119
+   - If ANY of these reads use wrong prefix → contamination spreads
+   - Four different formulas based on g_118 value - each must be mode-aware
+
+3. **Cascade Amplification**:
+   - D120 → H120 (annual heating) → D121 (energy) → M121 (CED)
+   - Single contaminated read at D120 → cascades through entire chain
+   - Affects S13 downstream calculations (D122, D123, free cooling)
+
+4. **Whackamole History**:
+   - Previous fixes added listeners → calculation storms
+   - Previous fixes added mode checks → broke other calculations
+   - Previous fixes added orchestrator calls → timing errors
+   - **Why?** Because fix was applied without understanding full contamination path
+
+**Probable Root Causes (Needs Investigation)**:
+
+1. **g_118 Event Listener Issues**:
+   - Listener doesn't check ModeManager.currentMode before calculating
+   - Or: Listener calls calculateVentilationRates() which calculates BOTH modes
+   - Or: Listener missing entirely (current Bug from line 354-366)
+
+2. **calculateVentilationRates() Contamination**:
+   - Function may not be mode-aware (no isReferenceCalculation parameter)
+   - Reads unprefixed values even when should read ref_ values
+   - Writes to both prefixed and unprefixed simultaneously
+
+3. **Input Dependencies Not Mode-Isolated**:
+   - L118, D105, I63, J63, D63, D119 - are all of these dual-state?
+   - If ANY dependency is shared across modes → contamination spreads
+   - Need to verify each input has Target and Reference versions
+
+4. **Pattern 1 vs Manual Mode Switching**:
+   - S13 currently uses manual isReferenceCalculation parameters
+   - Pattern 1 (temporary mode switching) might prevent contamination
+   - But previous Pattern 1 migration attempts failed (see graveyard)
+
+**Impact**: CRITICAL - This is the final boss. If we can't fix this, S13 refactor fails.
+
+**Priority**: CRITICAL (but must fix Bug #4 first - S03 contamination may be upstream cause)
+
+**Investigation Required** (BEFORE ANY CODE CHANGES):
+1. **Map the full chain**:
+   - g_118 listener → which function is called?
+   - calculateVentilationRates() → reads which keys? Writes which keys?
+   - D120 cascade → H120 → D121 → M121 (trace every getValue/setValue)
+   - Are ALL reads mode-aware? Are ALL writes mode-aware?
+
+2. **Check dual-state coverage**:
+   - L118 - dual-state? ✓ or ✗
+   - D105 - dual-state? ✓ or ✗  
+   - I63/J63 - dual-state? ✓ or ✗
+   - D63 - dual-state? ✓ or ✗
+   - D119 - dual-state? ✓ or ✗
+   - If ANY are missing Reference versions → contamination guaranteed
+
+3. **Review previous fix attempts**:
+   - What did March 2025 context objects try to solve?
+   - What did June 2025 cooling integration break?
+   - What did August/September attempts miss?
+   - **Learn from the graveyard** - don't repeat failed patterns
+
+4. **Test contamination pattern**:
+   - Set Target g_118 to "Volume Constant"
+   - Set Reference g_118 to "Occupant by Schedule"  
+   - Change Target g_118 to "Volume by Schedule"
+   - Does Reference D120 change? (it shouldn't)
+   - Add logging to trace contamination path
+
+**Critical Warning** (Memory ID 8749787):
+> "The user prefers making code changes in small, methodical, testable chunks with clean, discrete commits. Each change should be tested before committing to avoid technical debt."
+
+**DO NOT**:
+- ❌ Add listeners without understanding full chain
+- ❌ Add mode checks without verifying ALL dependencies are dual-state
+- ❌ Rush to Pattern 1 migration (tried before, failed)
+- ❌ Apply "quick fixes" that create whackamole
+
+**DO**:
+- ✅ Map every getValue/setValue call in ventilation chain
+- ✅ Verify dual-state coverage for ALL dependencies
+- ✅ Add comprehensive logging to understand contamination path
+- ✅ Test one change at a time
+- ✅ Understand WHY previous attempts failed before trying new approach
+
+**Hypothesis to Test**: Bug #4 (S03 contamination) may be the UPSTREAM cause of Bug #5. If S03 publishes climate data to both modes, then S13 ventilation calculations will contaminate because they're reading contaminated inputs. **Fix S03 first, then retest g_118.**
+
+---
+
+### **📋 NEXT SESSION PRIORITIES (REVISED):**
+
+**Phase 1: Investigation (No Code Changes)**
+1. **Investigate Bug #4** (S03 state mixing) - Map climate data publishing chain
+2. **Investigate Bug #5** (g_118 state mixing) - Map ventilation calculation chain  
+3. **Document findings** - Create contamination path diagrams
+
+**Phase 2: Fixes (After Investigation Complete)**
+4. **Fix Bug #4** (S03 state mixing) - CRITICAL, likely upstream cause
+5. **Retest Bug #5** (g_118) - May be fixed by S03 fix, or reveal true root cause
+6. **Fix Bug #2** (d_118 slider timing) - HIGH PRIORITY
+7. **Fix Bug #1** (number format timing) - MEDIUM PRIORITY  
+8. **Fix Bug #3** (l_118 formatting) - LOW PRIORITY
+
+**Status**: Clean architecture achieved (9/9 CHEATSHEET), but state mixing remains in S03 (12-month known issue) and g_118 (refactor graveyard). INVESTIGATION REQUIRED BEFORE CODE CHANGES.
+
+**Wisdom**: "Fools rush in" - understand the full contamination chain before attempting fixes. Previous g_118 repair attempts broke many other things and turned into endless whackamole. Learn from the graveyard. 💀
 
