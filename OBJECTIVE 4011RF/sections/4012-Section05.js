@@ -223,6 +223,19 @@ window.TEUI.SectionModules.sect05 = (function () {
       console.log(
         `🔄 [S05] updateCalculatedDisplayValues: mode=${this.currentMode}`,
       );
+      
+      // 🔧 S05 FIX: Ghost i_41 in Reference mode (calculated from i_39, not editable)
+      const i_41_element = document.querySelector('[data-field-id="i_41"]');
+      if (i_41_element) {
+        const cell = i_41_element.closest("td");
+        if (cell) {
+          // Ghost in Reference mode (i_41 = i_39, calculated)
+          // Editable in Target mode (user input)
+          const shouldGhost = this.currentMode === "reference";
+          cell.classList.toggle("ghost-text", shouldGhost);
+          i_41_element.contentEditable = !shouldGhost;
+        }
+      }
 
       calculatedFields.forEach((fieldId) => {
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
@@ -477,16 +490,14 @@ window.TEUI.SectionModules.sect05 = (function () {
         h: { content: "", classes: ["spacer"] },
         i: {
           fieldId: "i_41",
-          type: "editable", // CHANGED from "number" to "editable"
+          type: "editable", // Target: user-editable, Reference: calculated (ghosted)
           value: "345.82",
           section: "emissions",
           classes: ["user-input"],
-          // FUTURE ENHANCEMENT: Consider implementing independent Reference Mode editing
-          // for i_41 (Modelled Value A1-3). Currently this field carries over from
-          // Application state to Reference state. Future implementation could allow
-          // separate Reference vs Design modelled values for embodied carbon.
-          // See STANDARDIZED-STATES.md Section 8.1.1 for full dual-engine implementation
-          // patterns including immediate UI feedback requirements.
+          // ✅ IMPLEMENTED (Oct 1, 2025): Reference mode i_41 = i_39 (typology-based cap)
+          // Target mode: User-defined modelled value (345.82 default)
+          // Reference mode: Calculated from typology (Steel/Mass Timber/Concrete)
+          // Field automatically ghosts in Reference mode (updateCalculatedDisplayValues)
         },
         l: {
           fieldId: "l_41",
@@ -940,6 +951,12 @@ window.TEUI.SectionModules.sect05 = (function () {
       const typology = ReferenceState.getValue("d_39");
       const cap = calculateTypologyBasedCap(typology, true);
       window.TEUI.StateManager.setValue("ref_i_39", cap, "calculated");
+      
+      // 🔧 S05 BUG FIX: Reference mode i_41 equals i_39 (typology-based cap)
+      // Excel: Reference D41 = I39 (calculated, not user-defined)
+      // Target D41 = user input (345.82), Reference D41 = typology cap
+      window.TEUI.StateManager.setValue("ref_i_41", cap, "calculated");
+      ReferenceState.setValue("i_41", cap.toString(), "calculated");
 
       // Run all calculations in Reference context
       calculateGHGI(true);
