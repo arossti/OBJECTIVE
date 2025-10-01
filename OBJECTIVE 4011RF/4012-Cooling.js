@@ -139,8 +139,23 @@ window.TEUI.CoolingCalculations = (function () {
     // A64 = 2,501,000 J/kg × humidityRatioDifference (kg/kg)
     // A55 = 1005 J/(kg•K) × temperatureDifferential (K)
     
+    // 🔍 DIAGNOSTIC LOGGING
+    console.log(`[Cooling A6] ════════════════════════════════════════`);
+    console.log(`[Cooling A6] Calculating Latent Load Factor (A6)`);
+    console.log(`[Cooling A6] INPUTS:`);
+    console.log(`[Cooling A6]   E6 (latentHeatVaporization): ${state.latentHeatVaporization}`);
+    console.log(`[Cooling A6]   A63 (humidityRatioDifference): ${state.humidityRatioDifference}`);
+    console.log(`[Cooling A6]   E4 (specificHeatCapacity): ${state.specificHeatCapacity}`);
+    console.log(`[Cooling A6]   A49 (nightTimeTemp): ${state.nightTimeTemp}`);
+    console.log(`[Cooling A6]   H27 (coolingSetTemp): ${state.coolingSetTemp}`);
+    
     const numerator = state.latentHeatVaporization * state.humidityRatioDifference; // E6 × A63
     const denominator = state.specificHeatCapacity * (state.nightTimeTemp - state.coolingSetTemp); // E4 × (A49 - H27)
+    
+    console.log(`[Cooling A6] CALCULATION:`);
+    console.log(`[Cooling A6]   A64 (numerator): ${state.latentHeatVaporization} × ${state.humidityRatioDifference} = ${numerator}`);
+    console.log(`[Cooling A6]   A55 (denominator): ${state.specificHeatCapacity} × (${state.nightTimeTemp} - ${state.coolingSetTemp}) = ${denominator}`);
+    console.log(`[Cooling A6]   A64/A55: ${numerator} / ${denominator} = ${numerator / denominator}`);
     
     // Avoid division by zero
     if (denominator === 0) {
@@ -148,7 +163,11 @@ window.TEUI.CoolingCalculations = (function () {
       return 1.0;
     }
     
-    return 1 + (numerator / denominator);
+    const result = 1 + (numerator / denominator);
+    console.log(`[Cooling A6] RESULT: A6 = 1 + ${numerator / denominator} = ${result}`);
+    console.log(`[Cooling A6] ════════════════════════════════════════`);
+    
+    return result;
   }
 
   /**
