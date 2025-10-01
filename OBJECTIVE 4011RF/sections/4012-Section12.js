@@ -1,6 +1,6 @@
 /**
- * 4011-Section12.js
- * Volume and Surface Metrics (Section 12) module for TEUI Calculator 4.011
+ * 4012-Section12.js
+ * Volume and Surface Metrics (Section 12) module for TEUI Calculator 4.012
  */
 
 window.TEUI = window.TEUI || {};

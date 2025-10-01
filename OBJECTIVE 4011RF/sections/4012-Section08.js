@@ -1,6 +1,6 @@
 /**
- * 4011-Section08.js
- * Indoor Air Quality (Section 8) module for TEUI Calculator 4.011
+ * 4012-Section08.js
+ * Indoor Air Quality (Section 8) module for TEUI Calculator 4.012
  *
  * REFACTORED: Uses the self-contained DualState architecture proven in Section 03.
  * This pattern provides robust state isolation for Target and Reference modes.

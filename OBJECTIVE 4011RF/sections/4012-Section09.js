@@ -1,6 +1,6 @@
 /**
- * 4011-Section09.js
- * Occupant + Internal Gains (Section 9) module for TEUI Calculator 4.011
+ * 4012-Section09.js
+ * Occupant + Internal Gains (Section 9) module for TEUI Calculator 4.012
  *
  * Uses the consolidated declarative approach where field definitions
  * are integrated directly into the layout structure.

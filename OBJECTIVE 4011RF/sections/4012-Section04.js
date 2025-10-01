@@ -1,5 +1,5 @@
 /**
- * 4011-Section04-RF.js (REFACTOR)
+ * 4012-Section04-RF.js (REFACTOR)
  * Actual vs. Target Energy & Carbon (Section 4) - EXCEL-COMPLIANT SIMPLIFICATION
  * 
  * ✅ REFACTOR COMPLETED (September 25, 2025): 87% code reduction achieved

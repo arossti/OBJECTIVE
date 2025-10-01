@@ -1,8 +1,7 @@
 /**
- * 4012-Section13.js - Mechanical Loads (Section 13) module for TEUI Calculator 4.012 Sept 30, 2025.
- * Represents separation of Cooling.js functions from S13 responsibilities. Calculation parity lost and needs row-by-row review. HSPF fixed (now broken again)to work in both states (post Aug 31 refactor)
- * This sections is designed to integrate with 4012-Cooling.js for complex cooling calculations - file still suffers from state mixing on ventilation changes
- * and requires SectionIntegrator and StateManager connections to function properly.
+ * 4012-Section13.js - Mechanical Loads (Section 13) module for TEUI Calculator 4.012 October 1, 2025.
+ * Represents separation of Cooling.js functions from S13 responsibilities. Completely rewritten to use the dual-state architecture.
+ * Needs only State Isolation and Limited Bugfixes noted in S13-ENDGAME-2.md
  */
 
 // Ensure namespace exists

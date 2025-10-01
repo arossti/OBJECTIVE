@@ -1,27 +1,6 @@
 /**
- * 4011-Section02.js
+ * 4012-Section02.js
  * Building Information (Section 2) module for TEUI Calculator 4.012
- *
- * This file contains field definitions, layout templates, and rendering logic
- * specific to the Building Information section.
- *
- * Refactored to use the consolidated declarative approach where field definitions
- * are integrated directly into the layout structure.
- *
- * ARCHITECTURAL STATUS (Aug 30 2025): ✅ DUAL-STATE-CHEATSHEET COMPLIANT
- *
- * ✅ All critical anti-patterns eliminated:
- * - Phase 1: No Pattern B contamination ✅
- * - Phase 2: No ComponentBridge contamination ✅
- * - Phase 3: DOM update pattern compliant ✅
- * - Phase 4: switchMode display-only ✅
- * - Phase 5: Consolidated defaults using getFieldDefault() ✅
- * - Phase 6: Mode-aware external dependency reading (i_39, i_41) ✅
- *
- * ⚠️ PARTLY FIXED: Occupancy state mixing (d_12)
- * ✅ Target contamination eliminated - Target d_12 changes no longer affect Reference e_10
- * ❌ Reference dependency broken - Reference d_12 changes do nothing (under investigation)
- * Fixed S09 d_12 contamination patterns, strategic logging added for dependency chain tracing.
  */
 
 // Create section-specific namespace for global references

@@ -1,3 +1,8 @@
+/**
+ * 4012-Section17.js
+ * Dependency Graph Section for TEUI Calculator 4.012
+ */
+
 // Ensure namespace exists
 window.TEUI = window.TEUI || {};
 window.TEUI.SectionModules = window.TEUI.SectionModules || {};

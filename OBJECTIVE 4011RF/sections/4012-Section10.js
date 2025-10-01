@@ -1,6 +1,6 @@
 /**
- * 4011-Section10.js
- * Radiant Gains (Section 10) module for TEUI Calculator 4.011
+ * 4012-Section10.js
+ * Radiant Gains (Section 10) module for TEUI Calculator 4.012
  *
  * Uses the consolidated declarative approach where field definitions
  * are integrated directly into the layout structure.

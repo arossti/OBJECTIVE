@@ -1,6 +1,6 @@
 /**
- * 4011-Section18.js
- * Notes & Quality Control Monitor Section for TEUI Calculator 4.011
+ * 4012-Section18.js
+ * Notes & Quality Control Monitor Section for TEUI Calculator 4.012
  */
 
 // Ensure namespace exists

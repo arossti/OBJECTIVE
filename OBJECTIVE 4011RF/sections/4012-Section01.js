@@ -1,15 +1,6 @@
 /**
- * 4011-Section01.js
- * Key Values (Section 1) module for TEUI Calculator 4.011
- *
- * ✅ DUAL-STATE ARCHITECTURE COMPLIANT: Consumer Section Pattern
- * ✅ CONSUMER SECTION: Reads results from upstream Pattern A sections (S02, S04, S15)
- * ✅ DISPLAY ONLY: Shows Reference (E), Target (H), Actual (K) simultaneously
- * ✅ NO INTERNAL STATE: No TargetState/ReferenceState objects needed
- * ✅ CLEAN DEPENDENCIES: Uses approved external dependency patterns
- *
- * Direct HTML rendering for precise styling, dynamic calculations for key metrics.
- * B Pattern contamination eliminated - follows S01-PATTERN-A-REFACTOR-WORKPLAN.md
+ * 4012-Section01.js
+ * Key Values (Section 1) module for TEUI Calculator 4.012
  */
 
 window.TEUI = window.TEUI || {};

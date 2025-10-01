@@ -1,6 +1,6 @@
 /**
- * 4011-Section11.js
- * Refactored Transmission Losses (Section 11) module for TEUI Calculator 4.011
+ * 4012-Section11.js
+ * Refactored Transmission Losses (Section 11) module for TEUI Calculator 4.012
  */
 
 // Ensure namespace exists

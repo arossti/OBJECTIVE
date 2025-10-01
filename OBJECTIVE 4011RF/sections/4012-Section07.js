@@ -1,6 +1,6 @@
 /**
- * 4011-Section07.js
- * Water Use (Section 7) module for TEUI Calculator 4.011
+ * 4012-Section07.js
+ * Water Use (Section 7) module for TEUI Calculator 4.012
  *
  * Refactored to use the standardized dual-engine architecture.
  *
