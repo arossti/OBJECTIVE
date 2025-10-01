@@ -175,13 +175,16 @@ window.TEUI.CoolingCalculations = (function () {
    * This implements formulas around cells E11-E24 in COOLING-TARGET.csv
    */
   function calculateAtmosphericValues() {
-    // Calculate saturation vapor pressure (Tetens formula)
-    // Formula: 610.94 * EXP(17.625 * T / (T + 243.04))
+    // Calculate saturation vapor pressure (Tetens formula) at WET BULB temperature
+    // Excel A56: 610.94 * EXP(17.625 * A50 / (A50 + 243.04))
+    // Where A50 = E64 (wet bulb temp, calculated in calculateWetBulbTemperature)
+    // NOTE: Must call calculateWetBulbTemperature() BEFORE this function
     const pSatAvg =
       610.94 *
-      Math.exp((17.625 * state.nightTimeTemp) / (state.nightTimeTemp + 243.04));
+      Math.exp((17.625 * state.wetBulbTemperature) / (state.wetBulbTemperature + 243.04));
 
     // Calculate partial pressure of water vapor
+    // Excel A58: A56 * A57
     const partialPressure = pSatAvg * state.coolingSeasonMeanRH;
 
     // Calculate indoor saturation vapor pressure
@@ -212,6 +215,16 @@ window.TEUI.CoolingCalculations = (function () {
     // Atmospheric pressure for calculation (sea level standard)
     const atmosphericPressure = 101325; // Pa
 
+    console.log(`[Cooling A63] ════════════════════════════════════════`);
+    console.log(`[Cooling A63] Calculating Humidity Ratios (A61, A62, A63)`);
+    console.log(`[Cooling A63] PRESSURE INPUTS:`);
+    console.log(`[Cooling A63]   partialPressure (outdoor avg): ${state.partialPressure} Pa`);
+    console.log(`[Cooling A63]   partialPressureIndoor: ${state.partialPressureIndoor} Pa`);
+    console.log(`[Cooling A63]   pSatAvg: ${state.pSatAvg} Pa`);
+    console.log(`[Cooling A63]   pSatIndoor: ${state.pSatIndoor} Pa`);
+    console.log(`[Cooling A63]   indoorRH: ${state.indoorRH} (${state.indoorRH * 100}%)`);
+    console.log(`[Cooling A63]   coolingSeasonMeanRH: ${state.coolingSeasonMeanRH} (${state.coolingSeasonMeanRH * 100}%)`);
+
     // Calculate humidity ratio indoor
     // Formula: 0.62198 * partialPressureIndoor / (atmosphericPressure - partialPressureIndoor)
     const humidityRatioIndoor =
@@ -226,6 +239,12 @@ window.TEUI.CoolingCalculations = (function () {
 
     // Calculate humidity ratio difference
     const humidityRatioDifference = humidityRatioAvg - humidityRatioIndoor;
+
+    console.log(`[Cooling A63] CALCULATION:`);
+    console.log(`[Cooling A63]   A61 (humidityRatioIndoor): 0.62198 × ${state.partialPressureIndoor} / (${atmosphericPressure} - ${state.partialPressureIndoor}) = ${humidityRatioIndoor}`);
+    console.log(`[Cooling A63]   A62 (humidityRatioAvg): 0.62198 × ${state.partialPressure} / (${atmosphericPressure} - ${state.partialPressure}) = ${humidityRatioAvg}`);
+    console.log(`[Cooling A63]   A63 (difference): ${humidityRatioAvg} - ${humidityRatioIndoor} = ${humidityRatioDifference}`);
+    console.log(`[Cooling A63] ════════════════════════════════════════`);
 
     // Update state
     state.humidityRatioIndoor = humidityRatioIndoor;
@@ -441,20 +460,23 @@ window.TEUI.CoolingCalculations = (function () {
     const i_59 = window.TEUI.StateManager.getValue("i_59");
     state.indoorRH = i_59 ? parseFloat(i_59) / 100 : 0.45;
     
-    // CRITICAL: Must calculate humidity ratios BEFORE latent load factor
-    // because A6 formula depends on A63 (humidityRatioDifference)
+    // CRITICAL CALCULATION ORDER (matching Excel COOLING-TARGET.csv):
+    // 1. Calculate wet bulb temp (E64) - needed for pSatAvg calculation
+    // 2. Calculate atmospheric values using wet bulb temp (A56 uses A50 = E64)
+    // 3. Calculate humidity ratios (A61, A62, A63)
+    // 4. Calculate latent load factor (A6 uses A63)
     
-    // Calculate atmospheric values (needed for humidity ratios)
+    // Step 1: Calculate wet bulb temperature FIRST (needed for A50)
+    calculateWetBulbTemperature();
+    
+    // Step 2: Calculate atmospheric values (A56 pSatAvg uses wet bulb temp A50)
     calculateAtmosphericValues();
 
-    // Calculate humidity ratios (calculates humidityRatioDifference = A63)
+    // Step 3: Calculate humidity ratios (calculates humidityRatioDifference = A63)
     calculateHumidityRatios();
 
-    // Calculate latent load factor (now has humidityRatioDifference available)
+    // Step 4: Calculate latent load factor (now has humidityRatioDifference available)
     state.latentLoadFactor = calculateLatentLoadFactor();
-
-    // Calculate wet bulb temperature
-    calculateWetBulbTemperature();
 
     // Calculate free cooling limit
     calculateFreeCoolingLimit();
