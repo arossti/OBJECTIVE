@@ -1211,11 +1211,11 @@ const ref_d_113 = getValue("ref_d_113") || "Electricity"; // ❌ Masks missing s
 ### **📋 UPDATED BUG PRIORITIES:**
 
 **CRITICAL (Next Session):**
-1. **Bug #9** (d_12 occupancy state mixing) - Affects both e_10 and h_10
+1. **Bug #9** (d_12 occupancy state mixing) - PARTIALLY FIXED (Commit `5fe13b4`)
 2. **Bug #5** (g_118 ventilation method - THE FINAL BOSS)
 
 **HIGH:**
-3. **Bug #8** (d_51 hot water system carryover) - UX + calculation mixing
+3. ~~**Bug #8** (d_51 hot water system carryover)~~ - ✅ FIXED (Commit `b9e4f4c`)
 
 **MEDIUM:**
 4. **Bug #6** (h_21 capacitance - Reference only)
@@ -1226,7 +1226,7 @@ const ref_d_113 = getValue("ref_d_113") || "Electricity"; // ❌ Masks missing s
 7. **Bug #1** (number format timing)
 8. **Bug #3** (l_118 formatting)
 
-**Status**: Bug #4 eliminated! Multiple new bugs identified through user testing. Pattern emerging: Many Reference mode features not working (Bugs #6, #7, #8, #9) - suggests systematic dual-state implementation gaps rather than isolated bugs.
+**Status**: Bug #4 eliminated! Bug #8 completely fixed! Bug #9 partially fixed - Reference model now protected from Target changes, but Target still affected by Reference changes. Pattern emerging: Many Reference mode features not working (Bugs #6, #7) - suggests systematic dual-state implementation gaps rather than isolated bugs.
 
 ---
 
@@ -1323,7 +1323,92 @@ if (display) {
 
 ---
 
-## 16. S07 Hot Water System - Bug Analysis & Fix Plan (Oct 1, 2025)
+## 16. Bug #9 - d_12 Occupancy State Mixing (Oct 1, 2025 - Evening)
+
+### **🐛 Bug #9 Implementation and Partial Fix**
+
+**Status**: ⚠️ PARTIALLY FIXED - One-way isolation achieved (Commit `5fe13b4`)
+
+**What Was Fixed:**
+
+**Fix: Made Cooling.js Mode-Aware** (Commit `5fe13b4`)
+- Added `mode` parameter to `calculateAll(mode = "target")` function
+- Created `getModeAwareValue(fieldId, defaultValue)` helper for mode-specific reads
+- Modified `updateStateManager()` to add `ref_` prefix for reference mode values
+- Updated all direct StateManager reads to use the mode-aware helper
+- Updated public API methods to accept mode parameter
+- Modified S13.js to explicitly pass "target" or "reference" mode
+- Updated Calculator.js to pass "target" mode for consistency
+
+```javascript
+// 1. Added mode parameter to calculateAll
+function calculateAll(mode = "target") {
+  // Store current mode for mode-aware reads/writes
+  state.currentMode = mode;
+  
+  // Rest of function...
+}
+
+// 2. Created mode-aware helper for StateManager reads
+function getModeAwareValue(fieldId, defaultValue = null) {
+  // Determine prefix based on current mode
+  const prefix = state.currentMode === "reference" ? "ref_" : "";
+  
+  // Get the value with appropriate prefix
+  const value = window.TEUI.StateManager.getValue(`${prefix}${fieldId}`);
+  return value !== null && value !== undefined ? value : defaultValue;
+}
+
+// 3. Made updateStateManager add prefix for reference mode
+function updateStateManager() {
+  // Add prefix for Reference mode
+  const prefix = state.currentMode === "reference" ? "ref_" : "";
+  
+  // Publish with appropriate prefix
+  sm.setValue(`${prefix}cooling_m_124`, state.daysActiveCooling.toString(), "calculated");
+  // And so on...
+}
+
+// 4. Updated S13.js to pass mode parameter
+// In calculateTargetModel():
+window.TEUI.CoolingCalculations.calculateAll("target");
+
+// In calculateReferenceModel():
+window.TEUI.CoolingCalculations.calculateAll("reference");
+```
+
+**Current Behavior (After Fix):**
+- ✅ Reference model (e_10) now protected from Target mode d_12 changes
+- ❌ Target model (h_10) still affected by Reference mode d_12 changes
+- 🔄 Workaround: "Prime" Target by changing d_12 in Target mode after Reference changes
+
+**Hypothesis About Remaining Issue:**
+
+After thorough investigation, we believe the remaining issue is due to:
+
+1. **Asymmetric Dependency Registration**: When occupancy changes in Reference mode, some sections may be registering dependencies on the base field ID (d_12) rather than the prefixed version (ref_d_12), causing Target calculations to run when Reference values change.
+
+2. **StateManager Wildcard Listeners**: Some sections may be using wildcard listeners (`*`) that trigger on any state change, including Reference state changes, without checking if the change is relevant to their current mode.
+
+3. **Cooling.js Integration Point**: While Cooling.js is now mode-aware, there might be other modules (like S03 or S09) that consume d_12 directly and aren't fully mode-aware, creating a "leak" pathway from Reference to Target.
+
+4. **Calculation Order**: The dependency chain from d_12 → climate data → cooling calculations may have a timing issue where Reference calculations trigger Target recalculations through shared dependencies.
+
+**Recommended Next Steps:**
+
+1. **Trace d_12 Dependency Chain**: Follow the complete path from d_12 through S03 climate data, to S13 ventilation, to Cooling.js, to identify exactly where the Reference → Target contamination occurs.
+
+2. **Audit StateManager Listeners**: Check for wildcard listeners or listeners on non-prefixed keys that might be triggering Target recalculations.
+
+3. **S03 Climate Data Service**: Verify that S03's climate data service is fully mode-aware and doesn't publish Target values when Reference values change.
+
+4. **Consider Orchestrator Pattern**: If the issue persists, implement a coordinated calculation sequence using the Orchestrator pattern to ensure Reference calculations complete before Target calculations start.
+
+**Investigation Priority**: CRITICAL (next session focus)
+
+---
+
+## 17. S07 Hot Water System - Bug Analysis & Fix Plan (Oct 1, 2025)
 
 ### **🐛 Bug #8 Deep Dive: d_51 State Carryover**
 
@@ -1377,4 +1462,44 @@ d51Dropdown.value = d_51_value; // Shows value from current state
 **Investigation Priority**: HIGH (next task after documentation commit)
 
 **Related**: Bug #8 calculation mixing to S01 suggests S07 may not be publishing ref_k_51 separately, or S04/S15 not reading it correctly.
+
+---
+
+## 18. Next Session Priorities & End of Day Summary (Oct 1, 2025)
+
+### **📋 Next Session Priorities**
+
+1. Complete Bug #9 fix (d_12 occupancy state mixing) - CRITICAL
+   - Investigate asymmetric dependency registration
+   - Check for wildcard listeners in StateManager
+   - Verify S03 climate data service is fully mode-aware
+   
+2. Fix Bug #5 (g_118 ventilation method - THE FINAL BOSS) - CRITICAL
+
+### **🔄 End of Day Summary - October 1, 2025**
+
+1. ✅ Fixed Bug #4 (S03 Location Change State Mixing) - SQUASHED!
+   - Root cause: S13 calculateVentilationEnergy() always reading d_20 (Target HDD) instead of ref_d_20 for Reference calculations
+   - Fix: Made HDD read mode-aware with explicit isReferenceCalculation check
+   - Result: Perfect dual-state architecture now achieved at section level
+
+2. ✅ Fixed Bug #8 (S07 Hot Water System State Carryover) - CLOSED!
+   - Three fixes implemented:
+     1. Reference defaults: Set d_51="Electric", d_52="90" for Reference model
+     2. Slider range update: Dynamic min/max/step based on system type
+     3. S10/S11 pattern compliance: Fixed slider value/display handling
+   - Result: Perfect dual-state independence achieved for hot water system
+
+3. ⚠️ Partially Fixed Bug #9 (d_12 Occupancy State Mixing)
+   - Made Cooling.js fully mode-aware:
+     - Added mode parameter to calculateAll
+     - Created getModeAwareValue helper for mode-specific reads
+     - Modified updateStateManager to use ref_ prefix in Reference mode
+   - Result: Reference model now protected from Target changes
+   - Remaining issue: Target still affected by Reference changes
+   - Hypothesis: Asymmetric dependency registration or wildcard listeners
+
+4. ✅ Completed S05 Excel Formula Fixes (Commit `a21191e`)
+   - Fixed d_38, d_40, d_41 formulas to match Excel Reference model
+   - Result: Reference and Target now show correct, independent values
 
