@@ -1076,3 +1076,155 @@ const ref_d_113 = getValue("ref_d_113") || "Electricity"; // ❌ Masks missing s
 
 **Note**: Not all fallbacks are bugs - some are intentional for initialization robustness. The goal is to distinguish between safe fallbacks and dangerous antipatterns through periodic review.
 
+---
+
+## 14. Additional State Mixing Bugs (Oct 1, 2025 - User Testing)
+
+### **Bug #6: S03 Capacitance Toggle (h_21) - No Effect on Reference** ⚠️
+
+**Symptom**: Changing S03 h_21 (Capacitance: Static/Capacitance) in Reference mode does not affect Reference calculations in S11/S12.
+
+**Expected Behavior**:
+- In Reference mode: h_21 change → recalculates S11 ref_k_95, ref_k_94 (ground-facing calculations)
+- Ground-facing CDD uses capacitance factor (i_21 slider)
+- Static vs Capacitance should produce different results
+
+**Current Behavior**: 
+- Reference h_21 toggle has no effect on S11/S12 Reference calculations
+- S11 ref_k_95, ref_k_94 values don't update
+
+**Probable Root Causes**:
+1. **S03 Publishing**: May not be publishing ref_h_21 or ref_i_21 for downstream consumption
+2. **S11/S12 Listeners Missing**: Reference engines may not have listeners for ref_h_21 changes
+3. **S11/S12 Reading**: May be reading unprefixed h_21 instead of ref_h_21 in Reference mode
+
+**Investigation Required**:
+- Check S03 publishes ref_h_21 with "user-modified" state (triggers listeners)
+- Check S11/S12 have listeners for ref_h_21 changes
+- Verify S11/S12 Reference engines read ref_h_21, ref_i_21 correctly
+
+**Priority**: MEDIUM (affects Reference ground-facing accuracy)
+
+---
+
+### **Bug #7: S13 Ventilation Setback (k_120) - No Effect in Reference Mode** ⚠️
+
+**Symptom**: Changing k_120 (Unoccupied Setback %) in Reference mode does not affect Reference calculations.
+
+**Expected Behavior**:
+- k_120 slider works identically in both modes
+- Reference mode: k_120 change → recalculates ref_h_120, ref_d_120, ref_m_121
+- Target mode: k_120 change → recalculates h_120, d_120, m_121 (currently works ✅)
+
+**Current Behavior**: 
+- Target mode: k_120 works perfectly ✅
+- Reference mode: k_120 has no effect on calculations ❌
+
+**Probable Root Causes**:
+1. **k_120 Not Dual-State**: May only be stored as unprefixed value (no ref_k_120)
+2. **S13 Reference Engine**: May not be reading k_120 value in Reference calculations
+3. **Listener Missing**: S13 may not have listener for ref_k_120 changes
+
+**Investigation Required**:
+- Check if k_120 is dual-state (both k_120 and ref_k_120 stored)
+- Verify S13 Reference calculations read k_120 (or ref_k_120)
+- Check S13 has listener for k_120/ref_k_120 changes
+
+**Priority**: MEDIUM (affects Reference free cooling accuracy)
+
+---
+
+### **Bug #8: Hot Water System (d_51) State Carryover** 🚨 **STATE MIXING**
+
+**Symptom**: Hot Water system type (d_51) carries over between Target and Reference modes instead of maintaining independent values.
+
+**Expected Behavior**:
+- Target mode d_51 = "Heatpump" (independent setting)
+- Reference mode d_51 = "Electric" (independent setting)
+- Switching modes shows respective setting for each model
+
+**Current Behavior**: 
+- Set d_51 = "Heatpump" in Target mode → switch to Reference → shows "Heatpump" ❌
+- Set d_51 = "Electric" in Reference mode → switch to Target → shows "Electric" ❌
+- **System type carries over** instead of staying independent
+
+**Related Calculation Mixing**:
+- Calculation changes flow to S01 (affects both e_10 and h_10)
+- Hot water energy calculations contaminate across modes
+
+**Probable Root Causes**:
+1. **S07 Not Dual-State**: d_51 may only be stored as single value (no ref_d_51)
+2. **S07 Missing TargetState/ReferenceState**: S07 may not have dual-state architecture
+3. **Shared Field Definition**: d_51 field definition may not support dual-state
+
+**Investigation Required**:
+- Check if S07 has TargetState/ReferenceState objects
+- Verify d_51 is stored as both d_51 and ref_d_51
+- Review S07 dropdown handler - does it respect ModeManager.currentMode?
+
+**Priority**: HIGH (affects both energy calculations and UX - users expect independent settings)
+
+---
+
+### **Bug #9: Occupancy Type (d_12) State Mixing** 🚨 **CRITICAL**
+
+**Symptom**: Changing Reference mode d_12 (Occupancy Type) causes calculation updates visible at BOTH e_10 (Reference) AND h_10 (Target).
+
+**Expected Behavior**:
+- Reference mode d_12 change → e_10 updates (Reference TEUI) ✅
+- Reference mode d_12 change → h_10 stays same (Target TEUI) ✅
+
+**Current Behavior**: 
+- Reference mode d_12 change → BOTH e_10 AND h_10 update ❌
+- State mixing across Target/Reference boundary
+
+**Probable Root Causes**:
+
+1. **S09 Occupancy Loads Contamination**:
+   - S09 calculates occupancy-related loads (plug, lighting, equipment)
+   - May be using shared d_12 value for both Target and Reference calculations
+   - Or: S09 not dual-state (no ref_d_12 separation)
+
+2. **S03 Critical Temperature Selection**:
+   - d_12 determines if occupancy is "Critical" (care facilities)
+   - Critical occupancy uses 1% temperatures, normal uses 2.5% temperatures
+   - S03 may be applying critical flag to BOTH Target and Reference
+   - Or: S03 reading unprefixed d_12 for both modes
+
+3. **Calculation Cascade**:
+   - d_12 → S03 temperature selection → climate data
+   - d_12 → S09 occupancy loads → internal gains
+   - If either path contaminates → affects full calculation chain
+
+**Investigation Required**:
+1. Check S09 has dual-state d_12 (d_12 and ref_d_12)
+2. Verify S03 reads mode-aware d_12 for critical temperature selection
+3. Trace S09 occupancy load calculations - do they use ref_d_12 in Reference mode?
+4. Check if S09 publishes ref_i_71, ref_k_71 (occupancy gains) separately
+
+**Priority**: CRITICAL (affects both models, similar to Bug #4 pattern)
+
+**Note**: This may be related to Bug #4 fix - need to verify S03's critical occupancy logic uses mode-aware d_12 reads.
+
+---
+
+### **📋 UPDATED BUG PRIORITIES:**
+
+**CRITICAL (Next Session):**
+1. **Bug #9** (d_12 occupancy state mixing) - Affects both e_10 and h_10
+2. **Bug #5** (g_118 ventilation method - THE FINAL BOSS)
+
+**HIGH:**
+3. **Bug #8** (d_51 hot water system carryover) - UX + calculation mixing
+
+**MEDIUM:**
+4. **Bug #6** (h_21 capacitance - Reference only)
+5. **Bug #7** (k_120 setback - Reference only)
+6. **Bug #2** (d_118 slider convergence asymmetry) - Investigation needed
+
+**LOW:**
+7. **Bug #1** (number format timing)
+8. **Bug #3** (l_118 formatting)
+
+**Status**: Bug #4 eliminated! Multiple new bugs identified through user testing. Pattern emerging: Many Reference mode features not working (Bugs #6, #7, #8, #9) - suggests systematic dual-state implementation gaps rather than isolated bugs.
+
