@@ -947,3 +947,74 @@ This single dropdown has **killed every S13 refactor attempt**:
 
 **Wisdom Applied**: "Fools rush in" - discovered d_118 behavior through testing, not assumption. Multiple attempted "fixes" revealed the drag-calculation pattern is REQUIRED, not a bug. 💡
 
+---
+
+### **🎉 BUG #4 SQUASHED! (Oct 1, 2025 - Afternoon Session)**
+
+#### **The 12-Month Bug is FIXED!** 🏆
+
+**Root Cause Found**: S13 `calculateVentilationEnergy()` function (line 2534)
+```javascript
+// BEFORE (BUG):
+const hdd = getGlobalNumericValue("d_20"); // Always reads Target HDD!
+
+// AFTER (FIXED):
+const hdd = isReferenceCalculation
+  ? getGlobalNumericValue("ref_d_20")  // Reference reads independent location
+  : getGlobalNumericValue("d_20");      // Target reads independent location
+```
+
+**Contamination Chain Traced:**
+```
+S03: Publishes d_20=7100 (Attawapiskat) and ref_d_20=4600 (Alexandria) ✅
+  ↓
+S13 Reference: Read d_20=7100 instead of ref_d_20=4600 ❌
+  ↓
+S13: Calculated ref_m_121=130,583 (should be 84,603) ❌
+  ↓
+S14: Calculated ref_d_127 using contaminated ref_m_121 ❌
+  ↓
+S13: Calculated ref_d_114=297,371 (should be 251,391) ❌
+  ↓
+S15: Calculated ref_d_136=347,966 (should be 301,986) ❌
+  ↓
+S04: Calculated ref_j_32=347,966 (should be 301,986) ❌
+  ↓
+S01: Displayed e_10=243.8 (should be 211.6) ❌
+```
+
+**After Fix:**
+```
+S03: Publishes d_20=7100 and ref_d_20=4600 ✅
+  ↓
+S13 Reference: Reads ref_d_20=4600 ✅
+  ↓
+S13: ref_m_121=84,603 ✅
+  ↓
+S14/S13: ref_d_114=251,391 ✅
+  ↓
+S15: ref_d_136=301,986 ✅
+  ↓
+S04: ref_j_32=301,986 ✅
+  ↓
+S01: e_10=211.6 ✅✅✅
+```
+
+**Verification Test:**
+- **Before fix**: Change Target Alexandria→Attawapiskat: e_10 changes 211.6→243.8 ❌
+- **After fix**: Change Target Alexandria→Attawapiskat: e_10 stays 211.6 ✅
+
+**Impact**: CRITICAL bug eliminated - **perfect dual-state architecture now achieved**! Target and Reference models are fully independent.
+
+**Investigation Tools Used:**
+- S03 location logging (Target vs Reference)
+- S04 upstream value logging (ref_d_136 trace)
+- S15 Reference calculation logging (upstream inputs)
+- Systematic binary search through calculation chain
+
+**Commits**:
+- Investigation: `6f5087f` (logging cleanup)
+- **THE FIX**: Next commit (S13 mode-aware HDD read)
+
+**Historical Context**: This bug existed for 12 months (Memory ID 9085566, 8850660). Multiple previous attempts failed. Success achieved through methodical investigation, not code changes.
+

@@ -1475,11 +1475,6 @@ window.TEUI.SectionModules.sect15 = (function () {
         ref_teuTargetedElecHPGasOil = k51 + d117_effective + m43_final + h70;
       }
 
-      // 🔍 CRITICAL DEBUG: Log S15 Reference d_136 calculation details (commented out for clean logs)
-      // console.log(`[S15 REF DEBUG] d_136 calculation: heating=${primaryHeating}`);
-      // console.log(`[S15 REF DEBUG] d_136 inputs: k51=${k51}, d117=${d117_effective}, d114=${d114}, m43=${m43_final}, h70=${h70}`);
-      // console.log(`[S15 REF DEBUG] d_136 result: ${ref_teuTargetedElecHPGasOil}`);
-
       setReferenceValue("d_136", ref_teuTargetedElecHPGasOil);
 
       // h_136: TEUI (HP/Gas/Oil) (Reference)

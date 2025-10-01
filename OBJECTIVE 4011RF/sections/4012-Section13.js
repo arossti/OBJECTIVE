@@ -2531,7 +2531,13 @@ window.TEUI.SectionModules.sect13 = (function () {
    */
   function calculateVentilationEnergy(isReferenceCalculation = false) {
     const ventRate = window.TEUI.parseNumeric(getFieldValue("d_120")) || 0;
-    const hdd = getGlobalNumericValue("d_20");
+    
+    // 🔧 BUG #4 FIX: Read mode-aware HDD for ventilation energy calculation
+    // This fixes 12-month state mixing issue where Reference calculations used Target climate data
+    const hdd = isReferenceCalculation
+      ? getGlobalNumericValue("ref_d_20")  // Reference reads ref_d_20 (independent location)
+      : getGlobalNumericValue("d_20");      // Target reads d_20 (independent location)
+    
     // ✅ PATTERN 1: Mode-aware reading (automatic with temporary mode switching)
     const efficiency =
       (window.TEUI.parseNumeric(ModeManager.getValue("d_118")) || 0) / 100;
