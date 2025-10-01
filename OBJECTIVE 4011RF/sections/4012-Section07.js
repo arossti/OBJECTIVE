@@ -190,6 +190,33 @@ window.TEUI.SectionModules.sect07 = (function () {
             console.log(
               `🎚️ [S07] refreshUI: Setting slider ${fieldId} = "${valueToShow || ""}"`,
             );
+            
+            // ✅ CRITICAL FIX: Update d_52 slider range based on d_51 system type (Bug #8 fix)
+            if (fieldId === "d_52") {
+              const systemType = currentState.getValue("d_51") || "Heatpump";
+              console.log(
+                `🎚️ [S07] refreshUI: Updating d_52 slider range for system="${systemType}"`,
+              );
+              
+              // Update range based on system type (following S10 pattern)
+              if (systemType === "Electric") {
+                targetElement.min = 90;
+                targetElement.max = 100;
+                targetElement.step = 1;
+              } else if (systemType === "Gas" || systemType === "Oil") {
+                targetElement.min = 50;
+                targetElement.max = 98;
+                targetElement.step = 1;
+              } else { // Heatpump
+                targetElement.min = 100;
+                targetElement.max = 450;
+                targetElement.step = 10;
+              }
+              console.log(
+                `🎚️ [S07] refreshUI: d_52 slider range updated to min=${targetElement.min}, max=${targetElement.max}, step=${targetElement.step}`,
+              );
+            }
+            
             targetElement.value = valueToShow || "";
             // Also update the display span if it exists
             const displaySpan = document.querySelector(
