@@ -184,8 +184,11 @@ window.TEUI.CoolingCalculations = (function () {
       Math.exp((17.625 * state.wetBulbTemperature) / (state.wetBulbTemperature + 243.04));
 
     // Calculate partial pressure of water vapor
-    // Excel A58: A56 * A57
-    const partialPressure = pSatAvg * state.coolingSeasonMeanRH;
+    // Excel A58 = A56 * A57
+    // Where A57 = 0.7 (Outdoor Seasonal Relative Humidity %)
+    // NOTE: A57 (0.7) is DIFFERENT from A4 (0.5585 coolingSeasonMeanRH)!
+    const outdoorSeasonalRH = 0.7; // A57 from COOLING-TARGET.csv line 57
+    const partialPressure = pSatAvg * outdoorSeasonalRH;
 
     // Calculate indoor saturation vapor pressure
     const pSatIndoor =
