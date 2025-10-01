@@ -422,14 +422,17 @@ window.TEUI.CoolingCalculations = (function () {
     const i_59 = window.TEUI.StateManager.getValue("i_59");
     state.indoorRH = i_59 ? parseFloat(i_59) / 100 : 0.45;
     
-    // Calculate latent load factor
-    state.latentLoadFactor = calculateLatentLoadFactor();
-
-    // Calculate atmospheric values
+    // CRITICAL: Must calculate humidity ratios BEFORE latent load factor
+    // because A6 formula depends on A63 (humidityRatioDifference)
+    
+    // Calculate atmospheric values (needed for humidity ratios)
     calculateAtmosphericValues();
 
-    // Calculate humidity ratios
+    // Calculate humidity ratios (calculates humidityRatioDifference = A63)
     calculateHumidityRatios();
+
+    // Calculate latent load factor (now has humidityRatioDifference available)
+    state.latentLoadFactor = calculateLatentLoadFactor();
 
     // Calculate wet bulb temperature
     calculateWetBulbTemperature();
