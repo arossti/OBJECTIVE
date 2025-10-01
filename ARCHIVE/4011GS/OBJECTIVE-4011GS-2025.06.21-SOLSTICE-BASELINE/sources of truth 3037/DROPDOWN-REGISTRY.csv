@@ -1,0 +1,47 @@
+﻿DROPDOWN_REGISTRY,,DROPDOWN_REGISTRY,"ADD PERCENTAGE, NUMBER, COEFFICIENT SLIDERS NOT NAMED HERE",
+Worksheet,Call Reference,JavaScript ID,OBJECTIVE Dropdown Reference/Name,Dropdown Values (when listed twice it is because the cell spans 2)
+REPORT,$D$12,d_12,B.1 Major Occupancy,Occupancies, A-Assembly, B1-Detention, B2-Care and Treatment, B3-Detention Care & Treatment, C-Residential, D-Business & Personal Services, E-Mercantile, F-Industrial
+REPORT,$E$12,e_12,B.1 Major Occupancy,Occupancies, A-Assembly, B1-Detention, B2-Care and Treatment, B3-Detention Care & Treatment, C-Residential, D-Business & Personal Services, E-Mercantile, F-Industrial
+REPORT,$H$12,h_12,D.1 Reporting Period,"2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030, 2031, 2032, 2033, 2034, 2035, 2036, 2037, 2038, 2039, 2040, 2041"
+REPORT,$D$13,d_13,S.1 Reference Standard,OBC SB12 3.1.1.2.C4, OBC SB12 3.1.1.2.C1, OBC SB10 5.5-6 Z6, OBC SB10 5.5-6 Z5 (2010), ADD YOUR OWN HERE, NBC T1, NBC T2, NBC T3, NBC T4, NBC T5, CaGBC ZCB, NECB T1 (Z6), PH Classic, PH Plus, PH Premium, EnerPHit, PH Low Energy
+REPORT,$E$13,e_13,S.1 Reference Standard,OBC SB12 3.1.1.2.C4, OBC SB12 3.1.1.2.C1, OBC SB10 5.5-6 Z6, OBC SB10 5.5-6 Z5 (2010), ADD YOUR OWN HERE, NBC T1, NBC T2, NBC T3, NBC T4, NBC T5, CaGBC ZCB, NECB T1 (Z6), PH Classic, PH Plus, PH Premium, EnerPHit, PH Low Energy
+REPORT,$H$13,h_13,D.2 Service Life (yrs),"30, 40, 50, 60, 70, 80, 90, 100"
+REPORT,$D$14,d_14,S.2 Actual (Bills) or Targeted (Design) Use,"Targeted Use, Utility Bills"
+REPORT,$E$14,e_14,S.3 Carbon Benchmarking Standard,BR18 (Denmark), IPCC AR6 EPC, IPCC AR6 EA, TGS4, CaGBC ZCB D, CaGBC ZCB P, Self Reported, Not Reported
+REPORT,$D$15,d_15,S.3 Carbon Benchmarking Standard,BR18 (Denmark), IPCC AR6 EPC, IPCC AR6 EA, TGS4, CaGBC ZCB D, CaGBC ZCB P, Self Reported, Not Reported
+REPORT,$D$19,d_19,L.1 Province,"AB, BC, MB, NB, NL, NS, NT, NU, ON, PE, QC, SK, YT "
+REPORT,$H$19,h_19,L.2 City,"Cities (a very long list of values, will provide the full list later when we populate the weather JSON file."
+REPORT,$H$20,h_20,L.2.3. Current or Future Values,"Future, Present"
+REPORT,$H$21,h_21,G.4.2 Capacitance Factor,"Static, Capacitance"
+REPORT,$D$39,d_39,E.3.1 Typology-Based Carbon Intensity (A1-3),"Pt.9 Res. Stick Frame, Pt.9 Small Mass Timber, Pt.3 Mass Timber, Pt.3 Concrete, Pt.3 Steel, Pt.3 Office, Modelled Value"
+REPORT,$D$48,d_48,SECTION 7. Water Use (B7),"Measured, Targeted"
+REPORT,$D$49,d_49,W.1.0 Total Water Use (Method),"User Defined, PHPP Method, NBC Method, OBC Method, Luxury, By Engineer"
+REPORT,$D$51,d_51,W.3.1 DHW or SHW Energy Source ,"Electric, Heatpump, Gas"
+REPORT,$D$55,d_55,SECTION 8. Indoor Air Quality,"Measured, Targeted"
+REPORT,$G$63,g_63,G.1.3 Avg. Daily Occupied Hrs,"0, 8, 10, 12, 16, 24"
+REPORT,$D$64,d_64,G.1.2 Occupant Activity,"Relaxed, Normal, Active, Hyperactive"
+REPORT,$F$67,f_67,P.3.3 Eqpt. Energy Spec,"Regular, Low Energy"
+REPORT,$D$68,d_68,P.3.2 Elevator Loads  (W/m2 → Eqpt Gains),"Elevators, No Elevators"
+REPORT,$E$73,e_73,Orientation,"Average, North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest"
+REPORT,$F$73,f_73,SHGC,"0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60"
+REPORT,$E$74,e_74,Orientation,"Average, North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest"
+REPORT,$F$74,f_74,SHGC,"0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60"
+REPORT,$E$75,e_75,Orientation,"Average, North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest"
+REPORT,$F$75,f_75,SHGC,"0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60"
+REPORT,$E$76,e_76,Orientation,"Average, North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest"
+REPORT,$F$76,f_76,SHGC,"0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60"
+REPORT,$E$77,e_77,Orientation,"Average, North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest"
+REPORT,$F$77,f_77,SHGC,"0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60"
+REPORT,$E$78,e_78,Orientation,"Average, North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest, Skylight"
+REPORT,$F$78,f_78,SHGC,"0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60"
+REPORT,$D$97,d_97,B.12 Thermal Bridge Penalty (min. 5-70%),"GENERIC Percentage Slider (with this one set w. Range 5-70, steps of 5"
+REPORT,$D$80,d_80,G.4 Net Usable Heating Season Gains,"NRC 0%, NRC 40%, NRC 50%, NRC 60%, PH Method"
+REPORT,$D$103,d_103,B.18.3 Heating Natural Air Leakage Heatloss,"1, 1.5, 2, 3, 4, 5, 6"
+REPORT,$G$103,g_103,B.18.3 Shielding,"Shielded, Normal, Exposed"
+REPORT,$D$108,d_108,B.18.1 NRL50 Target Method NBC2025 (Part 9),"Measured, PH Classic, PH Low, PH+, AL-1A, AL-2A, AL-3A, AL-4A, AL-5A, AL-1B, AL-2B, AL-3B, AL-4B, AL-5B, AL-6B"
+REPORT,$I$110,i_110,B.18.3 Zone,"1, 2, 3, 4"
+REPORT,$D$113,d_113,M.1.0 Primary Heating System ,"Heatpump, Electricity, Gas, Oil"
+REPORT,$D$116,d_116,M.3.0 Heatpump or Dedicated Cooling System,"Cooling, No Cooling"
+REPORT,$H$118,h_118,V.1.2 Ventilation Method,"Volume Constant, Volume by Schedule, Occupant Constant, Occupant by Schedule"
+REPORT,$L$118,l_118,V.1.3 ACH (Only if Volume-Based),"GENERIC Number, 0-15 range, steps of 0.01"
+REPORT,$L$119,l_119,V.1.5 Summer Boost Rate,"None, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70, 1.80, 1.90, 2.00"

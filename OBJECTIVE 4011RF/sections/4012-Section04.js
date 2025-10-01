@@ -853,7 +853,7 @@ window.TEUI.SectionModules.sect04 = (function () {
     const d_27 = window.TEUI.parseNumeric(ModeManager.getValue("d_27")) || 0;
     const d_43 = getGlobalNumericValue("d_43") || 0;
     const i_43 = getGlobalNumericValue("i_43") || 0;
-    const h_27 = getGlobalNumericValue("d_136") || 0;
+    const h_27 = getGlobalNumericValue("d_136") || 0; // Reads ref_d_136 in Reference mode
     const l_27 = getElectricityEmissionFactor();
     
     setFieldValue("h_27", h_27);

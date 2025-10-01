@@ -1713,9 +1713,9 @@ window.TEUI.SectionModules.sect15 = (function () {
       const d23 = getNumericValue("d_23") || 0; // Coldest Days Temp (from S03)
       const d24 = getNumericValue("d_24") || 0; // Hottest Days Temp (from S03)
       const h24 = getNumericValue("h_24") || 0; // Tset Cooling (from S03)
-      console.log(
-        `[S15] 🎯 TGT S03 CLIMATE READ: h_23=${h23}, d_23=${d23}, d_24=${d24}, h_24=${h24}`,
-      );
+      // console.log(
+      //   `[S15] 🎯 TGT S03 CLIMATE READ: h_23=${h23}, d_23=${d23}, d_24=${d24}, h_24=${h24}`,
+      // );
 
       const d65 = getNumericValue("d_65"); // Plug Loads W/m2
       const d66 = getNumericValue("d_66"); // Lighting Loads W/m2

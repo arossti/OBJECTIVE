@@ -1129,11 +1129,11 @@ window.TEUI.SectionModules.sect11 = (function () {
           // ✅ FIXED: Reference calculations read ONLY ref_ values (no fallbacks)
           const ref_hdd = getGlobalNumericValue("ref_d_20") || 0;
           hdd = ref_hdd;
-          console.log(`[S11] 🔵 REF CLIMATE READ: d_20=${hdd}`);
+          // console.log(`[S11] 🔵 REF CLIMATE READ: d_20=${hdd}`);
 
           const ref_cdd = getGlobalNumericValue("ref_d_21") || 0;
           heatgainMultiplier = ref_cdd * 24;
-          console.log(`[S11] 🔵 REF CLIMATE READ: d_21=${ref_cdd}`);
+          // console.log(`[S11] 🔵 REF CLIMATE READ: d_21=${ref_cdd}`);
 
           // 🔍 S11 REFERENCE CONTAMINATION TRACKER
           // console.log(`🔍 S11 REFERENCE: HDD=${hdd} (ref_d_20=${ref_hdd}, global_d_20=${global_hdd})`);
@@ -1142,11 +1142,11 @@ window.TEUI.SectionModules.sect11 = (function () {
           // ✅ FIXED: Target calculations read unprefixed climate data (Pattern A)
           const hdd_value = getGlobalNumericValue("d_20") || 0;
           hdd = hdd_value;
-          console.log(`[S11] 🎯 TGT CLIMATE READ: d_20=${hdd}`);
+          // console.log(`[S11] 🎯 TGT CLIMATE READ: d_20=${hdd}`);
 
           const cdd_value = getGlobalNumericValue("d_21") || 0;
           heatgainMultiplier = cdd_value * 24;
-          console.log(`[S11] 🎯 TGT CLIMATE READ: d_21=${cdd_value}`);
+          // console.log(`[S11] 🎯 TGT CLIMATE READ: d_21=${cdd_value}`);
 
           // 🚨 S11 TARGET CONTAMINATION TRACKER
           // console.log(`🚨 S11 TARGET: HDD=${hdd} (target_d_20=${target_hdd}, global_d_20=${global_hdd})`);
@@ -1163,7 +1163,7 @@ window.TEUI.SectionModules.sect11 = (function () {
         if (isReferenceCalculation) {
           // ✅ FIXED: Reference calculations read ONLY ref_ values (no fallbacks)
           hdd = getGlobalNumericValue("ref_d_22") || 0;
-          console.log(`[S11] 🔵 REF CLIMATE READ: d_22=${hdd}`);
+          // console.log(`[S11] 🔵 REF CLIMATE READ: d_22=${hdd}`);
         } else {
           // ✅ FIXED: Target calculations read unprefixed climate data (Pattern A)
           hdd = getGlobalNumericValue("d_22") || 0;

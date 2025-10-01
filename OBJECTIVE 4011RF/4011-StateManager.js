@@ -338,13 +338,13 @@ TEUI.StateManager = (function () {
       window.TEUI.Clock.markUserInteractionStart();
     }
 
-    // 🔍 RACE CONDITION DEBUG: Track all h_10 setValue calls
-    if (fieldId === "h_10") {
-      console.log(
-        `[StateManager] 🎯 h_10 setValue: "${value}" (state: ${state})`,
-      );
-      console.trace("[StateManager] h_10 setValue stack trace:");
-    }
+    // 🔍 RACE CONDITION DEBUG: Track all h_10 setValue calls (COMMENTED OUT - too verbose)
+    // if (fieldId === "h_10") {
+    //   console.log(
+    //     `[StateManager] 🎯 h_10 setValue: "${value}" (state: ${state})`,
+    //   );
+    //   console.trace("[StateManager] h_10 setValue stack trace:");
+    // }
 
     // Check if we're in Reference Mode and this is an independently editable field
     if (
