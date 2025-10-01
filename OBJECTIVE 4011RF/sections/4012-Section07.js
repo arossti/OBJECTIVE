@@ -217,13 +217,15 @@ window.TEUI.SectionModules.sect07 = (function () {
               );
             }
             
-            targetElement.value = valueToShow || "";
-            // Also update the display span if it exists
-            const displaySpan = document.querySelector(
-              `span[data-display-for="${fieldId}"]`,
-            );
-            if (displaySpan)
-              displaySpan.textContent = (valueToShow || "0") + "%";
+            // ✅ S10/S11 PATTERN: Parse to numeric, set as number, use nextElementSibling
+            const numericValue = window.TEUI?.parseNumeric?.(valueToShow, 0) ?? 0;
+            targetElement.value = numericValue; // Set as NUMBER, not string
+            
+            const display = targetElement.nextElementSibling; // Use nextElementSibling like S10/S11
+            if (display) {
+              display.textContent = `${numericValue}%`;
+            }
+            
             // Store the default if no value was stored yet
             if (storedValue === null && fieldDefault) {
               currentState.setValue(fieldId, fieldDefault);

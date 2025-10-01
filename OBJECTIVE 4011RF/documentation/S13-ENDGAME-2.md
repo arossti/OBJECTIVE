@@ -1275,97 +1275,51 @@ const ref_d_113 = getValue("ref_d_113") || "Electricity"; // ❌ Masks missing s
 
 ---
 
-### **✅ S07 Bug #8 PARTIALLY FIXED (Oct 1, 2025 - Late Afternoon)**
+### **✅ S07 Bug #8 COMPLETELY FIXED (Oct 1, 2025 - Late Afternoon/Evening)** 🎉
 
-**Status**: State separation achieved, slider range update pending
+**Status**: ✅ RESOLVED - Perfect dual-state independence achieved
 
-**What Was Fixed (Commit `a51150f` + pending):**
+**What Was Fixed:**
 
-**1. Reference Defaults Corrected:**
+**Fix 1: Reference Defaults Corrected** (Commit `a51150f`)
 ```javascript
 // ReferenceState.setDefaults():
 this.values.d_51 = "Electric"; // Instead of "Heatpump"
 this.values.d_52 = "90";       // 90% efficiency for Electric
 ```
 
-**Result:**
-- ✅ Target mode: Shows "Heatpump" @ 300% (independent)
-- ✅ Reference mode: Shows "Electric" @ 90% (independent)
-- ✅ Mode switch: Each mode restores its own saved values
-- ✅ Bug #8 state carryover: FIXED!
+**Fix 2: Slider Range Update in refreshUI()** (Commit `b9e4f4c`)
+- Added d_52 slider min/max/step update based on d_51 system type
+- Updates range on every mode switch
 
-**Remaining Issue: Slider Range Not Updating on First Mode Switch**
+**Fix 3: S10/S11 Pattern Compliance** (Commit `[NEXT]`)
+- **Root cause found**: S07 was setting `slider.value = "90"` (STRING) instead of `90` (NUMBER)
+- **Secondary issue**: Used `querySelector` instead of `nextElementSibling` for display element
+- **Fixed by following proven S10/S11 pattern**:
 
-**Symptom**: When first switching to Reference mode:
-- Dropdown correctly shows "Electric" ✅
-- Slider value shows "300%" (from Target state) ❌
-- Slider range shows 100-450% (Heatpump range) ❌
-- **After** changing system in Reference mode, slider updates correctly ✅
-
-**Root Cause**: `refreshUI()` updates dropdown and slider **value**, but doesn't update slider **min/max/step** attributes.
-
-**S10 Pattern Reference** (lines 307-330 of 4012-Section10.js):
 ```javascript
-// S10 sliders don't need range updates (always same min/max)
-const slider = element.matches('input[type="range"]') 
-  ? element 
-  : element.querySelector('input[type="range"]');
-if (slider) {
-  slider.value = numericValue; // Position from state ✅
-  const display = slider.nextElementSibling;
-  if (display) display.textContent = displayValue + "%";
+// ✅ S10/S11 PATTERN: Parse to numeric, set as number, use nextElementSibling
+const numericValue = window.TEUI?.parseNumeric?.(valueToShow, 0) ?? 0;
+targetElement.value = numericValue; // Set as NUMBER, not string
+const display = targetElement.nextElementSibling; // Use nextElementSibling like S10/S11
+if (display) {
+  display.textContent = `${numericValue}%`;
 }
 ```
 
-**S07 Unique Requirement**: Slider range changes based on system type:
-- **Electric**: min=90, max=100, step=1, default=90
-- **Gas/Oil**: min=50, max=98, step=1, default=80
-- **Heatpump**: min=100, max=450, step=10, default=300
+**Result - All Issues Resolved:**
+- ✅ Target mode: Shows "Heatpump" @ 300% (independent, correct range)
+- ✅ Reference mode: Shows "Electric" @ 90% (independent, correct range)
+- ✅ First mode switch: Slider position, range, AND display all correct immediately
+- ✅ Bidirectional bleed eliminated: Toggle Target→Reference→Target perfect every time
+- ✅ Follows established S10/S11 architecture (zero tech debt)
 
-**Proposed Fix** (following established architecture):
+**Slider Ranges by System Type:**
+- **Electric**: min=90, max=100, step=1, default=90%
+- **Gas/Oil**: min=50, max=98, step=1, default=80%
+- **Heatpump**: min=100, max=450, step=10, default=300%
 
-Add slider range update to S07's `refreshUI()` following S10's pattern:
-```javascript
-// In refreshUI(), after syncing field values:
-fieldsToSync.forEach((fieldId) => {
-  // ... existing dropdown/editable sync ...
-  
-  // For d_52 slider specifically
-  if (fieldId === "d_52") {
-    const systemType = currentState.getValue("d_51") || "Heatpump";
-    const slider = element.matches('input[type="range"]') 
-      ? element 
-      : element.querySelector('input[type="range"]');
-    
-    if (slider) {
-      // Update range based on system type
-      if (systemType === "Electric") {
-        slider.min = 90;
-        slider.max = 100;
-        slider.step = 1;
-      } else if (systemType === "Gas" || systemType === "Oil") {
-        slider.min = 50;
-        slider.max = 98;
-        slider.step = 1;
-      } else { // Heatpump
-        slider.min = 100;
-        slider.max = 450;
-        slider.step = 10;
-      }
-      
-      // Update value and display (standard S10 pattern)
-      const numericValue = window.TEUI.parseNumeric(stateValue, 0);
-      slider.value = numericValue;
-      const display = slider.nextElementSibling;
-      if (display) display.textContent = numericValue + "%";
-    }
-  }
-});
-```
-
-**Implementation**: Deferred to next session (simple, architectural-compliant fix)
-
-**Priority**: LOW (workaround exists - changing system once in Reference mode fixes slider)
+**Bug #8: CLOSED** ✅
 
 ---
 
