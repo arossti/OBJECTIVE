@@ -1,5 +1,5 @@
 /**
- * 4011-Section13.js - formerly 4011-Section13-CONTEXT.js. 
+ * 4011-Section13.js - FOR REFERENCE ONLY - NOT IN ACTIVE APP LOOP - formerly 4011-Section13-CONTEXT.js. 
  * Mechanical Loads (Section 13) module for TEUI Calculator 4.011
  * HSPF fixed to work in both states (post Aug 31 refactor)
  * This section no longer needs to integrate with 4011-Cooling.js for complex cooling calculations - file still suffers from state mixing on ventilation changes
