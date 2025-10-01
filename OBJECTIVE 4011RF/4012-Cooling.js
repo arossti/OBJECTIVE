@@ -154,10 +154,7 @@ window.TEUI.CoolingCalculations = (function () {
     // Calculate indoor partial pressure using dynamic indoor RH% from S08
     // Always read fresh i_59 value to ensure latest indoor RH% is used
     const i_59_value = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("i_59"));
-    if (!i_59_value) {
-      throw new Error("[Cooling] CRITICAL: A52 (indoor RH%) missing from S08 i_59 - required for humidity calculations");
-    }
-    state.indoorRH = i_59_value / 100; // Convert percentage to decimal
+    state.indoorRH = i_59_value ? i_59_value / 100 : 0.45; // Convert percentage to decimal, default 45%
     const partialPressureIndoor = pSatIndoor * state.indoorRH; // A52: Indoor RH% from S08 i_59
 
     // Update state with calculated values

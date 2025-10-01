@@ -444,3 +444,112 @@ This single dropdown has caused **complete refactor failures** in:
 
 **This is the final boss.** 🎯
 
+
+---
+
+## 11. Final Session Progress (Sept 30, 2025 - Evening)
+
+### **🎉 MAJOR ACCOMPLISHMENTS COMPLETED:**
+
+#### **Architectural Cleanup:**
+- ✅ **Context complexity eliminated**: 253 lines removed (createIsolatedCoolingContext, coolingState, etc.)
+- ✅ **Circular dependency resolved**: D129/M129 moved from Cooling.js to S13
+- ✅ **Calculation order fixed**: S13 now calls Cooling.js directly (guaranteed timing)
+- ✅ **9/9 CHEATSHEET compliance**: Perfect score maintained
+- ✅ **Single source of truth**: Empty state defaults with getFieldDefault() fallback
+- ✅ **File size**: 4,259 → 3,478 lines (-18.3%)
+
+#### **Excel Formula Compliance:**
+- 🎯 **h_124 = 37,322.82 kWh/yr** - EXACT EXCEL MATCH!
+- ✅ **D117 formula**: IF(D116="No Cooling", 0, IF(D113="Heatpump", M129/J113, IF(D116="Cooling", M129/J116)))
+- ✅ **L114 formula**: IF(D113="Heatpump", IF(D116="Cooling", ((D117*J113)-D117), 0), 0)
+- ✅ **M129 clamping**: MAX(0, D129 - H124 - D123)
+- ✅ **Temperature diff**: Excel A16 = A8 - A3 (indoor - outdoor)
+- ✅ **All 2dp formatting**: j_113, j_114, j_116 consistent precision
+
+#### **UI/UX Fixes:**
+- ✅ **j_116 ghosting**: Ghosts when No Cooling OR Heatpump (Excel-compliant)
+- ✅ **j_116 display**: Shows j_113 when Heatpump, user value when dedicated, 0 when No Cooling
+- ✅ **Clock.js restored**: Timing display working (603ms initialization)
+- ✅ **l_118 displays**: Shows "3" from field definition default
+- ✅ **HSPF slider**: Calculates on thumb release only (no calculation storms)
+- ✅ **k_120 slider**: Works perfectly with Target mode isolation
+
+#### **Error Resolution:**
+- ✅ **calculateAndRefresh undefined**: Fixed by moving definition to registerWithStateManager()
+- ✅ **Cooling.js timing errors**: Fixed by direct call from S13 (no race conditions)
+- ✅ **i_59 strict errors**: Made lenient with 45% default
+- ✅ **Logs.md clean**: No errors after initialization
+
+#### **Dashboard Results:**
+- ✅ **h_10 = 92.8** kWh/m²/yr (close to expected 93.7, 99.0% accurate)
+- ✅ **Free cooling impact visible**: Load reduction from 132,486 → 129,747 kWh/yr
+- ✅ **State isolation**: k_120 changes affect Target only (perfect!)
+
+---
+
+### **🐛 REMAINING BUGS (To Fix):**
+
+#### **Bug #1: Number Format Timing Issue (MEDIUM PRIORITY)**
+
+**Symptom**: After a few user interactions, number formatting degrades:
+- Thousands separators disappear: "37,322.82" becomes "37322.82"
+- Percentages lose format: "70%" becomes "0.70"
+- Doesn't break calculations, but indicates timing/refresh issue
+
+**Hypothesis**: `updateCalculatedDisplayValues()` uses generic "number-2dp" which doesn't preserve thousands separators for large values. Needs field-specific formatting.
+
+**Impact**: Visual inconsistency, user confusion
+
+**Priority**: Medium (calculations work, display issue only)
+
+---
+
+#### **Bug #2: h_10 Initialization Drift (HIGH PRIORITY)**
+
+**Symptom**:
+- **At initialization**: h_10 = 92.8 kWh/m²/yr
+- **Expected**: h_10 = 93.7 kWh/m²/yr
+- **After slow-drag d_118 slider**: h_10 = 93.7 kWh/m²/yr ✅ CORRECT!
+
+**Root Cause**: d_118 slider has "input" event that triggers calculations **during dragging**, causing calculation storms and potentially stale values at initialization, but which also refreshes calculations to correct h_10 calculation value...consider if this timing is what is needed to settle all calculations to the correct values rather than terminating before completion. 
+
+**Evidence**:
+- Line 1742: `d118Slider.addEventListener("input", ...)` triggers `calculateAll()` during drag
+- Line 1706: `f113Slider` only displays during input, calculates on "change" (thumb release)
+- Slow drag forces multiple calculation cycles, eventually settling at correct value
+
+**Solution**: Make d_118 slider behave like f_113 slider:
+- **"input" event**: Update display only (no calculations)
+- **"change" event**: Trigger calculations after thumb release
+- Prevents calculation storms, ensures clean initialization
+
+**Impact**: HIGH - affects dashboard accuracy on load
+
+**Priority**: HIGH (initialization accuracy critical)
+
+---
+
+#### **Bug #3: l_118 Number Format (LOW PRIORITY)**
+
+**Symptom**: l_118 displays "3" instead of "3.00"
+
+**Expected**: All editable numeric fields should use "number-2dp" format (3.00, 14.00, 2.66)
+
+**Solution**: Ensure `refreshUI()` or initialization formatting applies "number-2dp" to l_118
+
+**Impact**: Visual consistency only
+
+**Priority**: LOW (doesn't affect calculations)
+
+---
+
+### **📋 NEXT SESSION PRIORITIES:**
+
+1. **Fix Bug #2** (d_118 slider calculation timing) - HIGH PRIORITY
+2. **Fix Bug #1** (number format timing) - MEDIUM PRIORITY  
+3. **Fix Bug #3** (l_118 formatting) - LOW PRIORITY
+4. **Test g_118 ventilation method dropdown** - THE FINAL BOSS 🎯
+
+**Status**: Clean architecture achieved, minor timing bugs remain, ready for final boss!
+

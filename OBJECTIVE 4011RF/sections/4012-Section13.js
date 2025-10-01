@@ -2160,6 +2160,12 @@ window.TEUI.SectionModules.sect13 = (function () {
     if (!window.TEUI.StateManager) return;
 
     const sm = window.TEUI.StateManager;
+    
+    // Helper function for external dependency changes - DUAL-STATE PATTERN COMPLIANT
+    const calculateAndRefresh = () => {
+      calculateAll();
+      ModeManager.updateCalculatedDisplayValues();
+    };
 
     // Register dependencies from other sections
     sm.registerDependency("d_20", "d_121");
@@ -2218,6 +2224,10 @@ window.TEUI.SectionModules.sect13 = (function () {
     sm.addListener("cooling_latentLoadFactor", calculateAndRefresh); // i_122 affects D122/D123
     sm.addListener("cooling_h_124", calculateAndRefresh); // Free cooling capacity affects H124, D124
     sm.addListener("cooling_m_124", calculateAndRefresh); // Days active cooling affects M124
+    
+    // Listen for S08 indoor RH% changes (affects cooling calculations)
+    sm.addListener("i_59", calculateAndRefresh);      // Target indoor RH%
+    sm.addListener("ref_i_59", calculateAndRefresh);  // Reference indoor RH%
   }
 
   /**
