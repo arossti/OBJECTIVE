@@ -1018,3 +1018,61 @@ S01: e_10=211.6 ✅✅✅
 
 **Historical Context**: This bug existed for 12 months (Memory ID 9085566, 8850660). Multiple previous attempts failed. Success achieved through methodical investigation, not code changes.
 
+---
+
+## 13. QC Monitoring & Fallback Read Antipatterns
+
+### **📊 Periodic QC Report Review (Recommended Practice)**
+
+**Purpose**: QCMonitor provides automated detection of architectural antipatterns and potential bugs that may not surface during normal testing.
+
+**How to Generate QC Reports**:
+1. Enable QC Monitor: Add `?qc=true` to URL
+2. Navigate to Section 18 (bottom of app)
+3. Click "Generate QC Report" button
+4. Copy report to Logs.md for review
+
+**Key Violation Categories to Monitor**:
+
+#### **🔍 FALLBACK_READ (20 violations detected Oct 1, 2025)**
+
+**What it means**: Code is using fallback values when expected StateManager value is missing
+**Why it matters**: Silent failures - calculations proceed with wrong defaults instead of erroring
+**Per 4012-CHEATSHEET.md**: Fallback reads are antipatterns that mask missing dependencies
+
+**Current Fallback Violations**:
+- **S09**: `j_63` (hardcoded 8760 instead of reading from state)
+- **S09**: `ref_d_66`, `ref_d_60` (Reference lighting/wood values)
+- **S06**: `ref_m_43` (Reference renewable energy)
+- **S02**: `ref_d_113`, `ref_d_142`, `ref_d_116`, `ref_d_124` (Reference system selections)
+- **S03**: `ref_d_28`, `ref_d_29` (Reference fuel values)
+- **S04**: `ref_d_31`, `ref_d_30` (Reference fuel values)
+- **S01**: `ref_e_51`, `ref_k_54`, `k_96` (Reference heating values)
+- **S11**: `i_96`, `g_96`, `f_96` (Envelope component values)
+
+**Recommended Action**:
+- Review fallback reads quarterly
+- Evaluate if each fallback is legitimate (initialization timing) or antipattern (missing state)
+- Convert antipattern fallbacks to strict reads with proper error handling
+- Document legitimate fallbacks with clear comments explaining why they exist
+
+**Example Legitimate Fallback**:
+```javascript
+// Legitimate: j_63 is always 8760 (hours in year), not state-dependent
+const j_63 = 8760; // Fixed constant, not a fallback read
+```
+
+**Example Antipattern Fallback**:
+```javascript
+// Antipattern: Should error if ref_d_113 missing, not silently use default
+const ref_d_113 = getValue("ref_d_113") || "Electricity"; // ❌ Masks missing state
+```
+
+**Integration with Development Workflow**:
+- Generate QC report before major refactors (baseline)
+- Generate QC report after fixes (regression check)
+- Track violation count trends over time
+- Use fallback violations to identify incomplete dual-state coverage
+
+**Note**: Not all fallbacks are bugs - some are intentional for initialization robustness. The goal is to distinguish between safe fallbacks and dangerous antipatterns through periodic review.
+
