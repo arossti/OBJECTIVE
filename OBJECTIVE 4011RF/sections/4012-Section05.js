@@ -223,19 +223,6 @@ window.TEUI.SectionModules.sect05 = (function () {
       console.log(
         `🔄 [S05] updateCalculatedDisplayValues: mode=${this.currentMode}`,
       );
-      
-      // 🔧 S05 FIX: Ghost i_41 in Reference mode (calculated from i_39, not editable)
-      const i_41_element = document.querySelector('[data-field-id="i_41"]');
-      if (i_41_element) {
-        const cell = i_41_element.closest("td");
-        if (cell) {
-          // Ghost in Reference mode (i_41 = i_39, calculated)
-          // Editable in Target mode (user input)
-          const shouldGhost = this.currentMode === "reference";
-          cell.classList.toggle("ghost-text", shouldGhost);
-          i_41_element.contentEditable = !shouldGhost;
-        }
-      }
 
       calculatedFields.forEach((fieldId) => {
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
@@ -693,23 +680,38 @@ window.TEUI.SectionModules.sect05 = (function () {
   //==========================================================================
 
   /**
-   * Calculate GHGI Operational Emissions (d_38 = g_32/1000, g_38 = g_32/h_15)
+   * Calculate GHGI Operational Emissions
+   * Excel Target D38 = IF(D14="Utility Bills", G32/1000, K32/1000)
+   * Excel Reference D38 = K32/1000 (always uses Reference target emissions)
    */
   function calculateGHGI(isReferenceCalculation = false) {
-    // ✅ PATTERN 2: Explicit state access - no "current" state
-    const g_32_value = isReferenceCalculation
-      ? getGlobalNumericValue("ref_g_32") // Reference reads Reference upstream
-      : getGlobalNumericValue("g_32"); // Target reads Target upstream
-
     const h_15_value = isReferenceCalculation
       ? getGlobalNumericValue("ref_h_15") // Reference reads Reference upstream
       : getGlobalNumericValue("h_15"); // Target reads Target upstream
 
-    // ✅ CORRECTED: d_38 = g_32 / 1000 (convert kg to MT)
-    const d_38_result = g_32_value / 1000; // MT CO2e/yr
+    let emissionsValue, d_38_result;
+    
+    if (isReferenceCalculation) {
+      // Reference mode: D38 = ref_k_32 / 1000 (always Reference target emissions)
+      const ref_k_32 = getGlobalNumericValue("ref_k_32") || 0; // From S04 Reference
+      emissionsValue = ref_k_32;
+      d_38_result = ref_k_32 / 1000; // MT CO2e/yr
+    } else {
+      // Target mode: D38 = IF(D14="Utility Bills", G32/1000, K32/1000)
+      const d_14 = getGlobalNumericValue("d_14") || "Targeted Use"; // Reporting mode from S02
+      const g_32 = getGlobalNumericValue("g_32") || 0; // Actual emissions from S04
+      const k_32 = getGlobalNumericValue("k_32") || 0; // Target emissions from S04
+      
+      if (d_14 === "Utility Bills") {
+        emissionsValue = g_32; // Use actual (utility bills)
+      } else {
+        emissionsValue = k_32; // Use target (design/modelled)
+      }
+      d_38_result = emissionsValue / 1000; // MT CO2e/yr
+    }
 
-    // ✅ CORRECTED: g_38 = g_32 / h_15 (annual kgCO2e/m2)
-    const g_38_result = h_15_value > 0 ? g_32_value / h_15_value : 0;
+    // g_38 = emissions / h_15 (annual kgCO2e/m²)
+    const g_38_result = h_15_value > 0 ? emissionsValue / h_15_value : 0;
 
     // Store results in appropriate state
     if (isReferenceCalculation) {
@@ -788,16 +790,37 @@ window.TEUI.SectionModules.sect05 = (function () {
   }
 
   /**
-   * Calculate Total Embedded MT CO2e (d_40 = i_41 * d_106 / 1000)
+   * Calculate Total Embedded MT CO2e
+   * Excel: Target D40 = I41 × D106 / 1000 (user modelled value)
+   * Excel: Reference D40 = I39 × D106 / 1000 (typology-based cap)
    */
   function calculate_d_40(isReferenceCalculation = false) {
-    const i_41_value = getSectionValue("i_41", isReferenceCalculation);
     const d_106_value = isReferenceCalculation
       ? getGlobalNumericValue("ref_d_106") // Reference reads Reference upstream
       : getGlobalNumericValue("d_106"); // Target reads Target upstream
 
-    const i_41_numeric = window.TEUI.parseNumeric(i_41_value) || 0;
-    const d_40_result = (i_41_numeric * d_106_value) / 1000; // Result in MT CO2e
+    let carbonValue;
+    if (isReferenceCalculation) {
+      // Reference mode: Check if user selected "Modelled Value" exception
+      const d_39_typology = ReferenceState.getValue("d_39") || "";
+      
+      if (d_39_typology === "Modelled Value") {
+        // Exception: User can define i_41 in Reference mode
+        // D40 = I41 × D106 / 1000
+        const i_41_value = getSectionValue("i_41", true);
+        carbonValue = window.TEUI.parseNumeric(i_41_value) || 0;
+      } else {
+        // Standard: D40 = I39 × D106 / 1000 (typology-based cap)
+        const i_39_value = window.TEUI.StateManager.getValue("ref_i_39");
+        carbonValue = window.TEUI.parseNumeric(i_39_value) || 0;
+      }
+    } else {
+      // Target mode: Always D40 = I41 × D106 / 1000 (user modelled value)
+      const i_41_value = getSectionValue("i_41", false);
+      carbonValue = window.TEUI.parseNumeric(i_41_value) || 0;
+    }
+    
+    const d_40_result = (carbonValue * d_106_value) / 1000; // Result in MT CO2e
 
     if (isReferenceCalculation) {
       window.TEUI.StateManager.setValue("ref_d_40", d_40_result, "calculated");
@@ -808,31 +831,24 @@ window.TEUI.SectionModules.sect05 = (function () {
 
   /**
    * Calculate Lifetime Avoided MT CO2e (d_41)
-   * ✅ PHASE 1 & 6 FIX: Separate calculations for Target and Reference modes to prevent state mixing
+   * Excel D41 = (REFERENCE!D38 - REPORT!D38) × H13
+   * 
+   * NOTE: This is a COMPARISON value (Reference vs Target) - intentionally state-agnostic
+   * Both Target and Reference modes show the same value (avoided emissions from Target design)
    */
   function calculate_d_41(isReferenceCalculation = false) {
-    let d_41_result;
+    // Read from BOTH states for comparison
+    const d_38 = window.TEUI.StateManager.getValue("d_38") || 0; // Target operational emissions
+    const ref_d_38 = window.TEUI.StateManager.getValue("ref_d_38") || 0; // Reference operational emissions
+    const h_13 = getGlobalNumericValue("h_13") || 50; // Service life (same for both modes)
 
+    // Avoided emissions: Reference baseline minus Target performance
+    const d_41_result = (ref_d_38 - d_38) * h_13;
+
+    // Store in appropriate state (same value, different key)
     if (isReferenceCalculation) {
-      // ✅ REFERENCE MODE: Compare Reference operational vs Reference baseline
-      const ref_d_38 = window.TEUI.StateManager.getValue("ref_d_38") || 0;
-      const ref_baseline = window.TEUI.StateManager.getValue("ref_d_38") || 0; // Reference baseline (could be from different standard)
-      const ref_h_13 = getGlobalNumericValue("ref_h_13") || 50;
-
-      // For Reference mode: typically shows avoided emissions vs building code baseline
-      // Note: This may need refinement based on regulatory requirements
-      d_41_result = (ref_baseline - ref_d_38) * ref_h_13;
-
       window.TEUI.StateManager.setValue("ref_d_41", d_41_result, "calculated");
     } else {
-      // ✅ FIXED: Pattern A compliance - no target_ prefixes
-      const d_38 = window.TEUI.StateManager.getValue("d_38") || 0;
-      const ref_d_38 = window.TEUI.StateManager.getValue("ref_d_38") || 0;
-      const h_13 = getGlobalNumericValue("h_13") || 50;
-
-      // Standard avoided emissions: Reference baseline minus Target performance
-      d_41_result = (ref_d_38 - d_38) * h_13;
-
       window.TEUI.StateManager.setValue("d_41", d_41_result, "calculated");
     }
   }
@@ -951,19 +967,13 @@ window.TEUI.SectionModules.sect05 = (function () {
       const typology = ReferenceState.getValue("d_39");
       const cap = calculateTypologyBasedCap(typology, true);
       window.TEUI.StateManager.setValue("ref_i_39", cap, "calculated");
-      
-      // 🔧 S05 BUG FIX: Reference mode i_41 equals i_39 (typology-based cap)
-      // Excel: Reference D41 = I39 (calculated, not user-defined)
-      // Target D41 = user input (345.82), Reference D41 = typology cap
-      window.TEUI.StateManager.setValue("ref_i_41", cap, "calculated");
-      ReferenceState.setValue("i_41", cap.toString(), "calculated");
 
       // Run all calculations in Reference context
       calculateGHGI(true);
       calculate_i_38(true);
       calculate_i_40(true);
-      calculate_d_40(true);
-      calculate_d_41(true);
+      calculate_d_40(true); // Uses i_39 in Reference mode (different formula than Target)
+      calculate_d_41(true); // Uses ref_k_32/1000 in Reference mode
       calculatePercentages(true);
 
       // console.log("[S05] Reference model calculations complete");
