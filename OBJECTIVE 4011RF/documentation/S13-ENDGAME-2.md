@@ -1211,7 +1211,7 @@ const ref_d_113 = getValue("ref_d_113") || "Electricity"; // ❌ Masks missing s
 ### **📋 UPDATED BUG PRIORITIES:**
 
 **CRITICAL (Next Session):**
-1. **Bug #9** (d_12 occupancy state mixing) - PARTIALLY FIXED (Commit `5fe13b4`)
+1. ~~**Bug #9** (d_12 occupancy state mixing)~~ - ✅ FIXED (Commits `5fe13b4`, `48bba93`)
 2. **Bug #5** (g_118 ventilation method - THE FINAL BOSS)
 
 **HIGH:**
@@ -1226,7 +1226,7 @@ const ref_d_113 = getValue("ref_d_113") || "Electricity"; // ❌ Masks missing s
 7. **Bug #1** (number format timing)
 8. **Bug #3** (l_118 formatting)
 
-**Status**: Bug #4 eliminated! Bug #8 completely fixed! Bug #9 partially fixed - Reference model now protected from Target changes, but Target still affected by Reference changes. Pattern emerging: Many Reference mode features not working (Bugs #6, #7) - suggests systematic dual-state implementation gaps rather than isolated bugs.
+**Status**: Bug #4 eliminated! Bug #8 completely fixed! Bug #9 completely fixed! Pattern emerging: Many Reference mode features not working (Bugs #6, #7) - suggests systematic dual-state implementation gaps rather than isolated bugs.
 
 ---
 
@@ -1408,7 +1408,54 @@ After thorough investigation, we believe the remaining issue is due to:
 
 ---
 
-## 17. S07 Hot Water System - Bug Analysis & Fix Plan (Oct 1, 2025)
+## 17. Bug #9 - Complete Fix (Oct 1, 2025 - Evening)
+
+### **🐛 Bug #9 Complete Fix: Mode-Aware Wildcard Listener**
+
+**Status**: ✅ COMPLETELY FIXED - Both directions now working (Commit `48bba93`)
+
+**What Was Fixed:**
+
+**Fix 1: Made Cooling.js Mode-Aware** (Commit `5fe13b4`)
+- Added `mode` parameter to `calculateAll(mode = "target")` function
+- Created `getModeAwareValue(fieldId, defaultValue)` helper for mode-specific reads
+- Modified `updateStateManager()` to add `ref_` prefix for reference mode values
+- Updated all direct StateManager reads to use the mode-aware helper
+- Updated public API methods to accept mode parameter
+- Modified S13.js to explicitly pass "target" or "reference" mode
+- Updated Calculator.js to pass "target" mode for consistency
+
+**Fix 2: Mode-Aware Wildcard Listener** (Commit `48bba93`)
+- Modified `recalculateDirtyFields()` to accept a `mode` parameter for filtering
+- Added `recalculateTargetFields()` and `recalculateReferenceFields()` helper functions
+- Updated wildcard listener to call the appropriate function based on field ID:
+  ```javascript
+  stateManager.addListener("*", function (newValue, oldValue, fieldId) {
+    if (fieldId.startsWith("ref_")) {
+      TEUI.Calculator.recalculateReferenceFields();
+    } else {
+      TEUI.Calculator.recalculateTargetFields();
+    }
+  });
+  ```
+
+**Root Cause Analysis:**
+- S03's `calculateAll()` function always runs both Target and Reference calculations
+- When `ref_d_12` changes, S03 publishes both Target and Reference values to StateManager
+- The Calculator.js wildcard listener was triggering Target calculations for Reference changes
+- Occupancy (d_12) is uniquely impactful because it determines temperature selection
+- The combination of S03's dual-engine pattern and the non-mode-aware wildcard listener caused the issue
+
+**Current Behavior (After Fix):**
+- ✅ Reference model (e_10) protected from Target mode d_12 changes
+- ✅ Target model (h_10) protected from Reference mode d_12 changes
+- ✅ Perfect dual-state isolation achieved for occupancy changes
+
+**Bug #9: CLOSED** ✅
+
+---
+
+## 18. S07 Hot Water System - Bug Analysis & Fix Plan (Oct 1, 2025)
 
 ### **🐛 Bug #8 Deep Dive: d_51 State Carryover**
 
@@ -1469,10 +1516,7 @@ d51Dropdown.value = d_51_value; // Shows value from current state
 
 ### **📋 Next Session Priorities**
 
-1. Complete Bug #9 fix (d_12 occupancy state mixing) - CRITICAL
-   - Investigate asymmetric dependency registration
-   - Check for wildcard listeners in StateManager
-   - Verify S03 climate data service is fully mode-aware
+1. ~~Complete Bug #9 fix (d_12 occupancy state mixing)~~ - ✅ FIXED
    
 2. Fix Bug #5 (g_118 ventilation method - THE FINAL BOSS) - CRITICAL
 
@@ -1490,14 +1534,17 @@ d51Dropdown.value = d_51_value; // Shows value from current state
      3. S10/S11 pattern compliance: Fixed slider value/display handling
    - Result: Perfect dual-state independence achieved for hot water system
 
-3. ⚠️ Partially Fixed Bug #9 (d_12 Occupancy State Mixing)
-   - Made Cooling.js fully mode-aware:
-     - Added mode parameter to calculateAll
-     - Created getModeAwareValue helper for mode-specific reads
-     - Modified updateStateManager to use ref_ prefix in Reference mode
-   - Result: Reference model now protected from Target changes
-   - Remaining issue: Target still affected by Reference changes
-   - Hypothesis: Asymmetric dependency registration or wildcard listeners
+3. ✅ Fixed Bug #9 (d_12 Occupancy State Mixing) - CLOSED!
+   - Two-part fix implemented:
+     1. Made Cooling.js fully mode-aware (Commit `5fe13b4`)
+        - Added mode parameter to calculateAll
+        - Created getModeAwareValue helper for mode-specific reads
+        - Modified updateStateManager to use ref_ prefix in Reference mode
+     2. Implemented mode-aware wildcard listener in Calculator.js (Commit `48bba93`)
+        - Added mode parameter to recalculateDirtyFields
+        - Created separate recalculateTargetFields and recalculateReferenceFields functions
+        - Made wildcard listener route changes to appropriate recalculation function
+   - Result: Perfect dual-state isolation achieved for occupancy changes
 
 4. ✅ Completed S05 Excel Formula Fixes (Commit `a21191e`)
    - Fixed d_38, d_40, d_41 formulas to match Excel Reference model
