@@ -122,12 +122,33 @@ window.TEUI.CoolingCalculations = (function () {
   };
 
   /**
-   * Calculate latent load factor based on RH and temperature
+   * Calculate latent load factor based on humidity ratios and temperature differential
    * This implements the formula from cell A6 in COOLING-TARGET.csv
+   * 
+   * Excel Formula: A6 = 1 + A64/A55
+   * Where:
+   *   A64 = A54 × E3 × E6 × A63 (Latent Cooling Load)
+   *   A55 = H26 × E3 × E4 × (A49 - H27) (Sensible Cooling Load)
+   * 
+   * Since A54 = H26 = h_120/3600, these cancel out, simplifying to:
+   *   A6 = 1 + [E6 × A63] / [E4 × (A49 - H27)]
+   *   A6 = 1 + [latentHeatVaporization × humidityRatioDifference] / [specificHeatCapacity × (nightTimeTemp - coolingSetTemp)]
    */
   function calculateLatentLoadFactor() {
-    // Formula is: 1 + (Cooling Season Mean RH / Night-Time Temp)
-    return 1 + state.coolingSeasonMeanRH / state.nightTimeTemp;
+    // Excel A6 formula: 1 + A64/A55
+    // A64 = 2,501,000 J/kg × humidityRatioDifference (kg/kg)
+    // A55 = 1005 J/(kg•K) × temperatureDifferential (K)
+    
+    const numerator = state.latentHeatVaporization * state.humidityRatioDifference; // E6 × A63
+    const denominator = state.specificHeatCapacity * (state.nightTimeTemp - state.coolingSetTemp); // E4 × (A49 - H27)
+    
+    // Avoid division by zero
+    if (denominator === 0) {
+      console.warn("[Cooling] Temperature differential is zero, using fallback latent load factor");
+      return 1.0;
+    }
+    
+    return 1 + (numerator / denominator);
   }
 
   /**

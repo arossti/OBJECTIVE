@@ -85,6 +85,76 @@
       }
     },
 
+    "LATENT_LOAD_FACTOR_CHAIN": {
+      "A6": {
+        "excel_formula": "=1+A64/A55",
+        "description": "V.4.2. Latent Load Factor (Calculated from This Sheet)",
+        "dependencies": ["A64", "A55"],
+        "our_equivalent": "state.latentLoadFactor",
+        "note": "Published to StateManager as cooling_latentLoadFactor"
+      },
+      "A64": {
+        "excel_formula": "=A54*E3*E6*A63",
+        "description": "Latent Cooling Load Calculated",
+        "dependencies": ["A54", "E3", "E6", "A63"],
+        "note": "Numerator of latent load factor"
+      },
+      "A55": {
+        "excel_formula": "=H26*E3*E4*(A49-H27)",
+        "description": "Watts Present Sensible Seasonal Average VENTILATION ONLY Cooling Load Calculated",
+        "dependencies": ["H26", "E3", "E4", "A49", "H27"],
+        "note": "Denominator of latent load factor"
+      },
+      "A63": {
+        "excel_formula": "=A62-A61",
+        "description": "Humidity Ratio Difference ΔW=Wavg-Windoor kg/kg PRESENT",
+        "dependencies": ["A62", "A61"],
+        "our_equivalent": "state.humidityRatioDifference"
+      },
+      "A62": {
+        "excel_formula": "=0.62198*A58/(E15-A56)",
+        "description": "Humidity Ratio at Seasonal Average Conditions kg/kg",
+        "our_equivalent": "state.humidityRatioAvg"
+      },
+      "A61": {
+        "excel_formula": "=0.62198*A60/(E15-A60)",
+        "description": "Indoor Humidity Ratio kg/kg",
+        "our_equivalent": "state.humidityRatioIndoor"
+      },
+      "A54": {
+        "excel_formula": "=A53/3600",
+        "description": "V1.1 Ventilation Rate in m3/s",
+        "dependencies": ["A53"],
+        "note": "Converts hourly to per-second rate"
+      },
+      "A53": {
+        "excel_formula": "=H25",
+        "description": "V1.1 Ventilation Rate in m3/hr (for Full Occupancy)",
+        "dependencies": ["H25"]
+      },
+      "H25": {
+        "excel_formula": "=REPORT!H120",
+        "description": "V1.1 Ventilation Rate in m3/hr (for Full Occupancy)",
+        "our_equivalent": "h_120"
+      },
+      "H26": {
+        "excel_formula": "=H25/3600",
+        "description": "V1.1 Ventilation Rate in m3/s",
+        "dependencies": ["H25"],
+        "note": "Same as A54 - both reference h_120/3600"
+      },
+      "H27": {
+        "excel_formula": "=REPORT!H24",
+        "description": "B.1.3 Indoor Design Temperature",
+        "our_equivalent": "h_24 (cooling setpoint)"
+      },
+      "A49": {
+        "excel_formula": "=A3",
+        "description": "°C Cooling Season average dry-bulb temperature (From A3 above)",
+        "our_equivalent": "state.nightTimeTemp (20.43)"
+      }
+    },
+
     "CALCULATION_CHAIN": {
       "A28": {
         "excel_formula": "=IF(REPORT!L119=\"None\", REPORT!D120, REPORT!D120*REPORT!L119)",
