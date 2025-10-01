@@ -1732,12 +1732,15 @@ window.TEUI.SectionModules.sect13 = (function () {
         f113Slider.hasSliderListener = true;
       }
 
-    // Add direct d_118 slider handler (same pattern as f_113)
+    // Add direct d_118 slider handler (CRITICAL: Must calculate during drag!)
       const d118Slider = document.querySelector(
         'input[type="range"][data-field-id="d_118"]',
       );
       if (d118Slider && !d118Slider.hasSliderListener) {
-        // Input event for live feedback AND immediate calculations during dragging
+        // Input event for live feedback AND calculations during dragging
+        // NOTE: This appears to be a calculation storm but is CRITICAL for accuracy
+        // Removing calculations from "input" event causes major drift (h_10: 93→126.2)
+        // The multiple calculation cycles during drag appear to help values settle correctly
         d118Slider.addEventListener("input", function () {
           const efficiencyValue = parseFloat(this.value);
           if (isNaN(efficiencyValue)) return;
@@ -1748,7 +1751,7 @@ window.TEUI.SectionModules.sect13 = (function () {
             displaySpan.textContent = efficiencyValue.toFixed(0) + "%";
           }
 
-    // Immediate calculations during dragging
+    // CRITICAL: Calculations during dragging (required for accuracy)
           ModeManager.setValue(
             "d_118",
             efficiencyValue.toString(),
@@ -1772,7 +1775,7 @@ window.TEUI.SectionModules.sect13 = (function () {
             "user-modified",
           );
 
-    // Only after thumb release
+    // Final calculation after thumb release
           calculateAll();
           ModeManager.updateCalculatedDisplayValues();
         });
@@ -1846,49 +1849,48 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     // --- Use Event Delegation for k_120 control ---
     if (sectionElement && !sectionElement.hasK120DelegateListener) {
-      sectionElement.addEventListener("input", handleK120Change);
-      sectionElement.addEventListener("change", handleK120Change);
+      sectionElement.addEventListener("input", handleK120Input);  // Display only
+      sectionElement.addEventListener("change", handleK120Change); // Calculate on release
       sectionElement.hasK120DelegateListener = true;
     } else if (!sectionElement) {
       // console.warn("[S13 Init] Could not find #mechanicalLoads element to attach delegated listener.");
     }
 
-    // --- Handler function for k_120 change (defined within IIFE scope) ---
-    function handleK120Change(e) {
+    // --- Handler for k_120 input (display updates only, no calculations) ---
+    function handleK120Input(e) {
       if (e.target && e.target.matches('[data-field-id="k_120"]')) {
-        const controlElement = e.target;
-        const fieldId = controlElement.getAttribute("data-field-id");
-
-        const sliderValueStr = controlElement.value;
-        // const sliderValue = parseFloat(sliderValueStr);
-        // const decimalValue = sliderValue / 100; // Assuming slider is 0-100 << OLD WAY
-        // const decimalValueStrForState = decimalValue.toString(); << OLD WAY
-
-        // << NEW WAY: Store the direct slider value (0-100) as a string >>
-        const valueToStoreInState = sliderValueStr;
-
-        if (!fieldId) return; // Removed isNaN check as we store string now
-
+        const sliderValueStr = e.target.value;
         const displaySpan = document.querySelector(
-          `#mechanicalLoads span[data-display-for="${fieldId}"]`,
+          `#mechanicalLoads span[data-display-for="k_120"]`,
         );
         if (displaySpan) {
-          // Display span still needs to show it as a percentage
           const numericSliderValue = parseFloat(sliderValueStr);
           if (!isNaN(numericSliderValue)) {
             displaySpan.textContent = `${numericSliderValue.toFixed(0)}%`;
           }
         }
+      }
+    }
 
+    // --- Handler for k_120 change (calculations after thumb release) ---
+    function handleK120Change(e) {
+      if (e.target && e.target.matches('[data-field-id="k_120"]')) {
+        const controlElement = e.target;
+        const fieldId = controlElement.getAttribute("data-field-id");
+        const sliderValueStr = controlElement.value;
+
+        if (!fieldId) return;
+
+        // Store value in StateManager
         if (window.TEUI.StateManager) {
           window.TEUI.StateManager.setValue(
             fieldId,
-            valueToStoreInState,
+            sliderValueStr,
             "user-modified",
           );
         }
 
-        // This ensures proper cooling context is created and passed
+        // Calculate only after thumb release
         calculateAll();
         ModeManager.updateCalculatedDisplayValues();
       }
