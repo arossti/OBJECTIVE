@@ -139,23 +139,8 @@ window.TEUI.CoolingCalculations = (function () {
     // A64 = 2,501,000 J/kg × humidityRatioDifference (kg/kg)
     // A55 = 1005 J/(kg•K) × temperatureDifferential (K)
     
-    // 🔍 DIAGNOSTIC LOGGING
-    console.log(`[Cooling A6] ════════════════════════════════════════`);
-    console.log(`[Cooling A6] Calculating Latent Load Factor (A6)`);
-    console.log(`[Cooling A6] INPUTS:`);
-    console.log(`[Cooling A6]   E6 (latentHeatVaporization): ${state.latentHeatVaporization}`);
-    console.log(`[Cooling A6]   A63 (humidityRatioDifference): ${state.humidityRatioDifference}`);
-    console.log(`[Cooling A6]   E4 (specificHeatCapacity): ${state.specificHeatCapacity}`);
-    console.log(`[Cooling A6]   A49 (nightTimeTemp): ${state.nightTimeTemp}`);
-    console.log(`[Cooling A6]   H27 (coolingSetTemp): ${state.coolingSetTemp}`);
-    
     const numerator = state.latentHeatVaporization * state.humidityRatioDifference; // E6 × A63
     const denominator = state.specificHeatCapacity * (state.nightTimeTemp - state.coolingSetTemp); // E4 × (A49 - H27)
-    
-    console.log(`[Cooling A6] CALCULATION:`);
-    console.log(`[Cooling A6]   A64 (numerator): ${state.latentHeatVaporization} × ${state.humidityRatioDifference} = ${numerator}`);
-    console.log(`[Cooling A6]   A55 (denominator): ${state.specificHeatCapacity} × (${state.nightTimeTemp} - ${state.coolingSetTemp}) = ${denominator}`);
-    console.log(`[Cooling A6]   A64/A55: ${numerator} / ${denominator} = ${numerator / denominator}`);
     
     // Avoid division by zero
     if (denominator === 0) {
@@ -163,11 +148,7 @@ window.TEUI.CoolingCalculations = (function () {
       return 1.0;
     }
     
-    const result = 1 + (numerator / denominator);
-    console.log(`[Cooling A6] RESULT: A6 = 1 + ${numerator / denominator} = ${result}`);
-    console.log(`[Cooling A6] ════════════════════════════════════════`);
-    
-    return result;
+    return 1 + (numerator / denominator);
   }
 
   /**
@@ -218,36 +199,21 @@ window.TEUI.CoolingCalculations = (function () {
     // Atmospheric pressure for calculation (sea level standard)
     const atmosphericPressure = 101325; // Pa
 
-    console.log(`[Cooling A63] ════════════════════════════════════════`);
-    console.log(`[Cooling A63] Calculating Humidity Ratios (A61, A62, A63)`);
-    console.log(`[Cooling A63] PRESSURE INPUTS:`);
-    console.log(`[Cooling A63]   partialPressure (outdoor avg): ${state.partialPressure} Pa`);
-    console.log(`[Cooling A63]   partialPressureIndoor: ${state.partialPressureIndoor} Pa`);
-    console.log(`[Cooling A63]   pSatAvg: ${state.pSatAvg} Pa`);
-    console.log(`[Cooling A63]   pSatIndoor: ${state.pSatIndoor} Pa`);
-    console.log(`[Cooling A63]   indoorRH: ${state.indoorRH} (${state.indoorRH * 100}%)`);
-    console.log(`[Cooling A63]   coolingSeasonMeanRH: ${state.coolingSeasonMeanRH} (${state.coolingSeasonMeanRH * 100}%)`);
-
     // Calculate humidity ratio indoor
-    // Formula: 0.62198 * partialPressureIndoor / (atmosphericPressure - partialPressureIndoor)
+    // Excel A61: 0.62198 * partialPressureIndoor / (atmosphericPressure - partialPressureIndoor)
     const humidityRatioIndoor =
       (0.62198 * state.partialPressureIndoor) /
       (atmosphericPressure - state.partialPressureIndoor);
 
     // Calculate humidity ratio at average conditions
-    // Formula: 0.62198 * partialPressure / (atmosphericPressure - partialPressure)
+    // Excel A62: 0.62198 * partialPressure / (atmosphericPressure - partialPressure)
     const humidityRatioAvg =
       (0.62198 * state.partialPressure) /
       (atmosphericPressure - state.partialPressure);
 
     // Calculate humidity ratio difference
+    // Excel A63: A62 - A61
     const humidityRatioDifference = humidityRatioAvg - humidityRatioIndoor;
-
-    console.log(`[Cooling A63] CALCULATION:`);
-    console.log(`[Cooling A63]   A61 (humidityRatioIndoor): 0.62198 × ${state.partialPressureIndoor} / (${atmosphericPressure} - ${state.partialPressureIndoor}) = ${humidityRatioIndoor}`);
-    console.log(`[Cooling A63]   A62 (humidityRatioAvg): 0.62198 × ${state.partialPressure} / (${atmosphericPressure} - ${state.partialPressure}) = ${humidityRatioAvg}`);
-    console.log(`[Cooling A63]   A63 (difference): ${humidityRatioAvg} - ${humidityRatioIndoor} = ${humidityRatioDifference}`);
-    console.log(`[Cooling A63] ════════════════════════════════════════`);
 
     // Update state
     state.humidityRatioIndoor = humidityRatioIndoor;

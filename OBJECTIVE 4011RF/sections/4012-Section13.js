@@ -2585,22 +2585,6 @@ window.TEUI.SectionModules.sect13 = (function () {
     const sre_d118 =
       (window.TEUI.parseNumeric(ModeManager.getValue("d_118")) || 0) / 100;
 
-    // 🔍 DIAGNOSTIC LOGGING - Bug Investigation (Oct 1, 2025)
-    console.log(`[S13DB] ════════════════════════════════════════════════════════`);
-    console.log(`[S13DB] D122 CALCULATION - ${isReferenceCalculation ? 'REFERENCE' : 'TARGET'} MODE`);
-    console.log(`[S13DB] ════════════════════════════════════════════════════════`);
-    console.log(`[S13DB] INPUTS:`);
-    console.log(`[S13DB]   D120 (Volumetric Vent Rate): ${ventilationRateLs_d120.toFixed(2)} l/s`);
-    console.log(`[S13DB]   D21 (CDD): ${cdd_d21}`);
-    console.log(`[S13DB]   I63 (Occupied Hours): ${occupiedHours_i63}`);
-    console.log(`[S13DB]   J63 (Total Hours): ${totalHours_j63}`);
-    console.log(`[S13DB]   Occupancy Factor (I63/J63): ${occupancyFactor.toFixed(4)}`);
-    console.log(`[S13DB]   I122 (Latent Load Factor from Cooling.js): ${latentLoadFactor_i122.toFixed(4)}`);
-    console.log(`[S13DB]   L119 (Summer Boost): "${summerBoostRawValue}" → ${summerBoostFactor.toFixed(2)}`);
-    console.log(`[S13DB]   D116 (Cooling System): "${coolingSystem_d116}"`);
-    console.log(`[S13DB]   D118 (SRE): ${(sre_d118 * 100).toFixed(0)}%`);
-    console.log(`[S13DB] EXCEL EXPECTED: D122 = 15,128.68 kWh/yr`);
-
     let ventEnergyCoolingIncoming_d122 = 0;
 
     // Match the Excel formula structure exactly (D122)
@@ -2632,23 +2616,6 @@ window.TEUI.SectionModules.sect13 = (function () {
     }
 
     const ventEnergyRecovered_d123 = ventEnergyCoolingIncoming_d122 * sre_d118;
-
-    // 🔍 DIAGNOSTIC LOGGING - Output Results
-    console.log(`[S13DB] ────────────────────────────────────────────────────────`);
-    console.log(`[S13DB] CALCULATION PATH: ${coolingSystem_d116 === "Cooling" ? "Cooling" : "No Cooling"} + ${summerBoostRawValue === "None" ? "No Boost" : "Boost"}`);
-    console.log(`[S13DB] BASE FORMULA: (1.21 × D120 × D21 × 24 / 1000) × Occupancy × Boost × I122`);
-    console.log(`[S13DB] CALCULATED VALUES:`);
-    console.log(`[S13DB]   Base Calc: (1.21 × ${ventilationRateLs_d120.toFixed(2)} × ${cdd_d21} × 24 / 1000) = ${((1.21 * ventilationRateLs_d120 * cdd_d21 * 24) / 1000).toFixed(2)}`);
-    console.log(`[S13DB]   × Occupancy Factor: ${occupancyFactor.toFixed(4)}`);
-    console.log(`[S13DB]   × Summer Boost: ${summerBoostFactor.toFixed(2)}`);
-    console.log(`[S13DB]   × Latent Load Factor (I122): ${latentLoadFactor_i122.toFixed(4)}`);
-    console.log(`[S13DB] ────────────────────────────────────────────────────────`);
-    console.log(`[S13DB] RESULTS:`);
-    console.log(`[S13DB]   D122 (Incoming): ${ventEnergyCoolingIncoming_d122.toFixed(2)} kWh/yr`);
-    console.log(`[S13DB]   D123 (Recovered): ${ventEnergyRecovered_d123.toFixed(2)} kWh/yr`);
-    console.log(`[S13DB]   EXCEL EXPECTS D122: 15,128.68 kWh/yr`);
-    console.log(`[S13DB]   ERROR: ${((ventEnergyCoolingIncoming_d122 - 15128.68) / 15128.68 * 100).toFixed(1)}%`);
-    console.log(`[S13DB] ════════════════════════════════════════════════════════`);
 
     // Only update DOM for Target calculations
     if (!isReferenceCalculation) {
@@ -2683,23 +2650,8 @@ window.TEUI.SectionModules.sect13 = (function () {
     const k103 = getGlobalNumericValue(isReferenceCalculation ? "ref_k_103" : "k_103");
     const d122 = window.TEUI.parseNumeric(getFieldValue("d_122")) || 0; // From S13's own calculation
     
-    // 🔍 DIAGNOSTIC LOGGING - D129 Calculation
-    console.log(`[S13DB] ════════════════════════════════════════════════════════`);
-    console.log(`[S13DB] D129 (CED UNMITIGATED) - ${isReferenceCalculation ? 'REFERENCE' : 'TARGET'} MODE`);
-    console.log(`[S13DB] INPUTS:`);
-    console.log(`[S13DB]   K71 (Radiant): ${k71.toFixed(2)}`);
-    console.log(`[S13DB]   K79 (Transmission): ${k79.toFixed(2)}`);
-    console.log(`[S13DB]   K98 (Infil): ${k98.toFixed(2)}`);
-    console.log(`[S13DB]   K104 (Vent Htg): ${k104.toFixed(2)}`);
-    console.log(`[S13DB]   K103 (Internal Gains): ${k103.toFixed(2)}`);
-    console.log(`[S13DB]   D122 (Cool Vent): ${d122.toFixed(2)}`);
-    
     // Excel formula: D129 = K71+K79+K98+K104+K103+D122
     const cedUnmitigated = k71 + k79 + k98 + k104 + k103 + d122;
-    
-    console.log(`[S13DB] D129 RESULT: ${cedUnmitigated.toFixed(2)} kWh/yr (Excel expects 61,496.35)`);
-    console.log(`[S13DB] ERROR: ${((cedUnmitigated - 61496.35) / 61496.35 * 100).toFixed(1)}%`);
-    console.log(`[S13DB] ════════════════════════════════════════════════════════`);
     
     // Only update DOM for Target calculations
     if (!isReferenceCalculation) {
@@ -2718,21 +2670,8 @@ window.TEUI.SectionModules.sect13 = (function () {
     const h124 = window.TEUI.parseNumeric(getFieldValue("h_124")) || 0;
     const d123 = window.TEUI.parseNumeric(getFieldValue("d_123")) || 0;
     
-    // 🔍 DIAGNOSTIC LOGGING - M129 Calculation
-    console.log(`[S13DB] ════════════════════════════════════════════════════════`);
-    console.log(`[S13DB] M129 (CED MITIGATED) - ${isReferenceCalculation ? 'REFERENCE' : 'TARGET'} MODE`);
-    console.log(`[S13DB] INPUTS:`);
-    console.log(`[S13DB]   D129 (Unmitigated): ${d129.toFixed(2)}`);
-    console.log(`[S13DB]   H124 (Free Cooling): ${h124.toFixed(2)}`);
-    console.log(`[S13DB]   D123 (Vent Recovered): ${d123.toFixed(2)}`);
-    
     // Excel formula: M129 = MAX(0, D129 - H124 - D123)
     const cedMitigated = Math.max(0, d129 - h124 - d123);
-    
-    console.log(`[S13DB] M129 FORMULA: MAX(0, ${d129.toFixed(2)} - ${h124.toFixed(2)} - ${d123.toFixed(2)})`);
-    console.log(`[S13DB] M129 RESULT: ${cedMitigated.toFixed(2)} kWh/yr (Excel expects 10,709.00)`);
-    console.log(`[S13DB] ERROR: ${((cedMitigated - 10709) / 10709 * 100).toFixed(1)}%`);
-    console.log(`[S13DB] ════════════════════════════════════════════════════════`);
     
     // Only update DOM for Target calculations
     if (!isReferenceCalculation) {
