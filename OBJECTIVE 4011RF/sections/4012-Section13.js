@@ -2842,7 +2842,8 @@ window.TEUI.SectionModules.sect13 = (function () {
       const ventilationEnergyResults = calculateVentilationEnergy(true);
       
       // ✅ CALCULATION ORDER FIX: Call Cooling.js directly before it's needed
-      window.TEUI.CoolingCalculations.calculateAll();
+      // ✅ BUG #9 FIX: Pass mode parameter to make cooling calculations mode-aware
+      window.TEUI.CoolingCalculations.calculateAll("reference");
 
       // Cooling season ventilation (D122/D123) - S13 calculates these
       const coolingVentilationResults = calculateCoolingVentilation(true);
@@ -2902,7 +2903,8 @@ window.TEUI.SectionModules.sect13 = (function () {
       const ventilationEnergyResults = calculateVentilationEnergy(false);
       
       // ✅ CALCULATION ORDER FIX: Call Cooling.js directly before it's needed
-      window.TEUI.CoolingCalculations.calculateAll();
+      // ✅ BUG #9 FIX: Pass mode parameter to make cooling calculations mode-aware
+      window.TEUI.CoolingCalculations.calculateAll("target");
 
       // Cooling season ventilation (D122/D123) - S13 calculates these
       const coolingVentilationResults = calculateCoolingVentilation(false);
