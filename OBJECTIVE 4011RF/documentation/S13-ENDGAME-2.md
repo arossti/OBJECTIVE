@@ -1228,3 +1228,105 @@ const ref_d_113 = getValue("ref_d_113") || "Electricity"; // ❌ Masks missing s
 
 **Status**: Bug #4 eliminated! Multiple new bugs identified through user testing. Pattern emerging: Many Reference mode features not working (Bugs #6, #7, #8, #9) - suggests systematic dual-state implementation gaps rather than isolated bugs.
 
+---
+
+## 15. Reference Mode Excel Parity Setup (Oct 1, 2025 - Afternoon)
+
+### **📊 Reference Mode Default Configuration Progress**
+
+**Strategic Decision**: Before chasing remaining bugs, establish Excel-matching baselines in Reference mode. This allows proper testing to distinguish real bugs from default value mismatches.
+
+**Completion Status by Section:**
+
+| Section | Status | Notes |
+|---------|--------|-------|
+| **S01** | ✅ Complete | State-agnostic (consumes only, no defaults needed) |
+| **S02** | ✅ Complete | Building config defaults match Excel Reference |
+| **S03** | ✅ Complete | Climate defaults match Excel Reference |
+| **S04** | ✅ Complete | Calculated values only (no defaults) |
+| **S05** | ✅ Complete | Emissions formulas corrected (d_38, d_40, d_41) - Commit `a21191e` |
+| **S06** | ✅ Complete | Renewables defaults (reached previously, verified today) |
+| **S07** | 🔧 In Progress | Hot water - Bug #8 (d_51 state carryover) needs fixing |
+| **S08** | ⏳ Pending | IAQ defaults needed |
+| **S09** | ⏳ Pending | Internal gains defaults needed |
+| **S10-S15** | ✅ Complete | Mostly calculated (minimal defaults, already set) |
+
+**S05 Excel Formula Fixes (Commit `a21191e`):**
+1. **d_38** (Annual Operational Emissions):
+   - Target: `IF(d_14="Utility Bills", g_32/1000, k_32/1000)`
+   - Reference: `ref_k_32/1000` (always uses Reference target emissions)
+   - **Result**: Reference and Target now show different d_38 values ✅
+
+2. **d_40** (Total Embedded Carbon):
+   - Target: `i_41 × d_106 / 1000` (user modelled value)
+   - Reference: `i_39 × d_106 / 1000` (typology-based cap)
+   - Exception: "Modelled Value" typology allows i_41 user input
+   - **Result**: Reference typology changes now update d_40 → e_6/e_8 ✅
+
+3. **d_41** (Lifetime Avoided):
+   - State-agnostic: `(ref_d_38 - d_38) × h_13`
+   - Same value in both modes (comparison metric showing avoided emissions)
+   - **Result**: Correctly shows Target benefit vs Reference baseline ✅
+
+**Next Focus: S07 Hot Water System**
+- Fix Bug #8 (d_51 state carryover)
+- Verify all Reference defaults match Excel
+- Enable independent hot water system selection per mode
+
+---
+
+## 16. S07 Hot Water System - Bug Analysis & Fix Plan (Oct 1, 2025)
+
+### **🐛 Bug #8 Deep Dive: d_51 State Carryover**
+
+**Current Behavior (Verified):**
+- Set d_51 = "Heatpump" in Target → switch to Reference → shows "Heatpump" ❌
+- Set d_51 = "Electric" in Reference → switch to Target → shows "Electric" ❌
+- System selection carries over instead of maintaining independent values
+
+**Expected Behavior:**
+- Target mode: d_51 independent (e.g., "Heatpump")
+- Reference mode: d_51 independent (e.g., "Electric")
+- Mode switch: Each mode shows its own saved value
+
+**Root Cause Investigation Checklist:**
+
+1. **✅ Check S07 Dual-State Architecture**:
+   - Does S07 have TargetState and ReferenceState objects?
+   - Does S07 have ModeManager.switchMode() implementation?
+   - Are d_51 values stored separately?
+
+2. **✅ Verify d_51 Dropdown Handler**:
+   - Does dropdown change call ModeManager.setValue()?
+   - Does it respect ModeManager.currentMode?
+   - Is value stored in correct state object?
+
+3. **✅ Check StateManager Publishing**:
+   - Does S07 publish both d_51 AND ref_d_51?
+   - Are they published with correct state type ("user-modified")?
+   - Do downstream sections (S04) read correct keys per mode?
+
+4. **✅ Verify Calculation Impact**:
+   - S07 hot water calculations use d_51 for system type
+   - Do Reference calculations use ref_d_51?
+   - Does k_51 (hot water energy) get calculated separately for each mode?
+
+**Expected Fix Pattern** (based on other sections):
+```javascript
+// In S07 dropdown handler:
+const d51Dropdown = document.querySelector('[data-dropdown-id="dd_d_51"]');
+d51Dropdown.addEventListener("change", function() {
+  const selectedSystem = this.value;
+  ModeManager.setValue("d_51", selectedSystem, "user-modified"); // Stores in current state
+  calculateAll(); // Recalculates using correct state
+});
+
+// In S07 ModeManager.refreshUI():
+const d_51_value = this.getCurrentState().getValue("d_51");
+d51Dropdown.value = d_51_value; // Shows value from current state
+```
+
+**Investigation Priority**: HIGH (next task after documentation commit)
+
+**Related**: Bug #8 calculation mixing to S01 suggests S07 may not be publishing ref_k_51 separately, or S04/S15 not reading it correctly.
+
