@@ -398,8 +398,9 @@ TEUI.Calculator = (function () {
 
   /**
    * Recalculate all dirty fields
+   * @param {string} mode - Optional mode filter ('target' or 'reference')
    */
-  function recalculateDirtyFields() {
+  function recalculateDirtyFields(mode) {
     // Skip if no StateManager or no dirty fields
     if (!window.TEUI || !window.TEUI.StateManager) return;
 
@@ -419,8 +420,20 @@ TEUI.Calculator = (function () {
     try {
       const calculationOrder = stateManager.getCalculationOrder();
 
+      // Filter fields by mode if specified
+      const filteredOrder = mode ? 
+        calculationOrder.filter(fieldId => {
+          if (mode === 'reference') {
+            return fieldId.startsWith('ref_');
+          } else if (mode === 'target') {
+            return !fieldId.startsWith('ref_');
+          }
+          return true; // No mode filter
+        }) : 
+        calculationOrder;
+
       // Calculate each field in the correct order
-      calculationOrder.forEach((fieldId) => {
+      filteredOrder.forEach((fieldId) => {
         // Get field definition
         const field = getField(fieldId);
         if (!field) return;
@@ -443,11 +456,40 @@ TEUI.Calculator = (function () {
         }
       });
 
-      // Clear dirty status
-      stateManager.clearDirtyStatus();
+      // Clear dirty status for processed fields
+      if (mode) {
+        // Only clear dirty status for the filtered fields
+        dirtyFields.forEach(field => {
+          if ((mode === 'reference' && field.startsWith('ref_')) || 
+              (mode === 'target' && !field.startsWith('ref_'))) {
+            stateManager.clearDirtyStatus(field);
+          }
+        });
+      } else {
+        // Clear all dirty status
+        stateManager.clearDirtyStatus();
+      }
     } catch (error) {
-      console.error("Error in recalculateDirtyFields:", error);
+      console.error(`Error in recalculateDirtyFields(${mode || 'all'})`, error);
     }
+  }
+
+  /**
+   * Recalculate only Target model fields
+   * Helper function for mode-aware recalculation
+   */
+  function recalculateTargetFields() {
+    console.log("[Calculator] 🎯 Recalculating Target model fields only");
+    recalculateDirtyFields('target');
+  }
+
+  /**
+   * Recalculate only Reference model fields
+   * Helper function for mode-aware recalculation
+   */
+  function recalculateReferenceFields() {
+    console.log("[Calculator] 🔵 Recalculating Reference model fields only");
+    recalculateDirtyFields('reference');
   }
 
   /**
@@ -974,6 +1016,8 @@ TEUI.Calculator = (function () {
     calculateSection: calculateSection,
     calculateAll: calculateAll,
     recalculateDirtyFields: recalculateDirtyFields,
+    recalculateTargetFields: recalculateTargetFields,
+    recalculateReferenceFields: recalculateReferenceFields,
     importFormulasFromCSV: importFormulasFromCSV,
     executeFormula: executeFormula,
     updateWeatherData: updateWeatherData,
@@ -994,10 +1038,10 @@ document.addEventListener("DOMContentLoaded", function () {
     // Listen for value changes that should trigger recalculation
     const stateManager = window.TEUI.StateManager;
 
-    // Restore wildcard listener - it is part of the original architecture.
+    // Restore wildcard listener with mode awareness - it is part of the original architecture.
     // This listener is crucial for dynamic updates based on any field change,
     // triggering recalculation of dirty fields to maintain data consistency.
-    // It was temporarily commented out during debugging of d_97 propagation (Aug 2024).
+    // ✅ BUG #9 FIX: Mode-aware wildcard listener to prevent state mixing
     stateManager.addListener("*", function (newValue, oldValue, fieldId) {
       // Skip calculated values to avoid circular recalculation if setValue with 'calculated' already handles deps
       // However, if a calculated value IS a direct precedent for another, this might still be needed.
@@ -1006,7 +1050,16 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
-      TEUI.Calculator.recalculateDirtyFields();
+      // ✅ BUG #9 FIX: Mode-aware recalculation
+      // Reference state changes (ref_ prefixed) only trigger Reference calculations
+      // Target state changes (unprefixed) only trigger Target calculations
+      if (fieldId.startsWith("ref_")) {
+        console.log(`[Calculator] 🔵 Reference state change detected: ${fieldId}`);
+        TEUI.Calculator.recalculateReferenceFields();
+      } else {
+        console.log(`[Calculator] 🎯 Target state change detected: ${fieldId}`);
+        TEUI.Calculator.recalculateTargetFields();
+      }
     });
   }
 
