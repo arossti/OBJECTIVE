@@ -522,6 +522,25 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /**
+   * 🔧 BUG #5 FIX: Get external dependency value with mode awareness
+   * This prevents state mixing when reading values from other sections (S02, S03, S08, S09, S11)
+   * Pattern matches Bug #4 fix (lines 2537-2539) for HDD mode-aware reading
+   * @param {string} fieldId - The field to read from another section
+   * @param {boolean} isReferenceCalculation - Whether reading for Reference model
+   * @returns {string|null} - Mode-aware value (ref_ prefixed for Reference, unprefixed for Target)
+   */
+  function getExternalValue(fieldId, isReferenceCalculation = false) {
+    if (isReferenceCalculation) {
+      // Reference calculations read ref_ prefixed external values
+      const refValue = window.TEUI?.StateManager?.getValue(`ref_${fieldId}`);
+      return refValue !== null && refValue !== undefined ? refValue : null;
+    } else {
+      // Target calculations read unprefixed values
+      return window.TEUI?.StateManager?.getValue(fieldId);
+    }
+  }
+
+  /**
    * Helper to get field value, preferring StateManager but falling back to DOM.
    * @param {string} fieldId
    * @returns {string | null} Value as string or null if not found.
@@ -2468,13 +2487,14 @@ window.TEUI.SectionModules.sect13 = (function () {
           : getFieldValue("d_119"),
       ) || 0;
 
-    const volume = window.TEUI.parseNumeric(getFieldValue("d_105")) || 0;
+    // 🔧 BUG #5 FIX: Read external dependencies with mode awareness to prevent state mixing
+    const volume = window.TEUI.parseNumeric(getExternalValue("d_105", isReferenceCalculation)) || 0;
     const ach = window.TEUI.parseNumeric(ModeManager.getValue("l_118")) || 0;
 
-    // Log all input values for d_120 calculation
-    const occupiedHours = window.TEUI.parseNumeric(getFieldValue("i_63")) || 0;
-    const totalHours = window.TEUI.parseNumeric(getFieldValue("j_63")) || 8760;
-    const occupants_d63 = window.TEUI.parseNumeric(getFieldValue("d_63")) || 0;
+    // 🔧 BUG #5 FIX: Read occupancy values mode-aware (from S08 and S09)
+    const occupiedHours = window.TEUI.parseNumeric(getExternalValue("i_63", isReferenceCalculation)) || 0;
+    const totalHours = window.TEUI.parseNumeric(getExternalValue("j_63", isReferenceCalculation)) || 8760;
+    const occupants_d63 = window.TEUI.parseNumeric(getExternalValue("d_63", isReferenceCalculation)) || 0;
 
     // Log all input values for d_120 calculation
 
@@ -2529,8 +2549,16 @@ window.TEUI.SectionModules.sect13 = (function () {
   /**
    * Calculate ventilation energy exchange during heating season
    */
-  function calculateVentilationEnergy(isReferenceCalculation = false) {
-    const ventRate = window.TEUI.parseNumeric(getFieldValue("d_120")) || 0;
+  function calculateVentilationEnergy(isReferenceCalculation = false, ventRateD120 = null) {
+    // 🔧 BUG #5 FIX: Accept d_120 as parameter OR read mode-aware from StateManager
+    // This prevents reading Target d_120 when calculating Reference ventilation energy
+    let ventRate = 0;
+    if (ventRateD120 !== null) {
+      ventRate = window.TEUI.parseNumeric(ventRateD120) || 0;
+    } else {
+      // Fallback: read from StateManager mode-aware
+      ventRate = window.TEUI.parseNumeric(getExternalValue("d_120", isReferenceCalculation)) || 0;
+    }
     
     // 🔧 BUG #4 FIX: Read mode-aware HDD for ventilation energy calculation
     // This fixes 12-month state mixing issue where Reference calculations used Target climate data
@@ -2564,16 +2592,22 @@ window.TEUI.SectionModules.sect13 = (function () {
    * Calculate ventilation energy exchange during cooling season
    */
   function calculateCoolingVentilation(
-    isReferenceCalculation = false
+    isReferenceCalculation = false,
+    ventRateD120 = null
   ) {
 
-    const ventilationRateLs_d120 =
-      window.TEUI.parseNumeric(getFieldValue("d_120")) || 0;
-    const cdd_d21 = window.TEUI.parseNumeric(getFieldValue("d_21")) || 0;
-    const occupiedHours_i63 =
-      window.TEUI.parseNumeric(getFieldValue("i_63")) || 0;
-    const totalHours_j63 =
-      window.TEUI.parseNumeric(getFieldValue("j_63")) || 8760;
+    // 🔧 BUG #5 FIX: Accept d_120 as parameter OR read mode-aware
+    let ventilationRateLs_d120 = 0;
+    if (ventRateD120 !== null) {
+      ventilationRateLs_d120 = window.TEUI.parseNumeric(ventRateD120) || 0;
+    } else {
+      ventilationRateLs_d120 = window.TEUI.parseNumeric(getExternalValue("d_120", isReferenceCalculation)) || 0;
+    }
+    
+    // 🔧 BUG #5 FIX: Read external dependencies mode-aware (CDD from S03, occupancy from S08/S09)
+    const cdd_d21 = window.TEUI.parseNumeric(getExternalValue("d_21", isReferenceCalculation)) || 0;
+    const occupiedHours_i63 = window.TEUI.parseNumeric(getExternalValue("i_63", isReferenceCalculation)) || 0;
+    const totalHours_j63 = window.TEUI.parseNumeric(getExternalValue("j_63", isReferenceCalculation)) || 8760;
     const occupancyFactor =
       totalHours_j63 > 0 ? occupiedHours_i63 / totalHours_j63 : 0;
     // Read latent load factor from Cooling.js (will be 0 until Cooling.js works)
@@ -2839,14 +2873,16 @@ window.TEUI.SectionModules.sect13 = (function () {
       const copResults = calculateCOPValues();
       const heatingResults = calculateHeatingSystem(copResults, tedValueRef);
       const ventilationRatesResults = calculateVentilationRates(true);
-      const ventilationEnergyResults = calculateVentilationEnergy(true);
+      // 🔧 BUG #5 FIX: Pass calculated d_120 to prevent reading Target value
+      const ventilationEnergyResults = calculateVentilationEnergy(true, ventilationRatesResults.d_120);
       
       // ✅ CALCULATION ORDER FIX: Call Cooling.js directly before it's needed
       // ✅ BUG #9 FIX: Pass mode parameter to make cooling calculations mode-aware
       window.TEUI.CoolingCalculations.calculateAll("reference");
 
       // Cooling season ventilation (D122/D123) - S13 calculates these
-      const coolingVentilationResults = calculateCoolingVentilation(true);
+      // 🔧 BUG #5 FIX: Pass calculated d_120 to prevent reading Target value
+      const coolingVentilationResults = calculateCoolingVentilation(true, ventilationRatesResults.d_120);
       
       // CED calculations (D129/M129) - now in S13, after D122 exists
       const unmitigatedResults = calculateCEDUnmitigated(true);
@@ -2900,14 +2936,16 @@ window.TEUI.SectionModules.sect13 = (function () {
       const copResults = calculateCOPValues();
       const heatingResults = calculateHeatingSystem(copResults, tedValue);
       const ventilationRatesResults = calculateVentilationRates(false);
-      const ventilationEnergyResults = calculateVentilationEnergy(false);
+      // 🔧 BUG #5 FIX: Pass calculated d_120 for consistency (Target reads from StateManager anyway)
+      const ventilationEnergyResults = calculateVentilationEnergy(false, ventilationRatesResults.d_120);
       
       // ✅ CALCULATION ORDER FIX: Call Cooling.js directly before it's needed
       // ✅ BUG #9 FIX: Pass mode parameter to make cooling calculations mode-aware
       window.TEUI.CoolingCalculations.calculateAll("target");
 
       // Cooling season ventilation (D122/D123) - S13 calculates these
-      const coolingVentilationResults = calculateCoolingVentilation(false);
+      // 🔧 BUG #5 FIX: Pass calculated d_120 for consistency
+      const coolingVentilationResults = calculateCoolingVentilation(false, ventilationRatesResults.d_120);
       
       // CED calculations (D129/M129) - now in S13, after D122 exists
       const unmitigatedResults = calculateCEDUnmitigated(false);
