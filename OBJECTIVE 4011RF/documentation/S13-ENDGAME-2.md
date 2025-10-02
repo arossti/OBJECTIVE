@@ -602,19 +602,28 @@ async function testD118Convergence() {
 
 ---
 
-#### **Bug #4: S03 Location Change State Mixing (CRITICAL PRIORITY)** 🚨
+#### **Bug #4: S03 Location Change State Mixing (CRITICAL PRIORITY)** ✅ **FIXED!** 🎯
 
-**Symptom**: Changing location at S03 (e.g., h_13 City dropdown) triggers recalculation of BOTH Target AND Reference states with the new location's weather data, instead of only the active mode.
+**Status**: ✅ COMPLETELY RESOLVED (Oct 1-2, 2025 - Commits `6f5087f`, `2f26b23`)
+
+**Symptom**: Changing location at S03 (e.g., h_13 City dropdown) triggered recalculation of BOTH Target AND Reference states with the new location's weather data, instead of only the active mode.
 
 **Expected Behavior**:
-- In Target mode: Location change updates Target weather data (unprefixed: d_20, d_21, etc.) ONLY
-- In Reference mode: Location change updates Reference weather data (ref_d_20, ref_d_21, etc.) ONLY
-- Opposite mode should remain unchanged
+- In Target mode: Location change updates Target weather data (unprefixed: d_20, d_21, etc.) ONLY ✅
+- In Reference mode: Location change updates Reference weather data (ref_d_20, ref_d_21, etc.) ONLY ✅
+- Opposite mode should remain unchanged ✅
 
-**Current Behavior**: 
-- Location change contaminates BOTH states simultaneously
-- Both Target and Reference recalculate with new weather values
-- Classic state mixing - the S03 issue is NOT RESOLVED
+**Resolution**: TWO fixes required (the bug had multiple contamination points):
+
+1. **S13 HDD Reading Fix** (Oct 1, Commit `6f5087f`):
+   - Fixed `calculateVentilationEnergy()` to read mode-aware HDD
+   - Changed from always reading `d_20` to `isReferenceCalculation ? ref_d_20 : d_20`
+
+2. **S11 Temporary Mode Switching** (Oct 2, Commit `2f26b23`):
+   - Added Pattern 1 temporary mode switching to `calculateReferenceModel()` and `calculateTargetModel()`
+   - Ensures `setCalculatedValue()` publishes to correct StateManager keys
+   - Fixed Column K (cooling transmission gains) showing 0 in Target mode
+   - Fixed S03 location change state isolation
 
 **Probable Root Causes**:
 
@@ -804,36 +813,108 @@ e_10 stays constant (perfect state isolation) ✅
 
 ---
 
+#### **Bug #10: S11 Column K (Cooling Transmission Gains) - Target Shows Zero** ✅ **FIXED!** 
+
+**Status**: ✅ RESOLVED (Oct 2, 2025 - Commit `2f26b23`)
+
+**Symptom**: S11 Column K (Heatgain kWh/Cool Season) rows 85-95 showed **0.00** in Target mode, but **calculated correctly** in Reference mode (reverse state mixing).
+
+**Expected Values (from Excel)**:
+- k_85 (Roof): 710.14 kWh/Cool Season
+- k_86 (Walls AG): 501.32 kWh/Cool Season
+- k_95 (Floor Slab): -5,995.80 kWh/Cool Season (negative = ground cooling)
+
+**Root Cause**: Missing **Pattern 1 temporary mode switching** in S11's dual-engine functions.
+
+**The Bug Pattern**:
+```
+User in Reference mode → changes S11 value
+  ↓
+calculateAll() runs both engines
+  ↓
+calculateReferenceModel() runs → ModeManager.currentMode = "reference" ✅
+  ↓
+calculateTargetModel() runs → BUT currentMode STILL "reference" ❌
+  ↓
+setCalculatedValue("k_85", ...) checks ModeManager.currentMode
+  ↓
+Since currentMode = "reference" → publishes as ref_k_85 ❌
+  ↓
+Target k_85 never written to unprefixed key → displays 0
+```
+
+**The Fix**: Added temporary mode switching to both engines (matching S13 pattern):
+
+```javascript
+function calculateReferenceModel() {
+  const originalMode = ModeManager.currentMode;
+  ModeManager.currentMode = "reference"; // ✅ Ensure Reference publishing
+  
+  try {
+    // ... calculations ...
+  } finally {
+    ModeManager.currentMode = originalMode; // ✅ Always restore
+  }
+}
+
+function calculateTargetModel() {
+  const originalMode = ModeManager.currentMode;
+  ModeManager.currentMode = "target"; // ✅ Ensure Target publishing
+  
+  try {
+    // ... calculations ...
+  } finally {
+    ModeManager.currentMode = originalMode; // ✅ Always restore
+  }
+}
+```
+
+**Result**: 
+- ✅ Target Column K values now display correctly (Excel parity achieved!)
+- ✅ Reference Column K values continue to work perfectly
+- ✅ **BONUS**: This also fixed Bug #6 (h_21 capacitance toggle now works in Reference mode)!
+- ✅ **BONUS**: S03 location changes now maintain perfect state isolation!
+
+**Bug #10: CLOSED** ✅
+
+---
+
 ### **📋 NEXT SESSION PRIORITIES (UPDATED Oct 2, 2025):**
 
 **🎉 MAJOR VICTORIES ACHIEVED:**
-- ✅ **Bug #4 FIXED** (S03 location change state mixing) - Commit `6f5087f`
+- ✅ **Bug #4 FIXED** (S03 location change state mixing) - Commits `6f5087f`, `2f26b23`
 - ✅ **Bug #5 FIXED** (g_118 ventilation method - THE FINAL BOSS) - Commit `8b1bb24`
+- ✅ **Bug #6 FIXED** (h_21 capacitance toggle) - Fixed by Commit `2f26b23` (S11 mode switching)
 - ✅ **Bug #8 FIXED** (S07 hot water system state carryover) - Commit `b9e4f4c`
+- ✅ **Bug #10 FIXED** (S11 Column K Target cooling gains = 0) - Commit `2f26b23`
 - ✅ **Perfect dual-state architecture** achieved at section level!
+- ✅ **Excel parity** achieved for S11 cooling transmission gains!
 
-**REMAINING BUGS (Much Easier!):**
+**REMAINING BUGS (Almost There!):**
 
 **HIGH PRIORITY:**
-1. **Bug #9** (d_12 occupancy state mixing) - ⚠️ PARTIALLY FIXED
-   - Reference model now protected from Target changes ✅
-   - Target still affected by Reference changes ❌
-   - Need to investigate S03's dual-engine pattern causing bidirectional contamination
+1. **Bug #11** (h_10 convergence issue - NEW DISCOVERY) 🔬
+   - At initialization: h_10 = 93.0 (expected 93.7) - 0.7 kWh/m²/yr short
+   - Slow drag d_118 down→up to 89%: h_10 = 93.7 ✅ (converges correctly)
+   - Quick drag to 89% and release: h_10 = 93.0 ❌ (doesn't converge)
+   - Hypothesis: Calculations need multiple passes to converge fully
+   - Investigation needed: What interrupts convergence at initialization?
 
 **MEDIUM PRIORITY:**
-2. **Bug #6** (h_21 capacitance toggle - Reference mode only)
-   - S03 capacitance toggle doesn't affect Reference S11/S12 calculations
-   - Likely missing listener or publishing issue
+2. **Bug #9** (d_12 occupancy state mixing) - ⚠️ PARTIALLY FIXED
+   - Reference model now protected from Target changes ✅
+   - Target still affected by Reference changes ❌
+   - Lower priority now that critical state isolation achieved
    
 3. **Bug #7** (k_120 setback slider - Reference mode only)
    - Works perfectly in Target mode ✅
    - Has no effect in Reference mode ❌
    - Likely not dual-state or missing Reference listener
 
-4. **Bug #2** (d_118 slider convergence asymmetry)
+4. **Bug #2** (d_118 slider convergence asymmetry - RELATED TO BUG #11)
    - Drag down→up converges correctly ✅
    - Drag up→down does NOT converge ❌
-   - Calculation-during-drag is REQUIRED (not a bug, intentional solver behavior)
+   - May share root cause with Bug #11
 
 **LOW PRIORITY:**
 5. **Bug #1** (number format timing) - Visual inconsistency only
