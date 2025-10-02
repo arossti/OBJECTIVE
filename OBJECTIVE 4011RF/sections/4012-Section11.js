@@ -1377,30 +1377,35 @@ window.TEUI.SectionModules.sect11 = (function () {
   /**
    * REFERENCE MODEL ENGINE: Calculate all Column E values using Reference state
    * Stores results with ref_ prefix to keep separate from Target values
+   * ✅ PATTERN 1: Temporary mode switching (like S13)
    */
   function calculateReferenceModel() {
-    // console.log('[Section11] Running Reference Model calculations...'); // Comment out
+    const originalMode = ModeManager.currentMode;
+    ModeManager.currentMode = "reference"; // ✅ Temporary mode switch for correct StateManager publishing
+    
+    try {
+      // console.log('[Section11] Running Reference Model calculations...'); // Comment out
 
-    let totals = { loss: 0, gain: 0, areaD: 0, airAreaD: 0, groundAreaD: 0 };
-    const componentResults = {};
+      let totals = { loss: 0, gain: 0, areaD: 0, airAreaD: 0, groundAreaD: 0 };
+      const componentResults = {};
 
-    componentConfig.forEach((config) => {
-      // Calculate using reference values
-      const result = calculateComponentRow(config.row, config, true); // true = isReferenceCalculation
+      componentConfig.forEach((config) => {
+        // Calculate using reference values
+        const result = calculateComponentRow(config.row, config, true); // true = isReferenceCalculation
 
-      const area = getNumericValue(`d_${config.row}`) || 0;
-      const heatloss = result ? result.heatloss : 0;
-      const heatgain = result ? result.heatgain : 0;
+        const area = getNumericValue(`d_${config.row}`) || 0;
+        const heatloss = result ? result.heatloss : 0;
+        const heatgain = result ? result.heatgain : 0;
 
-      // Store for later use
-      componentResults[config.row] = { heatloss, heatgain };
+        // Store for later use
+        componentResults[config.row] = { heatloss, heatgain };
 
-      totals.loss += heatloss;
-      totals.gain += heatgain;
-      if (config.row >= 85 && config.row <= 95) totals.areaD += area;
-      if (config.type === "air") totals.airAreaD += area;
-      else if (config.type === "ground") totals.groundAreaD += area;
-    });
+        totals.loss += heatloss;
+        totals.gain += heatgain;
+        if (config.row >= 85 && config.row <= 95) totals.areaD += area;
+        if (config.type === "air") totals.airAreaD += area;
+        else if (config.type === "ground") totals.groundAreaD += area;
+      });
 
     // Calculate thermal bridge penalty using reference values
     const penaltyResults = calculateThermalBridgePenalty(
@@ -1539,34 +1544,42 @@ window.TEUI.SectionModules.sect11 = (function () {
       }
     }
 
-    // Store results at module level for later re-writing in calculateAll
-    lastReferenceResults = {
-      ...componentResults,
-      // Also store penalty values to prevent overwrites
-      penalty: { heatloss: penaltyHeatlossI, heatgain: penaltyHeatgainK },
-    };
+      // Store results at module level for later re-writing in calculateAll
+      lastReferenceResults = {
+        ...componentResults,
+        // Also store penalty values to prevent overwrites
+        penalty: { heatloss: penaltyHeatlossI, heatgain: penaltyHeatgainK },
+      };
 
-    // console.log('[Section11] Reference Model values stored'); // Comment out
+      // console.log('[Section11] Reference Model values stored'); // Comment out
+    } finally {
+      ModeManager.currentMode = originalMode; // ✅ Always restore original mode
+    }
   }
 
   /**
    * TARGET MODEL ENGINE: Calculate all Column H values using Application state
    * This is the existing calculateAll logic, refactored
+   * ✅ PATTERN 1: Temporary mode switching (like S13)
    */
   function calculateTargetModel() {
-    // console.log('[Section11] Running Target Model calculations...'); // Comment out
+    const originalMode = ModeManager.currentMode;
+    ModeManager.currentMode = "target"; // ✅ Temporary mode switch for correct StateManager publishing
+    
+    try {
+      // console.log('[Section11] Running Target Model calculations...'); // Comment out
 
-    let totals = { loss: 0, gain: 0, areaD: 0, airAreaD: 0, groundAreaD: 0 };
+      let totals = { loss: 0, gain: 0, areaD: 0, airAreaD: 0, groundAreaD: 0 };
 
-    componentConfig.forEach((config) => {
-      calculateComponentRow(config.row, config, false); // false = Target calculation
-      const area = getNumericValue(`d_${config.row}`) || 0;
-      totals.loss += getNumericValue(`i_${config.row}`) || 0;
-      totals.gain += getNumericValue(`k_${config.row}`) || 0;
-      if (config.row >= 85 && config.row <= 95) totals.areaD += area;
-      if (config.type === "air") totals.airAreaD += area;
-      else if (config.type === "ground") totals.groundAreaD += area;
-    });
+      componentConfig.forEach((config) => {
+        calculateComponentRow(config.row, config, false); // false = Target calculation
+        const area = getNumericValue(`d_${config.row}`) || 0;
+        totals.loss += getNumericValue(`i_${config.row}`) || 0;
+        totals.gain += getNumericValue(`k_${config.row}`) || 0;
+        if (config.row >= 85 && config.row <= 95) totals.areaD += area;
+        if (config.type === "air") totals.airAreaD += area;
+        else if (config.type === "ground") totals.groundAreaD += area;
+      });
 
     calculateThermalBridgePenalty(totals.loss, totals.gain, false); // false = Target calculation
     const penaltyHeatlossI = getNumericValue("i_97") || 0;
@@ -1674,6 +1687,9 @@ window.TEUI.SectionModules.sect11 = (function () {
       // Update reference indicators for all rows
       updateReferenceIndicators(config.row);
     });
+    } finally {
+      ModeManager.currentMode = originalMode; // ✅ Always restore original mode
+    }
   }
 
   /**
