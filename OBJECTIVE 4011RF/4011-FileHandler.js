@@ -256,8 +256,13 @@
       let skippedValidationCount = 0;
 
       Object.entries(importedData).forEach(([fieldId, value]) => {
-        const fieldDef = this.fieldManager.getField(fieldId);
-        if (!fieldDef) {
+        // ✅ CRITICAL: Reference fields (ref_*) don't need FieldManager definitions
+        // They share Target DOM elements and are handled by section-level dual-state architecture
+        const isReferenceField = fieldId.startsWith("ref_");
+        const baseFieldId = isReferenceField ? fieldId.substring(4) : fieldId;
+        const fieldDef = this.fieldManager.getField(baseFieldId);
+
+        if (!fieldDef && !isReferenceField) {
           console.warn(`Skipping import for unknown fieldId: ${fieldId}`);
           skippedValidationCount++;
           return; // Use return to continue to next iteration of forEach
@@ -267,6 +272,16 @@
         let isValid = true;
 
         try {
+          // ✅ Reference fields: Store directly in StateManager without validation
+          // Validation was already done by ExcelMapper normalization
+          if (isReferenceField) {
+            this.stateManager.setValue(fieldId, parsedValue, "imported");
+            updatedCount++;
+            // console.log(`[FileHandler] Reference field imported: ${fieldId} = ${parsedValue}`);
+            return; // Done with this reference field
+          }
+
+          // Target fields: Validate and update DOM
           if (
             fieldDef.type === "editable" ||
             fieldDef.type === "year_slider" ||
@@ -359,6 +374,14 @@
             "[FileHandler] d_13 not found in imported data or state after import; cannot explicitly load reference data.",
           );
         }
+      }
+
+      // ✅ CRITICAL: Refresh S03 UI after location import to update dropdowns
+      if (window.TEUI?.sect03?.ModeManager) {
+        console.log(
+          "[FileHandler] Refreshing S03 UI after import to update location dropdowns",
+        );
+        window.TEUI.sect03.ModeManager.refreshUI();
       }
 
       // Trigger recalculation after all updates AND after reference data is loaded
