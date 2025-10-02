@@ -62,17 +62,17 @@
     <script src="4011-Calculator.js"></script>
     <!-- Calculator logic -->
     <!-- <script src="4011-ComponentBridge.js"></script> -->
-    <script src="4011-ExcelLocationHandler.js"></script>
+    <!-- ExcelLocationHandler.js RETIRED - Weather data now handled by ClimateValues.js -->
     <script src="4011-ExcelMapper.js"></script>
     <script src="4011-FileHandler.js"></script>
     <script src="4011-Dependency.js"></script>
-    
+
     <!-- Performance Monitoring -->
     <script src="4011-Clock.js"></script>
 
     <!-- Climate Data for S03 DualState Architecture -->
     <script src="4011-ClimateValues.js"></script>
-    
+
     <!-- Cooling Calculations - Restored ARCHIVE chassis for S13 simplification -->
     <script src="4012-Cooling.js"></script>
 
@@ -93,7 +93,8 @@
     <script src="sections/4012-Section11.js"></script>
     <script src="sections/4012-Section12.js"></script>
     <script src="sections/4012-Section13.js"></script>
-    <!-- <script src="sections/4012-Section13.js"></script> --> <!-- BACKUP: S13 for testing -->
+    <!-- <script src="sections/4012-Section13.js"></script> -->
+    <!-- BACKUP: S13 for testing -->
     <script src="sections/4012-Section14.js"></script>
     <script src="sections/4012-Section15.js"></script>
     <script src="sections/4012-Section16.js"></script>
@@ -113,13 +114,13 @@
             src="assets/image041.png"
             class="logo"
             title="OBJECTIVE Logo"
-            alt="OBJECTIVE 4.012RF TEUI Calculator"
+            alt="OBJECTIVE 4.012 (Beta) TEUI Calculator"
           />
         </a>
         <div class="ms-auto text-end">
           <h1 class="mb-0 fs-4">
             Simple Energy and Carbon Modelling <br />
-            TEUI v.4.012RF | for Canadian Projects
+            TEUI v.4.012 (Beta) | for Canadian Projects
           </h1>
         </div>
       </header>
@@ -130,14 +131,7 @@
           <div
             class="col text-end controls-container d-flex align-items-center justify-content-end"
           >
-            <!-- Moved Location/Weather Buttons HERE -->
-            <button
-              type="button"
-              class="btn btn-outline-primary btn-sm me-2"
-              id="selectExcelBtn"
-            >
-              <i class="bi bi-file-earmark-excel"></i> Load Locations
-            </button>
+            <!-- Weather Location Buttons RETIRED - Now using ClimateValues.js -->
             <button
               type="button"
               class="btn btn-outline-danger btn-sm me-2"
@@ -176,12 +170,18 @@
                   >
                 </li>
                 <li>
-                  <a class="dropdown-item" href="#" id="mirrorTargetReferenceBtn"
+                  <a
+                    class="dropdown-item"
+                    href="#"
+                    id="mirrorTargetReferenceBtn"
                     >Mirror Target + Reference</a
                   >
                 </li>
                 <li>
-                  <a class="dropdown-item" href="#" id="referenceIndependenceBtn"
+                  <a
+                    class="dropdown-item"
+                    href="#"
+                    id="referenceIndependenceBtn"
                     >Reference Independence</a
                   >
                 </li>
@@ -294,13 +294,7 @@
             accept=".xlsx, .xls, .csv"
             style="display: none"
           />
-          <!-- Hidden File Input specifically for Location/Weather Excel Import -->
-          <input
-            type="file"
-            id="location-excel-input"
-            accept=".xlsx, .xls"
-            style="display: none"
-          />
+          <!-- Location/Weather Excel Import RETIRED - Now using ClimateValues.js -->
         </div>
       </div>
 
@@ -781,7 +775,9 @@ Select a province and city to view weather data.</pre
         if (TEUI && TEUI.StateManager) {
           // Clear all state including localStorage
           TEUI.StateManager.clear();
-          console.log("TEUI StateManager: All data cleared including localStorage");
+          console.log(
+            "TEUI StateManager: All data cleared including localStorage",
+          );
 
           // Reload the page to show clean state
           setTimeout(() => {
@@ -846,7 +842,8 @@ Select a province and city to view weather data.</pre
         // Create toggle
         const toggleDiv = document.createElement("div");
         toggleDiv.className = "reference-toggle";
-        toggleDiv.style.cssText = "display: flex; align-items: center; gap: 10px;";
+        toggleDiv.style.cssText =
+          "display: flex; align-items: center; gap: 10px;";
 
         const toggleLabel = document.createElement("label");
         toggleLabel.textContent = "Show Reference";
@@ -951,12 +948,12 @@ Select a province and city to view weather data.</pre
               "S15_TARGET_STATE",
               "S15_REFERENCE_STATE",
             ];
-      
+
             dualStateKeys.forEach((key) => {
               localStorage.removeItem(key);
               console.log(`Global Reset: Cleared ${key}`);
             });
-      
+
             console.log(
               "Global Reset: All dual-state localStorage cleared. Refreshing page...",
             );
@@ -1084,7 +1081,7 @@ Select a province and city to view weather data.</pre
         }
 
         console.log("TEUI Calculator 4.011 initialization complete");
-        
+
         // 🕐 ENSURE CLOCK INITIALIZATION: Force Clock init after all other initialization
         if (window.TEUI?.Clock?.init) {
           window.TEUI.Clock.init();
