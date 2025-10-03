@@ -111,6 +111,13 @@
       this.showStatus("Mapping data from Excel REPORT sheet...", "info");
       const importedData = this.excelMapper.mapExcelToReportModel(workbook);
 
+      // 🔍 DEBUG: Log location data from REPORT sheet
+      if (importedData.d_19 || importedData.h_19) {
+        console.log(
+          `[FileHandler] 🎯 TARGET Location from REPORT sheet: Province="${importedData.d_19}", City="${importedData.h_19}"`,
+        );
+      }
+
       if (importedData === null) {
         // mapExcelToReportModel returns null on sheet error
         this.showStatus(
@@ -378,10 +385,28 @@
 
       // ✅ CRITICAL: Refresh S03 UI after location import to update dropdowns
       if (window.TEUI?.sect03?.ModeManager) {
+        const currentMode = window.TEUI.sect03.ModeManager.currentMode;
+        const targetProvince = this.stateManager.getValue("d_19");
+        const targetCity = this.stateManager.getValue("h_19");
+        const refProvince = this.stateManager.getValue("ref_d_19");
+        const refCity = this.stateManager.getValue("ref_h_19");
+
         console.log(
-          "[FileHandler] Refreshing S03 UI after import to update location dropdowns",
+          `[FileHandler] 🔍 Pre-refresh check: mode=${currentMode}, StateManager: d_19="${targetProvince}", h_19="${targetCity}", ref_d_19="${refProvince}", ref_h_19="${refCity}"`,
         );
+
         window.TEUI.sect03.ModeManager.refreshUI();
+
+        // Verify dropdowns after refresh
+        const provinceDropdown = document.querySelector(
+          '[data-dropdown-id="dd_d_19"]',
+        );
+        const cityDropdown = document.querySelector(
+          '[data-dropdown-id="dd_h_19"]',
+        );
+        console.log(
+          `[FileHandler] 🔍 Post-refresh: Province dropdown="${provinceDropdown?.value}", City dropdown="${cityDropdown?.value}"`,
+        );
       }
 
       // Trigger recalculation after all updates AND after reference data is loaded

@@ -362,8 +362,18 @@ class ExcelMapper {
 
     if (!worksheet) {
       console.error(`Sheet named '${sheetName}' not found in the workbook.`);
+      console.log("🔍 Available sheets:", workbook.SheetNames);
       return null; // Indicate error
     }
+
+    // 🔍 DEBUG: Check what's actually in the location cells
+    console.log("🔍 [ExcelMapper] Reading REPORT sheet location cells:");
+    console.log("  D19 cell object:", worksheet["D19"]);
+    console.log("  H19 cell object:", worksheet["H19"]);
+    if (worksheet["D19"])
+      console.log("  D19 value:", this.extractCellValue(worksheet["D19"]));
+    if (worksheet["H19"])
+      console.log("  H19 value:", this.extractCellValue(worksheet["H19"]));
 
     Object.entries(this.excelReportInputMapping).forEach(
       ([cellRef, fieldId]) => {
