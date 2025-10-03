@@ -47,9 +47,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         // ✅ CALCULATED FIELDS REMOVED: h_23, h_24 are calculated, not defaults
         // Climate data populated by calculation engines from ClimateValues.js
       };
-      console.log(
-        "S03: Target defaults set from field definitions - single source of truth",
-      );
+      console.log("S03: Target defaults set from field definitions - single source of truth");
     },
     saveState: function () {
       try {
@@ -115,9 +113,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         // ✅ CALCULATED FIELDS REMOVED: h_23, h_24 are calculated, not defaults
         // Climate data populated by calculation engines from ClimateValues.js
       };
-      console.log(
-        "S03: Reference defaults set from field definitions - single source of truth",
-      );
+      console.log("S03: Reference defaults set from field definitions - single source of truth");
     },
     saveState: function () {
       try {
@@ -2229,125 +2225,6 @@ window.TEUI.SectionModules.sect03 = (function () {
           `S03: Capacitance dropdown updated via StateManager - bridged to DualState: ${newValue}`,
         );
       });
-
-      // ✅ NEW: Handle province changes from import/external sources (d_19 for Target)
-      window.TEUI.StateManager.addListener(
-        "d_19",
-        function (newProvinceValue, source) {
-          if (!newProvinceValue) return;
-
-          // Update DualState for isolation
-          DualState.setValue("d_19", newProvinceValue, source || "external");
-
-          // Update city dropdown to show cities for new province
-          updateCityDropdown(newProvinceValue);
-
-          console.log(
-            `S03: Province changed via StateManager (${source}): ${newProvinceValue}`,
-          );
-        },
-      );
-
-      // ✅ NEW: Handle city changes from import/external sources (h_19 for Target)
-      window.TEUI.StateManager.addListener(
-        "h_19",
-        function (newCityValue, source) {
-          if (!newCityValue) return;
-
-          // Update DualState for isolation
-          DualState.setValue("h_19", newCityValue, source || "external");
-
-          // Trigger calculations with new city data
-          calculateAll();
-
-          console.log(
-            `S03: City changed via StateManager (${source}): ${newCityValue}`,
-          );
-        },
-      );
-
-      // ✅ NEW: Handle Reference province changes from import (ref_d_19)
-      window.TEUI.StateManager.addListener(
-        "ref_d_19",
-        function (newProvinceValue, source) {
-          if (!newProvinceValue) return;
-
-          // Only update ReferenceState - don't affect Target
-          ReferenceState.setValue(
-            "d_19",
-            newProvinceValue,
-            source || "external",
-          );
-
-          // If currently in Reference mode, update UI
-          if (ModeManager.currentMode === "reference") {
-            const provinceSelect = document.querySelector(
-              '[data-dropdown-id="dd_d_19"]',
-            );
-            if (provinceSelect) {
-              provinceSelect.value = newProvinceValue;
-              updateCityDropdown(newProvinceValue);
-            }
-          }
-
-          console.log(
-            `S03: Reference province changed via StateManager (${source}): ${newProvinceValue}`,
-          );
-        },
-      );
-
-      // ✅ NEW: Handle Reference city changes from import (ref_h_19)
-      window.TEUI.StateManager.addListener(
-        "ref_h_19",
-        function (newCityValue, source) {
-          if (!newCityValue) return;
-
-          // Only update ReferenceState - don't affect Target
-          ReferenceState.setValue("h_19", newCityValue, source || "external");
-
-          // If currently in Reference mode, update UI
-          if (ModeManager.currentMode === "reference") {
-            const citySelect = document.querySelector(
-              '[data-dropdown-id="dd_h_19"]',
-            );
-            if (citySelect) {
-              citySelect.value = newCityValue;
-            }
-          }
-
-          // Trigger calculations (both engines run)
-          calculateAll();
-
-          console.log(
-            `S03: Reference city changed via StateManager (${source}): ${newCityValue}`,
-          );
-        },
-      );
-
-      // ✅ NEW: Handle timeframe changes from import (h_20 for Target, ref_h_20 for Reference)
-      window.TEUI.StateManager.addListener(
-        "h_20",
-        function (newTimeframe, source) {
-          if (!newTimeframe) return;
-          DualState.setValue("h_20", newTimeframe, source || "external");
-          calculateAll();
-          console.log(
-            `S03: Timeframe changed via StateManager (${source}): ${newTimeframe}`,
-          );
-        },
-      );
-
-      window.TEUI.StateManager.addListener(
-        "ref_h_20",
-        function (newTimeframe, source) {
-          if (!newTimeframe) return;
-          ReferenceState.setValue("h_20", newTimeframe, source || "external");
-          calculateAll();
-          console.log(
-            `S03: Reference timeframe changed via StateManager (${source}): ${newTimeframe}`,
-          );
-        },
-      );
     } else {
       console.warn("Section 03: StateManager not found, listeners not added.");
     }
