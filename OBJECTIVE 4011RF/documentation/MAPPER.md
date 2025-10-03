@@ -247,9 +247,14 @@ User can now:
 
 ### Commits During Session
 
-1. **70adacd** - "Refactor Excel import: retire ExcelLocationHandler, add dual-state REPORT+REFERENCE import, S03 listeners for province-city dependency"
-2. **d584ec0** - "Fix import: allow ref_ fields bypass FieldManager validation, add S03 UI refresh after import"
-3. **cb92d08** - "Add granular Excel cell diagnostics for location import debugging" ← **CURRENT**
+1. **70adacd** - "Refactor Excel import: retire ExcelLocationHandler, add dual-state REPORT+REFERENCE import, S03 listeners for province-city dependency" ← **REVERTED TO THIS**
+2. **d584ec0** - "Fix import: allow ref_ fields bypass FieldManager validation, add S03 UI refresh after import" ← Contains S03 listener conflicts
+3. **cb92d08** - "Add granular Excel cell diagnostics for location import debugging" ← Diagnostics added here
+4. **5499565** - "Document import debugging session" ← **DIAGNOSTIC STATE** (revert from here if needed to retry)
+
+### Revert Decision
+**Reverted to 70adacd** to restore S03 toggle responsiveness and remove conflicting listeners.
+**Saved state 5499565** for future investigation with fresh Excel file inspection.
 
 ### Files Modified
 
