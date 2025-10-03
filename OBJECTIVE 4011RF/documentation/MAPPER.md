@@ -227,3 +227,115 @@ User can now:
 **Baseline Commit:** 5a86eb1  
 **Ready for Testing:** YES  
 **Breaking Changes:** ExcelLocationHandler API removed (weather now via ClimateValues.js)
+
+---
+
+## DEBUGGING SESSION - Oct 3, 2025
+
+### Issues Encountered
+
+**Issue 1: Target Location Import Not Working**
+- **Symptom**: Excel file with D19="ON", H19="Milton" only imports to Reference mode, Target mode shows default "Alexandria"
+- **REFERENCE sheet works**: Milton appears correctly in Reference mode
+- **REPORT sheet fails**: Target mode doesn't update to Milton
+- **Diagnostic logs not appearing**: Added comprehensive logging but logs never show in console despite hard refresh, cache clear, browser restart
+
+**Issue 2: S03 Toggle Glitchy**
+- **Symptom**: S03 section header toggle (Target/Reference) is unresponsive, requires multiple clicks, slow to respond
+- **Possible cause**: New StateManager listeners (d_19, h_19, ref_d_19, ref_h_19) may be causing conflicts or calculation storms
+- **Impact**: Core S03 functionality degraded
+
+### Commits During Session
+
+1. **70adacd** - "Refactor Excel import: retire ExcelLocationHandler, add dual-state REPORT+REFERENCE import, S03 listeners for province-city dependency"
+2. **d584ec0** - "Fix import: allow ref_ fields bypass FieldManager validation, add S03 UI refresh after import"
+3. **cb92d08** - "Add granular Excel cell diagnostics for location import debugging" ← **CURRENT**
+
+### Files Modified
+
+- `4011-ExcelMapper.js` - Added REFERENCE mapping, location fields, diagnostics
+- `4011-FileHandler.js` - Ref field bypass, dual-state export, S03 refresh, diagnostics
+- `4012-Section03.js` - Added 6 StateManager listeners for import support
+- `index.html` - Removed ExcelLocationHandler button/input
+
+### Successful Changes
+
+✅ **Reference field import working** - 124 ref_ fields imported successfully
+✅ **Dual-state export working** - 3-row CSV format (headers, target, reference)
+✅ **ExcelLocationHandler retired** - ClimateValues.js handles weather data
+✅ **No linting errors** - Code is clean and formatted
+
+### Unresolved Issues
+
+❌ **Target location import** - Not updating UI dropdowns despite values in Excel
+❌ **S03 toggle responsiveness** - Glitchy behavior after adding listeners
+❌ **Diagnostic logs** - Not appearing in console (very concerning)
+
+### Possible Root Causes
+
+**Theory 1: StateManager Listener Conflicts**
+The 6 new listeners in S03 (d_19, h_19, ref_d_19, ref_h_19, h_20, ref_h_20) may be:
+- Firing multiple times during import
+- Causing calculation storms
+- Interfering with existing S03 initialization
+- Creating race conditions with calculateAll()
+
+**Theory 2: Excel Cell Reading Issue**
+XLSX.js may not be reading D19/H19 cells correctly:
+- Cells might be merged or formatted unusually
+- Formula references in REFERENCE sheet (=REPORT!D19) might confuse reader
+- Cell data types might not match expectations
+
+**Theory 3: Caching/Loading Issue**
+Despite hard refresh attempts:
+- Service workers or other caching mechanisms
+- File system sync delays with iCloud
+- Browser loading old JavaScript despite new commit
+
+### Recommended Actions
+
+**Option A: Defer to Tomorrow**
+- Document current state ✅ (this section)
+- Keep current commits
+- Fresh debugging session tomorrow with Excel file inspection
+
+**Option B: Revert S03 Listeners**
+- Revert commit cb92d08 (diagnostics)
+- Revert commit d584ec0 (S03 refresh + ref bypass)
+- Keep commit 70adacd (core mapper refactor - MOST of the work)
+- Restore S03 to pre-listener state
+- Test if toggle responsiveness returns
+
+**Option C: Selective Revert**
+- Keep ref_ field bypass (critical for import)
+- Remove only S03 listeners from 4012-Section03.js
+- Keep export changes
+- Test import without S03 automated handling
+
+### Revert Commands (If Needed)
+
+```bash
+# Option B: Full revert to baseline + mapper only
+git reset --hard 70adacd
+
+# Option C: Manual removal of S03 listeners
+# Edit 4012-Section03.js to remove lines ~2229-2308 (the 6 new listeners)
+```
+
+### Testing Tomorrow
+
+1. **Inspect Excel file directly** - Open in Excel, verify D19/H19 values on REPORT sheet
+2. **Manual console commands** - Test XLSX.read() directly in browser console
+3. **Minimal test case** - Create simple 2-cell Excel file to isolate issue
+4. **S03 listener audit** - Review all listeners, check for conflicts
+5. **Import without S03** - Test if import works when S03 section is disabled
+
+### Success Criteria for Tomorrow
+
+- [ ] Target location import updates UI dropdowns correctly
+- [ ] S03 toggle is smooth and responsive
+- [ ] Diagnostic logs appear in console
+- [ ] No regression in Reference import (keep 124 fields working)
+- [ ] Export remains functional
+
+**Status:** Session paused for debugging. Core architecture (mapper, ref bypass, export) is solid. S03 integration needs investigation.
