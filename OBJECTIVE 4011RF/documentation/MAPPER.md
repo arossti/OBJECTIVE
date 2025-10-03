@@ -252,9 +252,25 @@ User can now:
 3. **cb92d08** - "Add granular Excel cell diagnostics for location import debugging" ← Diagnostics added here
 4. **5499565** - "Document import debugging session" ← **DIAGNOSTIC STATE** (revert from here if needed to retry)
 
-### Revert Decision
-**Reverted to 70adacd** to restore S03 toggle responsiveness and remove conflicting listeners.
-**Saved state 5499565** for future investigation with fresh Excel file inspection.
+### Final State - Session End
+
+**CURRENT COMMIT: d39c5ce** ✅ "Revert S03 to pre-listener state to restore toggle responsiveness"
+
+**What's Working:**
+- ✅ ExcelMapper with REPORT + REFERENCE mappings (d_19, h_19, i_21 added)
+- ✅ Reference field import (ref_ bypass in FileHandler)
+- ✅ Dual-state export (3-row CSV format)
+- ✅ ExcelLocationHandler retired
+- ✅ S03 toggle responsive (listeners removed)
+- ✅ All diagnostic logging intact for tomorrow
+
+**What's Deferred:**
+- ⏸️ Automated Target location import (d_19, h_19 from Excel → S03 dropdowns)
+- ⏸️ S03 StateManager listeners (caused toggle glitchiness)
+
+**Hash for Future S03 Listener Investigation:**
+- **5499565** contains full diagnostic state with all S03 listeners
+- Can cherry-pick S03 listeners from commits d584ec0 or 70adacd if needed tomorrow
 
 ### Files Modified
 
