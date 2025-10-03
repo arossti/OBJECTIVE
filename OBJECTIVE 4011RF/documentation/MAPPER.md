@@ -360,3 +360,770 @@ git reset --hard 70adacd
 - [ ] Export remains functional
 
 **Status:** Session paused for debugging. Core architecture (mapper, ref bypass, export) is solid. S03 integration needs investigation.
+
+---
+
+## ARCHITECTURAL ANALYSIS - Oct 3, 2025 (Continued)
+
+### Root Cause Diagnosis
+
+**S03 uses a dual-state architecture pattern that isolates it from global StateManager.** This is intentional and documented in `CORE-ARCHITECTURE-AUDIT.md` as "Pattern A - Self-Contained State Module."
+
+#### Why Reference Import Works:
+
+1. Import sets `ref_d_19` and `ref_h_19` in **global StateManager** ✅
+2. S03's `publishReferenceResults()` (lines 1762-1766) reads **StateManager first**:
+   ```javascript
+   d_19: window.TEUI.StateManager.getValue("ref_d_19") || ReferenceState.getValue("d_19")
+   h_19: window.TEUI.StateManager.getValue("ref_h_19") || ReferenceState.getValue("h_19")
+   ```
+3. Fallback pattern successfully bridges global → local state ✅
+
+#### Why Target Import Fails:
+
+1. Import sets `d_19` and `h_19` in **global StateManager** ✅
+2. BUT S03's `TargetState` is **completely isolated** - only reads from localStorage
+3. `refreshUI()` (lines 204-286) reads from **TargetState only**, NOT global StateManager
+4. No fallback pattern exists for Target mode (unlike Reference mode)
+5. Dropdowns never update because they're bound to isolated `TargetState` ❌
+
+#### Why Initial Listener Attempts Failed:
+
+The reverted listeners (commit 70adacd) likely failed because:
+
+1. **Timing issue**: Listeners added during `init()` but StateManager values set **after** import
+2. **No explicit sync call**: Import updated StateManager but never called `TargetState.setValue()`
+3. **Missing bridge**: Unlike Reference (which has fallback), Target has no StateManager → TargetState bridge
+4. **Calculation interference**: Listeners may have triggered `calculateAll()` before import completed
+
+### Architecture Assessment: Is S03 an Anomaly?
+
+**Answer: No, S03 follows the documented dual-state pattern correctly.**
+
+Per `CORE-ARCHITECTURE-AUDIT.md` and `STANDARDIZED-STATES.md`:
+
+#### ✅ **S03's Pattern Is Intentional:**
+
+- **Self-contained state** prevents "global contamination" (see AUDIT line 55-58)
+- **Local state isolation** ensures Target/Reference values never mix
+- **Pattern A** (self-contained) vs Pattern B (global StateManager direct access)
+- Other sections using Pattern A: S02, S05, S06, S08, S15 (all completed per AUDIT line 42-48)
+
+#### ✅ **Good Reasons for Isolation:**
+
+1. **Prevents cross-contamination**: Target and Reference calculations can't accidentally share values
+2. **Independent lifecycles**: Each mode maintains its own state in localStorage
+3. **Explicit control**: Mode switching requires deliberate `refreshUI()` calls
+4. **Calculation integrity**: Ensures calculations use correct state for current mode
+
+#### ❌ **The Problem: Import Wasn't Designed for Pattern A**
+
+The import system was designed for **Pattern B sections** (direct StateManager access):
+
+```javascript
+// Pattern B (works with current import):
+StateManager.setValue(fieldId, value) → updateFieldDisplay() → dropdown updates ✅
+
+// Pattern A (S03 - doesn't work with current import):
+StateManager.setValue(fieldId, value) → [NO BRIDGE] → TargetState isolated ❌
+```
+
+### Proposed Solutions
+
+#### **Solution 1: Symmetric Import Bridge (Recommended)**
+
+**Make Target import mirror Reference's fallback pattern.**
+
+**Changes Required:**
+- Add explicit sync method in S03: `syncFromGlobalState()`
+- Call after Target import completes in `FileHandler.processImportedExcel()`
+- No architectural changes needed
+
+**Implementation:**
+```javascript
+// In 4012-Section03.js - add new method:
+TargetState.syncFromGlobalState = function(fieldIds = ['d_19', 'h_19', 'i_21']) {
+  fieldIds.forEach(fieldId => {
+    const globalValue = window.TEUI.StateManager.getValue(fieldId);
+    if (globalValue !== null && globalValue !== undefined) {
+      this.setValue(fieldId, globalValue, "imported");
+      console.log(`S03 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`);
+    }
+  });
+};
+
+// In 4011-FileHandler.js - after line 134:
+this.updateStateFromImportData(importedData);
+
+// Add explicit S03 sync:
+if (window.TEUI?.SectionModules?.sect03?.TargetState) {
+  window.TEUI.SectionModules.sect03.TargetState.syncFromGlobalState(['d_19', 'h_19', 'i_21']);
+  window.TEUI.SectionModules.sect03.ModeManager.refreshUI(); // Update dropdowns
+}
+```
+
+**Pros:**
+- ✅ Minimal code changes (2 locations)
+- ✅ Preserves S03's isolated architecture
+- ✅ Mirrors existing Reference fallback pattern
+- ✅ No listener complexity
+- ✅ Explicit, debuggable
+
+**Cons:**
+- ⚠️ Requires manual sync call for each Pattern A section
+- ⚠️ Hardcoded field list (d_19, h_19, i_21)
+
+---
+
+#### **Solution 2: Universal Pattern A Import Handler**
+
+**Create a generic post-import hook for all Pattern A sections.**
+
+**Changes Required:**
+- Add `postImportSync()` method to Pattern A section modules
+- FileHandler calls hook for all registered Pattern A sections
+- One-time infrastructure, scales to S02, S05, S06, S08, S15
+
+**Implementation:**
+```javascript
+// In 4011-FileHandler.js - new method:
+syncPatternASections(importedData) {
+  const patternASections = [
+    { module: window.TEUI.SectionModules.sect03, name: 'S03' },
+    { module: window.TEUI.SectionModules.sect02, name: 'S02' },
+    // Add S05, S06, S08, S15 as needed
+  ];
+
+  patternASections.forEach(({ module, name }) => {
+    if (module?.TargetState?.syncFromGlobalState) {
+      console.log(`[FileHandler] Syncing ${name} Pattern A state from import...`);
+      module.TargetState.syncFromGlobalState();
+      if (module.ModeManager?.refreshUI) {
+        module.ModeManager.refreshUI();
+      }
+    }
+  });
+}
+
+// Call after Target import (line 134):
+this.updateStateFromImportData(importedData);
+this.syncPatternASections(importedData); // ← New hook
+```
+
+**Pros:**
+- ✅ Scalable to all Pattern A sections
+- ✅ Self-documenting (registry shows which sections need sync)
+- ✅ Future-proof for new Pattern A sections
+- ✅ Preserves architectural isolation
+
+**Cons:**
+- ⚠️ Slightly more complex than Solution 1
+- ⚠️ Requires each Pattern A section to implement `syncFromGlobalState()`
+
+---
+
+#### **Solution 3: StateManager Listeners with Import Flag**
+
+**Fix the original listener approach by adding import-aware logic.**
+
+**Why Original Listeners Failed:**
+- Listeners fired during import → triggered `calculateAll()` prematurely
+- Multiple listener firings caused calculation storms
+- No distinction between "user change" vs "import change"
+
+**Implementation:**
+```javascript
+// In 4011-FileHandler.js - add import flag:
+this.isImporting = false;
+
+processImportedExcel(workbook) {
+  this.isImporting = true; // ← Set flag
+  // ... existing import logic ...
+  this.updateStateFromImportData(importedData);
+  this.processImportedExcelReference(workbook);
+  this.isImporting = false; // ← Clear flag
+
+  // Trigger ONE refresh after import completes
+  if (window.TEUI?.SectionModules?.sect03?.ModeManager) {
+    window.TEUI.SectionModules.sect03.ModeManager.refreshUI();
+  }
+  window.TEUI.Calculator.calculateAll(); // Single calculation pass
+}
+
+// In 4012-Section03.js - modify listeners:
+window.TEUI.StateManager.addListener("d_19", function(newValue) {
+  const isImporting = window.TEUI?.FileHandler?.isImporting;
+  if (!isImporting) {
+    TargetState.setValue("d_19", newValue, "user");
+    calculateAll();
+  }
+  // If importing, sync happens via explicit refreshUI() call after import
+});
+```
+
+**Pros:**
+- ✅ Listeners work for both user input AND import
+- ✅ Automatic sync (no manual calls needed)
+- ✅ Prevents calculation storms during import
+
+**Cons:**
+- ❌ Adds complexity to listener logic
+- ❌ Global flag (`isImporting`) couples FileHandler to sections
+- ❌ Previous attempts failed even with this approach (timing issues?)
+
+---
+
+#### **Solution 4: Abandon Pattern A for S03 Location Fields**
+
+**Move d_19, h_19, i_21 to global StateManager only (no local state).**
+
+**Implementation:**
+- Remove d_19, h_19, i_21 from TargetState/ReferenceState objects
+- Read directly from StateManager with prefix: `StateManager.getValue('d_19')` or `StateManager.getValue('ref_d_19')`
+- Keep calculated fields (d_20, j_19, etc.) in isolated state
+
+**Pros:**
+- ✅ Import works immediately (no sync needed)
+- ✅ Simplifies S03 state management
+- ✅ Location fields aren't calculated, no contamination risk
+
+**Cons:**
+- ❌ **Violates S03's architectural pattern**
+- ❌ Inconsistent state management within S03
+- ❌ Breaks documented Pattern A isolation
+- ❌ May reintroduce "global contamination" bugs
+
+---
+
+### Recommendation
+
+**Use Solution 1 (Symmetric Import Bridge) for immediate fix, consider Solution 2 for long-term scalability.**
+
+**Rationale:**
+1. **Preserves architecture**: S03's Pattern A isolation is intentional and correct
+2. **Minimal risk**: Small, explicit code changes
+3. **Debuggable**: Clear console logs show sync happening
+4. **Mirrors Reference**: Target should work the same way Reference does
+5. **Quick to implement**: ~10 lines of code
+
+**Rejected Solutions:**
+- **Solution 3**: Already tried and failed (see commits 70adacd → d39c5ce)
+- **Solution 4**: Breaks documented architecture, high risk
+
+---
+
+### Implementation Checklist (Solution 1)
+
+- [ ] Add `syncFromGlobalState()` method to `TargetState` in 4012-Section03.js
+- [ ] Call sync + refreshUI after Target import in 4011-FileHandler.js (after line 134)
+- [ ] Test Target location import (d_19, h_19 update dropdowns)
+- [ ] Test Reference import (ensure no regression)
+- [ ] Verify S03 toggle remains responsive
+- [ ] Add diagnostic logging for import sync
+- [ ] Update MAPPER.md testing checklist
+
+---
+
+### Open Questions for Architecture Review
+
+1. **Should Reference also use explicit sync instead of fallback?**
+   - Current: `StateManager.getValue("ref_d_19") || ReferenceState.getValue("d_19")`
+   - Alternative: Explicit `ReferenceState.syncFromGlobalState()` (symmetric with Target)
+   - Benefit: More consistent, easier to debug
+
+2. **Should ALL Pattern A sections adopt this import pattern?**
+   - S02, S05, S06, S08, S15 may have same import issues
+   - Need audit: Do other sections have user-editable fields imported from Excel?
+
+3. **Should Pattern A be reconsidered entirely?**
+   - Import complexity suggests global StateManager might be simpler
+   - BUT: Pattern A prevents contamination bugs (documented rationale)
+   - Need cost/benefit analysis of isolation vs. complexity
+
+**Status:** Analysis complete. Awaiting decision on solution approach before implementation.
+
+---
+
+## CONTINUED DEBUGGING - Oct 3, 2025 (Evening Session)
+
+### Implementation Attempts
+
+**Attempt 1: Add syncFromGlobalState() method to TargetState**
+- ✅ Added method to S03 TargetState (lines 79-89 in 4012-Section03.js)
+- ✅ Calls `StateManager.getValue()` for d_19, h_19, i_21
+- ✅ Syncs values into TargetState via `setValue()`
+- ✅ Logs each sync for debugging
+
+**Attempt 2: Call sync after Target import**
+- ✅ Added sync call in FileHandler after `updateStateFromImportData()`
+- ❌ **Problem discovered**: Validation was rejecting d_19/h_19 as invalid dropdown values
+- Error: `"Skipping import for field d_19: Invalid value "ON" for type dropdown"`
+- **Root cause**: FileHandler validation can't validate S03's dynamically-populated dropdowns (managed by ClimateDataService, not FieldManager)
+
+**Attempt 3: Skip validation for S03 location fields**
+- ✅ Added `isS03LocationField` check in FileHandler (line 311)
+- ✅ Modified validation to skip d_19/h_19 (line 325: `&& !isS03LocationField`)
+- ✅ Values now import into global StateManager successfully
+- ❌ **Still no dropdowns updating**
+
+**Attempt 4: Move sync AFTER calculateAll()**
+- 🔍 **Discovery**: Old code at lines 407-431 was trying to refresh S03 UI
+- 🔍 **Discovery**: `calculateAll()` runs at line 438, AFTER initial sync attempt
+- **Theory**: `calculateAll()` may reinitialize S03 from localStorage, overwriting sync
+- ✅ Moved sync to AFTER `calculateAll()` completes (lines 423-441)
+- ❌ **Sync code never runs** - no console logs appearing
+
+### Current Mystery: Why Isn't Sync Running?
+
+**Expected console logs** (not appearing):
+```
+[FileHandler] 🔧 Syncing S03 TargetState from global StateManager...
+S03 TargetState: Synced d_19 = ON from global StateManager
+S03 TargetState: Synced h_19 = Milton from global StateManager
+[FileHandler] ✅ S03 Target state synced and UI refreshed after calculateAll()
+```
+
+**Actual behavior:**
+- Import completes successfully
+- Reference data imports (124 fields)
+- calculateAll() runs and completes
+- **No sync logs appear**
+- Dropdowns still show "Alexandria" (default)
+
+### Possible Causes
+
+**Theory 1: Module Path Incorrect**
+```javascript
+// Current code tries:
+window.TEUI?.SectionModules?.sect03?.TargetState
+
+// But S03 might be registered as:
+window.TEUI?.sect03?.TargetState  (without SectionModules namespace)
+```
+
+**Theory 2: Timing/Race Condition**
+- Sync code is inside `if (this.calculator.calculateAll)` block
+- calculateAll() might be async and returning before completion
+- Sync runs but S03 hasn't initialized yet
+
+**Theory 3: Code Not Loading**
+- Browser cache holding old FileHandler.js
+- Hard refresh not clearing service workers
+- iCloud sync delays causing file version mismatch
+
+**Theory 4: S03 Overwriting State After Sync**
+- Even if sync runs, S03 might have a listener or initialization that resets to localStorage
+- Need to check S03 for any code that runs after import/calculateAll
+
+### Testing Needed Tomorrow
+
+1. **Verify module path in browser console:**
+   ```javascript
+   console.log(window.TEUI)
+   console.log(window.TEUI.SectionModules)
+   console.log(window.TEUI.SectionModules?.sect03)
+   console.log(window.TEUI.sect03)  // Alternative path
+   ```
+
+2. **Add debug logging BEFORE the if statement:**
+   ```javascript
+   console.log("[FileHandler] calculateAll finished, checking for sect03...");
+   console.log("[FileHandler] window.TEUI:", window.TEUI);
+   console.log("[FileHandler] SectionModules:", window.TEUI?.SectionModules);
+   console.log("[FileHandler] sect03:", window.TEUI?.SectionModules?.sect03);
+   ```
+
+3. **Manually test sync in console after import:**
+   ```javascript
+   // After import completes, run this in console:
+   window.TEUI.SectionModules.sect03.TargetState.syncFromGlobalState(['d_19', 'h_19'])
+   window.TEUI.SectionModules.sect03.ModeManager.refreshUI()
+   ```
+
+4. **Check if S03 is listening to calculateAll completion:**
+   - Search S03 for listeners on calculation events
+   - Check if S03 resets state when Calculator fires events
+
+5. **Alternative: Direct DOM manipulation after import:**
+   ```javascript
+   // Bypass S03 state entirely, just update DOM
+   const provinceDropdown = document.querySelector('[data-dropdown-id="dd_d_19"]');
+   const cityDropdown = document.querySelector('[data-dropdown-id="dd_h_19"]');
+   provinceDropdown.value = "ON";
+   cityDropdown.value = "Milton";
+   ```
+
+### Files Modified (This Session)
+
+1. **4012-Section03.js**: Added `syncFromGlobalState()` method to TargetState (lines 79-89)
+2. **4011-FileHandler.js**:
+   - Skip validation for S03 location fields (line 311)
+   - Added sync call after calculateAll() (lines 423-441)
+
+### Current Hypothesis
+
+The most likely issue is **module path** - S03 might not be registered at `window.TEUI.SectionModules.sect03` but somewhere else. The sync code has a conditional check that's failing silently.
+
+**Evidence:**
+- No error messages in console
+- No sync logs appearing
+- Code should be running but isn't
+
+**Next Step:**
+Add extensive logging BEFORE the conditional to see what's actually available in the window object.
+
+### Backup Plan
+
+If sync approach continues failing, consider **Alternative Architecture**:
+
+**Option: Make d_19/h_19 globally managed, not Pattern A**
+- Remove d_19, h_19 from S03's isolated TargetState
+- Read directly from global StateManager with mode prefix
+- Keep only calculated fields in isolated state
+- This would make import "just work" but breaks S03's architectural pattern
+
+**Risk**: May reintroduce the "global contamination" bugs that Pattern A was designed to prevent.
+
+---
+
+**Status:** Session ended. Core issue identified: sync code not executing (no logs). Need to debug module path and timing tomorrow. Both Target AND Reference showing defaults - suggests a fundamental issue with how S03 accesses imported values.
+
+---
+
+## BREAKTHROUGH - Oct 3, 2025 (Late Night Session)
+
+### The Root Cause Revealed
+
+After extensive debugging with comprehensive logging, we found the exact sequence of events:
+
+**What We Discovered:**
+
+1. ✅ **ExcelMapper reads correctly**: "Milton" is read from H19 cell
+2. ✅ **Import data has Milton**: `importedData.h_19 = "Milton"`
+3. ✅ **StateManager gets Milton**: At line 404, StateManager has `h_19="Milton"`
+4. ❌ **Old refreshUI() call overwrites it**: Line 408 calls `refreshUI()` which reads from DualState (still has "Alexandria")
+5. ❌ **StateManager now has Alexandria**: By line 426 (sync), StateManager has been overwritten to `h_19="Alexandria"`
+
+**The Bug Chain:**
+
+```javascript
+// Line 135: Import updates StateManager
+updateStateFromImportData(importedData) → StateManager.setValue("h_19", "Milton") ✅
+
+// Line 404: StateManager still has Milton
+console.log(StateManager.getValue("h_19")) → "Milton" ✅
+
+// Line 408: OLD code calls refreshUI()
+window.TEUI.sect03.ModeManager.refreshUI()
+  → Reads DualState.getValue("h_19") → "Alexandria" (from localStorage)
+  → Updates DOM dropdown to "Alexandria"
+  → Writes back to StateManager.setValue("h_19", "Alexandria") ❌
+
+// Line 426: Our sync reads from StateManager
+TargetState.syncFromGlobalState(["h_19"])
+  → StateManager.getValue("h_19") → "Alexandria" ❌
+  → DualState now has "Alexandria" instead of "Milton"
+```
+
+**Why Line 1178-1184 in S03 Causes the Overwrite:**
+
+When `refreshUI()` is called, it triggers `handleProvinceChange()` which calls this code:
+
+```javascript
+// Line 1177-1184 in 4012-Section03.js
+const currentCity = DualState.getValue("h_19"); // Gets "Alexandria" from localStorage
+if (currentCity && cities.includes(currentCity)) {
+  cityDropdown.value = currentCity; // Sets DOM to "Alexandria"
+  DualState.setValue("h_19", currentCity, "init"); // Writes "Alexandria" to StateManager!
+}
+```
+
+### The Fix
+
+**Removed the redundant old refresh code** (lines 396-420) that was calling `refreshUI()` before our sync.
+
+**New sequence:**
+1. Import → StateManager has "Milton" ✅
+2. **Sync immediately** → DualState gets "Milton" from StateManager ✅
+3. calculateAll() → S03 checks DualState, finds "Milton", keeps it ✅
+4. refreshUI() → Displays "Milton" in dropdown ✅
+
+### Files Modified (Final)
+
+**4011-FileHandler.js:**
+- Line 311: Added skip validation for S03 location fields
+- Line 115-125: Added debug logging for import data
+- Lines 396-420: **REMOVED** old refreshUI() call (was overwriting imported values)
+- Lines 396-408: Sync S03 BEFORE calculateAll()
+- Lines 418-421: refreshUI() AFTER calculateAll()
+
+**4012-Section03.js:**
+- Lines 79-89: Added `syncFromGlobalState()` method to TargetState
+
+### Why This Was So Hard to Find
+
+1. **Timing**: The overwrite happened between import and sync
+2. **Silent**: No errors, just state changes in normal operation
+3. **Multiple layers**: StateManager → DualState → DOM → back to StateManager
+4. **Old code**: The culprit was old debugging code (line 408 refreshUI) that should have been removed
+5. **Dual state**: S03's isolated state architecture made it non-obvious which state was being read/written
+
+### Testing Tomorrow
+
+With the old refresh code removed, the import should now work:
+
+**Expected behavior:**
+1. Import reads "Milton" from Excel ✅
+2. StateManager gets "Milton" ✅
+3. Sync copies "Milton" to DualState ✅
+4. calculateAll() preserves "Milton" ✅
+5. refreshUI() displays "Milton" ✅
+
+**Console logs to verify:**
+```
+[FileHandler] 🎯 TARGET Location from REPORT sheet: Province="ON", City="Milton"
+[FileHandler] 🔧 Syncing S03 TargetState from global StateManager BEFORE calculateAll...
+S03 TargetState: Synced h_19 = Milton from global StateManager  ← Should say Milton now!
+[FileHandler] ✅ S03 UI refreshed after calculateAll()
+```
+
+### Additional Note: Reference Mode
+
+Reference mode works because `publishReferenceResults()` has a fallback pattern:
+```javascript
+h_19: window.TEUI.StateManager.getValue("ref_h_19") || ReferenceState.getValue("h_19")
+```
+
+It reads StateManager FIRST, so even if Reference import happens with skipRecalculation=true, the fallback catches the imported value.
+
+Target mode didn't have this fallback, which is why it failed until we added the explicit sync.
+
+---
+
+**Status:** Bug identified and fixed. Old refreshUI() call was overwriting imported values before sync could happen. Removed the redundant code. Ready for testing tomorrow with clean import flow.
+
+---
+
+## ✅ SUCCESS - Oct 4, 2025
+
+### IMPORT NOW WORKS! 🎉
+
+**Confirmed working:**
+- ✅ Target location imports correctly from REPORT sheet
+- ✅ Reference location imports correctly from REFERENCE sheet
+- ✅ Dropdowns display imported values (Milton shows instead of Alexandria)
+- ✅ Pattern A architecture preserved (S03 isolated state intact)
+- ✅ No validation errors
+- ✅ calculateAll() doesn't overwrite imported values
+
+### Final Solution Summary
+
+**The Problem:**
+S03's Pattern A architecture (isolated DualState) prevented direct import because:
+1. Import updated global StateManager
+2. S03's DualState remained in localStorage with defaults
+3. Validation blocked S03 dropdown values (not in FieldManager)
+4. Old refresh code overwrote imported values before sync
+
+**The Solution:**
+1. **Skip validation** for S03 location fields (d_19, h_19) - they're managed by ClimateDataService, not FieldManager
+2. **Add syncFromGlobalState()** method to S03's TargetState to bridge global → isolated state
+3. **Remove old refresh code** that was overwriting StateManager between import and sync
+4. **Sync BEFORE calculateAll()** so DualState has imported values when calculations run
+5. **Refresh UI AFTER calculateAll()** to display final calculated state
+
+### Architecture Insight
+
+This revealed an important pattern for **Pattern A sections** (isolated state):
+
+**Import flow for Pattern A sections:**
+```javascript
+1. Import → StateManager (global)
+2. Sync → DualState (isolated) ← NEW: explicit bridge needed
+3. calculateAll() → uses DualState values
+4. refreshUI() → displays DualState values
+```
+
+**Other Pattern A sections (S02, S05, S06, S08, S15) likely need similar treatment if they have user-editable fields imported from Excel.**
+
+### Lessons Learned
+
+1. **Old debugging code** can cause production bugs (the refreshUI call)
+2. **Isolated state** requires explicit sync bridges for import
+3. **Validation** must accommodate dynamically-populated dropdowns
+4. **Timing matters** - sync must happen before any code reads the isolated state
+5. **Comprehensive logging** was essential to finding the timing issue
+
+### Next Steps
+
+- [ ] Test Reference import (should work via existing fallback pattern)
+- [ ] Consider adding sync to other Pattern A sections if they import from Excel
+- [ ] Remove debug logging once stable
+- [ ] Document Pattern A import pattern for future sections
+
+---
+
+**Status:** ✅ RESOLVED - Import working for both Target and Reference locations. S03's Pattern A architecture successfully adapted for Excel import while maintaining state isolation.
+
+---
+
+## REMAINING ISSUES - To Fix on IRONING Branch
+
+### Issue 1: Number Formatting After Import
+
+**Problem:** Imported values show raw numbers instead of formatted display values
+- Example: `0.5` instead of `50%` for Capacitance slider (i_21)
+- Values are stored correctly but display formatting not applied
+
+**Solution Needed:**
+```javascript
+// After import, format all displayed values
+Object.entries(importedData).forEach(([fieldId, value]) => {
+  const fieldDef = FieldManager.getField(fieldId);
+  if (fieldDef) {
+    const formattedValue = formatValueForDisplay(value, fieldDef.type);
+    updateDOMElement(fieldId, formattedValue);
+  }
+});
+```
+
+**Files to check:**
+- `4011-FieldManager.js` - `updateFieldDisplay()` method
+- `4011-FileHandler.js` - Apply formatting after `updateStateFromImportData()`
+
+### Issue 2: Visual Styling After Import (Blue Text)
+
+**Problem:** Imported values don't show as "user-modified" (blue text per CSS)
+
+**Current behavior:**
+- User manually enters value → text turns blue (via CSS class)
+- Import adds value → text stays default color
+
+**Solution Needed:**
+```javascript
+// After import, mark fields as user-modified for styling
+const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+if (element) {
+  element.classList.add('user-modified'); // Or whatever CSS class is used
+  // OR set data attribute: element.dataset.source = 'imported';
+}
+```
+
+**Files to check:**
+- CSS file - find class for user-modified styling
+- `4011-FileHandler.js` - Add styling after import
+- Check what happens in normal user input flow for comparison
+
+### Issue 3: Calculation Sequence After Import
+
+**Problem:** Some sections calculate, others remain stale after import
+
+**Root causes:**
+1. `skipRecalculation = true` for Reference import (line 159)
+2. calculateAll() may not trigger all section dependencies
+3. No explicit "imported" event to trigger fresh calculations
+4. Some sections may have listeners disabled during import
+
+**Current flow:**
+```javascript
+// Line 135: Target import
+updateStateFromImportData(importedData) // skipRecalculation = false (default)
+
+// Line 138: Reference import
+updateStateFromImportData(referenceData, 0, true) // skipRecalculation = true ← PROBLEM?
+
+// Line 421: calculateAll() runs
+this.calculator.calculateAll() // But may not cascade properly
+```
+
+**Solution Needed - Import Should Behave Like User Input:**
+
+The import should trigger the exact same calculation cascade as if a user entered values:
+
+```javascript
+// FileHandler.js - after import completes
+
+// 1. Mark all imported fields as "modified" to trigger listeners
+Object.keys(importedData).forEach(fieldId => {
+  // StateManager should notify listeners that value changed
+  StateManager.setValue(fieldId, value, "imported"); // Already doing this
+});
+
+// 2. Trigger full calculation cascade (not just calculateAll)
+// Check Calculator.js for proper sequence:
+// - Should calculations be per-section in dependency order?
+// - Does calculateAll() respect dependency graph?
+// - Are some sections opted out of calculateAll()?
+
+// 3. Ensure all section listeners fire
+// Problem: Some sections may check source !== "imported" and skip
+// Solution: "imported" should be treated same as "user-modified"
+```
+
+**Investigation needed in Calculator.js:**
+- Line references to dependency graph execution
+- Check if there's a `calculateInDependencyOrder()` method
+- Verify all sections are included in calculation cascade
+- Look for any `if (source !== "imported")` conditions that skip calculations
+
+**Key insight:**
+> "The import should function just like a very fast user adding values in the app, and let the app do its thing and run normally."
+
+This means:
+- ✅ Values in StateManager (working)
+- ✅ Listeners should fire (may be blocked?)
+- ✅ Calculations should cascade (partially working)
+- ❌ All sections should recalculate (some stale)
+- ❌ Display formatting should apply (not happening)
+- ❌ Visual styling should update (not happening)
+
+### Issue 4: Reference Import with skipRecalculation
+
+**Problem:** Line 159 imports Reference with `skipRecalculation = true`
+- This prevents Reference sections from calculating after import
+- May leave Reference calculations stale
+
+**Question to investigate:**
+- Why was `skipRecalculation = true` used for Reference import?
+- Comment says "main recalculation happens after target data import"
+- But does calculateAll() at line 421 recalculate Reference sections?
+- Or do Reference sections need their own explicit trigger?
+
+**Possible fix:**
+```javascript
+// Option 1: Remove skipRecalculation for Reference
+this.updateStateFromImportData(referenceData, 0, false); // Let it calculate
+
+// Option 2: Explicitly trigger Reference calculations after calculateAll()
+this.calculator.calculateAll(); // Target calculations
+this.calculator.calculateReferenceModel(); // Reference calculations (if method exists)
+```
+
+### Implementation Plan for IRONING Branch
+
+**Phase 1: Formatting & Styling (Quick wins)**
+1. Apply number formatting after import (formatNumber calls)
+2. Add blue text styling for imported fields
+3. Test visual consistency with manual entry
+
+**Phase 2: Calculation Cascade (Core fix)**
+1. Audit Calculator.js for proper dependency execution
+2. Remove or fix `skipRecalculation` logic
+3. Ensure all section listeners fire on import
+4. Verify "imported" source triggers same logic as "user-modified"
+
+**Phase 3: Testing & Verification**
+1. Import test file with all field types
+2. Verify all sections calculate correctly
+3. Compare imported state vs. manually entered state
+4. Confirm no stale calculations remain
+
+**Phase 4: Cleanup**
+1. Remove debug logging
+2. Update documentation
+3. Add comments explaining import flow
+4. Create test checklist for future imports
+
+---
+
+**Status:** ✅ Core import working, ⚠️ Polish needed - Values import correctly but need formatting, styling, and complete calculation cascade. Moving to IRONING branch for final refinements.

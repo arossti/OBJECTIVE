@@ -111,11 +111,17 @@
       this.showStatus("Mapping data from Excel REPORT sheet...", "info");
       const importedData = this.excelMapper.mapExcelToReportModel(workbook);
 
-      // 🔍 DEBUG: Log location data from REPORT sheet
+      // 🔍 DEBUG: Log ALL imported data and specifically check for location fields
+      console.log("[FileHandler] 🔍 REPORT sheet imported data:", importedData);
+      console.log("[FileHandler] 🔍 d_19 in importedData?", "d_19" in importedData, "Value:", importedData.d_19);
+      console.log("[FileHandler] 🔍 h_19 in importedData?", "h_19" in importedData, "Value:", importedData.h_19);
+
       if (importedData.d_19 || importedData.h_19) {
         console.log(
           `[FileHandler] 🎯 TARGET Location from REPORT sheet: Province="${importedData.d_19}", City="${importedData.h_19}"`,
         );
+      } else {
+        console.warn("[FileHandler] ⚠️ NO location data (d_19/h_19) found in REPORT sheet import!");
       }
 
       if (importedData === null) {
@@ -289,6 +295,10 @@
           }
 
           // Target fields: Validate and update DOM
+          // ✅ CRITICAL: Skip validation for S03 location fields (d_19, h_19)
+          // These are Pattern A fields managed by S03's isolated state, not FieldManager
+          const isS03LocationField = ["d_19", "h_19"].includes(fieldId);
+
           if (
             fieldDef.type === "editable" ||
             fieldDef.type === "year_slider" ||
@@ -301,7 +311,7 @@
             } else if (fieldDef.type !== "editable") {
               isValid = false;
             }
-          } else if (fieldDef.type === "dropdown") {
+          } else if (fieldDef.type === "dropdown" && !isS03LocationField) {
             const options = this.fieldManager.getDropdownOptions(
               fieldDef.dropdownId,
               { parentValue: null },
@@ -383,30 +393,19 @@
         }
       }
 
-      // ✅ CRITICAL: Refresh S03 UI after location import to update dropdowns
-      if (window.TEUI?.sect03?.ModeManager) {
-        const currentMode = window.TEUI.sect03.ModeManager.currentMode;
-        const targetProvince = this.stateManager.getValue("d_19");
-        const targetCity = this.stateManager.getValue("h_19");
-        const refProvince = this.stateManager.getValue("ref_d_19");
-        const refCity = this.stateManager.getValue("ref_h_19");
-
+      // ✅ CRITICAL: Sync Pattern A sections (S03) BEFORE calculateAll()
+      // Must happen before calculateAll because S03's city dropdown update will overwrite h_19
+      // if it doesn't find the city in DualState (lines 1178-1184 in Section03)
+      if (window.TEUI?.SectionModules?.sect03?.TargetState) {
         console.log(
-          `[FileHandler] 🔍 Pre-refresh check: mode=${currentMode}, StateManager: d_19="${targetProvince}", h_19="${targetCity}", ref_d_19="${refProvince}", ref_h_19="${refCity}"`,
+          "[FileHandler] 🔧 Syncing S03 TargetState from global StateManager BEFORE calculateAll...",
         );
-
-        window.TEUI.sect03.ModeManager.refreshUI();
-
-        // Verify dropdowns after refresh
-        const provinceDropdown = document.querySelector(
-          '[data-dropdown-id="dd_d_19"]',
-        );
-        const cityDropdown = document.querySelector(
-          '[data-dropdown-id="dd_h_19"]',
-        );
-        console.log(
-          `[FileHandler] 🔍 Post-refresh: Province dropdown="${provinceDropdown?.value}", City dropdown="${cityDropdown?.value}"`,
-        );
+        window.TEUI.SectionModules.sect03.TargetState.syncFromGlobalState([
+          "d_19",
+          "h_19",
+          "i_21",
+        ]);
+        console.log("[FileHandler] ✅ S03 Target state synced from import");
       }
 
       // Trigger recalculation after all updates AND after reference data is loaded
@@ -415,6 +414,13 @@
         typeof this.calculator.calculateAll === "function"
       ) {
         this.calculator.calculateAll();
+
+        // Refresh S03 UI after calculateAll to display final values
+        if (window.TEUI?.SectionModules?.sect03?.ModeManager?.refreshUI) {
+          window.TEUI.SectionModules.sect03.ModeManager.refreshUI();
+          console.log("[FileHandler] ✅ S03 UI refreshed after calculateAll()");
+        }
+
         this.showStatus(
           `Import complete. ${updatedCount} fields updated. ${csvSkippedCount + skippedValidationCount} rows/fields skipped.`,
           "success",
