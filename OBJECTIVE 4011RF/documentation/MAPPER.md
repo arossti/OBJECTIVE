@@ -1620,7 +1620,27 @@ processImportedExcelReference(workbook) {
 - ReferenceState calculations use defaults instead of imported values
 - Target import works fine, Reference import broken
 
-**Status:** Root cause identified - sync timing fix needed
+**Fix Attempted and REVERTED (Oct 4, 2025):**
+Tried adding second `syncPatternASections()` after Reference import - this caused regressions
+
+**Testing Revealed Real Issue:**
+The sync logs showed:
+```
+S02 ReferenceState: Synced d_13 = OBC SB10 5.5-6 Z6 (DEFAULT!)
+S02 ReferenceState: Synced h_15 = 1427.20 (DEFAULT!)
+```
+
+**But Excel file has:**
+- ref_d_13 = "OBC SB10 5.5-6 Z5 (2010)" ✅
+- ref_h_15 = 11167 ✅
+
+**ROOT CAUSE - Reference data not importing to global StateManager at all!**
+- The "synced" values are DEFAULTS, not imported values
+- This means `mapExcelToReferenceModel()` or `updateStateFromImportData()` is failing
+- Reference sheet data not reaching global StateManager
+- Calling sync twice caused Target regressions (S13 d_118 = 89% instead of 4.80%)
+
+**Status:** Reference import broken at Excel→StateManager level, NOT a sync timing issue. Need to investigate ExcelMapper and Reference sheet reading.
 
 **Issue 2: S04 calculations remain stale despite syncFromGlobalState() implementation (Oct 4, 2025)**
 

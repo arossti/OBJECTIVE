@@ -163,11 +163,6 @@
       // Import reference data without triggering full recalculation
       // (main recalculation happens after target data import)
       this.updateStateFromImportData(referenceData, 0, true);
-
-      // ✅ FIX: Sync Pattern A sections AFTER Reference import
-      // Reference data (ref_d_13, etc.) is now in global StateManager, sync to isolated ReferenceStates
-      this.syncPatternASections();
-
       this.showStatus(
         `Reference import complete. ${Object.keys(referenceData).length} reference fields imported.`,
         "success",
