@@ -1555,12 +1555,72 @@ syncPatternASections(sectionIds) {
 
 ### Known Issues Found During Testing
 
-**Issue 1: Reference location import not syncing to S03 (Oct 4, 2025)**
-- **Symptom**: Target location imports correctly (Milton, Ontario), but Reference location remains at default (Alexandria)
-- **Root Cause**: S03 Reference mode likely needs same `syncFromGlobalState()` pattern as Target mode
-- **Impact**: Reference climate calculations may use wrong location data
-- **Status**: Deferred - Target import working, Reference sync needs investigation
-- **Note**: S03's `publishReferenceResults()` has fallback pattern but may not be triggered after import
+**Issue 1: Reference data not syncing to Pattern A ReferenceState (Oct 4, 2025)**
+
+**Symptom:**
+- Target imports work correctly (e.g., d_13 syncs to S02 TargetState)
+- Reference imports fail (e.g., ref_d_13 doesn't sync to S02 ReferenceState)
+- Example: S02 d_13 shows "OBC SB10 5.5-6 Z5 (2010)" in Target mode ✅
+- But in Reference mode, d_13 shows default instead of imported value ❌
+
+**Root Cause Discovered:**
+Timing issue in FileHandler import sequence - `syncPatternASections()` called BEFORE Reference import completes
+
+**Current Sequence (BROKEN for Reference):**
+```javascript
+// 4011-FileHandler.js:134-145
+processImportedExcel(workbook) {
+  const importedData = this.excelMapper.mapExcelToReportModel(workbook);  // Target import
+  this.updateStateFromImportData(importedData);                            // Updates global StateManager with d_13
+
+  this.processImportedExcelReference(workbook);                            // Reference import happens HERE
+}
+
+// 4011-FileHandler.js:320-414 (inside updateStateFromImportData)
+updateStateFromImportData(importedData, skipCount = 0, skipRecalculation = false) {
+  // ... import logic ...
+
+  this.syncPatternASections();  // ← Called during TARGET import
+                                 // Tries to sync ref_d_13 but it doesn't exist yet!
+
+  this.calculator.calculateAll();
+}
+
+// 4011-FileHandler.js:147-170 (called AFTER syncPatternASections)
+processImportedExcelReference(workbook) {
+  const referenceData = this.excelMapper.mapExcelToReferenceModel(workbook);
+  this.updateStateFromImportData(referenceData, 0, true);  // skipRecalculation=true
+  // ref_d_13 NOW added to global StateManager, but sync already happened!
+}
+```
+
+**Why ReferenceState sync fails:**
+1. Target import → global StateManager gets d_13 = "OBC SB10 5.5-6 Z5 (2010)"
+2. syncPatternASections() → S02.TargetState syncs d_13 ✅, tries to sync ref_d_13 but it's undefined ❌
+3. Reference import → global StateManager gets ref_d_13 = "OBC SB10 5.5-6 Z5 (2010)" (too late!)
+4. ReferenceState never gets the imported value
+
+**Fix Required:**
+Call `syncPatternASections()` AFTER Reference import as well:
+```javascript
+// In 4011-FileHandler.js:147-170
+processImportedExcelReference(workbook) {
+  const referenceData = this.excelMapper.mapExcelToReferenceModel(workbook);
+  this.updateStateFromImportData(referenceData, 0, true);
+
+  // ✅ ADD THIS: Sync Pattern A sections after Reference import
+  this.syncPatternASections();
+
+  this.showStatus(`Reference import complete...`, "success");
+}
+```
+
+**Impact:**
+- All Pattern A sections (S02, S03, S04, S05, S06, S08, S15) fail to sync Reference data
+- ReferenceState calculations use defaults instead of imported values
+- Target import works fine, Reference import broken
+
+**Status:** Root cause identified - sync timing fix needed
 
 **Issue 2: S04 calculations remain stale despite syncFromGlobalState() implementation (Oct 4, 2025)**
 
@@ -1692,3 +1752,5 @@ The import system is designed to work with the **dual-engine calculation archite
 ---
 
 **Status:** ✅ Analysis complete. Ready for implementation on IRONING branch this afternoon. Clear fix strategy identified for both styling and calculation issues, with full respect for dual-engine architecture patterns.
+
+Bug notes: Most header sections are ~45px tall. How can we lock Key Values header to this dimension so it stops expanding and hogging our vertical space (4011-styles.css)
