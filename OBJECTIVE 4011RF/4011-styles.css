@@ -730,7 +730,7 @@ td[colspan="2"] .form-select {
 }
 
 .excel-loader {
-  margin-bottom: 1rem;
+  margin-bottom: 1px;
   display: flex;
   align-items: center;
   gap: 0.5rem;

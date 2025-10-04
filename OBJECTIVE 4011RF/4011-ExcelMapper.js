@@ -7,15 +7,16 @@ const CONFIG = {
   EMISSIONS: {
     GAS_INTENSITY: 1921, // gCO2e/m3
     GAS_ENERGY_DENSITY: 10.36, // ekWh/m3
-    DEFAULT_GAS_COST: 0.507, // $/m3
-    DEFAULT_ELECTRICITY_COST: 0.13, // $/kWh
+    DEFAULT_GAS_COST: 0.507, // $/m3 Ontario average
+    DEFAULT_ELECTRICITY_COST: 0.13, // $/kWh Ontario average
   },
-  // Excel cell mapping configuration
+  // Excel cell mapping configuration (added REFERENCE)
   EXCEL_MAPPING: {
     SHEETS: {
       ENERGY_BALANCE: "ENERGY BALANCE",
       REPORT: "REPORT",
       NBC2025C2: "NBC-2025-C2",
+      REFERENCE: "REFERENCE",
     },
     // Placeholder for the old/combined mapping structure
     // We will define a specific mapping for Report sheet import later
@@ -24,11 +25,7 @@ const CONFIG = {
       "e-6": "REPORT!E6", // Adjusted sheet assumption
       "T.1_target": "REPORT!C5",
       "T.1_actual": "REPORT!D5",
-      // ... other mappings ...
-      "a-5": "NBC-2025-C2!A5", // Climate Data mappings remain separate
-      "a-115": "NBC-2025-C2!A115",
-      // ... rest of climate mappings ...
-      "a-683": "NBC-2025-C2!A683",
+      // ... other mappings ... (deleted climate mappings as this is internal now)
     },
   },
 };
@@ -648,7 +645,7 @@ class ExcelMapper {
    */
   mapExcelToReferenceModel(workbook) {
     const importedData = {};
-    const sheetName = "REFERENCE"; // REFERENCE sheet name
+    const sheetName = CONFIG.EXCEL_MAPPING.SHEETS.REFERENCE;
     const worksheet = workbook.Sheets[sheetName];
 
     if (!worksheet) {
