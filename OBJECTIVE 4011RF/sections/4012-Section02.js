@@ -1654,6 +1654,22 @@ window.TEUI.SectionModules.sect02 = (function () {
         `S02: Target defaults set from field definitions - single source of truth`,
       );
     },
+
+    /**
+     * ✅ PHASE 2: Sync from global StateManager after import
+     * Bridges global StateManager → isolated TargetState for imported values
+     */
+    syncFromGlobalState: function (fieldIds = ["d_12", "d_13", "d_14", "d_15", "h_12", "h_13", "h_14", "h_15", "i_16", "i_17", "l_12", "l_13", "l_14", "l_15", "l_16"]) {
+      fieldIds.forEach((fieldId) => {
+        const globalValue = window.TEUI.StateManager.getValue(fieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue, "imported");
+          console.log(
+            `S02 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`,
+          );
+        }
+      });
+    },
   };
 
   /**
@@ -1728,6 +1744,23 @@ window.TEUI.SectionModules.sect02 = (function () {
       console.log(
         `S02: Reference defaults set from field definitions - single source of truth with mode overrides`,
       );
+    },
+
+    /**
+     * ✅ PHASE 2: Sync from global StateManager after import
+     * Bridges global StateManager → isolated ReferenceState for imported values
+     */
+    syncFromGlobalState: function (fieldIds = ["d_12", "d_13", "d_14", "d_15", "h_12", "h_13", "h_14", "h_15", "i_16", "i_17", "l_12", "l_13", "l_14", "l_15", "l_16"]) {
+      fieldIds.forEach((fieldId) => {
+        const refFieldId = `ref_${fieldId}`;
+        const globalValue = window.TEUI.StateManager.getValue(refFieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue, "imported");
+          console.log(
+            `S02 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (ref_${fieldId})`,
+          );
+        }
+      });
     },
   };
 
@@ -2000,5 +2033,9 @@ window.TEUI.SectionModules.sect02 = (function () {
 
     // ✅ PATTERN A: Expose ModeManager for dual-state routing
     ModeManager: ModeManager,
+
+    // ✅ PHASE 2: Expose state objects for import sync
+    TargetState: TargetState,
+    ReferenceState: ReferenceState,
   };
 })();
