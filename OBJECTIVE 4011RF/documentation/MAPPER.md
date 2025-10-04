@@ -1925,3 +1925,47 @@ ref_h_15 is being read from REFERENCE sheet but **not being stored in StateManag
 
 **Working Theory:**
 The debug logging we added should show "Reference field imported: ref_h_15 = 11167" - if it doesn't appear, the import is failing validation or hitting an early return in updateStateFromImportData().
+
+---
+
+## 🔴 SECONDARY ISSUE: Post-Import Calculation Flow Blocked
+
+**Observation (User Report):**
+After importing values, when a user makes subsequent section-level edits:
+1. ✅ The edited section updates its own calculations correctly
+2. ❌ Calculations do NOT flow through to S01 (Summary Dashboard)
+3. ❌ S01 shows stale values based on pre-edit state
+
+**Comparison to Normal Workflow:**
+In a **non-import scenario** (fresh page load, manual user edits):
+- Section-level edits trigger calculations
+- Calculations cascade through entire app
+- S01 updates correctly with fresh downstream values
+
+**Post-Import Behavior:**
+Something about the import process establishes a **block or stale-value impediment** that prevents calculation cascade to S01.
+
+**Hypotheses:**
+1. **Listener/Observer Disconnection:** Import may disable change listeners that trigger cross-section calculation flow
+2. **State Isolation:** Import may lock sections into isolated state mode, preventing StateManager propagation
+3. **CalculateAll Flag:** skipRecalculation=true may leave sections in a "calculation complete" state that blocks re-triggers
+4. **Dependency Graph Break:** Import may not properly register dependencies, so S01 doesn't know downstream values changed
+5. **Event Propagation:** Import may suppress blur/change events that normally trigger cascade calculations
+
+**User-Observed Workaround:**
+"If I manually edit a section field after import, that section's calculations update, but the updates don't reach S01."
+
+**Investigation Priority:**
+This should be addressed **AFTER** solving Reference state import issue, as it may be a symptom of the same root cause (StateManager not properly updated during import).
+
+**Test Scenario for Evening Session:**
+1. Import Excel file
+2. Manually edit a field in S04 (utility bills)
+3. Observe: S04 calculations update ✅
+4. Check: Does S01 show updated values? ❌ (Currently fails)
+5. Expected: S01 should reflect S04's updated calculations
+
+**Potential Fix Areas:**
+- FileHandler.updateStateFromImportData() may need to re-enable listeners after import
+- calculateAll() may need explicit cross-section dependency refresh
+- StateManager may need to broadcast "values changed" event after import completes
