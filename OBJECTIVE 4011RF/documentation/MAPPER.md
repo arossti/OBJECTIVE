@@ -1127,3 +1127,483 @@ this.calculator.calculateReferenceModel(); // Reference calculations (if method 
 ---
 
 **Status:** ✅ Core import working, ⚠️ Polish needed - Values import correctly but need formatting, styling, and complete calculation cascade. Moving to IRONING branch for final refinements.
+
+---
+
+## DEEP DIVE: Import Styling & Calculation Analysis - Oct 4, 2025
+
+### Executive Summary
+
+**Two critical issues preventing polished Excel import experience:**
+
+1. **Imported values appear grey/italic (like defaults) instead of blue/bold (like user-modified)**
+2. **Calculations fresh in some sections (S07) but stale in others (S04) after import**
+
+Both issues stem from the fact that **import bypasses the normal user interaction flow** that triggers DOM class updates and calculation cascades.
+
+---
+
+### Issue 1: Why Imported Values Don't Style as "User-Modified"
+
+#### The Elegant CSS System (Already Perfect)
+
+**Location:** [4011-styles.css:1985-2000](../4011-styles.css#L1985-2000)
+
+```css
+/* Default values: Grey italic (no .user-modified class) */
+.data-table td[contenteditable="true"].user-input:not(.user-modified),
+.data-table td input[type="number"].user-input:not(.user-modified) {
+  color: #6c757d !important;      /* Muted grey */
+  font-style: italic !important;   /* Italic for defaults */
+}
+
+/* User-modified values: Blue bold (with .user-modified class) */
+.data-table td[contenteditable="true"].user-input.user-modified,
+.data-table td input[type="number"].user-input.user-modified {
+  color: var(--user-input-color) !important;  /* Blue */
+  font-style: normal !important;              /* Remove italic */
+  font-weight: 600 !important;                /* Bold */
+}
+```
+
+**The CSS is perfect** - it just needs the `.user-modified` class to be present.
+
+---
+
+#### The User Input Flow (✅ Works Correctly)
+
+**Location:** [4011-init.js:900-943](../4011-init.js#L900-943)
+
+```javascript
+// Focus event: Add editing-intent class
+document.addEventListener("focus", function (e) {
+  const field = e.target;
+  if (field.matches('[contenteditable="true"].user-input, input.user-input')) {
+    field.classList.add("editing-intent");           // Temporary while editing
+    field.dataset.originalValue = field.textContent; // Remember original
+  }
+}, true);
+
+// Blur event: Add user-modified class (THE KEY TRIGGER)
+document.addEventListener("blur", function (e) {
+  const field = e.target;
+  if (field.matches('[contenteditable="true"].user-input, input.user-input')) {
+    field.classList.remove("editing-intent");
+
+    const currentValue = field.textContent || field.value || "";
+    const originalValue = field.dataset.originalValue || "";
+
+    // If value changed, mark as user-modified
+    if (currentValue !== originalValue && currentValue.trim() !== "") {
+      field.classList.add("user-modified");  // ← BLUE STYLING APPLIED HERE
+    } else if (currentValue.trim() === "") {
+      field.classList.remove("user-modified"); // Back to grey/italic
+    }
+  }
+}, true);
+```
+
+**User flow:**
+1. Focus field → `.editing-intent` class added
+2. Type value
+3. Blur (tab away) → **`.user-modified` class added** ← Triggers blue/bold CSS
+4. CSS automatically styles the field
+
+---
+
+#### The Import Flow (❌ Missing Class Update)
+
+**Location:** [4011-FileHandler.js:291,328](../4011-FileHandler.js#L291,328) → [4011-StateManager.js:419](../4011-StateManager.js#L419)
+
+```javascript
+// FileHandler imports value
+this.stateManager.setValue(fieldId, parsedValue, "imported"); // State = "imported"
+
+// StateManager notifies listeners
+function setValue(fieldId, value, state = "imported") {
+  // Update internal state
+  field.value = value;
+  field.state = state;
+
+  // Notify listeners
+  notifyListeners(fieldId, value, oldValue, state); // ← Calls listeners
+
+  // Auto-save to localStorage
+  if (state === "imported" || state === "user-modified") {
+    saveState(); // Saves to localStorage
+  }
+}
+
+// FieldManager updates DOM value
+function updateFieldDisplay(fieldId, displayValue, fieldDef) {
+  const element = document.getElementById(fieldId);
+
+  // Updates the VALUE but NOT the classList
+  if (element.hasAttribute("contenteditable")) {
+    element.textContent = displayValue; // ✅ Value updated
+  } else if (element.tagName === "INPUT") {
+    element.value = displayValue;       // ✅ Value updated
+  }
+
+  // ❌ MISSING: element.classList.add("user-modified");
+}
+```
+
+**Import flow:**
+1. Import reads Excel → `StateManager.setValue(fieldId, value, "imported")`
+2. StateManager notifies listeners → `FieldManager.updateFieldDisplay()`
+3. FieldManager updates DOM value → ✅ Value appears
+4. **But classList never updated** → ❌ Field remains grey/italic
+
+**Why it bypasses blur:**
+- Blur events only fire when user **interactively focuses and unfocuses** a field
+- Programmatic value updates (via import) **do NOT trigger blur events**
+- The `.user-modified` class is **only added by blur handler**, never by import
+
+---
+
+#### Where the Class Should Be Added
+
+**Solution:** Add a StateManager listener or modify `FieldManager.updateFieldDisplay()` to add the class when state === "imported"
+
+**Proposed location:** [4011-FieldManager.js:1251-1290](../4011-FieldManager.js#L1251-1290)
+
+```javascript
+function updateFieldDisplay(fieldId, displayValue, fieldDef) {
+  const element = document.getElementById(fieldId) ||
+                  document.querySelector(`[data-field-id='${fieldId}']`);
+  if (!element) return;
+
+  // Update the value (already working)
+  if (element.hasAttribute("contenteditable")) {
+    element.textContent = displayValue;
+  } else if (element.tagName === "INPUT") {
+    element.value = displayValue;
+  }
+
+  // NEW: Add user-modified class for imported values
+  const fieldState = TEUI.StateManager.getState(fieldId);
+  if (fieldState === "imported" || fieldState === "user-modified") {
+    element.classList.add("user-modified"); // ← ADD THIS
+  }
+}
+```
+
+**Alternative:** Register a global StateManager listener that manages classes for ALL fields:
+
+```javascript
+// In 4011-init.js or 4011-FieldManager.js
+TEUI.StateManager.addGlobalListener(function(fieldId, value, oldValue, state) {
+  if (state === "imported" || state === "user-modified") {
+    const element = document.getElementById(fieldId) ||
+                    document.querySelector(`[data-field-id='${fieldId}']`);
+    if (element && element.classList.contains("user-input")) {
+      element.classList.add("user-modified");
+    }
+  }
+});
+```
+
+---
+
+### Issue 2: Why Calculations Are Stale in Some Sections After Import
+
+#### Current State Analysis
+
+**Working sections (S07):**
+- Calculations update immediately after import
+- Fresh values displayed
+
+**Stale sections (S04):**
+- Values import correctly (visible in fields)
+- Calculations remain at old values
+- Requires manual recalculation trigger
+
+---
+
+#### Possible Root Causes
+
+**Theory 1: Calculation Sequencing**
+
+**Location:** [4011-StateManager.js:415-417](../4011-StateManager.js#L415-417)
+
+```javascript
+function setValue(fieldId, value, state = "imported") {
+  // ...
+  if (state !== VALUE_STATES.CALCULATED && state !== VALUE_STATES.DERIVED) {
+    markDependentsDirty(fieldId); // ← Should mark dependencies for recalc
+  }
+
+  notifyListeners(fieldId, value, oldValue, state);
+}
+```
+
+**Question:** Does `markDependentsDirty()` properly cascade for imported values?
+- Some sections may have direct Calculator listeners that trigger on "user-modified" but not "imported"
+- Dependency graph may not include all calculation paths
+
+**Theory 2: Dual-State Architecture (⭐ PRIMARY SUSPECT)**
+
+Sections using Pattern A (isolated state) like S03, S04, S08-S15:
+- Import updates **global StateManager**
+- But calculations read from **isolated DualState** (localStorage)
+- If sync doesn't happen (or happens too late), calculations use old values
+
+**Evidence from S03 debugging:**
+- S03 required explicit `syncFromGlobalState()` call
+- S04 likely needs same treatment if it uses Pattern A
+- Other Pattern A sections: S02, S05, S06, S08, S15
+
+**Theory 3: skipRecalculation Flag (✅ VERIFIED CORRECT ARCHITECTURE)**
+
+**Location:** [4011-FileHandler.js:163-165](../4011-FileHandler.js#L163-165)
+
+```javascript
+// Import reference data without triggering full recalculation
+// (main recalculation happens after target data import)
+this.updateStateFromImportData(referenceData, 0, true); // skipRecalculation = true
+```
+
+**IMPORTANT - This is NOT a bug, it's correct dual-engine architecture:**
+
+Per [4012-CHEATSHEET.md](4012-CHEATSHEET.md#L27-28):
+> **"Dual-Engine Calculations": `calculateAll()` MUST run both `calculateTargetModel()` and `calculateReferenceModel()` in parallel on every data change.**
+
+**How it works:**
+1. Target import → StateManager updated, **skip intermediate calculation**
+2. Reference import → StateManager updated, **skip intermediate calculation**
+3. **Single `calculateAll()` call** → Runs BOTH engines in parallel (lines 481-520 of CHEATSHEET)
+
+**Why this is correct:**
+- Prevents running calculations before both states are populated
+- Avoids duplicate calculation work (once for Target, once for Reference)
+- Maintains state isolation via temporary mode switching pattern
+- Both engines run together when `calculateAll()` is called after import completes
+
+**Conclusion:** DO NOT change this flag - it's protecting dual-state isolation.
+
+**Theory 4: Calculator Trigger Timing**
+
+**Location:** [4011-FileHandler.js:421](../4011-FileHandler.js#L421)
+
+```javascript
+// After import completes
+this.calculator.calculateAll(); // ← Single calculation pass
+```
+
+**Questions:**
+- Does `calculateAll()` respect dependency order?
+- Are some sections excluded from `calculateAll()`?
+- Do Pattern A sections calculate independently?
+
+---
+
+#### Investigation Needed
+
+**Files to audit:**
+
+1. **4011-Calculator.js**
+   - Find `calculateAll()` implementation
+   - Check if it iterates through sections in dependency order
+   - Look for any sections excluded from the cascade
+   - Search for `if (state === "imported")` conditions that might skip calculations
+
+2. **sections/4012-Section04.js** (and other stale sections)
+   - Check if it uses Pattern A (isolated DualState)
+   - Look for StateManager listeners
+   - See if it has a `syncFromGlobalState()` method (likely needs one)
+
+3. **4011-StateManager.js**
+   - Verify `markDependentsDirty()` works for state="imported"
+   - Check dependency graph includes all calculation paths
+   - Look for any special handling of "imported" vs "user-modified"
+
+---
+
+#### Proposed Solution Path
+
+**Fix 1: Ensure "imported" Triggers Same Flow as "user-modified"**
+
+```javascript
+// StateManager should treat "imported" identically to "user-modified"
+if (state === "imported") {
+  state = "user-modified"; // Normalize to trigger all listeners
+}
+```
+
+**Fix 2: Add Pattern A Sync for All Affected Sections**
+
+Following S03's successful pattern:
+
+```javascript
+// In FileHandler after Target import
+const patternASections = ['sect02', 'sect03', 'sect04', 'sect05', 'sect06', 'sect08', 'sect15'];
+
+patternASections.forEach(sectionId => {
+  const section = window.TEUI?.SectionModules?.[sectionId];
+  if (section?.TargetState?.syncFromGlobalState) {
+    section.TargetState.syncFromGlobalState();
+  }
+});
+```
+
+**Fix 3: Ensure calculateAll() Runs After All Syncs Complete**
+
+```javascript
+// Current (problematic):
+this.updateStateFromImportData(importedData);
+this.syncPatternASections(); // ← Sync happens here
+this.calculator.calculateAll(); // ← But may start before sync completes
+
+// Better (explicit sequencing):
+await this.updateStateFromImportData(importedData);
+await this.syncPatternASections();
+await this.calculator.calculateAll(); // ← Guaranteed to run after sync
+```
+
+---
+
+### Comprehensive Fix Strategy
+
+#### Phase 1: DOM Class Management (Quick Win)
+
+**File:** [4011-FieldManager.js:1251-1290](../4011-FieldManager.js#L1251-1290)
+
+**Change:**
+```javascript
+function updateFieldDisplay(fieldId, displayValue, fieldDef) {
+  // ... existing value update code ...
+
+  // NEW: Add styling class for imported/user-modified values
+  const fieldState = TEUI.StateManager.getState(fieldId);
+  if (fieldState === "imported" || fieldState === "user-modified") {
+    if (element.classList.contains("user-input")) {
+      element.classList.add("user-modified");
+    }
+  }
+}
+```
+
+**Expected result:**
+- ✅ Imported values styled blue/bold
+- ✅ Visual parity with manually-entered values
+
+---
+
+#### Phase 2: Pattern A Section Sync (Core Architecture Fix)
+
+**File:** [4011-FileHandler.js](../4011-FileHandler.js) after line 134
+
+**Add universal Pattern A sync:**
+```javascript
+// After Target import completes
+this.updateStateFromImportData(importedData);
+
+// Sync all Pattern A sections
+this.syncPatternASections(['sect02', 'sect03', 'sect04', 'sect05', 'sect06', 'sect08', 'sect15']);
+
+// Then calculate
+this.calculator.calculateAll();
+```
+
+**Add sync method:**
+```javascript
+syncPatternASections(sectionIds) {
+  sectionIds.forEach(sectionId => {
+    const section = window.TEUI?.SectionModules?.[sectionId];
+    if (section?.TargetState?.syncFromGlobalState) {
+      console.log(`[FileHandler] Syncing ${sectionId} from global state...`);
+      section.TargetState.syncFromGlobalState();
+    }
+  });
+}
+```
+
+**Expected result:**
+- ✅ S04 and other Pattern A sections sync before calculation
+- ✅ Calculations use fresh imported values
+
+---
+
+#### Phase 3: Verify Calculation Cascade (Audit)
+
+**File:** [4011-Calculator.js](../4011-Calculator.js)
+
+**Audit checklist:**
+- [ ] Does `calculateAll()` iterate through sections in dependency order?
+- [ ] Are Pattern A sections included in calculation cascade?
+- [ ] Does "imported" state trigger same listeners as "user-modified"?
+- [ ] Are there any `if (state !== "imported")` guards blocking calculations?
+
+**If issues found:** Update Calculator to treat "imported" same as "user-modified"
+
+---
+
+### Testing Checklist
+
+**After implementing fixes:**
+
+- [ ] Import Excel file with diverse field types (text, number, dropdown, slider)
+- [ ] Verify all imported values styled blue/bold (same as manual entry)
+- [ ] Check S04 calculations are fresh (not stale)
+- [ ] Check S07 calculations remain fresh (no regression)
+- [ ] Verify Reference import calculations are fresh
+- [ ] Test dropdowns position to imported values
+- [ ] Test sliders position to imported values and show formatted display
+- [ ] Compare imported state vs manually-entered state (should be identical)
+- [ ] Check dual-state sections (Target/Reference) both calculate correctly
+
+---
+
+### Expected Outcomes
+
+**Visual Consistency:**
+- Imported values: Blue bold text ✅
+- Default values: Grey italic text ✅
+- User-modified values: Blue bold text ✅
+
+**Calculation Integrity:**
+- All sections calculate after import ✅
+- No stale calculations in any section ✅
+- Calculations respect dual-state architecture ✅
+
+**User Experience:**
+- Import feels like "fast user entry" ✅
+- All downstream effects trigger normally ✅
+- No manual recalculation needed ✅
+
+---
+
+### Critical Architectural Insight: Dual-Engine Import Flow
+
+**Key Understanding from 4012-CHEATSHEET.md:**
+
+The import system is designed to work with the **dual-engine calculation architecture** where both Target and Reference calculations run in parallel on every data change.
+
+**Correct Import Sequence:**
+1. Import Target data → StateManager updated
+2. Import Reference data → StateManager updated
+3. **Sync Pattern A sections** → Bridge global StateManager to isolated DualState
+4. **Single `calculateAll()` call** → Both engines run in parallel via temporary mode switching
+
+**Why skipRecalculation=true is Essential:**
+- Prevents premature calculation before both states are populated
+- Avoids running calculations twice (wasteful)
+- Preserves dual-engine parallel execution pattern
+- Maintains state isolation via [Pattern 1: Temporary Mode Switching](4012-CHEATSHEET.md#L481-520)
+
+**The Real Import Challenge:**
+- Pattern A sections (S03, S04, etc.) use **isolated DualState** for state sovereignty
+- Import populates **global StateManager** but isolated states remain stale
+- Solution: **Explicit sync bridge** (like S03's `syncFromGlobalState()`)
+- NOT changing calculation triggers or dual-engine architecture
+
+**Architectural Compliance:**
+- ✅ DO: Add Pattern A sync bridges for isolated state sections
+- ✅ DO: Ensure DOM class management for visual styling
+- ❌ DON'T: Remove `skipRecalculation` flag (breaks dual-engine pattern)
+- ❌ DON'T: Change calculation timing (respects CHEATSHEET architecture)
+
+---
+
+**Status:** ✅ Analysis complete. Ready for implementation on IRONING branch this afternoon. Clear fix strategy identified for both styling and calculation issues, with full respect for dual-engine architecture patterns.
