@@ -1826,3 +1826,87 @@ The import system is designed to work with the **dual-engine calculation archite
 **Status:** ✅ Analysis complete. Ready for implementation on IRONING branch this afternoon. Clear fix strategy identified for both styling and calculation issues, with full respect for dual-engine architecture patterns.
 
 Bug notes: Most header sections are ~45px tall. How can we lock Key Values header to this dimension so it stops expanding and hogging our vertical space (4011-styles.css)
+
+---
+
+## ⚠️ CRITICAL SESSION FINDINGS - Oct 4, 2025 Afternoon
+
+### Root Cause Discovery: S02 Module Not Loaded
+
+**Problem Statement:**
+After extensive debugging session with formula detection and import sequencing, discovered that **Section 02 (S02) is not being loaded/initialized in the application at all**.
+
+**Evidence:**
+1. syncPatternASections() logs show S03, S04, S05, S06, S08, S15 - but NO S02
+2. `window.TEUI.SectionModules.sect02` does not exist
+3. S02 exports TargetState and ReferenceState correctly, but module never loads
+4. All import/sync work for S02 fails silently because the module doesn't exist
+
+**Symptoms Traced to This Root Cause:**
+- Reference mode shows h_15 = 1,427.20 (default) instead of 11,167.00 (imported)
+- No S02 sync logs appear despite syncFromGlobalState() being implemented
+- Reference data successfully imported to StateManager but never reaches S02.ReferenceState
+- Blue/bold styling appears (StateManager has data) but wrong value displays (S02 not synced)
+
+**What Actually Works:**
+1. ✅ ExcelMapper formula detection (REFERENCE sheet `=REPORT!H15` correctly reads from REPORT)
+2. ✅ FileHandler import sequence (both Target and Reference data reach StateManager)
+3. ✅ S02 syncFromGlobalState() implementation (code is correct)
+4. ✅ S02 exports (TargetState and ReferenceState properly exported)
+5. ❌ S02 module loading (module never initializes, so sync hits nothing)
+
+**Technical Debt Accumulated This Session:**
+- Extensive debug logging in FileHandler.js (lines 169-170, 274-275, 283, 299)
+- Debug logging in ExcelMapper.js for H15/D13 cells
+- Attempted import sequence refactoring (moved syncPatternASections timing)
+- Multiple rounds of "why isn't the data getting through" when real issue is "S02 doesn't exist"
+
+**Recommendation:**
+
+### REVERT to Hash Before This Session
+
+**Revert to:** Last known good state before today's afternoon session (likely commit hash from this morning)
+
+**Why Revert:**
+1. **Core assumption was wrong**: We assumed S02 was loaded and focused on import flow
+2. **Debug logging clutter**: Added significant logging that diagnoses wrong problem
+3. **Import refactoring**: Changed timing/sequence when real issue is module loading
+4. **Technical debt**: Clean slate better than debugging on false foundation
+
+**What to Keep from This Session:**
+- MAPPER.md analysis and findings (this document)
+- Understanding that REFERENCE formulas reference REPORT sheet (critical insight)
+- Knowledge that S02 module loading is prerequisite for any import work
+
+**Correct Fix Sequence (After Revert):**
+1. **First:** Investigate why S02 module isn't loading
+   - Check 4011-init.js module loading sequence
+   - Check if S02 is commented out or conditionally loaded
+   - Verify S02 module definition doesn't have syntax errors preventing load
+
+2. **Second:** Once S02 loads, confirm existing import works
+   - ExcelMapper formula detection should work (code was correct)
+   - FileHandler import should populate StateManager
+   - syncPatternASections() should reach S02
+
+3. **Third:** If still issues after S02 loads, revisit import sequence
+   - May need timing adjustments we attempted today
+   - But only after confirming S02 actually exists in window.TEUI.SectionModules
+
+**Status:** 🔴 **BLOCKED** - S02 Reference import cannot work until S02 module loading issue resolved. Recommend revert and fresh approach focusing on module initialization.
+
+---
+
+### Why S02 Module Loading is Different/Special
+
+**Hypothesis for Investigation:**
+- S02 may be conditionally loaded (feature flag?)
+- S02 may have initialization error preventing registration
+- S02 may not be included in 4011-init.js module loading sequence
+- S02 filename or path may be incorrect in index.html script tags
+
+**Next Steps:**
+1. Check index.html for S02 script tag
+2. Check 4011-init.js for S02 initialization
+3. Check browser console for S02-related errors on page load
+4. Verify sections/4012-Section02.js file exists and has no syntax errors
