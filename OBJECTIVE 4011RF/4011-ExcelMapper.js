@@ -665,6 +665,17 @@ class ExcelMapper {
         if (cell !== undefined) {
           let extractedValue;
 
+          // 🔍 DEBUG: Log cell structure to understand what we're working with
+          if (cellRef === 'H15' || cellRef === 'D13') {
+            console.log(`[ExcelMapper DEBUG] ${cellRef} cell:`, {
+              value: cell.v,
+              formula: cell.f,
+              type: cell.t,
+              hasFormula: !!cell.f,
+              startsWithREPORT: cell.f?.startsWith('=REPORT!')
+            });
+          }
+
           // ✅ Check if cell contains a formula referencing REPORT sheet
           if (cell.f && cell.f.startsWith('=REPORT!')) {
             // Extract REPORT sheet cell reference (e.g., "=REPORT!H15" → "H15")
@@ -681,6 +692,9 @@ class ExcelMapper {
           } else {
             // User-entered value (no formula or different formula)
             extractedValue = this.extractCellValue(cell);
+            if (cellRef === 'H15' || cellRef === 'D13') {
+              console.log(`[ExcelMapper DEBUG] ${cellRef} no REPORT formula, using cell value: ${extractedValue}`);
+            }
           }
 
           // Apply same normalizations as REPORT sheet but for reference fields
