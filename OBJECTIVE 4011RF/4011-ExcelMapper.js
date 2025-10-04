@@ -641,12 +641,16 @@ class ExcelMapper {
 
   /**
    * NEW function for importing reference data from REFERENCE sheet.
-   * Mirrors mapExcelToReportModel but uses REFERENCE sheet and ref_ prefixed field IDs
+   * ✅ FIX: Handle formula cells (=REPORT!H15) vs user-entered values
+   * - If cell has formula referencing REPORT sheet → use REPORT value
+   * - If cell has user-entered value → use that value (user override)
    */
   mapExcelToReferenceModel(workbook) {
     const importedData = {};
     const sheetName = CONFIG.EXCEL_MAPPING.SHEETS.REFERENCE;
+    const reportSheetName = CONFIG.EXCEL_MAPPING.SHEETS.REPORT;
     const worksheet = workbook.Sheets[sheetName];
+    const reportWorksheet = workbook.Sheets[reportSheetName];
 
     if (!worksheet) {
       console.warn(
@@ -659,7 +663,25 @@ class ExcelMapper {
       ([cellRef, fieldId]) => {
         const cell = worksheet[cellRef];
         if (cell !== undefined) {
-          let extractedValue = this.extractCellValue(cell);
+          let extractedValue;
+
+          // ✅ Check if cell contains a formula referencing REPORT sheet
+          if (cell.f && cell.f.startsWith('=REPORT!')) {
+            // Extract REPORT sheet cell reference (e.g., "=REPORT!H15" → "H15")
+            const reportCellRef = cell.f.replace(/^=REPORT!/, '');
+
+            // Read from REPORT sheet instead
+            const reportCell = reportWorksheet?.[reportCellRef];
+            if (reportCell) {
+              extractedValue = this.extractCellValue(reportCell);
+              console.log(`[ExcelMapper] ${cellRef} has formula ${cell.f}, using REPORT!${reportCellRef} = ${extractedValue}`);
+            } else {
+              extractedValue = this.extractCellValue(cell); // Fallback
+            }
+          } else {
+            // User-entered value (no formula or different formula)
+            extractedValue = this.extractCellValue(cell);
+          }
 
           // Apply same normalizations as REPORT sheet but for reference fields
           // Remove ref_ prefix temporarily for normalization checks

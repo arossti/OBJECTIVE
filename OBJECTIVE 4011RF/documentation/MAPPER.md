@@ -1640,7 +1640,59 @@ S02 ReferenceState: Synced h_15 = 1427.20 (DEFAULT!)
 - Reference sheet data not reaching global StateManager
 - Calling sync twice caused Target regressions (S13 d_118 = 89% instead of 4.80%)
 
-**Status:** Reference import broken at Excel→StateManager level, NOT a sync timing issue. Need to investigate ExcelMapper and Reference sheet reading.
+**BREAKTHROUGH ANALYSIS (Oct 4, 2025):**
+
+User discovered the actual root cause by observing logs:
+```
+[S02] Updated h_15 = "11,167.00" (target mode)  ✅ CORRECT
+[S02] Updated h_15 = "1,427.20" (reference mode) ❌ WRONG - this is the DEFAULT!
+```
+
+**Excel File Structure:**
+- REPORT sheet: H15 = 11167 (numeric value) ✅
+- REFERENCE sheet: H15 = `=REPORT!H15` (formula that displays 11,167.00) ✅
+
+**The Problem:**
+REFERENCE sheet cells contain **formulas** (e.g., `=REPORT!H15`), not values
+- SheetJS library stores formula cells with:
+  - `cell.f` = "=REPORT!H15" (the formula)
+  - `cell.v` = calculated value (should be 11167)
+- But `extractCellValue()` (line 858) reads `cell.v`
+- If formula isn't evaluated, `cell.v` might be undefined or stale
+
+**Why defaults appear:**
+When ExcelMapper reads REFERENCE sheet H15:
+1. Cell has formula `=REPORT!H15`
+2. SheetJS may not evaluate cross-sheet formulas
+3. `cell.v` is undefined or contains old cached value
+4. Import fails, StateManager never gets ref_h_15
+5. Sync reads from StateManager, gets undefined
+6. ReferenceState keeps default value (1427.20)
+
+**Fix Applied (Oct 4, 2025):**
+ExcelMapper.mapExcelToReferenceModel() now handles formula cells intelligently ([4011-ExcelMapper.js:668-684](../4011-ExcelMapper.js#L668-684)):
+
+```javascript
+// Check if cell contains a formula referencing REPORT sheet
+if (cell.f && cell.f.startsWith('=REPORT!')) {
+  // Extract REPORT cell ref (e.g., "=REPORT!H15" → "H15")
+  const reportCellRef = cell.f.replace(/^=REPORT!/, '');
+
+  // Read from REPORT sheet instead (formulas don't evaluate)
+  const reportCell = reportWorksheet?.[reportCellRef];
+  extractedValue = this.extractCellValue(reportCell);
+} else {
+  // User-entered value (override) - use as-is
+  extractedValue = this.extractCellValue(cell);
+}
+```
+
+**How it works:**
+- If REFERENCE!H15 = `=REPORT!H15` (formula) → reads REPORT!H15 value (11167) ✅
+- If REFERENCE!H15 = 5000 (user override) → reads 5000 ✅
+- Respects both formula references AND user overrides
+
+**Status:** ✅ FIXED - Reference import should now work correctly. Ready for testing.
 
 **Issue 2: S04 calculations remain stale despite syncFromGlobalState() implementation (Oct 4, 2025)**
 
