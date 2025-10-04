@@ -141,17 +141,23 @@
       this.updateStateFromImportData(importedData);
 
       // Import REFERENCE data from REFERENCE sheet (optional)
+      console.log("[FileHandler DEBUG] About to call processImportedExcelReference");
       this.processImportedExcelReference(workbook);
+      console.log("[FileHandler DEBUG] Returned from processImportedExcelReference");
     }
 
     processImportedExcelReference(workbook) {
+      console.log("[FileHandler DEBUG] processImportedExcelReference called, excelMapper exists:", !!this.excelMapper);
+
       if (!this.excelMapper) {
         console.warn("Excel Mapper module not available for reference import");
         return;
       }
 
+      console.log("[FileHandler DEBUG] Calling mapExcelToReferenceModel...");
       this.showStatus("Mapping reference data from REFERENCE sheet...", "info");
       const referenceData = this.excelMapper.mapExcelToReferenceModel(workbook);
+      console.log("[FileHandler DEBUG] mapExcelToReferenceModel returned, keys:", Object.keys(referenceData).length);
 
       if (Object.keys(referenceData).length === 0) {
         console.log(
