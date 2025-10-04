@@ -1555,12 +1555,73 @@ syncPatternASections(sectionIds) {
 
 ### Known Issues Found During Testing
 
-**Issue: Reference location import not syncing to S03 (Oct 4, 2025)**
+**Issue 1: Reference location import not syncing to S03 (Oct 4, 2025)**
 - **Symptom**: Target location imports correctly (Milton, Ontario), but Reference location remains at default (Alexandria)
 - **Root Cause**: S03 Reference mode likely needs same `syncFromGlobalState()` pattern as Target mode
 - **Impact**: Reference climate calculations may use wrong location data
 - **Status**: Deferred - Target import working, Reference sync needs investigation
 - **Note**: S03's `publishReferenceResults()` has fallback pattern but may not be triggered after import
+
+**Issue 2: S04 calculations remain stale despite syncFromGlobalState() implementation (Oct 4, 2025)**
+
+**Symptom:**
+- Imported values d_27=2000299, d_28=355013 appear correctly in blue/bold (Phase 1 working ✅)
+- But calculated fields f_27, f_28, g_27, g_28 show stale default values
+- S04 calculations use f_32=132938 (default) instead of recalculating with imported values
+
+**Root Cause Discovered:**
+S04 module doesn't export `TargetState` and `ReferenceState` objects - only exports `ModeManager`
+
+**Evidence:**
+```javascript
+// sections/4012-Section04.js:1337-1352
+return {
+  getFields: getFields,
+  getDropdownOptions: function() { return {}; },
+  getLayout: getLayout,
+  onSectionRendered: onSectionRendered,
+  initializeEventHandlers: initializeEventHandlers,
+  calculateAll: calculateAll,
+  ModeManager: ModeManager  // ❌ Missing: TargetState, ReferenceState
+};
+```
+
+**Why sync failed:**
+1. FileHandler calls `window.TEUI.SectionModules.sect04.TargetState.syncFromGlobalState()`
+2. But `sect04.TargetState` is undefined (not exported)
+3. Sync silently fails - logs "not yet implemented"
+4. TargetState remains with default values from localStorage
+5. Calculations read stale isolated state instead of fresh imported values
+
+**Comparison with S03 (working):**
+```javascript
+// sections/4012-Section03.js exports
+return {
+  // ... other exports ...
+  TargetState: TargetState,      // ✅ Exported
+  ReferenceState: ReferenceState, // ✅ Exported
+  ModeManager: ModeManager
+};
+```
+
+**Fix Required:**
+Add TargetState and ReferenceState to S04's export object (line 1351):
+```javascript
+return {
+  // ... existing exports ...
+  ModeManager: ModeManager,
+  TargetState: TargetState,      // ADD THIS
+  ReferenceState: ReferenceState  // ADD THIS
+};
+```
+
+**Impact:**
+- Phase 2 infrastructure is working correctly ✅
+- syncFromGlobalState() methods implemented correctly ✅
+- Export structure prevents access ❌
+- Once exports are fixed, S04 sync should work immediately
+
+**Status:** Root cause identified - simple export fix needed
 
 ---
 
