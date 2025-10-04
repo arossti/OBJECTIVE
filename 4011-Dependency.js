@@ -1,6 +1,37 @@
 // 4011-Dependency.js
 // Dependency graph visualization using D3.js for TEUI Calculator v4.011
 // Based on structure from 4007-dependency-graph.js
+//
+// This module provides interactive visualization of field dependencies and architectural
+// relationships to help AI agents understand the application's execution flow and data dependencies.
+//
+// TODO - LOW PRIORITY UI/UX IMPROVEMENTS:
+// - Fix architectural module borders (green=Foundation, blue=Coordination, red=Application)
+// - Implement reset view button functionality (currently disabled)
+// - Add focusOnNode implementation for better navigation
+// - Optimize color mappings and legend organization
+// - Performance improvements for large dependency graphs
+// - Enhanced tooltip formatting and architectural module descriptions
+// - Improve mobile responsiveness and touch interactions
+//
+// NOTE: Core functionality (field dependencies + architectural framework) is working.
+// These improvements are aesthetic/UX enhancements, not mission-critical features.
+//
+// === AI AGENT USAGE EXAMPLES ===
+// For programmatic access to dual-state dependencies (without UI visualization):
+//
+// // Get Target state dependencies (current visualization)
+// const targetGraph = window.TEUI.StateManager.exportDependencyGraph("target");
+//
+// // Get Reference state dependencies (compliance calculations)
+// const refGraph = window.TEUI.StateManager.exportDependencyGraph("reference");
+//
+// // Get complete dual-state analysis
+// const analysis = window.TEUI.StateManager.getDualStateDependencyAnalysis();
+// console.log(`Coverage: ${analysis.analysis.coverageRatio}, Total deps: ${analysis.analysis.totalDependencies}`);
+//
+// // Query specific dependency paths
+// const climateToEnergy = refGraph.links.filter(l => l.source.includes("d_20"));
 
 // Ensure TEUI namespace exists
 window.TEUI = window.TEUI || {};
@@ -18,27 +49,34 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     this.width = 0;
     this.height = 0;
 
-    // Visualization settings (Improved for better visibility)
+    // Visualization settings (Enhanced for architectural + field dependencies)
     this.settings = {
-      nodeRadius: 15, // Increased node size for better visibility
+      nodeRadius: 15, // Base node size
+      moduleNodeRadius: 25, // Larger size for architectural modules
       linkDistance: 150, // Increased link distance to give nodes more space
       chargeStrength: -600, // Stronger repulsion to prevent node overlap
       colorScheme: {
-        "1. Key Values": "#b07aa1", // Purple (Keep distinct)
-        "2. Building Information": "#4e79a7", // Blue
-        "3. Climate Calculations": "#f28e2c", // Orange
-        "4. Actual vs. Target Energy": "#e15759", // Red (Energy Input/Target)
-        "5. CO2e Emissions": "#59a14f", // Green
-        "6. Renewable Energy": "#59a14f", // Green (Same as Emissions?)
-        "7. Water Use": "#1170aa", // Dark Blue
-        "8. Indoor Air Quality": "#66c2a5", // Teal
-        "9. Occupant + Internal Gains": "#ff9d9a", // Light Orange/Peach (Gains)
-        "10. Radiant Gains": "#ff9d9a", // Light Orange/Peach (Gains)
-        "11. Transmission Losses": "#76b7b2", // Teal/Green (Losses)
-        "12. Volume and Surface Metrics": "#9c755f", // Brown (Metrics)
-        "13. Mechanical Loads": "#af7aa1", // Purple (Distinct)
-        "14. TEDI & TELI": "#bab0ab", // Grey (Summary)
-        "15. TEUI Summary": "#bab0ab", // Grey (Summary)
+        // === ARCHITECTURAL MODULE GROUPS (AI Agent Framework) ===
+        "🏗️ Foundation": "#2E8B57", // Sea Green - Core foundation modules
+        "🧮 Coordination": "#4169E1", // Royal Blue - Coordination layer
+        "🎯 Application": "#DC143C", // Crimson - Application layer sections
+
+        // === ACTUAL SECTION GROUPS (from codebase analysis) ===
+        keyValues: "#b07aa1", // Purple - Section 01 Key Values
+        buildingInfo: "#4e79a7", // Blue - Section 02 Building Information
+        climateCalculations: "#f28e2c", // Orange - Section 03 Climate
+        actualTargetEnergy: "#e15759", // Red - Section 04 Energy Input/Target
+        co2eEmissions: "#59a14f", // Green - Section 05 CO2e Emissions
+        renewableEnergy: "#59a14f", // Green - Section 06 Renewable Energy
+        waterUse: "#1170aa", // Dark Blue - Section 07 Water Use
+        indoorAirQuality: "#66c2a5", // Teal - Section 08 Indoor Air Quality
+        occupantInternalGains: "#ff9d9a", // Light Orange - Section 09 Occupant + Internal Gains
+        radiantGains: "#fdae6b", // Light Orange - Section 10 Radiant Gains
+        transmissionLosses: "#76b7b2", // Teal/Green - Section 11 Transmission Losses
+        volumeSurfaceMetrics: "#9c755f", // Brown - Section 12 Volume and Surface Metrics
+        mechanicalLoads: "#af7aa1", // Purple - Section 13 Mechanical Loads
+        tediSummary: "#bab0ab", // Grey - Section 14 TEDI & TELI
+        teuiSummary: "#b3b3cc", // Light Gray/Blue - Section 15 TEUI Summary
         Other: "#8da0cb", // Light Blue/Grey Fallback
       },
       labelFontSize: 12, // Increased font size for better readability
@@ -112,55 +150,23 @@ window.TEUI.DependencyGraph = class DependencyGraph {
 
   /** Helper to determine node group */
   getNodeGroup(nodeId, fieldDef) {
-    // Prioritize section info if available
+    // Prioritize section info if available - now returns camelCase to match colorScheme
     if (fieldDef?.section) {
-      switch (fieldDef.section) {
-        case "keyValues":
-          return "1. Key Values";
-        case "buildingInfo":
-          return "2. Building Information";
-        case "climateCalculations":
-          return "3. Climate Calculations";
-        case "actualTargetEnergy":
-          return "4. Actual vs. Target Energy";
-        case "emissions":
-          return "5. CO2e Emissions";
-        case "onSiteEnergy":
-          return "6. Renewable Energy";
-        case "waterUse":
-          return "7. Water Use";
-        case "indoorAirQuality":
-          return "8. Indoor Air Quality";
-        case "occupantInternalGains":
-          return "9. Occupant + Internal Gains";
-        case "envelopeRadiantGains":
-          return "10. Radiant Gains";
-        case "envelopeTransmissionLosses":
-          return "11. Transmission Losses";
-        case "volumeSurfaceMetrics":
-          return "12. Volume and Surface Metrics";
-        case "mechanicalLoads":
-          return "13. Mechanical Loads";
-        case "tediSummary":
-          return "14. TEDI & TELI";
-        case "teuiSummary":
-          return "15. TEUI Summary";
-        default:
-          break;
-      }
+      // Return the section as-is since it's already in camelCase
+      return fieldDef.section;
     }
 
-    // Fallback to prefix-based section identification
+    // Fallback to prefix-based section identification (camelCase)
     if (
       nodeId.startsWith("d_11") ||
       nodeId.startsWith("h_11") ||
       nodeId.startsWith("i_11")
     )
-      return "11. Transmission Losses";
+      return "transmissionLosses";
     if (nodeId.startsWith("d_13") || nodeId.startsWith("h_13"))
-      return "13. Mechanical Loads";
-    if (nodeId.startsWith("g_6")) return "13. Mechanical Loads"; // Equipment loads
-    if (nodeId.startsWith("h_6")) return "13. Mechanical Loads"; // Equipment-related
+      return "mechanicalLoads";
+    if (nodeId.startsWith("g_6")) return "mechanicalLoads"; // Equipment loads
+    if (nodeId.startsWith("h_6")) return "mechanicalLoads"; // Equipment-related
 
     return "Other";
   }
@@ -472,11 +478,13 @@ window.TEUI.DependencyGraph = class DependencyGraph {
    */
   createFilterControls(parentElement) {
     // DUPLICATE FIX: Clear any existing controls first to prevent double headers
-    const existingControls = parentElement.querySelector(".dependency-graph-controls");
+    const existingControls = parentElement.querySelector(
+      ".dependency-graph-controls",
+    );
     if (existingControls) {
       existingControls.remove();
     }
-    
+
     const controlsContainer = document.createElement("div");
     controlsContainer.className = "dependency-graph-controls";
     controlsContainer.style.display = "flex";
@@ -589,7 +597,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     if (existingPanel) {
       existingPanel.remove();
     }
-    
+
     const infoPanel = document.createElement("div");
     infoPanel.className = "dependency-info-panel alert alert-secondary"; // Use Bootstrap alert
     infoPanel.style.marginBottom = "10px";
@@ -726,7 +734,12 @@ window.TEUI.DependencyGraph = class DependencyGraph {
 
       // Calculate total connections and assign node sizes
       nodes.forEach((node) => {
-        if (counts[node.id]) {
+        // Architectural modules get special sizing and styling
+        if (node.type === "module") {
+          node.size = this.settings.moduleNodeRadius;
+          node.isArchitectural = true;
+          node.isInfluential = true; // All architectural modules are influential
+        } else if (counts[node.id]) {
           counts[node.id].total =
             counts[node.id].dependencies + counts[node.id].dependents;
           // Set a node size based on connections: base size + scaled by connections
@@ -734,7 +747,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
             this.settings.nodeRadius *
             (1 + 0.4 * Math.sqrt(counts[node.id].total));
 
-          // Identify high-influence nodes
+          // Identify high-influence field nodes
           node.isInfluential = false;
           const influentialNodes = ["d_113", "d_51", "d_118", "d_53", "g_67"];
           if (influentialNodes.includes(node.id)) {
@@ -846,19 +859,42 @@ window.TEUI.DependencyGraph = class DependencyGraph {
       .select("circle:not(.node-background)")
       .attr("r", (d) => d.size) // Update radius for existing nodes
       .style("fill", (d) => {
-        // Use different colors for influential nodes
+        // Architectural modules use their group color with special styling
+        if (d.isArchitectural) {
+          const color =
+            this.settings.colorScheme[d.group] ||
+            this.settings.colorScheme.Other;
+          return color;
+        }
+        // High-influence field nodes get bright red
         if (d.isInfluential) {
-          return "#ff5252"; // Bright red for influential nodes
+          return "#ff5252"; // Bright red for influential field nodes
         }
         const color =
           this.settings.colorScheme[d.group] || this.settings.colorScheme.Other;
         return color;
       })
-      .style("filter", (d) =>
-        d.isInfluential
-          ? "drop-shadow(0px 0px 12px rgba(255,82,82,0.9))" // Enhanced glow effect for influential nodes
-          : "drop-shadow(0px 2px 3px rgba(0,0,0,0.2))",
-      ); // Regular shadow for other nodes
+      .style("stroke", (d) => {
+        if (d.isArchitectural) {
+          // Use colored borders to indicate architectural layer
+          return d.architecturalLayer === "Foundation"
+            ? "#2E7D32" // Dark green border for Foundation
+            : d.architecturalLayer === "Coordination"
+              ? "#1565C0" // Dark blue border for Coordination
+              : "#C62828"; // Dark red border for Application
+        }
+        return "#fff"; // White border for regular nodes
+      })
+      .style("stroke-width", (d) => (d.isArchitectural ? 4 : 2)) // Thicker border for modules
+      .style("filter", (d) => {
+        if (d.isArchitectural) {
+          return "drop-shadow(0px 0px 16px rgba(0,0,0,0.8))"; // Strong shadow for architectural modules
+        } else if (d.isInfluential) {
+          return "drop-shadow(0px 0px 12px rgba(255,82,82,0.9))"; // Enhanced glow for influential field nodes
+        } else {
+          return "drop-shadow(0px 2px 3px rgba(0,0,0,0.2))"; // Regular shadow for other nodes
+        }
+      });
 
     // Update the background circle size to match node size
     this.nodeGroups.select(".node-background").attr("r", (d) => d.size + 10);
@@ -878,18 +914,29 @@ window.TEUI.DependencyGraph = class DependencyGraph {
       tooltip += `\nGroup: ${d.group}`;
       tooltip += `\nType: ${d.type}`;
 
-      // Add the value to tooltip
-      const stateManager = window.TEUI?.StateManager;
-      if (stateManager) {
-        const value = stateManager.getValue(d.id);
-        if (value !== null && value !== undefined && value !== "") {
-          // Format the value using our formatting helper
-          const formattedValue = this.formatNodeValue(d.id, value);
-          tooltip += `\nValue: ${formattedValue}`;
+      // Enhanced tooltip for architectural modules
+      if (d.isArchitectural) {
+        tooltip += `\n━━━ ARCHITECTURAL MODULE ━━━`;
+        if (d.description) {
+          tooltip += `\nFunction: ${d.description}`;
         }
+        tooltip += `\n★ AI AGENT FRAMEWORK NODE ★`;
+        tooltip += `\nPurpose: Shows execution flow & dependencies`;
+      } else {
+        // Add the value to tooltip for field nodes
+        const stateManager = window.TEUI?.StateManager;
+        if (stateManager) {
+          const value = stateManager.getValue(d.id);
+          if (value !== null && value !== undefined && value !== "") {
+            // Format the value using our formatting helper
+            const formattedValue = this.formatNodeValue(d.id, value);
+            tooltip += `\nValue: ${formattedValue}`;
+          }
+        }
+
+        if (d.isInfluential) tooltip += "\n★ HIGH INFLUENCE FIELD ★";
       }
 
-      if (d.isInfluential) tooltip += "\n★ HIGH INFLUENCE NODE ★";
       return tooltip;
     });
   }
@@ -1456,7 +1503,9 @@ window.TEUI.DependencyGraph = class DependencyGraph {
                 }
 
                 // Reset button in fullscreen - visible but non-functional
-                const resetButton = floatingControls.querySelector("button:nth-child(3)");
+                const resetButton = floatingControls.querySelector(
+                  "button:nth-child(3)",
+                );
                 if (resetButton) {
                   // resetButton.onclick = () => this.resetView(); // DISABLED - broken functionality
                 }
@@ -1641,6 +1690,61 @@ window.TEUI.DependencyGraph = class DependencyGraph {
 
     legend.appendChild(itemsContainer);
 
+    // Add architectural layer legend section
+    const archTitle = document.createElement("div");
+    archTitle.textContent = "Architectural Layers";
+    archTitle.style.fontWeight = "bold";
+    archTitle.style.marginTop = "12px";
+    archTitle.style.marginBottom = "8px";
+    archTitle.style.paddingBottom = "4px";
+    archTitle.style.borderTop = "1px solid #ccc";
+    archTitle.style.paddingTop = "8px";
+    legend.appendChild(archTitle);
+
+    // Add architectural layer items
+    const archItems = [
+      {
+        name: "🏗️ Foundation",
+        color: "#2E7D32",
+        description: "Core infrastructure (StateManager, FieldManager)",
+      },
+      {
+        name: "🧮 Coordination",
+        color: "#1565C0",
+        description: "Orchestration layer (Calculator, Reference System)",
+      },
+      {
+        name: "🎯 Application",
+        color: "#C62828",
+        description: "Section modules (S01-S18)",
+      },
+    ];
+
+    archItems.forEach((item) => {
+      const itemDiv = document.createElement("div");
+      itemDiv.style.display = "flex";
+      itemDiv.style.alignItems = "center";
+      itemDiv.style.marginBottom = "4px";
+      itemDiv.style.fontSize = "11px";
+
+      const indicator = document.createElement("div");
+      indicator.style.width = "16px";
+      indicator.style.height = "16px";
+      indicator.style.border = `3px solid ${item.color}`;
+      indicator.style.borderRadius = "50%";
+      indicator.style.backgroundColor = "#f0f0f0";
+      indicator.style.marginRight = "8px";
+      indicator.style.flexShrink = "0";
+
+      const label = document.createElement("span");
+      label.textContent = item.name;
+      label.style.fontWeight = "500";
+
+      itemDiv.appendChild(indicator);
+      itemDiv.appendChild(label);
+      legend.appendChild(itemDiv);
+    });
+
     // Add to the graph container (which should be a relatively positioned parent)
     const graphContainer = document.querySelector(
       `${this.containerSelector} .dependency-graph-svg-wrapper`,
@@ -1702,56 +1806,58 @@ window.TEUI.DependencyGraph = class DependencyGraph {
         // Step 2: Calculate dimensions and scale in second frame
         requestAnimationFrame(() => {
           try {
-        // Add some padding
-        const padding = 50;
-        minX -= padding;
-        minY -= padding;
-        maxX += padding;
-        maxY += padding;
+            // Add some padding
+            const padding = 50;
+            minX -= padding;
+            minY -= padding;
+            maxX += padding;
+            maxY += padding;
 
-        // Calculate the scale needed to fit the graph
-        const graphWidth = maxX - minX;
-        const graphHeight = maxY - minY;
-        const containerWidth = this.width;
-        const containerHeight = this.height;
+            // Calculate the scale needed to fit the graph
+            const graphWidth = maxX - minX;
+            const graphHeight = maxY - minY;
+            const containerWidth = this.width;
+            const containerHeight = this.height;
 
-        if (
-          graphWidth <= 0 ||
-          graphHeight <= 0 ||
-          containerWidth <= 0 ||
-          containerHeight <= 0
-        ) {
-          console.warn(
-            "[DependencyGraph] Invalid dimensions for fitting graph",
-            {
-              graph: { width: graphWidth, height: graphHeight },
-              container: { width: containerWidth, height: containerHeight },
-            },
-          );
-          return;
-        }
+            if (
+              graphWidth <= 0 ||
+              graphHeight <= 0 ||
+              containerWidth <= 0 ||
+              containerHeight <= 0
+            ) {
+              console.warn(
+                "[DependencyGraph] Invalid dimensions for fitting graph",
+                {
+                  graph: { width: graphWidth, height: graphHeight },
+                  container: { width: containerWidth, height: containerHeight },
+                },
+              );
+              return;
+            }
 
-        const scaleX = containerWidth / graphWidth;
-        const scaleY = containerHeight / graphHeight;
-        const scale = Math.min(scaleX, scaleY, 1.5); // Cap at 1.5x to avoid excessive scaling
+            const scaleX = containerWidth / graphWidth;
+            const scaleY = containerHeight / graphHeight;
+            const scale = Math.min(scaleX, scaleY, 1.5); // Cap at 1.5x to avoid excessive scaling
 
-        // Calculate the translation needed to center the graph
-        const centerX = (minX + maxX) / 2;
-        const centerY = (minY + maxY) / 2;
+            // Calculate the translation needed to center the graph
+            const centerX = (minX + maxX) / 2;
+            const centerY = (minY + maxY) / 2;
 
-        const translateX = containerWidth / 2 - centerX * scale;
-        const translateY = containerHeight / 2 - centerY * scale;
+            const translateX = containerWidth / 2 - centerX * scale;
+            const translateY = containerHeight / 2 - centerY * scale;
 
             // Step 3: Apply transform in third frame (allows D3 to optimize)
             requestAnimationFrame(() => {
               try {
-        this.svg
-          .transition()
-          .duration(750)
-          .call(
-            d3.zoom().transform,
-            d3.zoomIdentity.translate(translateX, translateY).scale(scale),
-          );
+                this.svg
+                  .transition()
+                  .duration(750)
+                  .call(
+                    d3.zoom().transform,
+                    d3.zoomIdentity
+                      .translate(translateX, translateY)
+                      .scale(scale),
+                  );
 
                 // console.log(
                 //   "[DependencyGraph] Fitted graph to container with scale",
@@ -1764,12 +1870,12 @@ window.TEUI.DependencyGraph = class DependencyGraph {
                 );
               }
             });
-      } catch (error) {
-        console.error(
+          } catch (error) {
+            console.error(
               "[DependencyGraph] Error calculating graph dimensions",
-          error,
-        );
-      }
+              error,
+            );
+          }
         });
       } catch (error) {
         console.error(
@@ -2001,14 +2107,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // console.log(
   //   "[DependencyGraph] DOMContentLoaded, attempting initialization...",
   // );
-    // Check if the specific container exists, which implies the tab might be visible
-    if (document.querySelector("#dependencyDiagram .section-content")) {
+  // Check if the specific container exists, which implies the tab might be visible
+  if (document.querySelector("#dependencyDiagram .section-content")) {
     // PERFORMANCE FIX: Defer dependency graph initialization to prevent setTimeout violations (542ms)
     // Heavy graph initialization needs significant delay to avoid blocking
     setTimeout(() => {
       initializeDependencyGraph();
     }, 800); // Longer delay prevents setTimeout performance violations
-    }
+  }
 });
 
 // Also listen for tab visibility changes (assuming Bootstrap tabs)

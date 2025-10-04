@@ -45,6 +45,7 @@
   --hover-bg: #f8f9fa;
   --table-header-bg: #f1f3f4;
   --user-input-color: #0d6efd;
+  --user-input-color-rgb: 13, 110, 253;
   --calculated-value-color: #202124;
   --derived-value-color: #202124;
   --reference-value-color: #8b0000;
@@ -309,7 +310,7 @@ body {
 .data-table td.col-g.number-input-cell,
 .data-table td.col-i.number-input-cell,
 .data-table td.col-m.number-input-cell {
-  text-align: right !important; /* Use !important to ensure override */
+  text-align: right !important;
 }
 
 /* Calculated/Derived values styling (keep base style) */
@@ -1019,11 +1020,7 @@ input[type=number].form-control {
   font-weight: 500 !important;
 }
 
-/* Ensure text alignment is preserved */
-.data-table td input[type="number"].form-control,
-.data-table td input[type="number"].user-input {
-  text-align: right !important; /* Most numeric cells are right-aligned */
-}
+/* Removed conflicting alignment rule - now handled by universal rules */
 
 /* Apply section-subheader styling to all cells in a row with section-subheader class */
 .data-table tr td.section-subheader,
@@ -1045,24 +1042,9 @@ input[type=number].form-control {
   background-color: #eaeaea; /* Ensure empty cells also get background - removed !important */
 }
 
-/* Styling for first-column subheader labels (typically in columns A-C) - Left align */
-.data-table tr:has(td.section-subheader) td:nth-child(1),
-.data-table tr:has(td.section-subheader) td:nth-child(2),
-.data-table tr:has(td.section-subheader) td:nth-child(3) {
-  text-align: left !important; /* Keep important here as it overrides the general center align */
-}
+/* Removed conflicting alignment rule - now handled by universal rules */
 
-/* --- Section 02 Specific Overrides --- */
-
-/* Force left alignment for specific text-based input/derived fields in Section 02 */
-#buildingInfo td[data-field-id="d_16"],
-#buildingInfo td[data-field-id="h_14"],
-#buildingInfo td[data-field-id="i_16"],
-#buildingInfo td[data-field-id="i_17"] {
-  text-align: left !important; /* !important needed to override global !important rule */
-}
-
-/* --- End Section 02 Overrides --- */
+/* Removed conflicting Section 02 alignment rules - now handled by universal rules */
 
 /* Make the dropdown styling more specific */
 .data-table td select.form-select,
@@ -1106,17 +1088,7 @@ table.data-table select.form-select:hover {
 }
 
 /* --- Utility Classes --- */
-.text-left {
-  text-align: left !important; /* Added important to override column defaults */
-}
-
-.text-center {
-  text-align: center !important;
-}
-
-.text-right {
-  text-align: right !important;
-}
+/* Removed conflicting alignment utility classes - now handled by universal rules */
 
 /* Style for disabled/non-applicable input fields */
 .disabled-input {
@@ -1127,9 +1099,7 @@ table.data-table select.form-select:hover {
 }
 /* --- End Utility Classes --- */
 
-.text-left-indicator {
-  text-align: left !important; /* Force left alignment for specific indicator columns */
-}
+/* Removed conflicting text-left-indicator - now handled by universal rules */
 
 /* --- Section 11 Visual Indicators --- */
 
@@ -1559,7 +1529,6 @@ body.viewing-reference-inputs .reference-input-display-locked {
   font-weight: bold !important;
   font-style: italic !important;
   cursor: default !important;
-  pointer-events: none !important;
 }
 
 /* --- START SUPER TARGETED OVERRIDES FOR INPUTS --- */
@@ -1955,3 +1924,148 @@ body.viewing-reference-inputs .reference-input-display-locked select {
 /* .controls-container .btn {
     white-space: nowrap;
 } */
+
+/* =============== CONTENT ALIGNMENT: CLEAN UNIVERSAL RULES =============== */
+/* ROOT CAUSE FIX: Simple rules without aggressive overrides */
+
+/* UNIVERSAL RULE 1: ALL NUMERIC CONTENT → RIGHT ALIGNED */
+.data-table input[type="number"],
+.data-table [contenteditable]:not([data-type="text"]),
+.data-table .calculated-value,
+.data-table .derived-value,
+.data-table .numeric-field {
+  text-align: right;
+  font-family: var(--font-mono);
+}
+
+/* UNIVERSAL RULE 2: ALL TEXT CONTENT → LEFT ALIGNED */
+.data-table select,
+.data-table [data-type="text"],
+.data-table .section-subheader {
+  text-align: left;
+}
+
+/* UNIVERSAL RULE 3: SLIDERS → CENTER ALIGNED (Visual Balance) */
+.data-table [data-type="percentage"],
+.data-table [data-type="coefficient"],
+.data-table [data-type="year_slider"],
+.data-table .slider-container {
+  text-align: center;
+}
+
+/* UNIVERSAL BACKUP: Ensure ALL calculated/derived values are right-aligned */
+.calculated-value,
+.derived-value {
+  text-align: right !important;
+}
+
+/* END CLEAN RULES - Proper CSS cascade without conflicts */
+
+/* =============== GLOBAL PASS/FAIL INDICATORS =============== */
+/* Standard checkmark/warning styles used across all sections */
+.checkmark { 
+  color: #28a745; 
+  font-weight: bold; 
+  font-size: 1.2rem; 
+  margin-right: 5px; 
+  display: inline-block;
+}
+.warning { 
+  color: #dc3545; 
+  font-weight: bold; 
+  font-size: 1.2rem; 
+  margin-right: 5px; 
+  display: inline-block;
+}
+
+/* =============== ELEGANT USER INPUT BEHAVIOR (OBC Matrix Pattern) =============== */
+/* EXACT COPY from working OBC Matrix styles */
+
+/* Default/placeholder text styling - muted grey */
+.data-table td[contenteditable="true"].user-input:not(.user-modified),
+.data-table td input[type="number"].user-input:not(.user-modified),
+.data-table td.editable[contenteditable="true"]:not(.user-modified),
+.data-table td .user-input[contenteditable="true"]:not(.user-modified) {
+  color: #6c757d !important; /* Muted grey for default/placeholder text */
+  font-style: italic !important; /* Subtle italic to indicate placeholder nature */
+}
+
+/* User-modified text styling - blue and confident */
+.data-table td[contenteditable="true"].user-input.user-modified,
+.data-table td input[type="number"].user-input.user-modified,
+.data-table td.editable[contenteditable="true"].user-modified,
+.data-table td .user-input[contenteditable="true"].user-modified {
+  color: var(--user-input-color) !important; /* Blue for user-entered values */
+  font-style: normal !important; /* Remove italic for user values */
+  font-weight: 600 !important; /* Slightly bolder to show confidence */
+}
+
+/* Temporary editing intent styling - blue while actively editing (before commit) */
+.data-table td[contenteditable="true"].user-input.editing-intent,
+.data-table td input[type="number"].user-input.editing-intent,
+.data-table td.editable[contenteditable="true"].editing-intent,
+.data-table td .user-input[contenteditable="true"].editing-intent {
+  color: var(--user-input-color) !important; /* Blue while editing */
+  font-style: normal !important; /* Remove italic while editing */
+  font-weight: 600 !important; /* Bold while editing */
+}
+
+/* Base user input styling - minimal and clean */
+.data-table td[contenteditable="true"].user-input,
+.data-table td input[type="number"].user-input,
+.data-table td.editable[contenteditable="true"],
+.data-table td .user-input[contenteditable="true"] {
+  border: none !important;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+  outline: none !important;
+}
+
+/* CRITICAL: Preserve table row dividers - don't override parent td border-bottom */
+.data-table td:has([contenteditable="true"].user-input),
+.data-table td:has(input[type="number"].user-input),
+.data-table td.user-input[contenteditable="true"] {
+  /* Keep the table's natural row border */
+  border-bottom: 1px solid #eeeeee !important;
+}
+
+/* Hover state - very subtle background hint */
+.data-table td[contenteditable="true"].user-input:hover,
+.data-table td input[type="number"].user-input:hover,
+.data-table td.editable[contenteditable="true"]:hover,
+.data-table td .user-input[contenteditable="true"]:hover {
+  background-color: rgba(13, 110, 253, 0.03) !important;
+}
+
+/* Enhanced border for hover state on parent cell */
+.data-table td:has([contenteditable="true"].user-input:hover),
+.data-table td:has(input[type="number"].user-input:hover),
+.data-table td:has(.editable[contenteditable="true"]:hover),
+.data-table td.user-input[contenteditable="true"]:hover {
+  border-bottom-color: rgba(13, 110, 253, 0.4) !important;
+}
+
+/* Focus state - subtle background */
+.data-table td[contenteditable="true"].user-input:focus,
+.data-table td input[type="number"].user-input:focus,
+.data-table td.editable[contenteditable="true"]:focus,
+.data-table td .user-input[contenteditable="true"]:focus {
+  background-color: rgba(13, 110, 253, 0.05) !important;
+}
+
+/* Enhanced border for focus state on parent cell */
+.data-table td:has([contenteditable="true"].user-input:focus),
+.data-table td:has(input[type="number"].user-input:focus),
+.data-table td:has(.editable[contenteditable="true"]:focus),
+.data-table td.user-input[contenteditable="true"]:focus {
+  border-bottom-color: #0d6efd !important;
+}
+
+/* Override conflicting cell hover styles */
+.data-table td:has([contenteditable="true"].user-input):hover,
+.data-table td:has(input[type="number"].user-input):hover,
+.data-table td:has(.user-input[contenteditable="true"]):hover {
+  background-color: transparent !important;
+}
+
+/* =============== END ELEGANT USER INPUT BEHAVIOR =============== */

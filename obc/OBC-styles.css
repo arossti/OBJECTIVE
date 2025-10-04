@@ -143,7 +143,9 @@ body {
   border-bottom-left-radius: var(--border-radius);
   border-bottom-right-radius: var(--border-radius);
   position: sticky;
-  top: var(--key-values-height); /* Stick exactly at the bottom of sticky header section */
+  top: var(
+    --key-values-height
+  ); /* Stick exactly at the bottom of sticky header section */
   z-index: 109;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   white-space: nowrap;
@@ -527,18 +529,20 @@ option,
   background-color: transparent !important;
   padding: 4px 8px !important;
   margin: 0 !important;
-  
+
   /* Typography */
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif !important;
   font-size: inherit !important;
   color: var(--user-input-color) !important;
   font-weight: 500 !important;
-  
+
   /* Clean interactions */
   outline: none !important;
   /* transition: border-bottom-color 0.2s ease, background-color 0.2s ease !important; */ /* REMOVED: TEUI-style animations unnecessary for forms */
   cursor: text !important;
-  
+
   /* Default sizing */
   width: 100% !important;
   box-sizing: border-box !important;
@@ -661,49 +665,68 @@ option,
 #firefightingSystems .data-table td:nth-child(7),  /* Column G - empty */
 #firefightingSystems .data-table td:nth-child(10), /* Column J - empty */
 #firefightingSystems .data-table td:nth-child(13), /* Column M - empty */
-#firefightingSystems .data-table td:nth-child(14)  /* Column N - empty */
-{
-    display: none;
+#firefightingSystems .data-table td:nth-child(14)  /* Column N - empty */ {
+  display: none;
 }
 
 /* Section 04: Flex/Auto responsive layout for remaining columns */
 #firefightingSystems .data-table {
-    table-layout: auto; /* Allow flexible column sizing */
-    width: 100%;
+  table-layout: auto; /* Allow flexible column sizing */
+  width: 100%;
 }
 
 /* Section 04: Intelligent column sizing for content-bearing columns */
-#firefightingSystems .data-table td:nth-child(1) { width: 4%; }   /* Row numbers */
-#firefightingSystems .data-table td:nth-child(2) { width: 6%; }   /* Section numbers */
-#firefightingSystems .data-table td:nth-child(3) { width: 25%; }  /* Labels */
-#firefightingSystems .data-table td:nth-child(4) { width: 15%; }  /* Dropdowns */
-#firefightingSystems .data-table td:nth-child(5) { width: 30%; }  /* Descriptions */
-#firefightingSystems .data-table td:nth-child(8) { width: 12%; }  /* Content labels */
-#firefightingSystems .data-table td:nth-child(9) { width: 10%; }  /* Additional dropdowns */
-#firefightingSystems .data-table td:nth-child(11) { /* Column K - flex */ }
-#firefightingSystems .data-table td:nth-child(12) { width: 10%; } /* OBC references */
-#firefightingSystems .data-table td:nth-child(15) { width: 8%; }  /* Notes */
+#firefightingSystems .data-table td:nth-child(1) {
+  width: 4%;
+} /* Row numbers */
+#firefightingSystems .data-table td:nth-child(2) {
+  width: 6%;
+} /* Section numbers */
+#firefightingSystems .data-table td:nth-child(3) {
+  width: 25%;
+} /* Labels */
+#firefightingSystems .data-table td:nth-child(4) {
+  width: 15%;
+} /* Dropdowns */
+#firefightingSystems .data-table td:nth-child(5) {
+  width: 30%;
+} /* Descriptions */
+#firefightingSystems .data-table td:nth-child(8) {
+  width: 12%;
+} /* Content labels */
+#firefightingSystems .data-table td:nth-child(9) {
+  width: 10%;
+} /* Additional dropdowns */
+#firefightingSystems .data-table td:nth-child(11) {
+  /* Column K - flex */
+}
+#firefightingSystems .data-table td:nth-child(12) {
+  width: 10%;
+} /* OBC references */
+#firefightingSystems .data-table td:nth-child(15) {
+  width: 8%;
+} /* Notes */
 
 /* Section 04: Ensure descriptions wrap properly instead of expanding table width */
 #firefightingSystems .data-table td:nth-child(5) {
-    white-space: normal !important; /* Allow text wrapping in description column */
-    word-wrap: break-word;
-    hyphens: auto;
-    max-width: 300px; /* Prevent excessive expansion */
+  white-space: normal !important; /* Allow text wrapping in description column */
+  word-wrap: break-word;
+  hyphens: auto;
+  max-width: 300px; /* Prevent excessive expansion */
 }
 
 /* Section 04: Compact dropdown sizing */
 #firefightingSystems .data-table select.form-select {
-    font-size: 0.85rem; /* Slightly smaller font for dropdowns */
-    padding: 0.25rem 1.5rem 0.25rem 0.5rem !important; /* Tighter padding */
+  font-size: 0.85rem; /* Slightly smaller font for dropdowns */
+  padding: 0.25rem 1.5rem 0.25rem 0.5rem !important; /* Tighter padding */
 }
 
 /* Section 04: Prevent OBC reference column from expanding */
 #firefightingSystems .data-table td:nth-child(12) {
-    white-space: normal !important;
-    word-wrap: break-word;
-    font-size: 0.8rem; /* Smaller font for references */
-    max-width: 120px;
+  white-space: normal !important;
+  word-wrap: break-word;
+  font-size: 0.8rem; /* Smaller font for references */
+  max-width: 120px;
 }
 
 /* =============== END SECTION 04 LAYOUT OPTIMIZATION =============== */
@@ -713,8 +736,8 @@ option,
 /* Section 04: Building Areas - Expandable structure with EXISTING/NEW/TOTAL columns */
 /* Section 04: Intelligent content-based column system */
 #buildingAreas .data-table {
-    table-layout: auto; /* Content-based but controlled */
-    width: 100%;
+  table-layout: auto; /* Content-based but controlled */
+  width: 100%;
 }
 
 /* Section 04: Hide completely empty columns to improve density */
@@ -723,53 +746,67 @@ option,
 #buildingAreas .data-table td:nth-child(7),  /* Column G - empty */
 #buildingAreas .data-table td:nth-child(8),  /* Column H - empty */
 #buildingAreas .data-table td:nth-child(13), /* Column M - empty */
-#buildingAreas .data-table td:nth-child(14)  /* Column N - empty */
-{
-    width: 0 !important;     /* Completely hide empty columns */
-    padding: 0 !important;   /* Remove all padding */
-    border: none !important; /* Remove borders */
-    overflow: hidden !important;
+#buildingAreas .data-table td:nth-child(14)  /* Column N - empty */ {
+  width: 0 !important; /* Completely hide empty columns */
+  padding: 0 !important; /* Remove all padding */
+  border: none !important; /* Remove borders */
+  overflow: hidden !important;
 }
 
 /* Section 04: Controlled width for content columns */
-#buildingAreas .data-table td:nth-child(1) { width: 70px !important; }   /* Column A - expandable buttons */
-#buildingAreas .data-table td:nth-child(2) { width: 40px !important; }   /* Column B - row numbers */
-#buildingAreas .data-table td:nth-child(3) { width: 160px !important; }  /* Column C - section labels */
-#buildingAreas .data-table td:nth-child(4) { 
-    width: 200px !important;  /* Column D - descriptions (controlled!) */
-    max-width: 200px !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
+#buildingAreas .data-table td:nth-child(1) {
+  width: 70px !important;
+} /* Column A - expandable buttons */
+#buildingAreas .data-table td:nth-child(2) {
+  width: 40px !important;
+} /* Column B - row numbers */
+#buildingAreas .data-table td:nth-child(3) {
+  width: 160px !important;
+} /* Column C - section labels */
+#buildingAreas .data-table td:nth-child(4) {
+  width: 200px !important; /* Column D - descriptions (controlled!) */
+  max-width: 200px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
-#buildingAreas .data-table td:nth-child(9) { width: 80px !important; }   /* Column I - EXISTING */
-#buildingAreas .data-table td:nth-child(10) { width: 80px !important; }  /* Column J - NEW */
-#buildingAreas .data-table td:nth-child(11) { width: 80px !important; }  /* Column K - TOTAL */
-#buildingAreas .data-table td:nth-child(12) { width: 120px !important; } /* Column L - OBC references */
-#buildingAreas .data-table td:nth-child(15) { width: 220px !important; } /* Column O - Notes */
+#buildingAreas .data-table td:nth-child(9) {
+  width: 80px !important;
+} /* Column I - EXISTING */
+#buildingAreas .data-table td:nth-child(10) {
+  width: 80px !important;
+} /* Column J - NEW */
+#buildingAreas .data-table td:nth-child(11) {
+  width: 80px !important;
+} /* Column K - TOTAL */
+#buildingAreas .data-table td:nth-child(12) {
+  width: 120px !important;
+} /* Column L - OBC references */
+#buildingAreas .data-table td:nth-child(15) {
+  width: 220px !important;
+} /* Column O - Notes */
 
 /* Section 04: Ensure text inputs don't expand beyond container */
 #buildingAreas .data-table td:nth-child(4) input,
 #buildingAreas .data-table td:nth-child(4) [contenteditable] {
-    width: 100% !important;
-    max-width: 190px !important; /* Slightly less than cell width */
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+  width: 100% !important;
+  max-width: 190px !important; /* Slightly less than cell width */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 /* Section 04: Numeric columns right-aligned */
 #buildingAreas .data-table td:nth-child(9),  /* EXISTING */
 #buildingAreas .data-table td:nth-child(10), /* NEW */
-#buildingAreas .data-table td:nth-child(11)  /* TOTAL */
-{
-    text-align: right !important;
+#buildingAreas .data-table td:nth-child(11)  /* TOTAL */ {
+  text-align: right !important;
 }
 
 /* Section 04: Notes column wrapping */
 #buildingAreas .data-table td:nth-child(15) {
-    white-space: normal !important;
-    word-wrap: break-word !important;
-    vertical-align: top !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  vertical-align: top !important;
 }
 
 /* =============== END SECTION 04 LAYOUT OPTIMIZATION =============== */
@@ -779,8 +816,8 @@ option,
 /* Section 01: Unique layout - longer field labels in Column C, extra generous space for long URLs in Column D */
 /* Section 01: Intelligent content-based column system */
 #buildingInfo .data-table {
-    table-layout: auto; /* Content-based but controlled */
-    width: 100%;
+  table-layout: auto; /* Content-based but controlled */
+  width: 100%;
 }
 
 /* Section 01: Hide completely empty columns to maximize input space */
@@ -794,52 +831,57 @@ option,
 #buildingInfo .data-table td:nth-child(11), /* Column K - empty */
 #buildingInfo .data-table td:nth-child(12), /* Column L - empty */
 #buildingInfo .data-table td:nth-child(13), /* Column M - empty */
-#buildingInfo .data-table td:nth-child(14)  /* Column N - empty */
-{
-    width: 0 !important;     /* Completely hide empty columns */
-    padding: 0 !important;   /* Remove all padding */
-    border: none !important; /* Remove borders */
-    overflow: hidden !important;
+#buildingInfo .data-table td:nth-child(14)  /* Column N - empty */ {
+  width: 0 !important; /* Completely hide empty columns */
+  padding: 0 !important; /* Remove all padding */
+  border: none !important; /* Remove borders */
+  overflow: hidden !important;
 }
 
 /* Section 01: Controlled width for content columns - maximize input space */
-#buildingInfo .data-table td:nth-child(2) { width: 40px !important; }   /* Column B - row numbers */
-#buildingInfo .data-table td:nth-child(3) { width: 220px !important; }  /* Column C - field labels */
-#buildingInfo .data-table td:nth-child(4) { 
-    width: auto !important;       /* Column D - expand to fill available space */
-    min-width: 800px !important;  /* Ensure generous minimum width */
-    max-width: none !important;   /* Remove width constraints */
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
+#buildingInfo .data-table td:nth-child(2) {
+  width: 40px !important;
+} /* Column B - row numbers */
+#buildingInfo .data-table td:nth-child(3) {
+  width: 220px !important;
+} /* Column C - field labels */
+#buildingInfo .data-table td:nth-child(4) {
+  width: auto !important; /* Column D - expand to fill available space */
+  min-width: 800px !important; /* Ensure generous minimum width */
+  max-width: none !important; /* Remove width constraints */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
-#buildingInfo .data-table td:nth-child(15) { width: 250px !important; } /* Column O - Notes */
+#buildingInfo .data-table td:nth-child(15) {
+  width: 250px !important;
+} /* Column O - Notes */
 
 /* Section 01: Allow text inputs to fill expanded container */
 #buildingInfo .data-table td:nth-child(4) input,
 #buildingInfo .data-table td:nth-child(4) [contenteditable] {
-    width: 100% !important;
-    max-width: none !important;  /* Remove width constraints to allow full expansion */
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+  width: 100% !important;
+  max-width: none !important; /* Remove width constraints to allow full expansion */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 /* Section 01: CRITICAL - Row 1.10 OAA MEMBER REGISTRATION must show full URL (regulatory requirement) */
 #buildingInfo tr:nth-of-type(10) td:nth-child(4),
 #buildingInfo tr:nth-of-type(10) td:nth-child(4) * {
-    width: auto !important;      /* Use the expanded auto width */
-    min-width: 800px !important; /* Ensure minimum space for full URL */
-    max-width: none !important;
-    text-overflow: clip !important;
-    overflow: visible !important;
-    white-space: nowrap !important;
+  width: auto !important; /* Use the expanded auto width */
+  min-width: 800px !important; /* Ensure minimum space for full URL */
+  max-width: none !important;
+  text-overflow: clip !important;
+  overflow: visible !important;
+  white-space: nowrap !important;
 }
 
 /* Section 01: Notes column wrapping */
 #buildingInfo .data-table td:nth-child(15) {
-    white-space: normal !important;
-    word-wrap: break-word !important;
-    vertical-align: top !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  vertical-align: top !important;
 }
 
 /* =============== END SECTION 01 LAYOUT OPTIMIZATION =============== */
@@ -849,8 +891,8 @@ option,
 /* Section 02: Standard layout - shorter labels in Column C, longer user inputs in Column D */
 /* Section 02: Intelligent content-based column system */
 #buildingOccupancy .data-table {
-    table-layout: auto; /* Content-based but controlled */
-    width: 100%;
+  table-layout: auto; /* Content-based but controlled */
+  width: 100%;
 }
 
 /* Section 02: Hide completely empty columns to improve density */
@@ -862,57 +904,64 @@ option,
 #buildingOccupancy .data-table td:nth-child(10), /* Column J - empty */
 #buildingOccupancy .data-table td:nth-child(11), /* Column K - empty */
 #buildingOccupancy .data-table td:nth-child(13), /* Column M - empty */
-#buildingOccupancy .data-table td:nth-child(14)  /* Column N - empty */
-{
-    width: 1px !important; /* Minimal width for empty columns */
-    padding: 2px 1px !important; /* Minimal padding */
-    overflow: hidden !important;
+#buildingOccupancy .data-table td:nth-child(14)  /* Column N - empty */ {
+  width: 1px !important; /* Minimal width for empty columns */
+  padding: 2px 1px !important; /* Minimal padding */
+  overflow: hidden !important;
 }
 
 /* Section 02: Controlled width for content columns */
-#buildingOccupancy .data-table td:nth-child(2) { width: 40px !important; }   /* Column B - row numbers */
-#buildingOccupancy .data-table td:nth-child(3) { width: 200px !important; }  /* Column C - field labels */
-#buildingOccupancy .data-table td:nth-child(4) { 
-    width: 250px !important;  /* Column D - dropdowns */
-    max-width: 250px !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
+#buildingOccupancy .data-table td:nth-child(2) {
+  width: 40px !important;
+} /* Column B - row numbers */
+#buildingOccupancy .data-table td:nth-child(3) {
+  width: 200px !important;
+} /* Column C - field labels */
+#buildingOccupancy .data-table td:nth-child(4) {
+  width: 250px !important; /* Column D - dropdowns */
+  max-width: 250px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
-#buildingOccupancy .data-table td:nth-child(5) { 
-    width: 300px !important;  /* Column E - descriptions */
-    max-width: 300px !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
+#buildingOccupancy .data-table td:nth-child(5) {
+  width: 300px !important; /* Column E - descriptions */
+  max-width: 300px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
-#buildingOccupancy .data-table td:nth-child(12) { width: 120px !important; } /* Column L - OBC references */
-#buildingOccupancy .data-table td:nth-child(15) { width: 220px !important; } /* Column O - Notes */
+#buildingOccupancy .data-table td:nth-child(12) {
+  width: 120px !important;
+} /* Column L - OBC references */
+#buildingOccupancy .data-table td:nth-child(15) {
+  width: 220px !important;
+} /* Column O - Notes */
 
 /* Section 02: Ensure dropdowns and inputs don't expand beyond container */
 #buildingOccupancy .data-table td:nth-child(4) select,
 #buildingOccupancy .data-table td:nth-child(4) input,
 #buildingOccupancy .data-table td:nth-child(4) [contenteditable] {
-    width: 100% !important;
-    max-width: 240px !important; /* Slightly less than cell width */
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+  width: 100% !important;
+  max-width: 240px !important; /* Slightly less than cell width */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 /* Section 02: Description field handling */
 #buildingOccupancy .data-table td:nth-child(5) input,
 #buildingOccupancy .data-table td:nth-child(5) [contenteditable] {
-    width: 100% !important;
-    max-width: 290px !important; /* Slightly less than cell width */
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+  width: 100% !important;
+  max-width: 290px !important; /* Slightly less than cell width */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 /* Section 02: Notes column wrapping */
 #buildingOccupancy .data-table td:nth-child(15) {
-    white-space: normal !important;
-    word-wrap: break-word !important;
-    vertical-align: top !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  vertical-align: top !important;
 }
 
 /* =============== END SECTION 02 LAYOUT OPTIMIZATION =============== */
@@ -1484,59 +1533,68 @@ table.data-table select.form-select:hover {
 #structuralRequirements .data-table td:nth-child(10), /* Column J - empty */
 #structuralRequirements .data-table td:nth-child(11), /* Column K - empty */
 #structuralRequirements .data-table td:nth-child(13), /* Column M - empty */
-#structuralRequirements .data-table td:nth-child(14)  /* Column N - empty */
-{
-    /* Uses .obc-empty-column pattern: width: 1px, padding: 2px 1px, overflow: hidden */
-    width: 1px !important;
-    padding: 2px 1px !important;
-    overflow: hidden !important;
+#structuralRequirements .data-table td:nth-child(14)  /* Column N - empty */ {
+  /* Uses .obc-empty-column pattern: width: 1px, padding: 2px 1px, overflow: hidden */
+  width: 1px !important;
+  padding: 2px 1px !important;
+  overflow: hidden !important;
 }
 
 /* Section 05: Controlled width for content columns - using consolidated utilities */
-#structuralRequirements .data-table td:nth-child(2) { width: 60px !important; }   /* Column B - section refs (.obc-col-section-ref) */
-#structuralRequirements .data-table td:nth-child(3) { width: 220px !important; }  /* Column C - labels */
-#structuralRequirements .data-table td:nth-child(4) { 
-    width: 180px !important;  /* Column D - dropdowns */
-    max-width: 180px !important;
-    /* Uses .obc-content-constrained pattern */
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
+#structuralRequirements .data-table td:nth-child(2) {
+  width: 60px !important;
+} /* Column B - section refs (.obc-col-section-ref) */
+#structuralRequirements .data-table td:nth-child(3) {
+  width: 220px !important;
+} /* Column C - labels */
+#structuralRequirements .data-table td:nth-child(4) {
+  width: 180px !important; /* Column D - dropdowns */
+  max-width: 180px !important;
+  /* Uses .obc-content-constrained pattern */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
-#structuralRequirements .data-table td:nth-child(5) { 
-    width: 300px !important;  /* Column E - descriptions */
-    max-width: 300px !important;
-    /* Uses .obc-content-constrained pattern */
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
+#structuralRequirements .data-table td:nth-child(5) {
+  width: 300px !important; /* Column E - descriptions */
+  max-width: 300px !important;
+  /* Uses .obc-content-constrained pattern */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
-#structuralRequirements .data-table td:nth-child(9) { width: 120px !important; }  /* Column I - additional fields */
-#structuralRequirements .data-table td:nth-child(12) { width: 150px !important; } /* Column L - OBC references (variant) */
-#structuralRequirements .data-table td:nth-child(15) { width: 200px !important; } /* Column O - Notes (.obc-col-notes-sm) */
+#structuralRequirements .data-table td:nth-child(9) {
+  width: 120px !important;
+} /* Column I - additional fields */
+#structuralRequirements .data-table td:nth-child(12) {
+  width: 150px !important;
+} /* Column L - OBC references (variant) */
+#structuralRequirements .data-table td:nth-child(15) {
+  width: 200px !important;
+} /* Column O - Notes (.obc-col-notes-sm) */
 
 /* Section 05: Dropdown and input constraints */
 #structuralRequirements .data-table td:nth-child(4) select,
 #structuralRequirements .data-table td:nth-child(4) [contenteditable] {
-    width: 100% !important;
-    max-width: 170px !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+  width: 100% !important;
+  max-width: 170px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 /* Section 05: Description field handling */
 #structuralRequirements .data-table td:nth-child(5) [contenteditable] {
-    width: 100% !important;
-    max-width: 290px !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+  width: 100% !important;
+  max-width: 290px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 /* Section 05: Notes column wrapping */
 #structuralRequirements .data-table td:nth-child(15) {
-    white-space: normal !important;
-    word-wrap: break-word !important;
-    vertical-align: top !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  vertical-align: top !important;
 }
 
 /* =============== END SECTION 05 LAYOUT OPTIMIZATION =============== */
@@ -1553,81 +1611,93 @@ table.data-table select.form-select:hover {
 #occupantSafety .data-table td:nth-child(7),  /* Column G - empty */
 #occupantSafety .data-table td:nth-child(8),  /* Column H - empty */
 #occupantSafety .data-table td:nth-child(13), /* Column M - empty */
-#occupantSafety .data-table td:nth-child(14)  /* Column N - empty */
-{
-    /* CONSOLIDATED: Uses .obc-empty-column utility pattern */
-    width: 1px !important;
-    padding: 2px 1px !important;
-    overflow: hidden !important;
+#occupantSafety .data-table td:nth-child(14)  /* Column N - empty */ {
+  /* CONSOLIDATED: Uses .obc-empty-column utility pattern */
+  width: 1px !important;
+  padding: 2px 1px !important;
+  overflow: hidden !important;
 }
 
 /* Section 06: Controlled width for content columns - OPTIMIZED: Reduce total table width to prevent dropdown clipping */
-#occupantSafety .data-table td:nth-child(2) { width: 60px !important; }   /* Column B - section refs */
-#occupantSafety .data-table td:nth-child(4) { 
-    width: 150px !important;  /* Column D - dropdowns and numeric inputs (reduced from 180px) */
-    max-width: 150px !important;
-    /* Let universal rules handle alignment based on field type */
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
+#occupantSafety .data-table td:nth-child(2) {
+  width: 60px !important;
+} /* Column B - section refs */
+#occupantSafety .data-table td:nth-child(4) {
+  width: 150px !important; /* Column D - dropdowns and numeric inputs (reduced from 180px) */
+  max-width: 150px !important;
+  /* Let universal rules handle alignment based on field type */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
-#occupantSafety .data-table td:nth-child(5) { 
-    width: 165px !important;  /* Column E - mixed text/numeric inputs (matched to Column C) */
-    max-width: 165px !important;
-    /* Let universal rules handle alignment based on field type */
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
+#occupantSafety .data-table td:nth-child(5) {
+  width: 165px !important; /* Column E - mixed text/numeric inputs (matched to Column C) */
+  max-width: 165px !important;
+  /* Let universal rules handle alignment based on field type */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
-#occupantSafety .data-table td:nth-child(9) { 
-    width: 210px !important;  /* Column I - "Based On" dropdowns (sweet spot for dropdown content) */
-    max-width: 210px !important;
-    /* Calculations get right-alignment via .calculated-value class */
-    font-weight: 700 !important;
+#occupantSafety .data-table td:nth-child(9) {
+  width: 210px !important; /* Column I - "Based On" dropdowns (sweet spot for dropdown content) */
+  max-width: 210px !important;
+  /* Calculations get right-alignment via .calculated-value class */
+  font-weight: 700 !important;
 }
-#occupantSafety .data-table td:nth-child(10) { width: 180px !important; } /* Column J - dropdowns (reduced from 200px) */
-#occupantSafety .data-table td:nth-child(11) { width: 100px !important; } /* Column K - counts */
-#occupantSafety .data-table td:nth-child(12) { width: 150px !important; } /* Column L - OBC references (variant) */
-#occupantSafety .data-table td:nth-child(15) { width: 220px !important; } /* Column O - notes (reduced from 250px) */
+#occupantSafety .data-table td:nth-child(10) {
+  width: 180px !important;
+} /* Column J - dropdowns (reduced from 200px) */
+#occupantSafety .data-table td:nth-child(11) {
+  width: 100px !important;
+} /* Column K - counts */
+#occupantSafety .data-table td:nth-child(12) {
+  width: 150px !important;
+} /* Column L - OBC references (variant) */
+#occupantSafety .data-table td:nth-child(15) {
+  width: 220px !important;
+} /* Column O - notes (reduced from 250px) */
 
 /* Section 06: Dropdown styling - width constraints only */
-#occupantSafety .data-table td:nth-child(4) select {  /* Column D dropdowns */
-    /* Width constraints only - let universal rules handle alignment */
-    width: 100% !important;
-    max-width: 140px !important;  /* Reduced to match new column width (150px) */
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+#occupantSafety .data-table td:nth-child(4) select {
+  /* Column D dropdowns */
+  /* Width constraints only - let universal rules handle alignment */
+  width: 100% !important;
+  max-width: 140px !important; /* Reduced to match new column width (150px) */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
-#occupantSafety .data-table td:nth-child(9) select { /* Column I - "Based On" dropdowns */
-    width: 100% !important;
-    max-width: 205px !important;  /* Sweet spot to match column width (210px) */
-    overflow: visible !important;  /* Allow dropdown content to show fully */
-    text-overflow: clip !important; /* Don't truncate dropdown text */
+#occupantSafety .data-table td:nth-child(9) select {
+  /* Column I - "Based On" dropdowns */
+  width: 100% !important;
+  max-width: 205px !important; /* Sweet spot to match column width (210px) */
+  overflow: visible !important; /* Allow dropdown content to show fully */
+  text-overflow: clip !important; /* Don't truncate dropdown text */
 }
 
-#occupantSafety .data-table td:nth-child(10) select { /* Column J dropdowns */
-    /* CONSOLIDATED: .obc-input-constrained + max-width */
-    width: 100% !important;
-    max-width: 170px !important;  /* Reduced to match new column width (180px) */
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+#occupantSafety .data-table td:nth-child(10) select {
+  /* Column J dropdowns */
+  /* CONSOLIDATED: .obc-input-constrained + max-width */
+  width: 100% !important;
+  max-width: 170px !important; /* Reduced to match new column width (180px) */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 /* Section 06: Input styling - let universal rules handle alignment */
 #occupantSafety .data-table td:nth-child(4) input,
 #occupantSafety .data-table td:nth-child(5) input,
 #occupantSafety .data-table td:nth-child(11) input {
-    /* Width constraint only - let universal rules handle alignment and fonts */
-    width: 100% !important;
+  /* Width constraint only - let universal rules handle alignment and fonts */
+  width: 100% !important;
 }
 
 /* Section 06: Notes column wrapping - CONSOLIDATED with .obc-notes-wrapping */
 #occupantSafety .data-table td:nth-child(15) {
-    /* CONSOLIDATED: .obc-notes-wrapping pattern */
-    white-space: normal !important;
-    word-wrap: break-word !important;
-    vertical-align: top !important;
+  /* CONSOLIDATED: .obc-notes-wrapping pattern */
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  vertical-align: top !important;
 }
 
 /* =============== END SECTION 06 LAYOUT OPTIMIZATION =============== */
@@ -1641,116 +1711,132 @@ table.data-table select.form-select:hover {
 #fireResistance .data-table td:nth-child(3),  /* Column C - empty (no content) */
 #fireResistance .data-table td:nth-child(7),  /* Column G - empty */
 #fireResistance .data-table td:nth-child(13), /* Column M - empty */
-#fireResistance .data-table td:nth-child(14)  /* Column N - empty */
-{
-    width: 1px !important; /* Minimal width for empty columns */
-    padding: 2px 1px !important; /* Minimal padding */
-    overflow: hidden !important;
+#fireResistance .data-table td:nth-child(14)  /* Column N - empty */ {
+  width: 1px !important; /* Minimal width for empty columns */
+  padding: 2px 1px !important; /* Minimal padding */
+  overflow: hidden !important;
 }
 
 /* Section 07: Controlled width for content columns */
-#fireResistance .data-table td:nth-child(1) { width: 70px !important; }   /* Column A - expandable buttons */
-#fireResistance .data-table td:nth-child(2) { width: 60px !important; }   /* Column B - section refs */
-#fireResistance .data-table td:nth-child(4) { 
-    width: 250px !important;  /* Column D - exposing face descriptions (increased for full text) */
-    max-width: 250px !important;
-    white-space: normal !important;  /* Allow text wrapping instead of ellipsis */
-    word-wrap: break-word !important;
-    overflow: visible !important;    /* No ellipsis - show full text */
-    vertical-align: top !important;  /* Top-align for multi-line text */
+#fireResistance .data-table td:nth-child(1) {
+  width: 70px !important;
+} /* Column A - expandable buttons */
+#fireResistance .data-table td:nth-child(2) {
+  width: 60px !important;
+} /* Column B - section refs */
+#fireResistance .data-table td:nth-child(4) {
+  width: 250px !important; /* Column D - exposing face descriptions (increased for full text) */
+  max-width: 250px !important;
+  white-space: normal !important; /* Allow text wrapping instead of ellipsis */
+  word-wrap: break-word !important;
+  overflow: visible !important; /* No ellipsis - show full text */
+  vertical-align: top !important; /* Top-align for multi-line text */
 }
-#fireResistance .data-table td:nth-child(5) { 
-    width: 100px !important;  /* Column E - EBF area (numeric) */
-    max-width: 100px !important;
-    text-align: right !important; /* RIGHT-ALIGN NUMERIC */
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
+#fireResistance .data-table td:nth-child(5) {
+  width: 100px !important; /* Column E - EBF area (numeric) */
+  max-width: 100px !important;
+  text-align: right !important; /* RIGHT-ALIGN NUMERIC */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
-#fireResistance .data-table td:nth-child(6) { 
-    width: 100px !important;  /* Column F - L.D. (numeric) */
-    max-width: 100px !important;
-    text-align: right !important; /* RIGHT-ALIGN NUMERIC */
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
+#fireResistance .data-table td:nth-child(6) {
+  width: 100px !important; /* Column F - L.D. (numeric) */
+  max-width: 100px !important;
+  text-align: right !important; /* RIGHT-ALIGN NUMERIC */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
-#fireResistance .data-table td:nth-child(7) { 
-    width: 100px !important;  /* Column G - L/H ratio (text/numeric mix) */
-    max-width: 100px !important;
-    text-align: center !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
+#fireResistance .data-table td:nth-child(7) {
+  width: 100px !important; /* Column G - L/H ratio (text/numeric mix) */
+  max-width: 100px !important;
+  text-align: center !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
-#fireResistance .data-table td:nth-child(8) { 
-    width: 160px !important;  /* Column H - fire rating dropdowns (RATING H) - increased for dropdown */
-    max-width: 160px !important;
-    text-align: center !important;
-    overflow: visible !important;     /* Allow dropdown to show fully */
-    white-space: nowrap !important;
+#fireResistance .data-table td:nth-child(8) {
+  width: 160px !important; /* Column H - fire rating dropdowns (RATING H) - increased for dropdown */
+  max-width: 160px !important;
+  text-align: center !important;
+  overflow: visible !important; /* Allow dropdown to show fully */
+  white-space: nowrap !important;
 }
-#fireResistance .data-table td:nth-child(9) { 
-    width: 150px !important;  /* Column I - supporting assembly dropdowns (normal styling) */
-    max-width: 150px !important;
-    text-align: center !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
+#fireResistance .data-table td:nth-child(9) {
+  width: 150px !important; /* Column I - supporting assembly dropdowns (normal styling) */
+  max-width: 150px !important;
+  text-align: center !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
-#fireResistance .data-table td:nth-child(10) { width: 250px !important; } /* Column J - construction type dropdowns (long text) */
-#fireResistance .data-table td:nth-child(11) { width: 200px !important; } /* Column K - cladding type dropdowns */
-#fireResistance .data-table td:nth-child(12) { width: 120px !important; } /* Column L - OBC references */
-#fireResistance .data-table td:nth-child(15) { width: 200px !important; } /* Column O - Notes */
+#fireResistance .data-table td:nth-child(10) {
+  width: 250px !important;
+} /* Column J - construction type dropdowns (long text) */
+#fireResistance .data-table td:nth-child(11) {
+  width: 200px !important;
+} /* Column K - cladding type dropdowns */
+#fireResistance .data-table td:nth-child(12) {
+  width: 120px !important;
+} /* Column L - OBC references */
+#fireResistance .data-table td:nth-child(15) {
+  width: 200px !important;
+} /* Column O - Notes */
 
 /* Section 07: Fire rating center alignment (Columns H & I) */
 #fireResistance .data-table td:nth-child(8) select, /* Column H - Fire ratings */
-#fireResistance .data-table td:nth-child(9) select { /* Column I - Supporting assembly fire ratings */
-    width: 100% !important;
-    text-align: center !important;
-    font-weight: 600 !important;
-    color: #d73527 !important; /* Fire red color for both fire rating columns */
-    overflow: visible !important; /* Allow dropdown content to show fully */
+#fireResistance .data-table td:nth-child(9) select {
+  /* Column I - Supporting assembly fire ratings */
+  width: 100% !important;
+  text-align: center !important;
+  font-weight: 600 !important;
+  color: #d73527 !important; /* Fire red color for both fire rating columns */
+  overflow: visible !important; /* Allow dropdown content to show fully */
 }
 
 /* Specific width constraints for each column */
-#fireResistance .data-table td:nth-child(8) select { /* Column H */
-    max-width: 155px !important;  /* Match column width (160px) with buffer */
+#fireResistance .data-table td:nth-child(8) select {
+  /* Column H */
+  max-width: 155px !important; /* Match column width (160px) with buffer */
 }
-#fireResistance .data-table td:nth-child(9) select { /* Column I */
-    max-width: 145px !important;  /* Match column width (150px) with buffer */
+#fireResistance .data-table td:nth-child(9) select {
+  /* Column I */
+  max-width: 145px !important; /* Match column width (150px) with buffer */
 }
 
 /* Section 07: Construction and Cladding type dropdown styling */
-#fireResistance .data-table td:nth-child(10) select { /* Column J - Construction Type */
-    width: 100% !important;
-    max-width: 245px !important; /* Match column width (250px) with buffer */
-    overflow: visible !important; /* Allow dropdown content to show fully */
-    text-overflow: clip !important; /* Don't truncate dropdown text */
+#fireResistance .data-table td:nth-child(10) select {
+  /* Column J - Construction Type */
+  width: 100% !important;
+  max-width: 245px !important; /* Match column width (250px) with buffer */
+  overflow: visible !important; /* Allow dropdown content to show fully */
+  text-overflow: clip !important; /* Don't truncate dropdown text */
 }
 
-#fireResistance .data-table td:nth-child(11) select { /* Column K - Cladding Type */
-    width: 100% !important;
-    max-width: 195px !important; /* Match column width (200px) with buffer */
-    overflow: visible !important; /* Allow dropdown content to show fully */
-    text-overflow: clip !important; /* Don't truncate dropdown text */
+#fireResistance .data-table td:nth-child(11) select {
+  /* Column K - Cladding Type */
+  width: 100% !important;
+  max-width: 195px !important; /* Match column width (200px) with buffer */
+  overflow: visible !important; /* Allow dropdown content to show fully */
+  text-overflow: clip !important; /* Don't truncate dropdown text */
 }
 
 /* Section 07: Header text wrapping for long column titles */
 #fireResistance .data-table td.section-subheader {
-    white-space: normal !important;
-    word-wrap: break-word !important;
-    text-align: center !important;
-    vertical-align: middle !important;
-    line-height: 1.2 !important;
-    padding: 8px 4px !important; /* More padding for readability */
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  line-height: 1.2 !important;
+  padding: 8px 4px !important; /* More padding for readability */
 }
 
 /* Section 07: Notes column wrapping */
 #fireResistance .data-table td:nth-child(15) {
-    white-space: normal !important;
-    word-wrap: break-word !important;
-    vertical-align: top !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  vertical-align: top !important;
 }
 
 /* =============== END SECTION 07 LAYOUT OPTIMIZATION =============== */
@@ -1759,8 +1845,8 @@ table.data-table select.form-select:hover {
 /* Section 08: Plumbing Fixture Requirements - calculations and fixture counts */
 
 #plumbingFixtures .data-table {
-    table-layout: auto; /* Content-based but controlled */
-    width: 100%;
+  table-layout: auto; /* Content-based but controlled */
+  width: 100%;
 }
 
 /* Section 08: Hide completely empty columns to improve density */
@@ -1769,82 +1855,93 @@ table.data-table select.form-select:hover {
 #plumbingFixtures .data-table td:nth-child(5),  /* Column E - empty in data rows */
 #plumbingFixtures .data-table td:nth-child(6),  /* Column F - empty */
 #plumbingFixtures .data-table td:nth-child(8),  /* Column H - empty (OBC moved to M) */
-#plumbingFixtures .data-table td:nth-child(14)  /* Column N - empty */
-{
-    width: 1px !important; /* Minimal width for empty columns */
-    padding: 2px 1px !important; /* Minimal padding */
-    overflow: hidden !important;
+#plumbingFixtures .data-table td:nth-child(14)  /* Column N - empty */ {
+  width: 1px !important; /* Minimal width for empty columns */
+  padding: 2px 1px !important; /* Minimal padding */
+  overflow: hidden !important;
 }
 
 /* Section 08: Controlled width for content columns */
-#plumbingFixtures .data-table td:nth-child(2) { width: 60px !important; }   /* Column B - section refs */
+#plumbingFixtures .data-table td:nth-child(2) {
+  width: 60px !important;
+} /* Column B - section refs */
 /* Column C - now collapsed (was fixture types, moved to subheader) */
 /* Column E - now collapsed (empty in data rows) */
-#plumbingFixtures .data-table td:nth-child(4) { 
-    width: 220px !important;  /* Column D - floor levels (expanded to use C+E space) */
-    max-width: 220px !important;
-    text-align: left !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
+#plumbingFixtures .data-table td:nth-child(4) {
+  width: 220px !important; /* Column D - floor levels (expanded to use C+E space) */
+  max-width: 220px !important;
+  text-align: left !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
-#plumbingFixtures .data-table td:nth-child(7) { 
-    width: 120px !important;  /* Column G - occupant loads (Excel Col F) */
-    max-width: 120px !important;
-    text-align: right !important;
+#plumbingFixtures .data-table td:nth-child(7) {
+  width: 120px !important; /* Column G - occupant loads (Excel Col F) */
+  max-width: 120px !important;
+  text-align: right !important;
 }
 
-#plumbingFixtures .data-table td:nth-child(9) { 
-    width: 100px !important;  /* Column I - water closets required */
-    max-width: 100px !important;
-    text-align: right !important;
-    font-weight: 700 !important;
+#plumbingFixtures .data-table td:nth-child(9) {
+  width: 100px !important; /* Column I - water closets required */
+  max-width: 100px !important;
+  text-align: right !important;
+  font-weight: 700 !important;
 }
-#plumbingFixtures .data-table td:nth-child(10) { width: 100px !important; } /* Column J - water closets provided */
-#plumbingFixtures .data-table td:nth-child(11) { width: 200px !important; } /* Column K - barrier-free required/provided */
-#plumbingFixtures .data-table td:nth-child(12) { width: 200px !important; } /* Column L - universal washrooms */
-#plumbingFixtures .data-table td:nth-child(13) { 
-    width: 200px !important;  /* Column M - OBC references (Excel Col G) */
-    max-width: 200px !important;
-    text-align: left !important;
+#plumbingFixtures .data-table td:nth-child(10) {
+  width: 100px !important;
+} /* Column J - water closets provided */
+#plumbingFixtures .data-table td:nth-child(11) {
+  width: 200px !important;
+} /* Column K - barrier-free required/provided */
+#plumbingFixtures .data-table td:nth-child(12) {
+  width: 200px !important;
+} /* Column L - universal washrooms */
+#plumbingFixtures .data-table td:nth-child(13) {
+  width: 200px !important; /* Column M - OBC references (Excel Col G) */
+  max-width: 200px !important;
+  text-align: left !important;
 }
-#plumbingFixtures .data-table td:nth-child(15) { width: 220px !important; } /* Column O - Notes */
+#plumbingFixtures .data-table td:nth-child(15) {
+  width: 220px !important;
+} /* Column O - Notes */
 
 /* Section 08: Numeric input styling */
 #plumbingFixtures .data-table td:nth-child(7) input,  /* Column G - occupant loads (Excel F) */
 #plumbingFixtures .data-table td:nth-child(9) input,  /* Column I - water closets required (Excel H) */
 #plumbingFixtures .data-table td:nth-child(10) input, /* Column J - water closets provided (Excel I) */
 #plumbingFixtures .data-table td:nth-child(11) input, /* Column K - barrier-free counts (Excel J) */
-#plumbingFixtures .data-table td:nth-child(12) input { /* Column L - universal washroom counts (Excel K) */
-    width: 100% !important;
-    text-align: right !important;
-    font-family: monospace !important;
+#plumbingFixtures .data-table td:nth-child(12) input {
+  /* Column L - universal washroom counts (Excel K) */
+  width: 100% !important;
+  text-align: right !important;
+  font-family: monospace !important;
 }
 
 /* Section 08: Text input styling for OBC sentences */
-#plumbingFixtures .data-table td:nth-child(13) input { /* Column M - OBC sentences (Excel G) */
-    width: 100% !important;
-    text-align: left !important;
+#plumbingFixtures .data-table td:nth-child(13) input {
+  /* Column M - OBC sentences (Excel G) */
+  width: 100% !important;
+  text-align: left !important;
 }
 
 /* Section 08: Notes column wrapping */
 #plumbingFixtures .data-table td:nth-child(15) {
-    white-space: normal !important;
-    word-wrap: break-word !important;
-    vertical-align: top !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  vertical-align: top !important;
 }
 
 /* Section 08: Footer ratio note - ensure full display */
 #plumbingFixtures .data-table td.footer-note-wide {
-    white-space: nowrap !important;
-    overflow: visible !important;
-    text-overflow: unset !important;
-    max-width: none !important;
-    width: auto !important;
-    font-style: italic !important;
-    color: #666 !important;
-    background-color: #f8f9fa !important;
-    padding: 8px 12px !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  max-width: none !important;
+  width: auto !important;
+  font-style: italic !important;
+  color: #666 !important;
+  background-color: #f8f9fa !important;
+  padding: 8px 12px !important;
 }
 
 /* =============== END SECTION 08 LAYOUT OPTIMIZATION =============== */
@@ -1853,8 +1950,8 @@ table.data-table select.form-select:hover {
 /* Section 09: Compliance & Design - energy efficiency and alternative solutions */
 
 #complianceDesign .data-table {
-    table-layout: auto; /* Content-based but controlled */
-    width: 100%;
+  table-layout: auto; /* Content-based but controlled */
+  width: 100%;
 }
 
 /* Section 09: Hide completely empty columns to improve density */
@@ -1865,62 +1962,69 @@ table.data-table select.form-select:hover {
 #complianceDesign .data-table td:nth-child(10), /* Column J - empty */
 #complianceDesign .data-table td:nth-child(11), /* Column K - empty */
 #complianceDesign .data-table td:nth-child(13), /* Column M - empty */
-#complianceDesign .data-table td:nth-child(14)  /* Column N - empty */
-{
-    width: 1px !important; /* Minimal width for empty columns */
-    padding: 2px 1px !important; /* Minimal padding */
-    overflow: hidden !important;
+#complianceDesign .data-table td:nth-child(14)  /* Column N - empty */ {
+  width: 1px !important; /* Minimal width for empty columns */
+  padding: 2px 1px !important; /* Minimal padding */
+  overflow: hidden !important;
 }
 
 /* Section 09: Controlled width for content columns */
-#complianceDesign .data-table td:nth-child(2) { width: 60px !important; }   /* Column B - section refs */
-#complianceDesign .data-table td:nth-child(3) { width: 240px !important; }  /* Column C - compliance items */
-#complianceDesign .data-table td:nth-child(4) { 
-    width: 220px !important;  /* Column D - dropdowns */
-    max-width: 220px !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
+#complianceDesign .data-table td:nth-child(2) {
+  width: 60px !important;
+} /* Column B - section refs */
+#complianceDesign .data-table td:nth-child(3) {
+  width: 240px !important;
+} /* Column C - compliance items */
+#complianceDesign .data-table td:nth-child(4) {
+  width: 220px !important; /* Column D - dropdowns */
+  max-width: 220px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
-#complianceDesign .data-table td:nth-child(5) { 
-    width: 120px !important;  /* Column E - values */
-    max-width: 120px !important;
-    text-align: right !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
+#complianceDesign .data-table td:nth-child(5) {
+  width: 120px !important; /* Column E - values */
+  max-width: 120px !important;
+  text-align: right !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
-#complianceDesign .data-table td:nth-child(9) { 
-    width: 300px !important;  /* Column I - descriptions */
-    max-width: 300px !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
+#complianceDesign .data-table td:nth-child(9) {
+  width: 300px !important; /* Column I - descriptions */
+  max-width: 300px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
-#complianceDesign .data-table td:nth-child(12) { width: 120px !important; } /* Column L - OBC references */
-#complianceDesign .data-table td:nth-child(15) { width: 250px !important; } /* Column O - Notes */
+#complianceDesign .data-table td:nth-child(12) {
+  width: 120px !important;
+} /* Column L - OBC references */
+#complianceDesign .data-table td:nth-child(15) {
+  width: 250px !important;
+} /* Column O - Notes */
 
 /* Section 09: Dropdown constraints */
 #complianceDesign .data-table td:nth-child(4) select {
-    width: 100% !important;
-    max-width: 215px !important;  /* Match column width (220px) with small buffer */
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+  width: 100% !important;
+  max-width: 215px !important; /* Match column width (220px) with small buffer */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 /* Section 09: Description field handling */
 #complianceDesign .data-table td:nth-child(9) [contenteditable] {
-    width: 100% !important;
-    max-width: 295px !important;  /* Match column width (300px) with small buffer */
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+  width: 100% !important;
+  max-width: 295px !important; /* Match column width (300px) with small buffer */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 /* Section 09: Notes column wrapping */
 #complianceDesign .data-table td:nth-child(15) {
-    white-space: normal !important;
-    word-wrap: break-word !important;
-    vertical-align: top !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  vertical-align: top !important;
 }
 
 /* =============== END SECTION 09 LAYOUT OPTIMIZATION =============== */
@@ -1929,8 +2033,8 @@ table.data-table select.form-select:hover {
 /* Section 10: Notes - project documentation and footer information */
 
 #notes .data-table {
-    table-layout: auto; /* Content-based but controlled */
-    width: 100%;
+  table-layout: auto; /* Content-based but controlled */
+  width: 100%;
 }
 
 /* Section 10: Hide completely empty columns to improve density */
@@ -1945,52 +2049,55 @@ table.data-table select.form-select:hover {
 #notes .data-table td:nth-child(11), /* Column K - empty */
 #notes .data-table td:nth-child(12), /* Column L - empty */
 #notes .data-table td:nth-child(13), /* Column M - empty */
-#notes .data-table td:nth-child(14)  /* Column N - empty */
-{
-    width: 1px !important; /* Minimal width for empty columns */
-    padding: 2px 1px !important; /* Minimal padding */
-    overflow: hidden !important;
+#notes .data-table td:nth-child(14)  /* Column N - empty */ {
+  width: 1px !important; /* Minimal width for empty columns */
+  padding: 2px 1px !important; /* Minimal padding */
+  overflow: hidden !important;
 }
 
 /* Section 10: Controlled width for content columns - maximize note-taking space */
-#notes .data-table td:nth-child(3) { width: 200px !important; }  /* Column C - note categories */
-#notes .data-table td:nth-child(4) { 
-    width: auto !important;       /* Column D - main note content - expand to fill */
-    min-width: 600px !important;  /* Generous minimum for note writing */
-    max-width: none !important;
-    white-space: normal !important;
-    word-wrap: break-word !important;
-    overflow: visible !important;
-    vertical-align: top !important;
+#notes .data-table td:nth-child(3) {
+  width: 200px !important;
+} /* Column C - note categories */
+#notes .data-table td:nth-child(4) {
+  width: auto !important; /* Column D - main note content - expand to fill */
+  min-width: 600px !important; /* Generous minimum for note writing */
+  max-width: none !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow: visible !important;
+  vertical-align: top !important;
 }
-#notes .data-table td:nth-child(15) { width: 300px !important; } /* Column O - additional notes */
+#notes .data-table td:nth-child(15) {
+  width: 300px !important;
+} /* Column O - additional notes */
 
 /* Section 10: Note content area optimization */
 #notes .data-table td:nth-child(4) [contenteditable],
 #notes .data-table td:nth-child(15) [contenteditable] {
-    width: 100% !important;
-    min-height: 40px !important;
-    white-space: normal !important;
-    word-wrap: break-word !important;
-    line-height: 1.4 !important;
-    padding: 8px !important;
-    border: 1px solid #e0e0e0 !important;
-    border-radius: 4px !important;
-    background-color: #fafafa !important;
+  width: 100% !important;
+  min-height: 40px !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  line-height: 1.4 !important;
+  padding: 8px !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 4px !important;
+  background-color: #fafafa !important;
 }
 
 /* Section 10: Note content focus styling */
 #notes .data-table td:nth-child(4) [contenteditable]:focus,
 #notes .data-table td:nth-child(15) [contenteditable]:focus {
-    background-color: #fff !important;
-    border-color: #007bff !important;
-    box-shadow: 0 0 0 2px rgba(0,123,255,0.25) !important;
-    outline: none !important;
+  background-color: #fff !important;
+  border-color: #007bff !important;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25) !important;
+  outline: none !important;
 }
 
 /* Section 10: Footer note styling - ensure full display with line breaks */
 #notes .data-table td.footer-note-wide {
-  white-space: pre-line !important;  /* Preserve line breaks from \n */
+  white-space: pre-line !important; /* Preserve line breaks from \n */
   overflow: visible !important;
   text-overflow: unset !important;
   max-width: none !important;
@@ -2011,59 +2118,69 @@ table.data-table select.form-select:hover {
 
 /* Base table layout pattern - used by all sections */
 .obc-data-table {
-    table-layout: auto; /* Content-based but controlled */
-    width: 100%;
+  table-layout: auto; /* Content-based but controlled */
+  width: 100%;
 }
 
 /* Empty column hiding pattern - used 40+ times across sections */
 .obc-empty-column {
-    width: 1px !important; /* Minimal width for empty columns */
-    padding: 2px 1px !important; /* Minimal padding */
-    overflow: hidden !important;
+  width: 1px !important; /* Minimal width for empty columns */
+  padding: 2px 1px !important; /* Minimal padding */
+  overflow: hidden !important;
 }
 
 /* Standard column width utilities */
-.obc-col-section-ref { width: 60px !important; }   /* Column B - section references */
-.obc-col-obc-ref { width: 120px !important; }      /* Column L - OBC references */
-.obc-col-notes-sm { width: 200px !important; }     /* Column O - compact notes */
-.obc-col-notes-md { width: 220px !important; }     /* Column O - standard notes */
-.obc-col-notes-lg { width: 250px !important; }     /* Column O - expanded notes */
+.obc-col-section-ref {
+  width: 60px !important;
+} /* Column B - section references */
+.obc-col-obc-ref {
+  width: 120px !important;
+} /* Column L - OBC references */
+.obc-col-notes-sm {
+  width: 200px !important;
+} /* Column O - compact notes */
+.obc-col-notes-md {
+  width: 220px !important;
+} /* Column O - standard notes */
+.obc-col-notes-lg {
+  width: 250px !important;
+} /* Column O - expanded notes */
 
 /* Content overflow handling pattern */
 .obc-content-constrained {
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
 
 /* Notes column wrapping pattern */
 .obc-notes-wrapping {
-    white-space: normal !important;
-    word-wrap: break-word !important;
-    vertical-align: top !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  vertical-align: top !important;
 }
 
 /* Input/dropdown constraint pattern */
 .obc-input-constrained {
-    width: 100% !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+  width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 /* Right-aligned numeric columns */
 .obc-numeric-column {
-    text-align: right !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
+  text-align: right !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
 
 /* Center-aligned rating columns */
 .obc-rating-column {
-    text-align: center !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
+  text-align: center !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
 
 /* Apply consolidated base table pattern to all section tables */
@@ -2077,8 +2194,8 @@ table.data-table select.form-select:hover {
 #plumbingFixtures .data-table,
 #complianceDesign .data-table,
 #notes .data-table {
-    table-layout: auto; /* Content-based but controlled */
-    width: 100%;
+  table-layout: auto; /* Content-based but controlled */
+  width: 100%;
 }
 
 /* =============== END CONSOLIDATED LAYOUT UTILITIES =============== */

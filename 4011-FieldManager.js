@@ -154,6 +154,82 @@ TEUI.FieldManager = (function () {
   }
 
   /**
+   * Find which section a fieldId belongs to
+   * @param {string} fieldId - Field ID (e.g., "h_13")
+   * @returns {string|null} - Section internal ID (e.g., "sect02") or null if not found
+   */
+  function findSectionForField(fieldId) {
+    // Search through all sections to find which one contains this field
+    for (const [uiSectionId, internalSectionId] of Object.entries(sections)) {
+      try {
+        if (TEUI.SectionModules[internalSectionId]?.getFields) {
+          const sectionFields =
+            TEUI.SectionModules[internalSectionId].getFields();
+          if (sectionFields && sectionFields[fieldId]) {
+            return internalSectionId;
+          }
+        }
+      } catch (e) {
+        // Continue searching other sections
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Route user input to appropriate section's ModeManager (dual-state aware)
+   * @param {string} fieldId - Field ID
+   * @param {*} value - Field value
+   * @param {string} source - Source of the change (default: "user-modified")
+   */
+  function routeToSectionModeManager(fieldId, value, source = "user-modified") {
+    const sectionId = findSectionForField(fieldId);
+
+    if (!sectionId) {
+      // Fallback to legacy direct StateManager write if section not found
+      console.warn(
+        `[FieldManager] Field ${fieldId} not found in any section - using legacy direct write`,
+      );
+      if (TEUI.StateManager && TEUI.StateManager.setValue) {
+        TEUI.StateManager.setValue(fieldId, value, source);
+      }
+      return;
+    }
+
+    try {
+      // Try to route through section's ModeManager (Pattern A dual-state aware)
+      const sectionModule = TEUI.SectionModules[sectionId];
+      if (
+        sectionModule &&
+        sectionModule.ModeManager &&
+        sectionModule.ModeManager.setValue
+      ) {
+        sectionModule.ModeManager.setValue(fieldId, value, source);
+        console.log(
+          `[FieldManager] Routed ${fieldId}=${value} through ${sectionId} ModeManager`,
+        );
+      } else {
+        // Fallback: section exists but no ModeManager - direct StateManager write
+        console.warn(
+          `[FieldManager] Section ${sectionId} has no ModeManager - using direct write for ${fieldId}`,
+        );
+        if (TEUI.StateManager && TEUI.StateManager.setValue) {
+          TEUI.StateManager.setValue(fieldId, value, source);
+        }
+      }
+    } catch (e) {
+      console.error(
+        `[FieldManager] Error routing ${fieldId} to ${sectionId}:`,
+        e,
+      );
+      // Final fallback to legacy direct write
+      if (TEUI.StateManager && TEUI.StateManager.setValue) {
+        TEUI.StateManager.setValue(fieldId, value, source);
+      }
+    }
+  }
+
+  /**
    * Get a specific field definition
    * @param {string} fieldId - Field ID (e.g., "d_12")
    * @returns {Object|null} - Field definition or null if not found
@@ -596,13 +672,12 @@ TEUI.FieldManager = (function () {
 
                 // Simple change handler to update state manager
                 inputElement.addEventListener("change", function () {
-                  if (window.TEUI && window.TEUI.StateManager) {
-                    window.TEUI.StateManager.setValue(
-                      fieldId,
-                      this.value,
-                      "user",
-                    );
-                  }
+                  // ✅ DUAL-STATE AWARE: Route through section ModeManager
+                  routeToSectionModeManager(
+                    fieldId,
+                    this.value,
+                    "user-modified",
+                  );
                 });
 
                 cellElement.appendChild(inputElement);
@@ -856,10 +931,8 @@ TEUI.FieldManager = (function () {
 
           displaySpan.textContent = displayValue;
 
-          // Update state manager
-          if (TEUI.StateManager && TEUI.StateManager.setValue) {
-            TEUI.StateManager.setValue(fieldId, value);
-          }
+          // ✅ DUAL-STATE AWARE: Route through section ModeManager
+          routeToSectionModeManager(fieldId, value, "user-modified");
         });
 
         // Set initial display value
@@ -1041,9 +1114,8 @@ TEUI.FieldManager = (function () {
 
         // Add change listener to update state
         selectElement.addEventListener("change", function () {
-          if (TEUI.StateManager && TEUI.StateManager.setValue) {
-            TEUI.StateManager.setValue(fieldId, this.value);
-          }
+          // ✅ DUAL-STATE AWARE: Route through section ModeManager
+          routeToSectionModeManager(fieldId, this.value, "user-modified");
 
           // Update dependent dropdowns if needed
           updateDependentDropdowns(fieldId);
@@ -1186,6 +1258,26 @@ TEUI.FieldManager = (function () {
       document.querySelector(`[data-field-id='${fieldId}']`);
     if (!element) {
       return;
+    }
+
+    // ✅ PHASE 1 FIX: Add .user-modified class for imported/user-modified values
+    // This ensures imported values get blue/bold styling like manually-entered values
+    if (window.TEUI?.StateManager) {
+      const stateManager = window.TEUI.StateManager;
+      // Access internal fields map to get state (StateManager doesn't expose getState())
+      const fieldData = stateManager.getValue(fieldId);
+
+      // Check if field has been imported or user-modified
+      // Note: We check against the internal state, but since there's no public getState(),
+      // we infer from whether the field has a value and add the class for non-defaults
+      if (fieldData !== null && fieldData !== undefined) {
+        // Add .user-modified class to contenteditable and input elements
+        if (element.hasAttribute("contenteditable") || element.tagName === "INPUT") {
+          if (element.classList.contains("user-input")) {
+            element.classList.add("user-modified");
+          }
+        }
+      }
     }
 
     // Handle different field types

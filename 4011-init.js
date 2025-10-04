@@ -767,12 +767,33 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (debugExcelBtn) {
       debugExcelBtn.addEventListener("click", function () {
-        const data = TEUI.ExcelLocationHandler.getLocationData();
+        // Add ?qc=true to current URL and reload page
+        const currentUrl = new URL(window.location.href);
 
-        if (data) {
-          alert("See console for location data");
-        } else {
-          alert("No location data available yet");
+        // Check if QC is already enabled
+        if (currentUrl.searchParams.get("qc") === "true") {
+          // QC already enabled - show info
+          alert(
+            "QC monitoring is already active! Check the QC Dashboard in the top-right corner.",
+          );
+          return;
+        }
+
+        // Add QC parameter to URL
+        currentUrl.searchParams.set("qc", "true");
+
+        // Show confirmation before reload
+        const confirmed = confirm(
+          "This will reload the page with QC monitoring enabled.\n\n" +
+            "• QC Dashboard will appear in top-right\n" +
+            "• Complete violation tracking from startup\n" +
+            "• One-click report copy to clipboard\n\n" +
+            "Continue?",
+        );
+
+        if (confirmed) {
+          // Reload with QC parameter
+          window.location.href = currentUrl.toString();
         }
       });
     }
@@ -869,7 +890,55 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     // Initialize other UI handlers
     initializeUIHandlers();
+
+    // Initialize elegant user input behavior
+    initializeElegantInputBehavior();
   } else {
     console.error("Core TEUI modules (StateManager, FieldManager) not found!");
+  }
+
+  // =============== ELEGANT USER INPUT BEHAVIOR ===============
+  function initializeElegantInputBehavior() {
+    // Event delegation catches ALL user inputs (including conditional ones)
+    document.addEventListener(
+      "focus",
+      function (e) {
+        const field = e.target;
+        if (
+          field.matches('[contenteditable="true"].user-input, input.user-input')
+        ) {
+          field.classList.add("editing-intent");
+          field.dataset.originalValue = field.textContent || field.value || "";
+        }
+      },
+      true,
+    );
+
+    document.addEventListener(
+      "blur",
+      function (e) {
+        const field = e.target;
+        if (
+          field.matches('[contenteditable="true"].user-input, input.user-input')
+        ) {
+          field.classList.remove("editing-intent");
+
+          const currentValue = field.textContent || field.value || "";
+          const originalValue = field.dataset.originalValue || "";
+
+          // If value changed, mark as user-modified
+          if (currentValue !== originalValue && currentValue.trim() !== "") {
+            field.classList.add("user-modified");
+          } else if (currentValue.trim() === "") {
+            // If cleared, remove user-modified (back to default grey italic)
+            field.classList.remove("user-modified");
+          }
+        }
+      },
+      true,
+    );
+
+    // ROOT CAUSE FIX: No auto-marking on page load - clean slate
+    // Fields start grey italic and only turn blue on actual interaction
   }
 });

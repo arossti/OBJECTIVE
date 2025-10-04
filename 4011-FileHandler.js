@@ -49,141 +49,6 @@
       if (oldImportButton) oldImportButton.style.display = "none"; // Hide old button
       const oldExportButton = document.getElementById("export-excel");
       if (oldExportButton) oldExportButton.style.display = "none"; // Hide old button
-
-      // Keep Climate section Excel button handlers if still needed by ExcelLocationHandler
-      // Or integrate them fully into this FileHandler if appropriate.
-      const selectExcelBtn = document.getElementById("selectExcelBtn");
-      const applyExcelBtn = document.getElementById("applyExcelBtn");
-      const debugExcelBtn = document.getElementById("debugExcelBtn");
-      // Get the new dedicated file input for location/weather Excel files
-      const locationFileInput = document.getElementById("location-excel-input");
-
-      if (selectExcelBtn && locationFileInput) {
-        console.log(
-          "[SAFARI DEBUG] Setting up S03 Excel import buttons. selectExcelBtn and locationFileInput FOUND.",
-        ); // New Log A
-
-        // Simplify: Remove cloning for selectExcelBtn, just ensure one listener
-        const selectBtnClickHandler = () => {
-          console.log("[SAFARI DEBUG] selectExcelBtn CLICKED."); // New Log B
-          if (locationFileInput) locationFileInput.value = null;
-          locationFileInput.click();
-        };
-        selectExcelBtn.removeEventListener("click", selectBtnClickHandler); // Remove if any previous (less likely needed with IIFE)
-        selectExcelBtn.addEventListener("click", selectBtnClickHandler);
-
-        // Simplify: Attach listener directly to the original locationFileInput, ensure it's fresh
-        const locationChangeEventHandler = async (event) => {
-          console.log("[SAFARI DEBUG] location-excel-input change event FIRED"); // Log 1
-          const file = event.target.files[0];
-          console.log("[SAFARI DEBUG] Selected file:", file); // Log 2
-
-          if (file) {
-            console.log(
-              "[SAFARI DEBUG] File object is present. Name:",
-              file.name,
-            );
-            if (
-              window.TEUI &&
-              window.TEUI.ExcelLocationHandler &&
-              typeof window.TEUI.ExcelLocationHandler.loadExcelFile ===
-                "function"
-            ) {
-              console.log(
-                "[SAFARI DEBUG] ExcelLocationHandler.loadExcelFile IS available. Attempting to call...",
-              ); // Log 3
-              try {
-                await window.TEUI.ExcelLocationHandler.loadExcelFile(file);
-                console.log(
-                  "[SAFARI DEBUG] ExcelLocationHandler.loadExcelFile call COMPLETED (awaited).",
-                ); // Log 4
-              } catch (error) {
-                console.error(
-                  "[SAFARI DEBUG][FileHandler] Error calling ExcelLocationHandler.loadExcelFile:",
-                  error,
-                ); // Log 5
-                // Access showStatus via this.showStatus if FileHandler is correctly scoped or make showStatus a static/global helper
-                if (this && this.showStatus)
-                  this.showStatus(
-                    `Error loading location file: ${error.message}`,
-                    "error",
-                  );
-                else
-                  console.error(
-                    `Status Update Failed: Error loading location file: ${error.message}`,
-                  );
-              }
-            } else {
-              console.error(
-                "[SAFARI DEBUG][FileHandler] ExcelLocationHandler.loadExcelFile is not available.",
-              ); // Log 6
-              if (this && this.showStatus)
-                this.showStatus(
-                  "Location handler module is not available.",
-                  "error",
-                );
-              else
-                console.error(
-                  "Status Update Failed: Location handler module is not available.",
-                );
-            }
-          } else {
-            console.warn(
-              "[SAFARI DEBUG] No file object found in event.target.files.",
-            ); // Log 7
-          }
-        };
-        // Remove any old listener from the original element before adding
-        locationFileInput.removeEventListener(
-          "change",
-          locationChangeEventHandler,
-        );
-        locationFileInput.addEventListener(
-          "change",
-          locationChangeEventHandler,
-        );
-      } else {
-        if (!selectExcelBtn)
-          console.warn("[FileHandler] 'selectExcelBtn' not found.");
-        if (!locationFileInput)
-          console.warn("[FileHandler] 'location-excel-input' not found.");
-      }
-
-      if (applyExcelBtn) {
-        // This button might become redundant if import happens automatically
-        // Keeping for now, but consider removing if processImportedExcel handles updates.
-        applyExcelBtn.addEventListener("click", () => {
-          this.applyImportedData(); // Renamed for clarity
-        });
-      }
-      if (debugExcelBtn) {
-        /* Keep existing debug logic */
-        debugExcelBtn.addEventListener("click", () => {
-          console.log("=== DEBUG INFORMATION ===");
-          if (window.TEUI && window.TEUI.ExcelLocationHandler) {
-            const locationData =
-              window.TEUI.ExcelLocationHandler.getLocationData();
-            console.log("ExcelLocationHandler exists");
-            console.log(
-              "Location data:",
-              locationData ? "Available" : "Not available",
-            );
-            if (locationData) {
-              console.log(`Provinces: ${Object.keys(locationData).join(", ")}`);
-              const sampleProvince = Object.keys(locationData)[0];
-              if (sampleProvince) {
-                console.log(
-                  `Sample province ${sampleProvince} has ${locationData[sampleProvince].cities.length} cities`,
-                );
-              }
-            }
-          } else {
-            console.log("ExcelLocationHandler not available");
-          }
-          // ... rest of debug code ...
-          this.showStatus("Debug information logged to console", "info");
-        });
-      }
     }
 
     // --- IMPORT LOGIC ---
@@ -241,24 +106,94 @@
         this.showStatus("Excel Mapper module is not available.", "error");
         return;
       }
-      this.showStatus("Mapping data from Excel REPORT! sheet...", "info");
+
+      // Import TARGET data from REPORT sheet
+      this.showStatus("Mapping data from Excel REPORT sheet...", "info");
       const importedData = this.excelMapper.mapExcelToReportModel(workbook);
+
+      // 🔍 DEBUG: Log ALL imported data and specifically check for location fields
+      console.log("[FileHandler] 🔍 REPORT sheet imported data:", importedData);
+      console.log("[FileHandler] 🔍 d_19 in importedData?", "d_19" in importedData, "Value:", importedData.d_19);
+      console.log("[FileHandler] 🔍 h_19 in importedData?", "h_19" in importedData, "Value:", importedData.h_19);
+
+      if (importedData.d_19 || importedData.h_19) {
+        console.log(
+          `[FileHandler] 🎯 TARGET Location from REPORT sheet: Province="${importedData.d_19}", City="${importedData.h_19}"`,
+        );
+      } else {
+        console.warn("[FileHandler] ⚠️ NO location data (d_19/h_19) found in REPORT sheet import!");
+      }
 
       if (importedData === null) {
         // mapExcelToReportModel returns null on sheet error
         this.showStatus(
-          "Error: REPORT! sheet not found in Excel file.",
+          "Error: REPORT sheet not found in Excel file.",
           "error",
         );
         return;
       }
 
       if (Object.keys(importedData).length === 0) {
-        this.showStatus("No mappable data found on REPORT! sheet.", "warning");
+        this.showStatus("No mappable data found on REPORT sheet.", "warning");
         return;
       }
 
-      this.updateStateFromImportData(importedData);
+      this.updateStateFromImportData(importedData, 0, false);
+
+      // Import REFERENCE data from REFERENCE sheet (optional)
+      console.log("[FileHandler DEBUG] About to call processImportedExcelReference");
+      this.processImportedExcelReference(workbook);
+      console.log("[FileHandler DEBUG] Returned from processImportedExcelReference");
+
+      // ✅ CRITICAL: Sync Pattern A sections AFTER both Target and Reference imports
+      console.log("[FileHandler] 🔧 Syncing all Pattern A sections after BOTH imports complete...");
+      this.syncPatternASections();
+      console.log("[FileHandler] ✅ Pattern A sections synced");
+
+      // Trigger recalculation after both imports and sync
+      if (this.calculator && typeof this.calculator.calculateAll === "function") {
+        this.calculator.calculateAll();
+
+        // Refresh S03 UI after calculateAll
+        if (window.TEUI?.SectionModules?.sect03?.ModeManager?.refreshUI) {
+          window.TEUI.SectionModules.sect03.ModeManager.refreshUI();
+          console.log("[FileHandler] ✅ S03 UI refreshed after calculateAll()");
+        }
+      }
+    }
+
+    processImportedExcelReference(workbook) {
+      console.log("[FileHandler DEBUG] processImportedExcelReference called, excelMapper exists:", !!this.excelMapper);
+
+      if (!this.excelMapper) {
+        console.warn("Excel Mapper module not available for reference import");
+        return;
+      }
+
+      console.log("[FileHandler DEBUG] Calling mapExcelToReferenceModel...");
+      this.showStatus("Mapping reference data from REFERENCE sheet...", "info");
+      const referenceData = this.excelMapper.mapExcelToReferenceModel(workbook);
+      console.log("[FileHandler DEBUG] mapExcelToReferenceModel returned, keys:", Object.keys(referenceData).length);
+
+      if (Object.keys(referenceData).length === 0) {
+        console.log(
+          "No REFERENCE sheet found or no mappable reference data - this is optional",
+        );
+        return;
+      }
+
+      console.log("[FileHandler DEBUG] About to call updateStateFromImportData for", Object.keys(referenceData).length, "reference fields");
+      console.log("[FileHandler DEBUG] First 5 reference fields:", Object.keys(referenceData).slice(0, 5));
+
+      // Import reference data without triggering full recalculation
+      // (main recalculation happens after target data import)
+      this.updateStateFromImportData(referenceData, 0, true);
+
+      console.log("[FileHandler DEBUG] Returned from updateStateFromImportData");
+      this.showStatus(
+        `Reference import complete. ${Object.keys(referenceData).length} reference fields imported.`,
+        "success",
+      );
     }
 
     processImportedCSV(csvString) {
@@ -347,18 +282,33 @@
       }
     }
 
-    updateStateFromImportData(importedData, csvSkippedCount = 0) {
+    updateStateFromImportData(
+      importedData,
+      csvSkippedCount = 0,
+      skipRecalculation = false,
+    ) {
+      console.log("[FileHandler DEBUG] updateStateFromImportData CALLED with", Object.keys(importedData).length, "fields, skipRecalculation=", skipRecalculation);
+      console.log("[FileHandler DEBUG] stateManager exists:", !!this.stateManager, "fieldManager exists:", !!this.fieldManager);
+
       if (!this.stateManager || !this.fieldManager) {
+        console.error("[FileHandler ERROR] StateManager or FieldManager not available! stateManager:", !!this.stateManager, "fieldManager:", !!this.fieldManager);
         this.showStatus("StateManager or FieldManager not available.", "error");
         return;
       }
+
+      console.log("[FileHandler DEBUG] Passed validation checks, starting forEach loop...");
       this.showStatus("Updating application state...", "info");
       let updatedCount = 0;
       let skippedValidationCount = 0;
 
       Object.entries(importedData).forEach(([fieldId, value]) => {
-        const fieldDef = this.fieldManager.getField(fieldId);
-        if (!fieldDef) {
+        // ✅ CRITICAL: Reference fields (ref_*) don't need FieldManager definitions
+        // They share Target DOM elements and are handled by section-level dual-state architecture
+        const isReferenceField = fieldId.startsWith("ref_");
+        const baseFieldId = isReferenceField ? fieldId.substring(4) : fieldId;
+        const fieldDef = this.fieldManager.getField(baseFieldId);
+
+        if (!fieldDef && !isReferenceField) {
           console.warn(`Skipping import for unknown fieldId: ${fieldId}`);
           skippedValidationCount++;
           return; // Use return to continue to next iteration of forEach
@@ -368,6 +318,20 @@
         let isValid = true;
 
         try {
+          // ✅ Reference fields: Store directly in StateManager without validation
+          // Validation was already done by ExcelMapper normalization
+          if (isReferenceField) {
+            this.stateManager.setValue(fieldId, parsedValue, "imported");
+            updatedCount++;
+            console.log(`[FileHandler] Reference field imported: ${fieldId} = ${parsedValue}`);
+            return; // Done with this reference field
+          }
+
+          // Target fields: Validate and update DOM
+          // ✅ CRITICAL: Skip validation for S03 location fields (d_19, h_19)
+          // These are Pattern A fields managed by S03's isolated state, not FieldManager
+          const isS03LocationField = ["d_19", "h_19"].includes(fieldId);
+
           if (
             fieldDef.type === "editable" ||
             fieldDef.type === "year_slider" ||
@@ -380,7 +344,7 @@
             } else if (fieldDef.type !== "editable") {
               isValid = false;
             }
-          } else if (fieldDef.type === "dropdown") {
+          } else if (fieldDef.type === "dropdown" && !isS03LocationField) {
             const options = this.fieldManager.getDropdownOptions(
               fieldDef.dropdownId,
               { parentValue: null },
@@ -434,6 +398,14 @@
         }
       });
 
+      // Skip recalculation and reference data loading when importing reference fields
+      if (skipRecalculation) {
+        console.log(
+          `[FileHandler] Reference data import complete. ${updatedCount} fields updated. Skipping recalculation.`,
+        );
+        return;
+      }
+
       // AFTER all imported values have been set into StateManager.fields:
       if (
         this.stateManager &&
@@ -454,22 +426,58 @@
         }
       }
 
-      // Trigger recalculation after all updates AND after reference data is loaded
-      if (
-        this.calculator &&
-        typeof this.calculator.calculateAll === "function"
-      ) {
-        this.calculator.calculateAll();
-        this.showStatus(
-          `Import complete. ${updatedCount} fields updated. ${csvSkippedCount + skippedValidationCount} rows/fields skipped.`,
-          "success",
-        );
-      } else {
-        this.showStatus(
-          "Import finished, but could not trigger recalculation.",
-          "warning",
-        );
-      }
+      // ✅ REMOVED: syncPatternASections() now called AFTER both Target and Reference imports
+      // See processImportedExcel() for the new location
+
+      console.log(
+        `[FileHandler] Target import complete. ${updatedCount} fields updated. ${csvSkippedCount + skippedValidationCount} rows/fields skipped.`,
+      );
+    }
+
+    /**
+     * ✅ PHASE 2: Sync Pattern A sections from global StateManager after import
+     * Pattern A sections (S02, S03, S04, S05, S06, S08, S15) use isolated DualState
+     * for state sovereignty per CHEATSHEET.md. Import populates global StateManager,
+     * but isolated states need explicit sync to use imported values in calculations.
+     */
+    syncPatternASections() {
+      // Pattern A sections per CHEATSHEET.md (lines 225-227)
+      const patternASections = [
+        { id: "sect02", name: "S02" },
+        { id: "sect03", name: "S03" }, // Already synced above, but safe to call again
+        { id: "sect04", name: "S04" },
+        { id: "sect05", name: "S05" },
+        { id: "sect06", name: "S06" },
+        { id: "sect08", name: "S08" },
+        { id: "sect15", name: "S15" },
+      ];
+
+      console.log(
+        "[FileHandler] 🔧 PHASE 2: Syncing Pattern A sections from global StateManager...",
+      );
+
+      patternASections.forEach(({ id, name }) => {
+        const section = window.TEUI?.SectionModules?.[id];
+
+        if (section?.TargetState?.syncFromGlobalState) {
+          console.log(`[FileHandler] Syncing ${name} TargetState...`);
+          section.TargetState.syncFromGlobalState();
+        } else {
+          // Not an error - section may not have syncFromGlobalState yet
+          console.log(
+            `[FileHandler] ${name} TargetState.syncFromGlobalState() not available (not yet implemented)`,
+          );
+        }
+
+        if (section?.ReferenceState?.syncFromGlobalState) {
+          console.log(`[FileHandler] Syncing ${name} ReferenceState...`);
+          section.ReferenceState.syncFromGlobalState();
+        }
+      });
+
+      console.log(
+        "[FileHandler] ✅ PHASE 2: Pattern A section sync complete",
+      );
     }
 
     // --- EXPORT LOGIC ---
@@ -482,7 +490,10 @@
         );
         return;
       }
-      this.showStatus("Generating CSV export (standardized format)...", "info");
+      this.showStatus(
+        "Generating CSV export with Target and Reference data...",
+        "info",
+      );
 
       try {
         // Basic CSV escaping (handles commas, quotes, newlines)
@@ -507,11 +518,17 @@
 
         const allFields = this.fieldManager.getAllFields();
         const userEditableFieldIds = [];
-        const userEditableFieldValues = [];
+        const targetValues = [];
+        const referenceValues = [];
 
         // Filter for fields explicitly marked as user-editable by type
         // Order of fields will be based on their definition order in fieldManager.getAllFields()
         Object.entries(allFields).forEach(([id, def]) => {
+          // Skip ref_ prefixed fields in the field list (we'll get those separately)
+          if (id.startsWith("ref_")) {
+            return;
+          }
+
           if (
             def.type === "editable" ||
             def.type === "dropdown" ||
@@ -523,9 +540,17 @@
             // Add any other custom types considered user-editable here
           ) {
             userEditableFieldIds.push(id);
-            const currentValue =
+
+            // Get target/application value
+            const targetValue =
               this.stateManager.getValue(id) ?? def.defaultValue ?? "";
-            userEditableFieldValues.push(escapeCSV(currentValue));
+            targetValues.push(escapeCSV(targetValue));
+
+            // Get reference value (with ref_ prefix)
+            const refFieldId = `ref_${id}`;
+            const referenceValue =
+              this.stateManager.getValue(refFieldId) ?? def.defaultValue ?? "";
+            referenceValues.push(escapeCSV(referenceValue));
           }
         });
 
@@ -537,18 +562,30 @@
           return;
         }
 
-        // Construct CSV content: Row 1 for fieldIds, Row 2 for values
+        // Construct CSV content:
+        // Row 1: Field IDs (headers)
+        // Row 2: Target/Application values
+        // Row 3: Reference values
+        // Row 4+: [Future] OBC Matrix placeholder
         const headerRow = userEditableFieldIds.join(",");
-        const dataRow = userEditableFieldValues.join(",");
-        const csvContent = headerRow + "\n" + dataRow;
+        const targetRow = targetValues.join(",");
+        const referenceRow = referenceValues.join(",");
+        const csvContent = headerRow + "\n" + targetRow + "\n" + referenceRow;
+
+        // Future: Add OBC Matrix export here as additional rows
+        // const obcHeaderRow = "# OBC Matrix Data";
+        // const obcDataRow = "...";
 
         // Get project name for filename
         const projectName = this.stateManager.getValue("h_14") || "Project";
         // Sanitize project name for filename
         const safeProjectName = projectName.replace(/[^a-z0-9_\-.]/gi, "_");
-        const filename = `TEUIv4011-Standardized-${safeProjectName}.csv`;
+        const filename = `TEUIv4011-DualState-${safeProjectName}.csv`;
 
         console.log(`[CSV Export] Generated filename: ${filename}`);
+        console.log(
+          `[CSV Export] Exported ${userEditableFieldIds.length} fields with Target and Reference values`,
+        );
 
         // Trigger Download
         const blob = new Blob([csvContent], {
@@ -563,13 +600,13 @@
         link.click();
         document.body.removeChild(link);
 
-        this.showStatus("Standardized CSV export complete.", "success");
-      } catch (error) {
-        console.error("Error generating standardized CSV export:", error);
         this.showStatus(
-          `Error during standardized CSV export: ${error.message}`,
-          "error",
+          "Dual-state CSV export complete (Target + Reference).",
+          "success",
         );
+      } catch (error) {
+        console.error("Error generating CSV export:", error);
+        this.showStatus(`Error during CSV export: ${error.message}`, "error");
       }
     }
 
@@ -667,19 +704,6 @@
             }
           }, 5000);
         }
-      }
-    }
-
-    applyImportedData() {
-      // Potentially redundant if import is automatic
-      if (!this.workbook) {
-        this.showStatus("Please load an Excel file first", "warning");
-        return;
-      }
-      // Logic here might need refinement - currently focused on location data
-      if (window.TEUI.ExcelLocationHandler?.updateProvinceDropdowns) {
-        window.TEUI.ExcelLocationHandler.updateProvinceDropdowns();
-        this.showStatus("Data applied (focused on locations).", "info");
       }
     }
   }

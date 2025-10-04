@@ -67,9 +67,12 @@ TEUI.Calculator = (function () {
     }
 
     // Initialize Component Bridge
-    if (TEUI.ComponentBridge) {
+    /* if (TEUI.ComponentBridge) {
       TEUI.ComponentBridge.initAll();
-    }
+
+      // ✅ Initialize dual-state synchronization
+      TEUI.ComponentBridge.initDualStateSync();
+    } */
 
     // Set up event listeners after DOM is ready
     // setupEventListeners(); // Assuming event listeners are set up elsewhere now
@@ -476,6 +479,11 @@ TEUI.Calculator = (function () {
    * Recalculate all values
    */
   function calculateAll() {
+    // Start performance timing
+    if (window.TEUI?.Clock?.markCalculationStart) {
+      window.TEUI.Clock.markCalculationStart();
+    }
+
     // Define a logical calculation order based on major dependencies
     const calcOrder = [
       "sect02", // Building Info
@@ -485,10 +493,11 @@ TEUI.Calculator = (function () {
       "sect12", // Volume Metrics (defines areas for S10, S11)
       "sect10", // Radiant Gains (i80 for S15)
       "sect11", // Transmission Losses
+      // "cooling", // MOVED: Now called directly by S13 to guarantee order
       "sect07", // Water Use (k51 for S15)
-      "sect13", // Mechanical Loads (d117, m121 for S15)
+      "sect13", // Mechanical Loads (reads cooling values, calculates ventilation)
       "sect06", // Renewable Energy (m43 for S15)
-      "sect14", // TEDI Summary (uses S9, S10, S11, S12, S13)
+      "sect14", // TEDI Summary (reads d_129, m_129 from cooling)
       "sect04", // Actual/Target Energy (many inputs, but needs to calc before S05 consumes its outputs)
       "sect05", // Emissions (consumes S04 outputs)
       "sect15", // TEUI Summary (consumes S14, S04 and others)
@@ -499,17 +508,36 @@ TEUI.Calculator = (function () {
 
     // Explicitly call each section's calculateAll if it exists
     calcOrder.forEach((sectionKey) => {
-      const sectionModule = window.TEUI.SectionModules?.[sectionKey];
-      if (sectionModule && typeof sectionModule.calculateAll === "function") {
-        try {
-          sectionModule.calculateAll();
-        } catch (error) {
-          console.error(`Error calculating section ${sectionKey}:`, error);
+      if (sectionKey === "cooling") {
+        // Special handling for Cooling module
+        if (window.TEUI?.CoolingCalculations?.calculateAll) {
+          try {
+            console.log("[Calculator] 🌀 Calling CoolingCalculations module...");
+            // ✅ BUG #9 FIX: Pass "target" mode for default calculator run
+            window.TEUI.CoolingCalculations.calculateAll("target");
+            console.log("[Calculator] ✅ CoolingCalculations module finished.");
+          } catch (error) {
+            console.error("[Calculator] ❌ Error in Cooling module:", error);
+          }
+        } else {
+          console.warn("[Calculator] ⚠️ Cooling module not available");
         }
       } else {
-        // Section module not found or doesn't have calculateAll method
+        const sectionModule = window.TEUI.SectionModules?.[sectionKey];
+        if (sectionModule && typeof sectionModule.calculateAll === "function") {
+          try {
+            sectionModule.calculateAll();
+          } catch (error) {
+            console.error(`Error calculating section ${sectionKey}:`, error);
+          }
+        } else {
+          // Section module not found or doesn't have calculateAll method
+        }
       }
     });
+
+    // Note: Performance timing ends in S01 after h_10 finalization
+    // Clock.markCalculationEnd() called from Section01.runAllCalculations()
   }
 
   /**

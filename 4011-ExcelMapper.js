@@ -7,15 +7,16 @@ const CONFIG = {
   EMISSIONS: {
     GAS_INTENSITY: 1921, // gCO2e/m3
     GAS_ENERGY_DENSITY: 10.36, // ekWh/m3
-    DEFAULT_GAS_COST: 0.507, // $/m3
-    DEFAULT_ELECTRICITY_COST: 0.13, // $/kWh
+    DEFAULT_GAS_COST: 0.507, // $/m3 Ontario average
+    DEFAULT_ELECTRICITY_COST: 0.13, // $/kWh Ontario average
   },
-  // Excel cell mapping configuration
+  // Excel cell mapping configuration (added REFERENCE)
   EXCEL_MAPPING: {
     SHEETS: {
       ENERGY_BALANCE: "ENERGY BALANCE",
       REPORT: "REPORT",
       NBC2025C2: "NBC-2025-C2",
+      REFERENCE: "REFERENCE",
     },
     // Placeholder for the old/combined mapping structure
     // We will define a specific mapping for Report sheet import later
@@ -24,11 +25,7 @@ const CONFIG = {
       "e-6": "REPORT!E6", // Adjusted sheet assumption
       "T.1_target": "REPORT!C5",
       "T.1_actual": "REPORT!D5",
-      // ... other mappings ...
-      "a-5": "NBC-2025-C2!A5", // Climate Data mappings remain separate
-      "a-115": "NBC-2025-C2!A115",
-      // ... rest of climate mappings ...
-      "a-683": "NBC-2025-C2!A683",
+      // ... other mappings ... (deleted climate mappings as this is internal now)
     },
   },
 };
@@ -59,10 +56,12 @@ class ExcelMapper {
       L16: "l_16", // Oil Cost
 
       // Section 03: Climate Calculations (REPORT! Sheet)
-      H20: "h_20", // Present/Future Weather Toggle (Dropdown) - ADDED
-      H21: "h_21", // Capacitance/Static Toggle (Dropdown) - NEWLY ADDED
+      D19: "d_19", // Province (Dropdown)
+      H19: "h_19", // City (Dropdown)
+      H20: "h_20", // Present/Future Weather Toggle (Dropdown)
+      H21: "h_21", // Capacitance/Static Toggle (Dropdown)
+      I21: "i_21", // Capacitance Slider Position (Number)
       M19: "m_19", // Days Cooling (Editable Number)
-      // Note: L22 (Elevation) & L24 (Cooling Override) are handled by weather/location import, not general user data import.
 
       // Section 04: Actual vs Target Energy (REPORT! Sheet)
       D27: "d_27", // Actual Elec Use
@@ -193,6 +192,161 @@ class ExcelMapper {
       // Section 15: TEUI Summary (REPORT! Sheet)
       D142: "d_142", // Cost Premium HP (Editable Number)
     };
+
+    // REFERENCE sheet mapping - mirrors REPORT mapping structure
+    // Uses same Excel cell references but maps to ref_ prefixed field IDs
+    this.excelReferenceInputMapping = {
+      // Section 02: Building Information (REFERENCE! Sheet)
+      D12: "ref_d_12",
+      D13: "ref_d_13",
+      D14: "ref_d_14",
+      D15: "ref_d_15",
+      H12: "ref_h_12",
+      H13: "ref_h_13",
+      H14: "ref_h_14",
+      H15: "ref_h_15",
+      H16: "ref_i_16",
+      H17: "ref_i_17",
+      L12: "ref_l_12",
+      L13: "ref_l_13",
+      L14: "ref_l_14",
+      L15: "ref_l_15",
+      L16: "ref_l_16",
+
+      // Section 03: Climate Calculations (REFERENCE! Sheet)
+      D19: "ref_d_19",
+      H19: "ref_h_19",
+      H20: "ref_h_20",
+      H21: "ref_h_21",
+      I21: "ref_i_21",
+      M19: "ref_m_19",
+
+      // Section 04: Actual vs Target Energy (REFERENCE! Sheet)
+      D27: "ref_d_27",
+      D28: "ref_d_28",
+      D29: "ref_d_29",
+      D30: "ref_d_30",
+      D31: "ref_d_31",
+      L27: "ref_l_27",
+      L28: "ref_l_28",
+      L29: "ref_l_29",
+      L30: "ref_l_30",
+      L31: "ref_l_31",
+      H35: "ref_h_35",
+
+      // Section 05: Emissions (REFERENCE! Sheet)
+      D39: "ref_d_39",
+      I41: "ref_i_41",
+
+      // Section 06: Renewable Energy (REFERENCE! Sheet)
+      D44: "ref_d_44",
+      D45: "ref_d_45",
+      D46: "ref_d_46",
+      I45: "ref_i_45",
+      K45: "ref_k_45",
+      I46: "ref_i_46",
+      M43: "ref_m_43",
+
+      // Section 07: Water Use (REFERENCE! Sheet)
+      D49: "ref_d_49",
+      E49: "ref_e_49",
+      E50: "ref_e_50",
+      D51: "ref_d_51",
+      D52: "ref_d_52",
+      D53: "ref_d_53",
+      K52: "ref_k_52",
+
+      // Section 08: Indoor Air Quality (REFERENCE! Sheet)
+      D56: "ref_d_56",
+      D57: "ref_d_57",
+      D58: "ref_d_58",
+      D59: "ref_d_59",
+
+      // Section 09: Occupant Internal Gains (REFERENCE! Sheet)
+      D63: "ref_d_63",
+      G63: "ref_g_63",
+      D64: "ref_d_64",
+      D65: "ref_d_65",
+      D66: "ref_d_66",
+      D67: "ref_d_67",
+      D68: "ref_d_68",
+      G67: "ref_g_67",
+
+      // Section 10: Radiant Gains (REFERENCE! Sheet)
+      D73: "ref_d_73",
+      D74: "ref_d_74",
+      D75: "ref_d_75",
+      D76: "ref_d_76",
+      D77: "ref_d_77",
+      D78: "ref_d_78",
+      E73: "ref_e_73",
+      E74: "ref_e_74",
+      E75: "ref_e_75",
+      E76: "ref_e_76",
+      E77: "ref_e_77",
+      E78: "ref_e_78",
+      F73: "ref_f_73",
+      F74: "ref_f_74",
+      F75: "ref_f_75",
+      F76: "ref_f_76",
+      F77: "ref_f_77",
+      F78: "ref_f_78",
+      G73: "ref_g_73",
+      G74: "ref_g_74",
+      G75: "ref_g_75",
+      G76: "ref_g_76",
+      G77: "ref_g_77",
+      G78: "ref_g_78",
+      H73: "ref_h_73",
+      H74: "ref_h_74",
+      H75: "ref_h_75",
+      H76: "ref_h_76",
+      H77: "ref_h_77",
+      H78: "ref_h_78",
+      D80: "ref_d_80",
+
+      // Section 11: Transmission Losses (REFERENCE! Sheet)
+      D85: "ref_d_85",
+      F85: "ref_f_85",
+      D86: "ref_d_86",
+      F86: "ref_f_86",
+      D87: "ref_d_87",
+      F87: "ref_f_87",
+      G88: "ref_g_88",
+      G89: "ref_g_89",
+      G90: "ref_g_90",
+      G91: "ref_g_91",
+      G92: "ref_g_92",
+      G93: "ref_g_93",
+      D94: "ref_d_94",
+      F94: "ref_f_94",
+      D95: "ref_d_95",
+      F95: "ref_f_95",
+      D96: "ref_d_96",
+      D97: "ref_d_97",
+
+      // Section 12: Volume Metrics (REFERENCE! Sheet)
+      D103: "ref_d_103",
+      G103: "ref_g_103",
+      D105: "ref_d_105",
+      D108: "ref_d_108",
+      G109: "ref_g_109",
+
+      // Section 13: Mechanical Loads (REFERENCE! Sheet)
+      D113: "ref_d_113",
+      F113: "ref_f_113",
+      J115: "ref_j_115",
+      D116: "ref_d_116",
+      D118: "ref_d_118",
+      H118: "ref_g_118",
+      L118: "ref_l_118",
+      D119: "ref_d_119",
+      L119: "ref_l_119",
+      K120: "ref_k_120",
+
+      // Section 15: TEUI Summary (REFERENCE! Sheet)
+      D142: "ref_d_142",
+    };
   }
 
   /**
@@ -205,8 +359,18 @@ class ExcelMapper {
 
     if (!worksheet) {
       console.error(`Sheet named '${sheetName}' not found in the workbook.`);
+      console.log("🔍 Available sheets:", workbook.SheetNames);
       return null; // Indicate error
     }
+
+    // 🔍 DEBUG: Check what's actually in the location cells
+    console.log("🔍 [ExcelMapper] Reading REPORT sheet location cells:");
+    console.log("  D19 cell object:", worksheet["D19"]);
+    console.log("  H19 cell object:", worksheet["H19"]);
+    if (worksheet["D19"])
+      console.log("  D19 value:", this.extractCellValue(worksheet["D19"]));
+    if (worksheet["H19"])
+      console.log("  H19 value:", this.extractCellValue(worksheet["H19"]));
 
     Object.entries(this.excelReportInputMapping).forEach(
       ([cellRef, fieldId]) => {
@@ -467,6 +631,249 @@ class ExcelMapper {
               extractedValue = "0"; // Default if parsing failed (slider min is 0)
             }
           }
+          importedData[fieldId] = extractedValue;
+        }
+      },
+    );
+
+    return importedData;
+  }
+
+  /**
+   * NEW function for importing reference data from REFERENCE sheet.
+   * ✅ FIX: Handle formula cells (=REPORT!H15) vs user-entered values
+   * - If cell has formula referencing REPORT sheet → use REPORT value
+   * - If cell has user-entered value → use that value (user override)
+   */
+  mapExcelToReferenceModel(workbook) {
+    const importedData = {};
+    const sheetName = CONFIG.EXCEL_MAPPING.SHEETS.REFERENCE;
+    const reportSheetName = CONFIG.EXCEL_MAPPING.SHEETS.REPORT;
+    const worksheet = workbook.Sheets[sheetName];
+    const reportWorksheet = workbook.Sheets[reportSheetName];
+
+    console.log(`[ExcelMapper] mapExcelToReferenceModel called. Sheet '${sheetName}' exists: ${!!worksheet}`);
+
+    if (!worksheet) {
+      console.warn(
+        `Sheet named '${sheetName}' not found in the workbook. Skipping reference import.`,
+      );
+      return {}; // Return empty object, not null - this is optional data
+    }
+
+    console.log(`[ExcelMapper] Starting REFERENCE sheet processing...`);
+    console.log(`[ExcelMapper] REFERENCE worksheet exists:`, !!worksheet);
+    console.log(`[ExcelMapper] Sample cells from REFERENCE:`, Object.keys(worksheet).slice(0, 20));
+
+    Object.entries(this.excelReferenceInputMapping).forEach(
+      ([cellRef, fieldId]) => {
+        const cell = worksheet[cellRef];
+
+        // 🔍 DEBUG: Enhanced logging for H15
+        if (cellRef === 'H15') {
+          console.log(`[ExcelMapper H15] Checking cell H15...`);
+          console.log(`[ExcelMapper H15] Cell exists:`, cell !== undefined);
+          console.log(`[ExcelMapper H15] Cell object:`, cell);
+          console.log(`[ExcelMapper H15] Field ID:`, fieldId);
+        }
+
+        // 🔍 DEBUG: Log whether key cells exist
+        if (cellRef === 'H15' || cellRef === 'D13') {
+          console.log(`[ExcelMapper DEBUG] ${cellRef} exists: ${cell !== undefined}, cell:`, cell);
+        }
+
+        if (cell !== undefined) {
+          let extractedValue;
+
+          // 🔍 DEBUG: Log cell structure to understand what we're working with
+          if (cellRef === 'H15' || cellRef === 'D13') {
+            console.log(`[ExcelMapper DEBUG] ${cellRef} cell:`, {
+              value: cell.v,
+              formula: cell.f,
+              type: cell.t,
+              hasFormula: !!cell.f,
+              startsWithREPORT: cell.f?.startsWith('=REPORT!')
+            });
+          }
+
+          // ✅ Check if cell contains a formula referencing REPORT sheet
+          // SheetJS stores formulas WITHOUT the leading = (e.g., "REPORT!H15" not "=REPORT!H15")
+          if (cell.f && (cell.f.startsWith('REPORT!') || cell.f.startsWith('=REPORT!'))) {
+            // Extract REPORT sheet cell reference (e.g., "REPORT!H15" → "H15")
+            const reportCellRef = cell.f.replace(/^=?REPORT!/, '');
+
+            // Read from REPORT sheet instead
+            const reportCell = reportWorksheet?.[reportCellRef];
+            if (reportCell) {
+              extractedValue = this.extractCellValue(reportCell);
+              console.log(`[ExcelMapper] ${cellRef} has formula ${cell.f}, using REPORT!${reportCellRef} = ${extractedValue}`);
+            } else {
+              extractedValue = this.extractCellValue(cell); // Fallback
+            }
+          } else {
+            // User-entered value (no formula or different formula)
+            extractedValue = this.extractCellValue(cell);
+            if (cellRef === 'H15' || cellRef === 'D13') {
+              console.log(`[ExcelMapper DEBUG] ${cellRef} no REPORT formula, using cell value: ${extractedValue}`);
+            }
+          }
+
+          // Apply same normalizations as REPORT sheet but for reference fields
+          // Remove ref_ prefix temporarily for normalization checks
+          const baseFieldId = fieldId.replace(/^ref_/, "");
+
+          // Normalize d_12 (Major Occupancy)
+          if (baseFieldId === "d_12" && typeof extractedValue === "string") {
+            if (extractedValue === "A - Assembly")
+              extractedValue = "A-Assembly";
+            else if (extractedValue === "B1 - Detention")
+              extractedValue = "B1-Detention";
+            else if (extractedValue === "B3 - Detention, Care and Treatment")
+              extractedValue = "B3-Detention Care & Treatment";
+            extractedValue = extractedValue.replace(/\s+-\s+/g, "-");
+            if (extractedValue.startsWith("B3-")) {
+              extractedValue = extractedValue.replace(/,\s+/g, " ");
+            }
+          }
+
+          // Normalize d_108 (NRL50 Target Method)
+          if (baseFieldId === "d_108" && typeof extractedValue === "string") {
+            if (extractedValue === "Measured") extractedValue = "MEASURED";
+            else if (extractedValue === "PH Classic")
+              extractedValue = "PH_CLASSIC";
+            else if (extractedValue === "PH Low") extractedValue = "PH_LOW";
+            else if (extractedValue === "PH+") extractedValue = "PH_PLUS";
+          }
+
+          // Normalize percentage fields (d_59, d_53, d_52, d_118, d_97, k_120)
+          if (baseFieldId === "d_59" || baseFieldId === "d_97") {
+            if (
+              typeof extractedValue === "number" &&
+              extractedValue >= 0 &&
+              extractedValue <= 1
+            ) {
+              extractedValue = (extractedValue * 100).toString();
+            } else if (
+              typeof extractedValue === "string" &&
+              extractedValue.endsWith("%")
+            ) {
+              extractedValue = parseFloat(
+                extractedValue.replace("%", ""),
+              ).toString();
+            } else if (typeof extractedValue === "number") {
+              extractedValue = extractedValue.toString();
+            }
+            if (isNaN(parseFloat(extractedValue))) {
+              extractedValue = "0";
+            }
+          }
+
+          // Normalize d_53, d_118, k_120 (percentage sliders)
+          if (
+            baseFieldId === "d_53" ||
+            baseFieldId === "d_118" ||
+            baseFieldId === "k_120"
+          ) {
+            let numVal;
+            if (typeof extractedValue === "string") {
+              numVal = extractedValue.endsWith("%")
+                ? parseFloat(extractedValue.replace("%", ""))
+                : parseFloat(extractedValue);
+            } else if (typeof extractedValue === "number") {
+              numVal = extractedValue;
+            }
+            if (!isNaN(numVal)) {
+              if (numVal >= 0 && numVal <= 1) {
+                extractedValue = Math.round(numVal * 100).toString();
+              } else {
+                extractedValue = Math.round(numVal).toString();
+              }
+            } else {
+              extractedValue = "0";
+            }
+          }
+
+          // Normalize d_52 (DHW Eff Factor)
+          if (baseFieldId === "d_52") {
+            let numVal;
+            if (typeof extractedValue === "string") {
+              numVal = extractedValue.endsWith("%")
+                ? parseFloat(extractedValue.replace("%", ""))
+                : parseFloat(extractedValue);
+            } else if (typeof extractedValue === "number") {
+              numVal = extractedValue;
+            }
+            if (!isNaN(numVal)) {
+              if (numVal <= 10) {
+                extractedValue = (numVal * 100).toString();
+              } else {
+                extractedValue = numVal.toString();
+              }
+            } else {
+              extractedValue = "0";
+            }
+          }
+
+          // Normalize d_39 (Construction Type)
+          if (baseFieldId === "d_39" && typeof extractedValue === "string") {
+            const val = extractedValue.trim().toLowerCase();
+            if (
+              val.includes("pt.9") &&
+              val.includes("res") &&
+              val.includes("stick")
+            ) {
+              extractedValue = "Pt.9 Res. Stick Frame";
+            } else if (
+              val.includes("pt.9") &&
+              val.includes("small") &&
+              val.includes("mass timber")
+            ) {
+              extractedValue = "Pt.9 Small Mass Timber";
+            } else if (val.includes("pt.3") && val.includes("mass timber")) {
+              extractedValue = "Pt.3 Mass Timber";
+            } else if (val.includes("pt.3") && val.includes("concrete")) {
+              extractedValue = "Pt.3 Concrete";
+            } else if (val.includes("pt.3") && val.includes("steel")) {
+              extractedValue = "Pt.3 Steel";
+            } else if (val.includes("pt.3") && val.includes("office")) {
+              extractedValue = "Pt.3 Office";
+            } else if (val.includes("modelled") || val.includes("modeled")) {
+              extractedValue = "Modelled Value";
+            }
+          }
+
+          // Normalize g_67 (Equipment Spec)
+          if (
+            baseFieldId === "g_67" &&
+            typeof extractedValue === "string" &&
+            extractedValue.trim().toLowerCase() === "low energy"
+          ) {
+            extractedValue = "Efficient";
+          }
+
+          // Normalize k_52 (SHW AFUE)
+          if (baseFieldId === "k_52") {
+            let numVal;
+            if (typeof extractedValue === "string") {
+              if (extractedValue.endsWith("%")) {
+                numVal = parseFloat(extractedValue.replace("%", "")) / 100;
+              } else {
+                numVal = parseFloat(extractedValue);
+              }
+            } else if (typeof extractedValue === "number") {
+              numVal = extractedValue;
+            }
+            if (!isNaN(numVal)) {
+              if (numVal > 1) {
+                extractedValue = (numVal / 100).toFixed(2);
+              } else {
+                extractedValue = numVal.toFixed(2);
+              }
+            } else {
+              extractedValue = "0.90";
+            }
+          }
+
           importedData[fieldId] = extractedValue;
         }
       },

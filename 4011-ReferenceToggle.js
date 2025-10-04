@@ -1,71 +1,189 @@
 /**
  * 4011-ReferenceToggle.js
- * Module to handle switching between Design and Reference Model views.
+ * MODERNIZED FOR PATTERN A DUAL-STATE ARCHITECTURE
+ * Module to handle switching between Target and Reference Model views across ALL sections.
  */
 
 // Create TEUI namespace if it doesn't exist
 window.TEUI = window.TEUI || {};
 
 TEUI.ReferenceToggle = (function () {
-  let referenceMode = false; // This will be true only temporarily during executeReferenceRunAndCache
+  let isShowingReference = false; // Track if we're currently showing Reference values
   const STANDARD_SELECTOR_ID = "d_13"; // ID of the reference standard dropdown
 
-  let cachedReferenceResults = null;
+  // Button IDs and text constants
   const RUN_REFERENCE_BUTTON_ID = "runReferenceBtn";
-  // NEW: Button ID and state for viewing reference inputs
   const VIEW_REFERENCE_INPUTS_BUTTON_ID = "viewReferenceInputsBtn";
-  let isViewingReferenceInputs = false;
 
-  // Constants for button text
-  const BUTTON_TEXT_DEFAULT = "Calculate Reference";
-  const BUTTON_TEXT_BUSY = "Calculating Reference...";
-  const BUTTON_TEXT_SHOW_CACHED_INPUTS = "Show Cached Reference Inputs";
+  // Updated button text for Pattern A architecture
+  const BUTTON_TEXT_SHOW_REFERENCE = "Show Reference";
+  const BUTTON_TEXT_SHOW_TARGET = "Show Target";
+  const BUTTON_TEXT_HIGHLIGHT_REFERENCE_VALUES = "Highlight Reference Values";
   const BUTTON_TEXT_SHOW_TARGET_INPUTS = "Show Target Inputs";
 
-  const inputFieldTypes = [
-    "editable",
-    "dropdown",
-    "year_slider",
-    "percentage",
-    "coefficient",
-    "coefficient_slider",
-    "number",
-    "generic_slider",
-  ];
+  let isViewingReferenceInputs = false;
 
-  function updateRunReferenceButtonText(text) {
-    const runRefBtn = document.getElementById(RUN_REFERENCE_BUTTON_ID);
-    if (runRefBtn) {
-      runRefBtn.textContent = text;
-    }
+  /**
+   * Pattern A Compatible: Get all sections with dual-state ModeManager
+   * FIXED: Updated for current dual-state architecture
+   */
+  function getAllDualStateSections() {
+    const sectionIds = [
+      "sect02",
+      "sect03",
+      "sect04",
+      "sect08",
+      "sect10",
+      "sect11",
+      "sect12",
+      "sect13",
+      "sect14",
+      "sect15",
+    ];
+
+    const dualStateSections = sectionIds
+      .map((id) => ({
+        id,
+        module: window.TEUI?.[id],
+        modeManager: window.TEUI?.[id]?.ModeManager,
+      }))
+      .filter((s) => s.modeManager);
+
+    console.log(
+      `[ReferenceToggle] Found ${dualStateSections.length} dual-state sections:`,
+      dualStateSections.map((s) => s.id),
+    );
+    return dualStateSections;
   }
 
-  function updateViewInputsButtonText(text) {
-    const viewRefInputsBtn = document.getElementById(
-      VIEW_REFERENCE_INPUTS_BUTTON_ID,
+  /**
+   * PHASE 3: Master Display Toggle - Switch ALL sections with coordinated styling
+   * UPDATED: Now applies existing CSS classes for global Reference styling
+   */
+  function switchAllSectionsMode(mode) {
+    const sections = getAllDualStateSections();
+    let switchedCount = 0;
+
+    // Switch all section ModeManagers
+    sections.forEach((section) => {
+      try {
+        if (
+          section.modeManager &&
+          typeof section.modeManager.switchMode === "function"
+        ) {
+          section.modeManager.switchMode(mode);
+          section.modeManager.updateCalculatedDisplayValues();
+          switchedCount++;
+        }
+      } catch (error) {
+        console.error(
+          `[ReferenceToggle] Error switching ${section.id}:`,
+          error,
+        );
+      }
+    });
+
+    // Apply existing CSS classes for global Reference styling
+    const isReference = mode === "reference";
+    document.body.classList.toggle("viewing-reference-inputs", isReference);
+    document.body.classList.toggle("viewing-reference-values", isReference);
+    document.body.classList.toggle("reference-mode", isReference);
+    document.documentElement.classList.toggle("reference-mode", isReference);
+
+    console.log(
+      `🎨 Master Toggle: Switched ${switchedCount}/${sections.length} sections to ${mode.toUpperCase()} mode with global styling`,
     );
-    if (viewRefInputsBtn) {
-      viewRefInputsBtn.textContent = text;
-    }
+    return switchedCount;
+  }
+
+  /**
+   * Pattern A Compatible: Update all calculated display values based on current mode
+   */
+  function updateAllCalculatedDisplays() {
+    const dualStateSections = getAllDualStateSections();
+
+    dualStateSections.forEach((section) => {
+      try {
+        if (
+          section.modeManager &&
+          typeof section.modeManager.updateCalculatedDisplayValues ===
+            "function"
+        ) {
+          section.modeManager.updateCalculatedDisplayValues();
+        } else if (
+          section.modeManager &&
+          typeof section.modeManager.refreshUI === "function"
+        ) {
+          section.modeManager.refreshUI();
+        }
+      } catch (error) {
+        console.error(
+          `[ReferenceToggle] Error updating display for ${section.id}:`,
+          error,
+        );
+      }
+    });
   }
 
   function initialize() {
-    // MODIFICATION: Only setup the runRefBtn
-    const runRefBtn = document.getElementById(RUN_REFERENCE_BUTTON_ID);
-    if (runRefBtn) {
-      runRefBtn.addEventListener("click", executeReferenceRunAndCache);
-      updateRunReferenceButtonText(BUTTON_TEXT_DEFAULT);
+    // PHASE 4: Wire new dropdown buttons to setup functions
+
+    // Setup Reference Setup buttons
+    const mirrorTargetBtn = document.getElementById("mirrorTargetBtn");
+    if (mirrorTargetBtn) {
+      mirrorTargetBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        mirrorTarget();
+      });
     }
 
-    // NEW: Setup for the viewReferenceInputsBtn
+    const mirrorTargetReferenceBtn = document.getElementById(
+      "mirrorTargetReferenceBtn",
+    );
+    if (mirrorTargetReferenceBtn) {
+      mirrorTargetReferenceBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        mirrorTargetWithReference();
+      });
+    }
+
+    const referenceIndependenceBtn = document.getElementById(
+      "referenceIndependenceBtn",
+    );
+    if (referenceIndependenceBtn) {
+      referenceIndependenceBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        enableReferenceIndependence();
+      });
+    }
+
+    // Setup Display Toggle buttons
+    const showReferenceBtn = document.getElementById("showReferenceBtn");
+    if (showReferenceBtn) {
+      showReferenceBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        switchAllSectionsMode("reference");
+      });
+    }
+
+    const showTargetBtn = document.getElementById("showTargetBtn");
+    if (showTargetBtn) {
+      showTargetBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        switchAllSectionsMode("target");
+      });
+    }
+
+    // Keep existing Reference Inputs view button
     const viewRefInputsBtn = document.getElementById(
       VIEW_REFERENCE_INPUTS_BUTTON_ID,
     );
     if (viewRefInputsBtn) {
       viewRefInputsBtn.addEventListener("click", toggleReferenceInputsView);
-      updateViewInputsButtonText(BUTTON_TEXT_SHOW_CACHED_INPUTS);
+      viewRefInputsBtn.textContent = BUTTON_TEXT_HIGHLIGHT_REFERENCE_VALUES;
     }
 
+    // Keep existing reference standard change handler
     const standardSelector =
       document.getElementById(STANDARD_SELECTOR_ID) ||
       document.querySelector(`[data-field-id='${STANDARD_SELECTOR_ID}']`);
@@ -78,374 +196,393 @@ TEUI.ReferenceToggle = (function () {
         actualSelect.addEventListener("change", handleStandardChange);
       }
     }
+
+    console.log(
+      "[ReferenceToggle] Master Reference Toggle initialization complete",
+    );
   }
 
-  function handleStandardChange(event) {
-    const newStandardKey = event.target.value;
-    if (window.TEUI && TEUI.StateManager) {
-      TEUI.StateManager.setValue(
-        STANDARD_SELECTOR_ID,
-        newStandardKey,
-        TEUI.StateManager.VALUE_STATES.USER_MODIFIED,
-      );
-      // Only load the data; don't trigger calculations or UI refreshes.
-      // User must click the button to see the effect of the new standard.
-      TEUI.StateManager.loadReferenceData(newStandardKey);
-      // If currently viewing reference inputs, and standard changes, revert to target view
-      // to avoid confusion, as the displayed inputs are no longer from the selected standard until re-run.
-      if (isViewingReferenceInputs) {
-        toggleReferenceInputsView(); // This will flip to false and show target inputs
-        alert(
-          "Reference standard changed. Click 'Run Reference' to update and then '" +
-            BUTTON_TEXT_SHOW_CACHED_INPUTS +
-            "' to view the new inputs.",
-        );
+  /**
+   * MAIN FUNCTION: Toggle between showing Target and Reference calculated values
+   * This is the new "Show Reference" functionality with proper red UI styling
+   */
+  function toggleReferenceDisplay() {
+    isShowingReference = !isShowingReference;
+    const targetMode = isShowingReference ? "reference" : "target";
+
+    console.log(
+      `[ReferenceToggle] Switching ALL sections to ${targetMode.toUpperCase()} display mode`,
+    );
+
+    // Switch all dual-state sections to the target mode
+    const switchedCount = switchAllSectionsMode(targetMode);
+
+    if (switchedCount > 0) {
+      // Update all calculated display values
+      updateAllCalculatedDisplays();
+
+      // Update button text
+      const runRefBtn = document.getElementById(RUN_REFERENCE_BUTTON_ID);
+      if (runRefBtn) {
+        runRefBtn.textContent = isShowingReference
+          ? BUTTON_TEXT_SHOW_TARGET
+          : BUTTON_TEXT_SHOW_REFERENCE;
       }
-    } else {
-      console.error(
-        "[ReferenceToggle] StateManager not available to handle standard change.",
+
+      // 🎨 CRITICAL: Apply RED Reference mode styling to entire UI
+      // Use the SAME CSS class that "Highlight Reference Values" uses
+      document.body.classList.toggle(
+        "viewing-reference-inputs",
+        isShowingReference,
       );
+      document.body.classList.toggle(
+        "viewing-reference-values",
+        isShowingReference,
+      );
+
+      // Also apply additional classes for comprehensive styling
+      document.body.classList.toggle("reference-mode", isShowingReference);
+      const htmlElement = document.documentElement;
+      htmlElement.classList.toggle("reference-mode", isShowingReference);
+
+      console.log(
+        `[ReferenceToggle] Successfully toggled to ${targetMode.toUpperCase()} display mode with UI styling`,
+      );
+    } else {
+      console.warn(
+        "[ReferenceToggle] No sections were switched - reverting toggle",
+      );
+      isShowingReference = !isShowingReference; // Revert if nothing was switched
     }
   }
 
-  function isReferenceMode() {
-    // This now reflects if a reference calculation is actively in progress within this module
-    return referenceMode;
-  }
-
-  // NEW FUNCTION: toggleReferenceInputsView
-  function toggleReferenceInputsView() {
-    isViewingReferenceInputs = !isViewingReferenceInputs;
-    const viewRefInputsBtn = document.getElementById(
-      VIEW_REFERENCE_INPUTS_BUTTON_ID,
+  /**
+   * Handle reference standard (d_13) changes
+   */
+  function handleStandardChange(event) {
+    const newStandardKey = event.target.value;
+    console.log(
+      `[ReferenceToggle] Reference standard changed to: ${newStandardKey}`,
     );
 
-    // NEW: Add/Remove body class for global styling
+    if (window.TEUI?.StateManager) {
+      // Update the global standard
+      window.TEUI.StateManager.setValue(
+        STANDARD_SELECTOR_ID,
+        newStandardKey,
+        "user-modified",
+      );
+
+      // Notify all sections with ReferenceValues.js dependencies
+      const dualStateSections = getAllDualStateSections();
+      dualStateSections.forEach((section) => {
+        try {
+          // Look for sections that have onReferenceStandardChange method in their ReferenceState
+          if (section.module.ReferenceState?.onReferenceStandardChange) {
+            section.module.ReferenceState.onReferenceStandardChange(
+              newStandardKey,
+            );
+            console.log(
+              `[ReferenceToggle] Updated ${section.id} for new reference standard`,
+            );
+          }
+        } catch (error) {
+          console.error(
+            `[ReferenceToggle] Error updating ${section.id} for standard change:`,
+            error,
+          );
+        }
+      });
+
+      // Trigger recalculations
+      if (window.TEUI?.Calculator?.calculateAll) {
+        window.TEUI.Calculator.calculateAll();
+      }
+
+      console.log(`[ReferenceToggle] Reference standard update complete`);
+    }
+  }
+
+  /**
+   * Legacy function for "Show Reference Inputs" - shows which inputs were applied from ReferenceValues
+   * This highlights actual Reference inputs vs calculated values
+   */
+  function toggleReferenceInputsView() {
+    isViewingReferenceInputs = !isViewingReferenceInputs;
+
+    // Add/Remove body class for styling
     document.body.classList.toggle(
       "viewing-reference-inputs",
       isViewingReferenceInputs,
     );
 
-    if (!TEUI.FieldManager || !TEUI.StateManager) {
-      console.error(
-        "[ReferenceToggle] FieldManager or StateManager not available for toggleReferenceInputsView.",
-      );
-      if (viewRefInputsBtn) viewRefInputsBtn.textContent = "Error";
-      return;
-    }
-
-    const allFieldDefs = TEUI.FieldManager.getAllFields();
-    if (!allFieldDefs) {
-      console.error(
-        "[ReferenceToggle] Could not get allFieldDefinitions from FieldManager.",
-      );
-      return;
-    }
-
-    for (const fieldId in allFieldDefs) {
-      if (Object.prototype.hasOwnProperty.call(allFieldDefs, fieldId)) {
-        const fieldDef = allFieldDefs[fieldId];
-        if (fieldDef && inputFieldTypes.includes(fieldDef.type)) {
-          let displayValue;
-          let makeReadOnly;
-
-          if (isViewingReferenceInputs) {
-            displayValue = cachedReferenceResults
-              ? cachedReferenceResults[fieldId]
-              : TEUI.StateManager.getApplicationStateValue(fieldId); // Fallback to app state if no cache
-            makeReadOnly = true;
-          } else {
-            displayValue = TEUI.StateManager.getApplicationStateValue(fieldId);
-            makeReadOnly = false;
-          }
-
-          // Ensure displayValue is not null/undefined before formatting, default to empty string if so.
-          const valueToDisplay =
-            displayValue === null || displayValue === undefined
-              ? ""
-              : displayValue;
-
-          TEUI.FieldManager.updateFieldDisplay(
-            fieldId,
-            valueToDisplay,
-            fieldDef,
-          );
-
-          const element =
-            document.getElementById(fieldId) ||
-            document.querySelector(`[data-field-id='${fieldId}']`);
-          if (element) {
-            const inputElement =
-              element.querySelector("input, select, textarea") ||
-              (element.matches("input, select, textarea") ? element : null);
-            if (inputElement) {
-              inputElement.disabled = makeReadOnly;
-            }
-            if (element.hasAttribute("contenteditable")) {
-              element.setAttribute("contenteditable", String(!makeReadOnly));
-            }
-            if (makeReadOnly) {
-              element.classList.add("reference-input-display-locked");
-            } else {
-              element.classList.remove("reference-input-display-locked");
-            }
-          }
-        }
-      }
-    }
-
+    // Update button text
+    const viewRefInputsBtn = document.getElementById(
+      VIEW_REFERENCE_INPUTS_BUTTON_ID,
+    );
     if (viewRefInputsBtn) {
       viewRefInputsBtn.textContent = isViewingReferenceInputs
         ? BUTTON_TEXT_SHOW_TARGET_INPUTS
-        : BUTTON_TEXT_SHOW_CACHED_INPUTS;
+        : BUTTON_TEXT_HIGHLIGHT_REFERENCE_VALUES;
     }
 
-    // After toggling, ensure the main "Run Reference" button is in its normal state
-    const runRefBtn = document.getElementById(RUN_REFERENCE_BUTTON_ID);
-    if (runRefBtn && runRefBtn.disabled) {
-      // If by any chance it was left disabled, re-enable it, as this view toggle is separate.
-      runRefBtn.disabled = false;
-      updateRunReferenceButtonText(BUTTON_TEXT_DEFAULT);
+    // This feature needs to be implemented to highlight Reference input fields
+    // from ReferenceValues.js vs calculated values
+    console.log(
+      `[ReferenceToggle] Reference inputs view: ${isViewingReferenceInputs ? "ON" : "OFF"}`,
+    );
+
+    // TODO: Implement visual highlighting of Reference input fields
+    // This should show which fields come from ReferenceValues.js based on d_13 selection
+  }
+
+  /**
+   * Legacy compatibility function
+   */
+  function isReferenceMode() {
+    return isShowingReference;
+  }
+
+  /**
+   * Get comparison value - now reads from StateManager with ref_ prefix
+   */
+  function getCompareValue(fieldId) {
+    if (window.TEUI?.StateManager) {
+      return window.TEUI.StateManager.getValue(`ref_${fieldId}`);
+    }
+    return null;
+  }
+
+  /**
+   * PHASE 2: Three Reference Setup Functions
+   * These implement the core functionality from Master-Reference-Roadmap.md
+   */
+
+  /**
+   * HELPER: Get field IDs for a section using FieldManager
+   */
+  function getFieldIdsForSection(sectionId) {
+    try {
+      // Use FieldManager to get field definitions for this section
+      if (window.TEUI?.FieldManager?.getFieldsBySection) {
+        const fields = window.TEUI.FieldManager.getFieldsBySection(
+          getUINameForSection(sectionId),
+        );
+        return Object.keys(fields);
+      }
+
+      // Fallback: Try direct section module access
+      if (window.TEUI?.SectionModules?.[sectionId]?.getFields) {
+        const fields = window.TEUI.SectionModules[sectionId].getFields();
+        return Object.keys(fields);
+      }
+
+      console.warn(
+        `[ReferenceToggle] Could not get field IDs for section ${sectionId}`,
+      );
+      return [];
+    } catch (error) {
+      console.error(
+        `[ReferenceToggle] Error getting field IDs for ${sectionId}:`,
+        error,
+      );
+      return [];
     }
   }
 
-  function executeReferenceRunAndCache() {
-    if (
-      !window.TEUI ||
-      !TEUI.StateManager ||
-      !TEUI.Calculator ||
-      !TEUI.FieldManager
-    ) {
-      console.error(
-        "[ReferenceToggle] Missing critical modules (StateManager, Calculator, FieldManager).",
-      );
-      alert(
-        "Error: Essential application components are missing. Cannot run reference calculation.",
-      );
-      return;
-    }
+  /**
+   * HELPER: Convert section ID to UI name for FieldManager
+   */
+  function getUINameForSection(sectionId) {
+    const mapping = {
+      sect01: "keyValues",
+      sect02: "buildingInfo",
+      sect03: "climateCalculations",
+      sect04: "actualTargetEnergy",
+      sect05: "emissions",
+      sect06: "onSiteEnergy",
+      sect07: "waterUse",
+      sect08: "indoorAirQuality",
+      sect09: "occupantInternalGains",
+      sect10: "envelopeRadiantGains",
+      sect11: "envelopeTransmissionLosses",
+      sect12: "volumeSurfaceMetrics",
+      sect13: "mechanicalLoads",
+      sect14: "tediSummary",
+      sect15: "teuiSummary",
+    };
+    return mapping[sectionId] || sectionId;
+  }
 
-    const currentStandardKey = TEUI.StateManager.getValue(STANDARD_SELECTOR_ID);
-    if (!currentStandardKey) {
-      alert(
-        "Please select a Reference Standard (usually field 'd_13') before running the reference calculation.",
-      );
-      console.warn("[ReferenceToggle] No reference standard selected.");
-      return;
-    }
-
-    const runButton = document.getElementById(RUN_REFERENCE_BUTTON_ID);
-    if (runButton) {
-      runButton.disabled = true;
-      updateRunReferenceButtonText(BUTTON_TEXT_BUSY);
-    }
-
-    TEUI.StateManager.setMuteApplicationStateUpdates(true);
-    const originalReferenceModeFlag = referenceMode; // Should be false here unless something is wrong
-    referenceMode = true; // Temporarily set for StateManager.getValue() to use activeReferenceDataSet
-
+  /**
+   * 1. Mirror Target: Copy all Target values to Reference state
+   * CORRECTED: Uses proper ModeManager facade pattern
+   */
+  function mirrorTarget() {
     try {
-      TEUI.StateManager.loadReferenceData(currentStandardKey);
-      TEUI.Calculator.calculateAll(); // This will use reference values due to 'referenceMode' being true
+      const sections = getAllDualStateSections();
+      console.log(
+        `[ReferenceToggle] Mirror Target: Processing ${sections.length} sections`,
+      );
 
-      // After calculation, capture the results.
-      // Inputs from activeReferenceDataSet, outputs from application state (which was just calculated with ref inputs)
-      cachedReferenceResults = {};
-      const allFieldDefinitions = TEUI.FieldManager.getAllFields();
+      let totalFieldsCopied = 0;
 
-      if (allFieldDefinitions) {
-        Object.keys(allFieldDefinitions).forEach((fieldId) => {
-          const fieldDef = allFieldDefinitions[fieldId];
-          if (fieldDef && fieldDef.type) {
-            if (inputFieldTypes.includes(fieldDef.type)) {
-              // For input fields, their value *is* the reference value used
-              const refValue =
-                TEUI.StateManager.getActiveReferenceModeValue(fieldId); // Get from the loaded ref data
-              if (refValue !== undefined && refValue !== null) {
-                cachedReferenceResults[fieldId] = refValue;
-              }
-            } else {
-              // For calculated/derived fields, their value is the result of the reference calculation
-              const appValue =
-                TEUI.StateManager.getApplicationStateValue(fieldId); // Get from current state post-calc
-              if (appValue !== undefined && appValue !== null) {
-                cachedReferenceResults[fieldId] = appValue;
-              }
-            }
+      sections.forEach((section, index) => {
+        console.log(`[ReferenceToggle] Processing ${section.id}...`);
+
+        // Get field IDs for this section
+        const fieldIds = getFieldIdsForSection(section.id);
+        console.log(
+          `[ReferenceToggle] Found ${fieldIds.length} fields for ${section.id}`,
+        );
+
+        if (fieldIds.length === 0) {
+          console.warn(
+            `[ReferenceToggle] No fields found for ${section.id} - skipping`,
+          );
+          return;
+        }
+
+        // Save current mode
+        const originalMode = section.modeManager.currentMode;
+
+        // Switch to target mode to read values
+        section.modeManager.switchMode("target");
+
+        // Read all Target values using ModeManager facade
+        const targetValues = {};
+        fieldIds.forEach((fieldId) => {
+          const value = section.modeManager.getValue(fieldId);
+          if (value !== null && value !== undefined && value !== "") {
+            targetValues[fieldId] = value;
           }
         });
-      } else {
-        console.warn(
-          "[ReferenceToggle] TEUI.FieldManager.getAllFields() not available. Caching will be less precise.",
+
+        console.log(
+          `[ReferenceToggle] Read ${Object.keys(targetValues).length} Target values from ${section.id}`,
         );
-        // Fallback can be improved by adding getActiveReferenceDataSetContents and getAllApplicationStateValues to StateManager
-        const tempRefInputs = TEUI.StateManager
-          .getActiveReferenceDataSetContents
-          ? TEUI.StateManager.getActiveReferenceDataSetContents()
-          : {};
-        Object.assign(cachedReferenceResults, tempRefInputs);
-        const tempAppValues = TEUI.StateManager.getAllApplicationStateValues
-          ? TEUI.StateManager.getAllApplicationStateValues()
-          : {};
-        Object.assign(cachedReferenceResults, tempAppValues);
-      }
+
+        // Switch to reference mode to write values
+        section.modeManager.switchMode("reference");
+
+        // Copy Target values to Reference state
+        Object.entries(targetValues).forEach(([fieldId, value]) => {
+          section.modeManager.setValue(fieldId, value, "mirrored");
+          totalFieldsCopied++;
+        });
+
+        // Restore original mode and refresh UI
+        section.modeManager.switchMode(originalMode);
+        section.modeManager.refreshUI();
+
+        console.log(
+          `[ReferenceToggle] Copied ${Object.keys(targetValues).length} values to Reference state for ${section.id}`,
+        );
+      });
 
       console.log(
-        "[ReferenceToggle] Reference run complete. Results cached:",
-        cachedReferenceResults,
+        `🔗 Mirror Target: Successfully copied ${totalFieldsCopied} total fields across ${sections.length} sections`,
       );
-      document.dispatchEvent(
-        new CustomEvent("teui-reference-cache-updated", {
-          detail: cachedReferenceResults,
-        }),
+      console.log(
+        "🎯 Test: Switch to Reference mode to verify e_10 (Reference TEUI) equals h_10 (Target TEUI)",
+      );
+    } catch (error) {
+      console.error("[ReferenceToggle] Mirror Target failed:", error);
+    }
+  }
+
+  /**
+   * 2. Mirror Target + Reference: Copy Target + overlay ReferenceValues subset
+   * CORRECTED: Uses proper ModeManager facade and ReferenceValues.js integration
+   */
+  function mirrorTargetWithReference() {
+    try {
+      const standard =
+        window.TEUI?.StateManager?.getValue("d_13") || "OBC SB12 3.1.1.2.C1";
+      const refValues = window.TEUI?.ReferenceValues?.[standard] || {};
+
+      console.log(
+        `[ReferenceToggle] Mirror Target + Reference: Using standard "${standard}"`,
+      );
+      console.log(
+        `[ReferenceToggle] Found ${Object.keys(refValues).length} reference values for this standard`,
+      );
+
+      // First execute Mirror Target to copy all Target values
+      mirrorTarget();
+
+      // Then overlay ReferenceValues subset for building code compliance
+      const sections = getAllDualStateSections();
+      let totalOverlayFields = 0;
+
+      sections.forEach((section) => {
+        console.log(
+          `[ReferenceToggle] Applying ReferenceValues overlay to ${section.id}...`,
+        );
+
+        // Save current mode
+        const originalMode = section.modeManager.currentMode;
+
+        // Switch to reference mode to apply overlay
+        section.modeManager.switchMode("reference");
+
+        // Apply ReferenceValues overlay (building code minimums)
+        const appliedFields = [];
+        Object.entries(refValues).forEach(([fieldId, value]) => {
+          // Only apply if this section manages this field
+          const fieldIds = getFieldIdsForSection(section.id);
+          if (fieldIds.includes(fieldId)) {
+            section.modeManager.setValue(fieldId, value, "reference-standard");
+            appliedFields.push(fieldId);
+            totalOverlayFields++;
+          }
+        });
+
+        // Restore original mode and refresh UI
+        section.modeManager.switchMode(originalMode);
+        section.modeManager.refreshUI();
+
+        if (appliedFields.length > 0) {
+          console.log(
+            `[ReferenceToggle] Applied ${appliedFields.length} reference standard values to ${section.id}: [${appliedFields.join(", ")}]`,
+          );
+        }
+      });
+
+      console.log(
+        `🔗 Mirror Target + Reference: Applied ${totalOverlayFields} reference standard values across all sections`,
+      );
+      console.log(
+        `📋 Standard: "${standard}" - building code minimums now overlay Target inputs`,
       );
     } catch (error) {
       console.error(
-        "[ReferenceToggle] Error during executeReferenceRunAndCache:",
+        "[ReferenceToggle] Mirror Target + Reference failed:",
         error,
       );
-      alert(
-        "An error occurred while running the reference calculation. Please check the console for details.",
-      );
-    } finally {
-      referenceMode = originalReferenceModeFlag; // Restore (should be back to false)
-      TEUI.StateManager.setMuteApplicationStateUpdates(false);
-
-      if (runButton) {
-        runButton.disabled = false;
-        updateRunReferenceButtonText(BUTTON_TEXT_DEFAULT);
-      }
-
-      // Recalculate Target model now that application state is unmuted and referenceMode is false
-      if (
-        window.TEUI.Calculator &&
-        typeof window.TEUI.Calculator.calculateAll === "function"
-      ) {
-        TEUI.Calculator.calculateAll();
-      }
-
-      updateComparisonDisplay();
-
-      // NEW: If currently viewing reference inputs, refresh the view with new cached data
-      if (isViewingReferenceInputs) {
-        // Call directly, don't flip the flag, just refresh the display state
-        const viewRefInputsBtn = document.getElementById(
-          VIEW_REFERENCE_INPUTS_BUTTON_ID,
-        );
-        const allFieldDefs = TEUI.FieldManager.getAllFields();
-        if (allFieldDefs && TEUI.FieldManager && TEUI.StateManager) {
-          for (const fieldId in allFieldDefs) {
-            if (Object.prototype.hasOwnProperty.call(allFieldDefs, fieldId)) {
-              const fieldDef = allFieldDefs[fieldId];
-              if (fieldDef && inputFieldTypes.includes(fieldDef.type)) {
-                const displayValue = cachedReferenceResults
-                  ? cachedReferenceResults[fieldId]
-                  : "";
-                TEUI.FieldManager.updateFieldDisplay(
-                  fieldId,
-                  displayValue,
-                  fieldDef,
-                );
-                // Ensure read-only state is reapplied
-                const element =
-                  document.getElementById(fieldId) ||
-                  document.querySelector(`[data-field-id='${fieldId}']`);
-                if (element) {
-                  const inputElement =
-                    element.querySelector("input, select, textarea") ||
-                    (element.matches("input, select, textarea")
-                      ? element
-                      : null);
-                  if (inputElement) inputElement.disabled = true;
-                  if (element.hasAttribute("contenteditable"))
-                    element.setAttribute("contenteditable", "false");
-                  element.classList.add("reference-input-display-locked");
-                }
-              }
-            }
-          }
-        }
-        if (viewRefInputsBtn)
-          viewRefInputsBtn.textContent = BUTTON_TEXT_SHOW_TARGET_INPUTS; // Ensure button text is correct
-      }
     }
   }
 
-  function getCompareValue(fieldId) {
-    return cachedReferenceResults &&
-      Object.prototype.hasOwnProperty.call(cachedReferenceResults, fieldId)
-      ? cachedReferenceResults[fieldId]
-      : null;
-  }
-
-  function updateComparisonDisplay() {
+  /**
+   * 3. Reference Independence: No setup needed - sections already independent
+   */
+  function enableReferenceIndependence() {
     console.log(
-      "[ReferenceToggle] Updating comparison display elements with new cached data.",
+      "🔓 Reference Independence: Sections are already independent by default",
     );
-
-    if (!window.TEUI || !TEUI.FieldManager || !TEUI.formatNumber) {
-      console.error(
-        "[ReferenceToggle] Missing TEUI.FieldManager or TEUI.formatNumber for updateComparisonDisplay.",
-      );
-      return;
-    }
-
-    // Select all elements designated for displaying comparison values.
-    // These elements should have a 'data-compare-field-id' attribute
-    // specifying which field's cached reference value they should display.
-    const compareElements = document.querySelectorAll(
-      "[data-compare-field-id]",
-    );
-
-    compareElements.forEach((el) => {
-      const fieldId = el.dataset.compareFieldId;
-      if (!fieldId) return;
-
-      const value = getCompareValue(fieldId); // From cachedReferenceResults
-      const fieldDef = TEUI.FieldManager.getField(fieldId);
-
-      let formatType = "raw"; // Default to 'raw' if no specific format found
-      if (fieldDef) {
-        // Prioritize formatType if explicitly defined in fieldDef
-        if (fieldDef.formatType) {
-          formatType = fieldDef.formatType;
-        } else {
-          // Fallback based on field type if formatType is not present
-          switch (fieldDef.type) {
-            case "percentage":
-              formatType = "percent-0dp";
-              break;
-            case "year_slider":
-              formatType = "integer-nocomma";
-              break;
-            case "coefficient":
-            case "coefficient_slider":
-            case "number":
-            case "editable":
-              formatType = "number-2dp";
-              break;
-            case "calculated":
-            case "derived":
-              formatType = fieldDef.format || "number-2dp";
-              break;
-            default:
-              formatType = "raw";
-          }
-        }
-      }
-
-      const formattedValue =
-        value !== null && value !== undefined
-          ? TEUI.formatNumber(value, formatType)
-          : "N/A";
-
-      el.textContent = formattedValue;
-    });
+    // No action needed - dual-state architecture already provides independence
   }
 
   return {
     initialize,
-    isReferenceMode, // Kept for StateManager.getValue()
+    isReferenceMode,
     getCompareValue,
+    toggleReferenceDisplay,
+    switchAllSectionsMode, // Expose for external use
+    getAllDualStateSections, // Expose for debugging
+    // New setup functions
+    mirrorTarget,
+    mirrorTargetWithReference,
+    enableReferenceIndependence,
   };
 })();

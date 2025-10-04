@@ -81,10 +81,12 @@ TEUI.StateManager = (function () {
 
       // Percentage Formatting
       if (type === "percent") {
+        // OBC Matrix compatibility: basic "percent" defaults to 0dp
+        const percentDecimals = dpPart ? decimals : 0;
         return numValue.toLocaleString(undefined, {
           style: "percent",
-          minimumFractionDigits: decimals,
-          maximumFractionDigits: decimals,
+          minimumFractionDigits: percentDecimals,
+          maximumFractionDigits: percentDecimals,
         });
       }
       // CAD Currency Formatting (using toFixed)
@@ -102,10 +104,12 @@ TEUI.StateManager = (function () {
       }
       // Number Formatting (Default)
       else {
+        // OBC Matrix compatibility: default to no commas unless explicitly requested
+        const shouldUseCommas = formatParts.includes("comma");
         return numValue.toLocaleString(undefined, {
           minimumFractionDigits: decimals,
           maximumFractionDigits: decimals,
-          useGrouping: useCommas,
+          useGrouping: shouldUseCommas,
         });
       }
     } catch (e) {
@@ -131,8 +135,11 @@ TEUI.StateManager = (function () {
     }
     let numericValue;
     if (typeof value === "string") {
-      // Remove commas, trim whitespace
-      const cleanedValue = value.replace(/,/g, "").trim();
+      // Remove currency symbols, commas, and trim whitespace
+      const cleanedValue = value
+        .replace(/[$£€¥]/g, "")
+        .replace(/,/g, "")
+        .trim();
       if (cleanedValue === "" || cleanedValue.toUpperCase() === "N/A") {
         return defaultValue;
       }
@@ -238,6 +245,44 @@ TEUI.StateManager = (function () {
     try {
       localStorage.removeItem("TEUI_Calculator_State");
       console.log("TEUI StateManager: Cleared state from localStorage");
+
+      // ✅ NEW: Explicitly clear all dual-state section storage keys
+      const dualStateKeys = [
+        "S02_TARGET_STATE",
+        "S02_REFERENCE_STATE",
+        "S03_TARGET_STATE",
+        "S03_REFERENCE_STATE",
+        "S04_TARGET_STATE",
+        "S04_REFERENCE_STATE",
+        "S05_TARGET_STATE",
+        "S05_REFERENCE_STATE",
+        "S06_TARGET_STATE",
+        "S06_REFERENCE_STATE",
+        "S07_TARGET_STATE",
+        "S07_REFERENCE_STATE",
+        "S08_TARGET_STATE",
+        "S08_REFERENCE_STATE",
+        "S09_TARGET_STATE",
+        "S09_REFERENCE_STATE",
+        "S10_TARGET_STATE",
+        "S10_REFERENCE_STATE",
+        "S11_TARGET_STATE",
+        "S11_REFERENCE_STATE",
+        "S12_TARGET_STATE",
+        "S12_REFERENCE_STATE",
+        "S13_TARGET_STATE",
+        "S13_REFERENCE_STATE",
+        "S14_TARGET_STATE",
+        "S14_REFERENCE_STATE",
+        "S15_TARGET_STATE",
+        "S15_REFERENCE_STATE",
+      ];
+
+      dualStateKeys.forEach((key) => {
+        localStorage.removeItem(key);
+        console.log(`Global Reset: Cleared ${key}`);
+      });
+      console.log("Global Reset: All dual-state localStorage cleared.");
     } catch (e) {
       console.error("TEUI StateManager: Failed to clear localStorage:", e);
     }
@@ -285,6 +330,30 @@ TEUI.StateManager = (function () {
    * @returns {boolean} True if the value changed
    */
   function setValue(fieldId, value, state = VALUE_STATES.USER_MODIFIED) {
+    // 🎯 SMART USER INTERACTION TIMING: Auto-detect user changes and start performance timing
+    if (
+      state === VALUE_STATES.USER_MODIFIED &&
+      window.TEUI?.Clock?.markUserInteractionStart
+    ) {
+      window.TEUI.Clock.markUserInteractionStart();
+    }
+
+    // 🔍 RACE CONDITION DEBUG: Track all h_10 setValue calls (COMMENTED OUT - too verbose)
+    // if (fieldId === "h_10") {
+    //   console.log(
+    //     `[StateManager] 🎯 h_10 setValue: "${value}" (state: ${state})`,
+    //   );
+    //   console.trace("[StateManager] h_10 setValue stack trace:");
+    // }
+
+    // 🔍 DEBUG: Track ref_h_15 to catch who overwrites imported value
+    if (fieldId === "ref_h_15") {
+      console.log(
+        `[StateManager DEBUG] ref_h_15 setValue: "${value}" (state: ${state}, prev: ${fields.get(fieldId)?.value})`,
+      );
+      console.trace("[StateManager] ref_h_15 setValue stack trace:");
+    }
+
     // Check if we're in Reference Mode and this is an independently editable field
     if (
       window.TEUI &&
@@ -837,8 +906,16 @@ TEUI.StateManager = (function () {
   /**
    * Update TEUI calculations when source values change
    * @param {string} _sourceField - The source field that changed
+   *
+   * ⚠️  DISABLED: This function bypasses the dual-engine architecture.
+   * S01 is designed as a PURE DISPLAY CONSUMER that reads upstream values.
+   * Direct StateManager calculation overwrites h_10/k_10 without mode awareness.
    */
   function updateTEUICalculations(_sourceField) {
+    // ❌ DISABLED: Bypasses dual-engine architecture
+    return;
+
+    /* LEGACY CODE BELOW (disabled)
     try {
       // Get raw values from state manager
       const rawActualEnergy = getValue("f_32");
@@ -926,33 +1003,191 @@ TEUI.StateManager = (function () {
     } catch (error) {
       console.error("Error updating TEUI calculations:", error);
     }
+    */
   }
 
   /**
    * Exports the dependency data in a format suitable for visualization.
+   * Includes both field-level dependencies and architectural module dependencies.
+   * @param {string} mode - "target" (default), "reference", or "both" for dual-state analysis
    * @returns {object} Object containing nodes and links, e.g., { nodes: [], links: [] }
    */
-  function exportDependencyGraph() {
-    // console.log("[StateManager] Exporting dependency graph data...");
+  function exportDependencyGraph(mode = "target") {
+    // console.log(`[StateManager] Exporting dependency graph data for mode: ${mode}...`);
     const nodes = new Map(); // Use a Map to easily track unique nodes
     const links = [];
 
-    // Iterate through the dependencies map (source -> Set<target>)
-    dependencies.forEach((targets, sourceId) => {
-      // Add source node if not already added
-      if (!nodes.has(sourceId)) {
-        nodes.set(sourceId, { id: sourceId });
-      }
+    // === ARCHITECTURAL MODULE DEPENDENCIES FOR AI AGENTS ===
+    // Add module-level architectural nodes to help AI agents understand execution flow
+    const architecturalNodes = [
+      {
+        id: "FOUNDATION-StateManager",
+        group: "🏗️ Foundation",
+        type: "module",
+        architecturalLayer: "Foundation",
+        label: "StateManager",
+        description: "Central state management, single source of truth",
+      },
+      {
+        id: "FOUNDATION-FieldManager",
+        group: "🏗️ Foundation",
+        type: "module",
+        architecturalLayer: "Foundation",
+        label: "FieldManager",
+        description: "DOM generation, section coordination",
+      },
+      {
+        id: "FOUNDATION-ReferenceValues",
+        group: "🏗️ Foundation",
+        type: "module",
+        architecturalLayer: "Foundation",
+        label: "ReferenceValues",
+        description: "Building code standards database",
+      },
+      {
+        id: "COORDINATION-Calculator",
+        group: "🧮 Coordination",
+        type: "module",
+        architecturalLayer: "Coordination",
+        label: "Calculator",
+        description: "Traffic Cop coordination, orchestrates calculateAll()",
+      },
+      {
+        id: "COORDINATION-ReferenceSystem",
+        group: "🧮 Coordination",
+        type: "module",
+        architecturalLayer: "Coordination",
+        label: "Reference System",
+        description: "Master dual-state coordination",
+      },
+      {
+        id: "COORDINATION-SectionIntegrator",
+        group: "🧮 Coordination",
+        type: "module",
+        architecturalLayer: "Coordination",
+        label: "SectionIntegrator",
+        description: "Cross-section data flow patterns",
+      },
+      {
+        id: "MODULE-Section01",
+        group: "🎯 Application",
+        type: "module",
+        architecturalLayer: "Application",
+        label: "Section 01 (Key Values)",
+        description: "Dashboard, consumes S15 outputs",
+      },
+      {
+        id: "MODULE-Section03",
+        group: "🎯 Application",
+        type: "module",
+        architecturalLayer: "Application",
+        label: "Section 03 (Climate)",
+        description: "Climate data, foundation calculations",
+      },
+      {
+        id: "MODULE-Section14",
+        group: "🎯 Application",
+        type: "module",
+        architecturalLayer: "Application",
+        label: "Section 14 (TEDI)",
+        description: "Summary calculations, consumes S9-S13",
+      },
+      {
+        id: "MODULE-Section15",
+        group: "🎯 Application",
+        type: "module",
+        architecturalLayer: "Application",
+        label: "Section 15 (TEUI)",
+        description: "Final energy summary, feeds S01",
+      },
+    ];
 
-      targets.forEach((targetId) => {
-        // Add target node if not already added
-        if (!nodes.has(targetId)) {
-          nodes.set(targetId, { id: targetId });
+    // Add architectural module dependencies
+    const architecturalLinks = [
+      // Foundation dependencies
+      { source: "FOUNDATION-StateManager", target: "FOUNDATION-FieldManager" },
+      { source: "FOUNDATION-StateManager", target: "COORDINATION-Calculator" },
+      {
+        source: "FOUNDATION-FieldManager",
+        target: "COORDINATION-SectionIntegrator",
+      },
+      {
+        source: "FOUNDATION-ReferenceValues",
+        target: "COORDINATION-ReferenceSystem",
+      },
+
+      // Coordination dependencies
+      { source: "COORDINATION-Calculator", target: "MODULE-Section03" },
+      { source: "COORDINATION-Calculator", target: "MODULE-Section14" },
+      { source: "COORDINATION-Calculator", target: "MODULE-Section15" },
+      { source: "COORDINATION-Calculator", target: "MODULE-Section01" },
+      { source: "COORDINATION-ReferenceSystem", target: "MODULE-Section01" },
+
+      // Section execution flow (from Calculator.js calculateAll order)
+      { source: "MODULE-Section03", target: "MODULE-Section14" },
+      { source: "MODULE-Section14", target: "MODULE-Section15" },
+      { source: "MODULE-Section15", target: "MODULE-Section01" },
+    ];
+
+    // Add architectural nodes and links
+    architecturalNodes.forEach((node) => nodes.set(node.id, node));
+    links.push(...architecturalLinks);
+
+    // === MODE-BASED DEPENDENCY PROCESSING ===
+    // Process Target, Reference, or both sets of dependencies based on mode
+
+    // Iterate through the dependencies map (source -> Set<target>)
+    // Process dependencies based on mode for AI agent analysis
+    const processFieldDependencies = (
+      sourcePrefix = "",
+      targetPrefix = "",
+      nodePrefix = "",
+    ) => {
+      dependencies.forEach((targets, sourceId) => {
+        const processedSourceId = sourcePrefix + sourceId;
+
+        // Add source node if not already added
+        if (!nodes.has(processedSourceId)) {
+          nodes.set(processedSourceId, {
+            id: processedSourceId,
+            originalId: sourceId,
+            dependencyMode: nodePrefix || "target",
+          });
         }
-        // Add the link
-        links.push({ source: sourceId, target: targetId });
+
+        targets.forEach((targetId) => {
+          const processedTargetId = targetPrefix + targetId;
+
+          // Add target node if not already added
+          if (!nodes.has(processedTargetId)) {
+            nodes.set(processedTargetId, {
+              id: processedTargetId,
+              originalId: targetId,
+              dependencyMode: nodePrefix || "target",
+            });
+          }
+
+          // Add dependency link
+          links.push({
+            source: processedSourceId,
+            target: processedTargetId,
+            dependencyMode: nodePrefix || "target",
+          });
+        });
       });
-    });
+    };
+
+    // Process dependencies based on requested mode
+    if (mode === "target" || mode === "both") {
+      // Standard Target state dependencies (current behavior)
+      processFieldDependencies("", "", "target");
+    }
+
+    if (mode === "reference" || mode === "both") {
+      // Reference state dependencies (ref_ prefixed fields)
+      // For Reference mode, we map the same logical dependencies but with ref_ prefixes
+      processFieldDependencies("ref_", "ref_", "reference");
+    }
 
     // Enhance node data using FieldManager
     if (window.TEUI?.FieldManager) {
@@ -986,39 +1221,77 @@ TEUI.StateManager = (function () {
    * @returns {string} The determined group name.
    */
   function getNodeGroup(nodeId, _fieldDef) {
-    // RESTORED: Fallback to prefix/pattern matching (less reliable, but maybe better coverage?)
+    // Updated to match the colorScheme's camelCase naming
     if (nodeId.includes("_1") && nodeId.split("_").length > 1)
-      return "1. Key Values"; // Approximate
+      return "keyValues"; // Section 01
     if (nodeId.includes("_2") && nodeId.split("_").length > 1)
-      return "2. Building Information";
+      return "buildingInfo"; // Section 02
     if (nodeId.includes("_3") && nodeId.split("_").length > 1)
-      return "3. Climate Calculations";
+      return "climateCalculations"; // Section 03
     if (nodeId.includes("_4") && nodeId.split("_").length > 1)
-      return "4. Actual vs. Target Energy";
+      return "actualTargetEnergy"; // Section 04
     if (nodeId.includes("_5") && nodeId.split("_").length > 1)
-      return "5. CO2e Emissions";
+      return "co2eEmissions"; // Section 05
     if (nodeId.includes("_6") && nodeId.split("_").length > 1)
-      return "6. Renewable Energy";
+      return "renewableEnergy"; // Section 06
     if (nodeId.includes("_7") && nodeId.split("_").length > 1)
-      return "7. Water Use";
+      return "waterUse"; // Section 07
     if (nodeId.includes("_8") && nodeId.split("_").length > 1)
-      return "8. Indoor Air Quality";
+      return "indoorAirQuality"; // Section 08
     if (nodeId.includes("_9") && nodeId.split("_").length > 1)
-      return "9. Occupant + Internal Gains";
+      return "occupantInternalGains"; // Section 09
     if (nodeId.includes("_10") && nodeId.split("_").length > 1)
-      return "10. Radiant Gains";
+      return "radiantGains"; // Section 10
     if (nodeId.includes("_11") && nodeId.split("_").length > 1)
-      return "11. Transmission Losses";
+      return "transmissionLosses"; // Section 11
     if (nodeId.includes("_12") && nodeId.split("_").length > 1)
-      return "12. Volume and Surface Metrics";
+      return "volumeSurfaceMetrics"; // Section 12
     if (nodeId.includes("_13") && nodeId.split("_").length > 1)
-      return "13. Mechanical Loads";
+      return "mechanicalLoads"; // Section 13
     if (nodeId.includes("_14") && nodeId.split("_").length > 1)
-      return "14. TEDI & TELI";
+      return "tediSummary"; // Section 14
     if (nodeId.includes("_15") && nodeId.split("_").length > 1)
-      return "15. TEUI Summary";
+      return "teuiSummary"; // Section 15
 
     return "Other"; // Default fallback
+  }
+
+  /**
+   * AI AGENT HELPER: Get dual-state dependency analysis
+   * Returns structured data about both Target and Reference calculation flows
+   * @returns {object} Object with targetDependencies, referenceDependencies, and combined analysis
+   */
+  function getDualStateDependencyAnalysis() {
+    const targetGraph = exportDependencyGraph("target");
+    const referenceGraph = exportDependencyGraph("reference");
+    const combinedGraph = exportDependencyGraph("both");
+
+    return {
+      target: {
+        description: "Target state dependencies (user design values)",
+        nodeCount: targetGraph.nodes.length,
+        linkCount: targetGraph.links.length,
+        graph: targetGraph,
+      },
+      reference: {
+        description: "Reference state dependencies (code compliance values)",
+        nodeCount: referenceGraph.nodes.length,
+        linkCount: referenceGraph.links.length,
+        graph: referenceGraph,
+      },
+      combined: {
+        description: "Complete dual-state dependency map",
+        nodeCount: combinedGraph.nodes.length,
+        linkCount: combinedGraph.links.length,
+        graph: combinedGraph,
+      },
+      analysis: {
+        coverageRatio: referenceGraph.nodes.length / targetGraph.nodes.length,
+        totalDependencies:
+          targetGraph.links.length + referenceGraph.links.length,
+        dualStateCompliant: referenceGraph.nodes.length > 0,
+      },
+    };
   }
 
   /**
@@ -1125,9 +1398,9 @@ TEUI.StateManager = (function () {
 
       // Check if the exact standard exists
       const exactMatch = window.TEUI.ReferenceValues[standardKey];
-      console.log("[StateManager] Exact match found?", !!exactMatch);
+      // console.log("[StateManager] Exact match found?", !!exactMatch);
       if (exactMatch) {
-        console.log("[StateManager] Standard data:", exactMatch);
+        // console.log("[StateManager] Standard data:", exactMatch);
         console.log(
           "[StateManager] d_53 in standard?",
           Object.prototype.hasOwnProperty.call(exactMatch, "d_53"),
@@ -1148,7 +1421,7 @@ TEUI.StateManager = (function () {
         : undefined;
 
     if (standardOverrideData) {
-      console.log("[StateManager] Found standard override data, applying...");
+      // console.log("[StateManager] Found standard override data, applying...");
       Object.keys(standardOverrideData).forEach((fieldId) => {
         console.log(
           `[StateManager] Checking field: ${fieldId}, value: ${standardOverrideData[fieldId]}`,
@@ -1348,11 +1621,11 @@ TEUI.StateManager = (function () {
           "info",
         );
       }
-      console.log("[StateManager] System refresh completed.");
+      // console.log("[StateManager] System refresh completed.");
       return;
     }
 
-    console.log("[StateManager] Reverting to last imported state...");
+    // console.log("[StateManager] Reverting to last imported state...");
     let revertedCount = 0;
 
     Object.entries(lastImportedState).forEach(([fieldId, importedValue]) => {
@@ -1564,6 +1837,7 @@ TEUI.StateManager = (function () {
     getAllKeys: getAllKeys,
     getDebugInfo: getDebugInfo,
     exportDependencyGraph: exportDependencyGraph,
+    getDualStateDependencyAnalysis: getDualStateDependencyAnalysis,
     loadReferenceData: loadReferenceData,
     setValueInReferenceMode: setValueInReferenceMode,
     setMuteApplicationStateUpdates: setMuteApplicationStateUpdates,
