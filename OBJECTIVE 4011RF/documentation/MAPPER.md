@@ -1543,8 +1543,8 @@ syncPatternASections(sectionIds) {
 
 **After implementing fixes:**
 
-- [ ] Import Excel file with diverse field types (text, number, dropdown, slider)
-- [ ] Verify all imported values styled blue/bold (same as manual entry)
+- [x] Import Excel file with diverse field types (text, number, dropdown, slider)
+- [x] Verify all imported values styled blue/bold (same as manual entry) ✅ **WORKING**
 - [ ] Check S04 calculations are fresh (not stale)
 - [ ] Check S07 calculations remain fresh (no regression)
 - [ ] Verify Reference import calculations are fresh
@@ -1552,6 +1552,15 @@ syncPatternASections(sectionIds) {
 - [ ] Test sliders position to imported values and show formatted display
 - [ ] Compare imported state vs manually-entered state (should be identical)
 - [ ] Check dual-state sections (Target/Reference) both calculate correctly
+
+### Known Issues Found During Testing
+
+**Issue: Reference location import not syncing to S03 (Oct 4, 2025)**
+- **Symptom**: Target location imports correctly (Milton, Ontario), but Reference location remains at default (Alexandria)
+- **Root Cause**: S03 Reference mode likely needs same `syncFromGlobalState()` pattern as Target mode
+- **Impact**: Reference climate calculations may use wrong location data
+- **Status**: Deferred - Target import working, Reference sync needs investigation
+- **Note**: S03's `publishReferenceResults()` has fallback pattern but may not be triggered after import
 
 ---
 

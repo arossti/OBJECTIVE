@@ -408,6 +408,11 @@
         console.log("[FileHandler] ✅ S03 Target state synced from import");
       }
 
+      // ✅ PHASE 2: Sync ALL Pattern A sections from global StateManager
+      // Pattern A sections use isolated DualState for state sovereignty
+      // Import populates global StateManager but isolated states need explicit sync
+      this.syncPatternASections();
+
       // Trigger recalculation after all updates AND after reference data is loaded
       if (
         this.calculator &&
@@ -431,6 +436,52 @@
           "warning",
         );
       }
+    }
+
+    /**
+     * ✅ PHASE 2: Sync Pattern A sections from global StateManager after import
+     * Pattern A sections (S02, S03, S04, S05, S06, S08, S15) use isolated DualState
+     * for state sovereignty per CHEATSHEET.md. Import populates global StateManager,
+     * but isolated states need explicit sync to use imported values in calculations.
+     */
+    syncPatternASections() {
+      // Pattern A sections per CHEATSHEET.md (lines 225-227)
+      const patternASections = [
+        { id: "sect02", name: "S02" },
+        { id: "sect03", name: "S03" }, // Already synced above, but safe to call again
+        { id: "sect04", name: "S04" },
+        { id: "sect05", name: "S05" },
+        { id: "sect06", name: "S06" },
+        { id: "sect08", name: "S08" },
+        { id: "sect15", name: "S15" },
+      ];
+
+      console.log(
+        "[FileHandler] 🔧 PHASE 2: Syncing Pattern A sections from global StateManager...",
+      );
+
+      patternASections.forEach(({ id, name }) => {
+        const section = window.TEUI?.SectionModules?.[id];
+
+        if (section?.TargetState?.syncFromGlobalState) {
+          console.log(`[FileHandler] Syncing ${name} TargetState...`);
+          section.TargetState.syncFromGlobalState();
+        } else {
+          // Not an error - section may not have syncFromGlobalState yet
+          console.log(
+            `[FileHandler] ${name} TargetState.syncFromGlobalState() not available (not yet implemented)`,
+          );
+        }
+
+        if (section?.ReferenceState?.syncFromGlobalState) {
+          console.log(`[FileHandler] Syncing ${name} ReferenceState...`);
+          section.ReferenceState.syncFromGlobalState();
+        }
+      });
+
+      console.log(
+        "[FileHandler] ✅ PHASE 2: Pattern A section sync complete",
+      );
     }
 
     // --- EXPORT LOGIC ---

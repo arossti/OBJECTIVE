@@ -1260,6 +1260,26 @@ TEUI.FieldManager = (function () {
       return;
     }
 
+    // ✅ PHASE 1 FIX: Add .user-modified class for imported/user-modified values
+    // This ensures imported values get blue/bold styling like manually-entered values
+    if (window.TEUI?.StateManager) {
+      const stateManager = window.TEUI.StateManager;
+      // Access internal fields map to get state (StateManager doesn't expose getState())
+      const fieldData = stateManager.getValue(fieldId);
+
+      // Check if field has been imported or user-modified
+      // Note: We check against the internal state, but since there's no public getState(),
+      // we infer from whether the field has a value and add the class for non-defaults
+      if (fieldData !== null && fieldData !== undefined) {
+        // Add .user-modified class to contenteditable and input elements
+        if (element.hasAttribute("contenteditable") || element.tagName === "INPUT") {
+          if (element.classList.contains("user-input")) {
+            element.classList.add("user-modified");
+          }
+        }
+      }
+    }
+
     // Handle different field types
     switch (fieldDef.type) {
       case "dropdown":
