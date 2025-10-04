@@ -652,6 +652,8 @@ class ExcelMapper {
     const worksheet = workbook.Sheets[sheetName];
     const reportWorksheet = workbook.Sheets[reportSheetName];
 
+    console.log(`[ExcelMapper] mapExcelToReferenceModel called. Sheet '${sheetName}' exists: ${!!worksheet}`);
+
     if (!worksheet) {
       console.warn(
         `Sheet named '${sheetName}' not found in the workbook. Skipping reference import.`,
@@ -659,9 +661,17 @@ class ExcelMapper {
       return {}; // Return empty object, not null - this is optional data
     }
 
+    console.log(`[ExcelMapper] Starting REFERENCE sheet processing...`);
+
     Object.entries(this.excelReferenceInputMapping).forEach(
       ([cellRef, fieldId]) => {
         const cell = worksheet[cellRef];
+
+        // 🔍 DEBUG: Log whether key cells exist
+        if (cellRef === 'H15' || cellRef === 'D13') {
+          console.log(`[ExcelMapper DEBUG] ${cellRef} exists: ${cell !== undefined}, cell:`, cell);
+        }
+
         if (cell !== undefined) {
           let extractedValue;
 
