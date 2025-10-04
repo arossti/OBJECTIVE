@@ -1893,20 +1893,35 @@ After extensive debugging session with formula detection and import sequencing, 
    - May need timing adjustments we attempted today
    - But only after confirming S02 actually exists in window.TEUI.SectionModules
 
-**Status:** 🔴 **BLOCKED** - S02 Reference import cannot work until S02 module loading issue resolved. Recommend revert and fresh approach focusing on module initialization.
+**Status:** 🔴 **BLOCKED** - ~~S02 module loading issue~~ **CORRECTED: S02 loads fine, but ref_h_15 not reaching StateManager**
 
 ---
 
-### Why S02 Module Loading is Different/Special
+### ⚠️ CORRECTED FINDINGS (After reviewing latest logs)
 
-**Hypothesis for Investigation:**
-- S02 may be conditionally loaded (feature flag?)
-- S02 may have initialization error preventing registration
-- S02 may not be included in 4011-init.js module loading sequence
-- S02 filename or path may be incorrect in index.html script tags
+**S02 IS loading correctly!** Initial diagnosis was wrong. Logs show:
+```
+S02 ReferenceState: Synced i_17 = XXXX from global StateManager (ref_i_17)
+S02 ReferenceState: Synced l_12 = $0.1300 from global StateManager (ref_l_12)
+...
+```
 
-**Next Steps:**
-1. Check index.html for S02 script tag
-2. Check 4011-init.js for S02 initialization
-3. Check browser console for S02-related errors on page load
-4. Verify sections/4012-Section02.js file exists and has no syntax errors
+**THE REAL ISSUE:** S02 syncs **all fields EXCEPT h_15** (conditioned area)
+
+**Evidence:**
+1. ✅ S02 module loads and syncs i_16, i_17, l_12-l_16
+2. ✅ ExcelMapper H15 → ref_h_15 mapping exists
+3. ✅ Formula detection works (reads REPORT!H15 = 11167)
+4. ❌ ref_h_15 NOT appearing in sync logs (StateManager.getValue('ref_h_15') returns null/undefined)
+
+**Root Cause:**
+ref_h_15 is being read from REFERENCE sheet but **not being stored in StateManager** during import. The value gets read correctly (11167) but doesn't make it into StateManager.fields.
+
+**Investigation Needed (Evening Session):**
+1. Add console log in FileHandler.updateStateFromImportData to confirm ref_h_15 reaches the function
+2. Check if ref_h_15 fails validation (has FieldManager definition? Type check passes?)
+3. Check if StateManager.setValue('ref_h_15', 11167, 'imported') is actually being called
+4. Check if ref_h_15 gets overwritten by something after import
+
+**Working Theory:**
+The debug logging we added should show "Reference field imported: ref_h_15 = 11167" - if it doesn't appear, the import is failing validation or hitting an early return in updateStateFromImportData().
