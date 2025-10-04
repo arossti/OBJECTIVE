@@ -662,10 +662,20 @@ class ExcelMapper {
     }
 
     console.log(`[ExcelMapper] Starting REFERENCE sheet processing...`);
+    console.log(`[ExcelMapper] REFERENCE worksheet exists:`, !!worksheet);
+    console.log(`[ExcelMapper] Sample cells from REFERENCE:`, Object.keys(worksheet).slice(0, 20));
 
     Object.entries(this.excelReferenceInputMapping).forEach(
       ([cellRef, fieldId]) => {
         const cell = worksheet[cellRef];
+
+        // 🔍 DEBUG: Enhanced logging for H15
+        if (cellRef === 'H15') {
+          console.log(`[ExcelMapper H15] Checking cell H15...`);
+          console.log(`[ExcelMapper H15] Cell exists:`, cell !== undefined);
+          console.log(`[ExcelMapper H15] Cell object:`, cell);
+          console.log(`[ExcelMapper H15] Field ID:`, fieldId);
+        }
 
         // 🔍 DEBUG: Log whether key cells exist
         if (cellRef === 'H15' || cellRef === 'D13') {

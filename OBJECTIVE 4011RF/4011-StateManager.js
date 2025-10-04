@@ -346,6 +346,14 @@ TEUI.StateManager = (function () {
     //   console.trace("[StateManager] h_10 setValue stack trace:");
     // }
 
+    // 🔍 DEBUG: Track ref_h_15 to catch who overwrites imported value
+    if (fieldId === "ref_h_15") {
+      console.log(
+        `[StateManager DEBUG] ref_h_15 setValue: "${value}" (state: ${state}, prev: ${fields.get(fieldId)?.value})`,
+      );
+      console.trace("[StateManager] ref_h_15 setValue stack trace:");
+    }
+
     // Check if we're in Reference Mode and this is an independently editable field
     if (
       window.TEUI &&
