@@ -1346,8 +1346,10 @@ window.TEUI.SectionModules.sect04 = (function () {
     
     // Calculations
     calculateAll: calculateAll,
-    
-    // Dual-state management
-    ModeManager: ModeManager
+
+    // Dual-state management (✅ Phase 2: Export state objects for import sync)
+    ModeManager: ModeManager,
+    TargetState: TargetState,
+    ReferenceState: ReferenceState
   };
 })();

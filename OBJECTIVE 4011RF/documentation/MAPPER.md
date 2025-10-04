@@ -1545,7 +1545,7 @@ syncPatternASections(sectionIds) {
 
 - [x] Import Excel file with diverse field types (text, number, dropdown, slider)
 - [x] Verify all imported values styled blue/bold (same as manual entry) ✅ **WORKING**
-- [ ] Check S04 calculations are fresh (not stale)
+- [x] Check S04 calculations are fresh (not stale) ✅ **WORKING** (after export fix)
 - [ ] Check S07 calculations remain fresh (no regression)
 - [ ] Verify Reference import calculations are fresh
 - [ ] Test dropdowns position to imported values
@@ -1621,7 +1621,22 @@ return {
 - Export structure prevents access ❌
 - Once exports are fixed, S04 sync should work immediately
 
-**Status:** Root cause identified - simple export fix needed
+**Fix Applied (Oct 4, 2025):**
+Added TargetState and ReferenceState to S04 exports ([4012-Section04.js:1352-1353](../sections/4012-Section04.js#L1352-1353)):
+```javascript
+return {
+  ModeManager: ModeManager,
+  TargetState: TargetState,      // ✅ ADDED
+  ReferenceState: ReferenceState  // ✅ ADDED
+};
+```
+
+**Result:** ✅ **S04 calculations now fresh after import!**
+- Sync logs appear in console confirming bridge from global StateManager → isolated DualState
+- Calculations update immediately with imported utility bill values
+- No manual recalculation needed
+
+**Status:** ✅ RESOLVED - S04 import working correctly
 
 ---
 
