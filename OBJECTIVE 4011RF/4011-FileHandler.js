@@ -138,12 +138,28 @@
         return;
       }
 
-      this.updateStateFromImportData(importedData);
+      this.updateStateFromImportData(importedData, 0, false);
 
       // Import REFERENCE data from REFERENCE sheet (optional)
       console.log("[FileHandler DEBUG] About to call processImportedExcelReference");
       this.processImportedExcelReference(workbook);
       console.log("[FileHandler DEBUG] Returned from processImportedExcelReference");
+
+      // ✅ CRITICAL: Sync Pattern A sections AFTER both Target and Reference imports
+      console.log("[FileHandler] 🔧 Syncing all Pattern A sections after BOTH imports complete...");
+      this.syncPatternASections();
+      console.log("[FileHandler] ✅ Pattern A sections synced");
+
+      // Trigger recalculation after both imports and sync
+      if (this.calculator && typeof this.calculator.calculateAll === "function") {
+        this.calculator.calculateAll();
+
+        // Refresh S03 UI after calculateAll
+        if (window.TEUI?.SectionModules?.sect03?.ModeManager?.refreshUI) {
+          window.TEUI.SectionModules.sect03.ModeManager.refreshUI();
+          console.log("[FileHandler] ✅ S03 UI refreshed after calculateAll()");
+        }
+      }
     }
 
     processImportedExcelReference(workbook) {
@@ -166,9 +182,14 @@
         return;
       }
 
+      console.log("[FileHandler DEBUG] About to call updateStateFromImportData for", Object.keys(referenceData).length, "reference fields");
+      console.log("[FileHandler DEBUG] First 5 reference fields:", Object.keys(referenceData).slice(0, 5));
+
       // Import reference data without triggering full recalculation
       // (main recalculation happens after target data import)
       this.updateStateFromImportData(referenceData, 0, true);
+
+      console.log("[FileHandler DEBUG] Returned from updateStateFromImportData");
       this.showStatus(
         `Reference import complete. ${Object.keys(referenceData).length} reference fields imported.`,
         "success",
@@ -266,10 +287,16 @@
       csvSkippedCount = 0,
       skipRecalculation = false,
     ) {
+      console.log("[FileHandler DEBUG] updateStateFromImportData CALLED with", Object.keys(importedData).length, "fields, skipRecalculation=", skipRecalculation);
+      console.log("[FileHandler DEBUG] stateManager exists:", !!this.stateManager, "fieldManager exists:", !!this.fieldManager);
+
       if (!this.stateManager || !this.fieldManager) {
+        console.error("[FileHandler ERROR] StateManager or FieldManager not available! stateManager:", !!this.stateManager, "fieldManager:", !!this.fieldManager);
         this.showStatus("StateManager or FieldManager not available.", "error");
         return;
       }
+
+      console.log("[FileHandler DEBUG] Passed validation checks, starting forEach loop...");
       this.showStatus("Updating application state...", "info");
       let updatedCount = 0;
       let skippedValidationCount = 0;
@@ -296,7 +323,7 @@
           if (isReferenceField) {
             this.stateManager.setValue(fieldId, parsedValue, "imported");
             updatedCount++;
-            // console.log(`[FileHandler] Reference field imported: ${fieldId} = ${parsedValue}`);
+            console.log(`[FileHandler] Reference field imported: ${fieldId} = ${parsedValue}`);
             return; // Done with this reference field
           }
 
@@ -399,49 +426,12 @@
         }
       }
 
-      // ✅ CRITICAL: Sync Pattern A sections (S03) BEFORE calculateAll()
-      // Must happen before calculateAll because S03's city dropdown update will overwrite h_19
-      // if it doesn't find the city in DualState (lines 1178-1184 in Section03)
-      if (window.TEUI?.SectionModules?.sect03?.TargetState) {
-        console.log(
-          "[FileHandler] 🔧 Syncing S03 TargetState from global StateManager BEFORE calculateAll...",
-        );
-        window.TEUI.SectionModules.sect03.TargetState.syncFromGlobalState([
-          "d_19",
-          "h_19",
-          "i_21",
-        ]);
-        console.log("[FileHandler] ✅ S03 Target state synced from import");
-      }
+      // ✅ REMOVED: syncPatternASections() now called AFTER both Target and Reference imports
+      // See processImportedExcel() for the new location
 
-      // ✅ PHASE 2: Sync ALL Pattern A sections from global StateManager
-      // Pattern A sections use isolated DualState for state sovereignty
-      // Import populates global StateManager but isolated states need explicit sync
-      this.syncPatternASections();
-
-      // Trigger recalculation after all updates AND after reference data is loaded
-      if (
-        this.calculator &&
-        typeof this.calculator.calculateAll === "function"
-      ) {
-        this.calculator.calculateAll();
-
-        // Refresh S03 UI after calculateAll to display final values
-        if (window.TEUI?.SectionModules?.sect03?.ModeManager?.refreshUI) {
-          window.TEUI.SectionModules.sect03.ModeManager.refreshUI();
-          console.log("[FileHandler] ✅ S03 UI refreshed after calculateAll()");
-        }
-
-        this.showStatus(
-          `Import complete. ${updatedCount} fields updated. ${csvSkippedCount + skippedValidationCount} rows/fields skipped.`,
-          "success",
-        );
-      } else {
-        this.showStatus(
-          "Import finished, but could not trigger recalculation.",
-          "warning",
-        );
-      }
+      console.log(
+        `[FileHandler] Target import complete. ${updatedCount} fields updated. ${csvSkippedCount + skippedValidationCount} rows/fields skipped.`,
+      );
     }
 
     /**
