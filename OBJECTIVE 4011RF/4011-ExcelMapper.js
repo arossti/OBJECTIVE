@@ -687,9 +687,10 @@ class ExcelMapper {
           }
 
           // ✅ Check if cell contains a formula referencing REPORT sheet
-          if (cell.f && cell.f.startsWith('=REPORT!')) {
-            // Extract REPORT sheet cell reference (e.g., "=REPORT!H15" → "H15")
-            const reportCellRef = cell.f.replace(/^=REPORT!/, '');
+          // SheetJS stores formulas WITHOUT the leading = (e.g., "REPORT!H15" not "=REPORT!H15")
+          if (cell.f && (cell.f.startsWith('REPORT!') || cell.f.startsWith('=REPORT!'))) {
+            // Extract REPORT sheet cell reference (e.g., "REPORT!H15" → "H15")
+            const reportCellRef = cell.f.replace(/^=?REPORT!/, '');
 
             // Read from REPORT sheet instead
             const reportCell = reportWorksheet?.[reportCellRef];
