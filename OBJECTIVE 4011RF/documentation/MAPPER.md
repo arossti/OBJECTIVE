@@ -1969,3 +1969,58 @@ This should be addressed **AFTER** solving Reference state import issue, as it m
 - FileHandler.updateStateFromImportData() may need to re-enable listeners after import
 - calculateAll() may need explicit cross-section dependency refresh
 - StateManager may need to broadcast "values changed" event after import completes
+
+---
+
+## 🎯 BREAKTHROUGH: ref_h_15 Overwrite Identified (Oct 4, 3:45pm)
+
+**The Smoking Gun (from Logs.md):**
+```
+Line 9282:  [FileHandler] Reference field imported: ref_h_15 = 11167 ✅
+Line 10008: S02 TargetState: Synced h_15 = 11167 from global StateManager ✅
+Line 10024: S02 ReferenceState: Synced h_15 = 1427.20 from global StateManager (ref_h_15) ❌
+```
+
+**Timeline Analysis:**
+1. ✅ ExcelMapper reads H15 formula `=REPORT!H15` → 11167 (line 8920)
+2. ✅ FileHandler imports ref_h_15 = 11167 to StateManager (line 9282)
+3. ✅ S02 TargetState syncs h_15 = 11167 correctly (line 10008)
+4. ❌ **BETWEEN lines 10008-10024:** Something overwrites StateManager ref_h_15 to 1427.20
+5. ❌ S02 ReferenceState syncs the WRONG value 1427.20 (line 10024)
+
+**What Happens Between Target and Reference Sync:**
+- Lines 10008-10017: S02.TargetState.syncFromGlobalState() completes
+- Line 10017: FileHandler calls S02.ReferenceState.syncFromGlobalState()
+- **Hypothesis:** TargetState sync triggers S02 calculations/listeners which publish reference defaults
+
+**Debug Strategy Added (Commit a7b3ecc):**
+Added StateManager.setValue() logging for ref_h_15:
+```javascript
+if (fieldId === "ref_h_15") {
+  console.log(`[StateManager DEBUG] ref_h_15 setValue: "${value}" (state: ${state}, prev: ${fields.get(fieldId)?.value})`);
+  console.trace("[StateManager] ref_h_15 setValue stack trace:");
+}
+```
+
+**Next Test (Evening/Tomorrow):**
+1. Hard refresh browser
+2. Import Excel file
+3. Check logs for ALL ref_h_15 setValue calls with stack traces
+4. Identify which function overwrites 11167 → 1427.20
+5. Fix the overwrite (likely in S01/S02 initialization or calculation publishing)
+
+**Expected Log Output:**
+```
+[StateManager DEBUG] ref_h_15 setValue: "11167" (state: imported, prev: undefined)
+[StateManager] ref_h_15 setValue stack trace:
+    at setValue (StateManager.js:350)
+    at FileHandler.updateStateFromImportData (FileHandler.js:326)
+    ...
+[StateManager DEBUG] ref_h_15 setValue: "1427.20" (state: calculated, prev: 11167)  ← THE CULPRIT!
+[StateManager] ref_h_15 setValue stack trace:
+    at setValue (StateManager.js:350)
+    at Section01.publishDefaults (Section01.js:???)  ← Or wherever it is
+    ...
+```
+
+**Once Identified:** Remove/fix the code that publishes reference defaults after import.
