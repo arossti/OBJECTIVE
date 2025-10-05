@@ -910,22 +910,43 @@ The TEUI 4.011 Calculator has been successfully transformed into a modular, main
   The term "state" has **two distinct meanings** in this application:
 
   1. **Value States** (metadata about how a value was set):
-     - `DEFAULT` - Initial value at app startup
+
+     **For INPUT/EDITABLE fields (h_15, d_13, ref_f_85, etc):**
+     - `DEFAULT` - Initial value at app startup (weakest, replaced by any action)
      - `USER-MODIFIED` - User typed/selected value in UI
+     - `OVER-RIDDEN` - ReferenceValues overlay applied (typically Reference model fields like ref_f_85 RSI values)
      - `IMPORTED` - Value loaded from Excel file
-     - `CALCULATED` - Computed result (for calculated fields ONLY)
-     - `DERIVED` - Secondary calculation (for calculated fields ONLY)
+
+     **For CALCULATED fields (j_32, k_32, ref_j_32, etc) - ONLY:**
+     - `CALCULATED` - Computed result from input values
+     - `DERIVED` - Secondary calculation derived from other calculated values
 
   2. **Model States** (which building model the value belongs to):
-     - `Target` - The proposed/design building model
-     - `Reference` - The code-compliant baseline building model
+     - `Target` - The proposed/design building model (h_15, d_13, etc)
+     - `Reference` - The code-compliant baseline building model (ref_h_15, ref_d_13, etc)
 
   **Critical Rules:**
-  - **INPUT fields** (h_15, d_13, etc) can have: DEFAULT, USER-MODIFIED, IMPORTED states
-  - **CALCULATED fields** (j_32, k_32, etc) ONLY have: CALCULATED, DERIVED states
-  - **Model states** are orthogonal - both Target and Reference can have any value state
-  - A Reference calculated value (ref_j_32 with CALCULATED state) can be published to StateManager for consumption by other sections
-  - **Planned improvement**: Enforce value state rules to prevent CALCULATED state on INPUT fields (see MAPPER.md for details)
+
+  - **INPUT fields** (h_15, ref_f_85, etc):
+    - Can have: DEFAULT → USER-MODIFIED, OVER-RIDDEN, or IMPORTED
+    - Last write wins among USER-MODIFIED, OVER-RIDDEN, IMPORTED (non-hierarchical)
+    - Example: ref_f_85 can be DEFAULT(0.5) → OVER-RIDDEN(0.7) → USER-MODIFIED(0.9) → IMPORTED(0.6)
+    - **NEVER** have CALCULATED or DERIVED states
+
+  - **CALCULATED fields** (j_32, ref_j_32, etc):
+    - **ONLY** have CALCULATED or DERIVED states
+    - Cannot be USER-MODIFIED, IMPORTED, or OVER-RIDDEN
+    - Immutable computation results that flow through calculation chain
+
+  - **Model States are orthogonal**:
+    - Both Target and Reference can have any value state
+    - A Reference calculated value (ref_j_32 with CALCULATED state) can be published to StateManager for other sections
+    - Reference OVER-RIDDEN values (ref_f_85) are applied via ReferenceValues.js based on d_13 selection
+
+  - **Planned improvements** (see MAPPER.md for details):
+    - Add `VALUE_STATES.OVER_RIDDEN = "over-ridden"` constant (currently ReferenceValues uses "user-modified" incorrectly)
+    - Enforce value state rules to prevent CALCULATED state on INPUT fields
+    - Add state validation in setValue() to reject invalid state/field combinations
 
 - **Field Management**: Consolidated system for defining, rendering, and updating UI elements
 - **DOM-Based Field Identification**: Consistent ID system mapping directly to Excel cell references for both legacy support as well as import and export
