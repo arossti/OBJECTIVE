@@ -1730,6 +1730,27 @@ window.TEUI.SectionModules.sect03 = (function () {
       calculateGroundFacing();
       updateCoolingDependents();
       updateCriticalOccupancyFlag();
+
+      // ✅ FIX: Store Target calculation results to StateManager (was missing!)
+      storeTargetResults();
+
+      // ✅ CRITICAL: Force S12 recalculation after climate data publication
+      // This ensures S12 gets updated climate data even if listeners fail
+      if (window.TEUI?.SectionModules?.sect12) {
+        // Check if S12 is properly initialized
+        if (!window.TEUI.SectionModules.sect12.isInitialized) {
+          window.TEUI.SectionModules.sect12.forceInitialization();
+        }
+        
+        if (window.TEUI.SectionModules.sect12.calculateAll) {
+          window.TEUI.SectionModules.sect12.calculateAll();
+          
+          // Ensure DOM display values are updated after forced calculation
+          if (window.TEUI.SectionModules.sect12.ModeManager?.updateCalculatedDisplayValues) {
+            window.TEUI.SectionModules.sect12.ModeManager.updateCalculatedDisplayValues();
+          }
+        }
+      }
     } finally {
       // Restore prior UI mode
       ModeManager.currentMode = originalMode;
@@ -1819,6 +1840,40 @@ window.TEUI.SectionModules.sect03 = (function () {
 
     console.log(
       "[S03] Reference CALCULATED results stored (climate data + setpoints - INPUT fields excluded)",
+    );
+  }
+
+  /**
+   * Store Target Model calculation results to StateManager for downstream sections
+   * ✅ FIX (Oct 5, 2025): Added missing Target results storage
+   * This publishes ONLY the calculated values that aren't already published in the initial climate data loop
+   */
+  function storeTargetResults() {
+    if (!window.TEUI?.StateManager) return;
+
+    // ✅ ONLY publish values CALCULATED by the calculation functions (not from climate lookup)
+    // NOTE: d_20, d_21, j_19, d_23, d_24, l_22 are already published in the initial climate data loop
+    const targetResults = {
+      // ✅ Calculated setpoints and derived values (ONLY these need additional publishing)
+      h_23: TargetState.getValue("h_23"), // Target heating setpoint (CALCULATED from occupancy) ✅
+      h_24: TargetState.getValue("h_24"), // Target cooling setpoint (CALCULATED from occupancy) ✅
+      d_22: TargetState.getValue("d_22"), // Target GF HDD (CALCULATED from h_23) ✅ - This was missing!
+      h_22: TargetState.getValue("h_22"), // Target GF CDD (CALCULATED from h_24) ✅ - This was missing!
+    };
+
+    // Store unprefixed for downstream sections (Target mode)
+    Object.entries(targetResults).forEach(([fieldId, value]) => {
+      if (value !== null && value !== undefined) {
+        window.TEUI.StateManager.setValue(
+          fieldId,
+          String(value),
+          "calculated",
+        );
+      }
+    });
+
+    console.log(
+      "[S03] Target CALCULATED results stored (setpoints + derived values only - climate data already published)",
     );
   }
 
