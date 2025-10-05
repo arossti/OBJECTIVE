@@ -2195,51 +2195,154 @@ The current implementation:
 4. S02 calculates h_15 = 1427.20 (calculated) using stale state
 5. Calculated value **overwrites user's choice** ❌
 
-**Required State Hierarchy (User Requirements):**
+**CORRECTED State Hierarchy (Actual Application Logic):**
+
+**Key Principle:** States apply ONLY to INPUT FIELDS (number/text/slider/dropdown). Calculated/Derived fields are IMMUTABLE - they never receive state changes.
+
+**Input Field State Hierarchy:**
 ```
-┌─────────────────────────┐
-│  USER-MODIFIED (KING)   │ ← Never overwrite
-├─────────────────────────┤
-│  IMPORTED               │ ← Batch restore
-├─────────────────────────┤
-│  CALCULATED             │ ← Derived values
-├─────────────────────────┤
-│  DERIVED                │ ← Secondary calculations
-├─────────────────────────┤
-│  DEFAULT (weakest)      │ ← Only when nothing else exists
-└─────────────────────────┘
+For USER INPUT FIELDS ONLY (h_15, d_13, etc):
+
+IMPORTED (Most Recent Write)
+    ↓
+USER-MODIFIED (Last User Edit)
+    ↓
+REFERENCE-OVERRIDE (Standard Change)
+    ↓
+DEFAULT (Initialization Only)
+
+Special Rules:
+1. IMPORT replaces EVERYTHING (last write wins)
+2. USER-MODIFIED replaces REFERENCE-OVERRIDE
+3. REFERENCE-OVERRIDE replaces USER-MODIFIED (when d_13 changes)
+4. USER-MODIFIED after override → USER-MODIFIED wins (until next d_13 change)
+5. DEFAULT only exists at initialization, replaced by ANY action
 ```
 
-**Implementation Required:**
+**What This Means:**
+
+**For h_15 (Conditioned Area) - INPUT FIELD:**
+- DEFAULT: 1427.20 (app initialization) ← Weakest
+- User types 11167 → USER-MODIFIED (replaces default)
+- User changes d_13 → REFERENCE-OVERRIDE applies (may change h_15 if defined)
+- User types 5000 → USER-MODIFIED (replaces override)
+- User imports Excel → IMPORTED (replaces user edit) ← Strongest for that moment
+- User types 8000 → USER-MODIFIED (replaces import)
+
+**For Calculated Fields (j_32, k_32, etc) - NEVER RECEIVE STATE:**
+- Always computed from inputs
+- Never have DEFAULT, USER-MODIFIED, or IMPORTED state
+- Cannot be overwritten by any state system
+- Flow through calculation chain immutably
+
+**The Real Bug in S02:**
+```javascript
+// Section02.js:839 - WRONG APPROACH
+storeReferenceResults() {
+  const referenceResults = {
+    h_15: ReferenceState.getValue("h_15"), // ← Gets from isolated state
+  };
+
+  window.TEUI.StateManager.setValue(
+    `ref_h_15`,           // ← INPUT FIELD
+    referenceResults.h_15, // ← Value from isolated state
+    "calculated"          // ← WRONG! h_15 is INPUT, not CALCULATED
+  );
+}
+
+// Why this is wrong:
+// 1. h_15 is an INPUT field (conditioned area)
+// 2. S02 is "publishing" isolated state back to global StateManager
+// 3. Using "calculated" state for an INPUT field
+// 4. During import, isolated state is stale (not synced yet)
+// 5. Overwrites fresh import with stale default
+
+// CORRECT APPROACH:
+// S02 should NOT publish input fields back to StateManager!
+// Only CALCULATED outputs (like d_16 carbon target) should be published.
+// Input fields flow: Global StateManager → Isolated State (one-way)
+```
+
+**Why S02 Does This (Intent vs Implementation):**
+- **Intent:** Store S02's calculated Reference values for downstream sections
+- **Implementation:** Publishes ALL fields including inputs (h_15)
+- **Problem:** Inputs shouldn't be "calculated" - they're user data!
+
+**The Fix:**
+```javascript
+storeReferenceResults() {
+  const referenceResults = {
+    // ✅ ONLY publish CALCULATED outputs, NOT inputs
+    d_16: ReferenceState.getValue("d_16"), // Carbon target (CALCULATED)
+    // ❌ REMOVE h_15, h_12, h_13, etc (these are INPUTS)
+  };
+
+  Object.entries(referenceResults).forEach(([fieldId, value]) => {
+    window.TEUI.StateManager.setValue(
+      `ref_${fieldId}`,
+      String(value),
+      "calculated" // OK for d_16, which IS calculated
+    );
+  });
+}
+```
+
+**CORRECTED Implementation Required:**
 
 ```javascript
-// StateManager.js - Add state strength comparison
-const STATE_PRIORITY = {
-  [VALUE_STATES.USER_MODIFIED]: 5,  // Highest - user intent is sacred
-  [VALUE_STATES.IMPORTED]: 4,        // Batch restoration
-  [VALUE_STATES.CALCULATED]: 3,      // Derived values
-  [VALUE_STATES.DERIVED]: 2,         // Secondary calculations
-  [VALUE_STATES.DEFAULT]: 1          // Lowest - fallback only
-};
+// StateManager.js - Simplified rules matching actual application logic
 
 function setValue(fieldId, value, state = VALUE_STATES.USER_MODIFIED) {
   // ... existing code ...
 
   const field = fields.get(fieldId);
 
-  // ✅ STATE HIERARCHY CHECK: Only allow overwrite if new state is stronger
-  const currentPriority = STATE_PRIORITY[field.state] || 0;
-  const newPriority = STATE_PRIORITY[state] || 0;
-
-  if (newPriority < currentPriority) {
-    console.log(
-      `[StateManager] Rejected ${state} for ${fieldId} - current state ${field.state} has higher priority`
-    );
-    return false; // Reject weaker state
+  // ✅ RULE 1: CALCULATED/DERIVED states ONLY for calculated fields
+  // Input fields should NEVER receive CALCULATED/DERIVED state
+  if (state === VALUE_STATES.CALCULATED || state === VALUE_STATES.DERIVED) {
+    // Allow for calculated fields (j_32, k_32, etc)
+    // But log warning if trying to set on known input fields
+    const inputFields = ['h_15', 'd_13', 'h_12', 'h_13', 'h_14', /* ... */];
+    if (inputFields.includes(fieldId.replace('ref_', ''))) {
+      console.warn(
+        `[StateManager] WARNING: Attempting to set CALCULATED state on INPUT field ${fieldId}!`
+      );
+      // Still allow it for now (backward compatibility) but log
+    }
   }
 
-  // ✅ SPECIAL CASE: Same priority level - allow update
-  // (e.g., multiple calculated updates, multiple imports)
+  // ✅ RULE 2: Input field state transitions
+  // For INPUT fields only:
+  // - IMPORTED always wins (replaces everything)
+  // - USER-MODIFIED replaces REFERENCE-OVERRIDE
+  // - REFERENCE-OVERRIDE replaces USER-MODIFIED (special case)
+  // - DEFAULT is replaced by anything
+
+  if (field.state === VALUE_STATES.USER_MODIFIED) {
+    // User edit exists - only IMPORTED or new USER-MODIFIED can replace
+    if (state === VALUE_STATES.DEFAULT || state === VALUE_STATES.CALCULATED) {
+      console.log(
+        `[StateManager] Rejected ${state} for ${fieldId} - USER-MODIFIED has priority`
+      );
+      return false;
+    }
+    // REFERENCE-OVERRIDE can replace USER-MODIFIED (d_13 change scenario)
+    // IMPORTED always replaces
+    // USER-MODIFIED replaces USER-MODIFIED (update)
+  }
+
+  if (field.state === VALUE_STATES.IMPORTED) {
+    // Import exists - only USER-MODIFIED or new IMPORTED can replace
+    if (state === VALUE_STATES.DEFAULT || state === VALUE_STATES.CALCULATED) {
+      console.log(
+        `[StateManager] Rejected ${state} for ${fieldId} - IMPORTED has priority`
+      );
+      return false;
+    }
+  }
+
+  // ✅ RULE 3: DEFAULT is always replaced (weakest)
+  // No check needed - anything can replace DEFAULT
 
   if (field.value === value && field.state === state) {
     return false;
