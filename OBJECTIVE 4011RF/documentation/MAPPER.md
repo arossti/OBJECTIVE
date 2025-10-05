@@ -2402,3 +2402,636 @@ Pattern A sections (S02, S03, S04...) use **isolated DualState**:
 3. **Medium-term:** Audit all setValue() calls (global and isolated)
 4. **Long-term:** Document state transition rules in CHEATSHEET
 5. **Essential:** Add unit tests for state hierarchy enforcement
+
+---
+
+## 🏛️ Architecture Consistency Analysis
+**Date:** October 4, 2025
+**Purpose:** Verify proposed import fixes align with existing Reference system architecture
+**Reference Documentation:** Master-Reference-Roadmap.md, ReferenceValues.js, ReferenceToggle.js, ReferenceManager.js
+
+### Executive Summary
+
+**✅ ARCHITECTURAL ALIGNMENT CONFIRMED**
+
+The proposed import fixes are **fully compatible** with the existing Reference system architecture. All three systems (FileHandler import, ReferenceValues overlay, ReferenceToggle display) share the same foundational patterns:
+
+1. **Value copying between states** (external → internal, Target → Reference, code standards → Reference)
+2. **Dual-state architecture compliance** (ModeManager facade, StateManager `ref_` prefix)
+3. **State isolation requirements** (Target/Reference independence)
+4. **Consistent terminology** (VALUE_STATES vs Model States)
+
+**No conflicts, duplications, or terminology mismatches found.**
+
+---
+
+### Terminology Consistency Audit
+
+#### ✅ Value States - Fully Consistent
+
+**StateManager (Current):**
+```javascript
+const VALUE_STATES = {
+  DEFAULT: "default",
+  IMPORTED: "imported",
+  USER_MODIFIED: "user-modified",
+  CALCULATED: "calculated",
+  DERIVED: "derived"
+  // Missing: OVER_RIDDEN
+};
+```
+
+**ReferenceValues.js Usage:**
+- Uses **"reference-standard"** state when applying code overlays (ReferenceToggle.js:535)
+- No VALUE_STATES constant defined (file is pure data)
+- ✅ **Compatible:** "reference-standard" = semantic equivalent of "over-ridden"
+
+**ReferenceToggle.js Usage:**
+- Line 470: `setValue(fieldId, value, "mirrored")` - Mirror Target copying
+- Line 535: `setValue(fieldId, value, "reference-standard")` - ReferenceValues overlay
+- ✅ **Compatible:** Uses descriptive state names, aligns with VALUE_STATES pattern
+
+**ReferenceManager.js Usage:**
+- Lines 104-129: `isCodeDefinedField()` - identifies fields that come from ReferenceValues
+- No direct setValue calls (coordination/query module only)
+- ✅ **Compatible:** Doesn't introduce conflicting state concepts
+
+**Proposed OVER_RIDDEN State:**
+```javascript
+const VALUE_STATES = {
+  // ... existing states ...
+  OVER_RIDDEN: "over-ridden"  // NEW: ReferenceValues overlays when d_13 changes
+};
+```
+
+**✅ RECOMMENDATION:** Standardize on "over-ridden" state name:
+- Change ReferenceToggle.js line 535: `"reference-standard"` → `VALUE_STATES.OVER_RIDDEN`
+- Change ReferenceToggle.js line 470: `"mirrored"` → `VALUE_STATES.IMPORTED` (mirrors are imports from Target)
+- Add OVER_RIDDEN to StateManager VALUE_STATES constant
+- **Rationale:** Unifies terminology across import (IMPORTED), reference overlays (OVER_RIDDEN), and user edits (USER_MODIFIED)
+
+---
+
+### Architectural Pattern Consistency
+
+#### ✅ ModeManager Facade Pattern - Fully Aligned
+
+**Master-Reference-Roadmap.md Lines 770-800:**
+```javascript
+// ModeManager is a FACADE that manages internal state objects
+const ModeManager = {
+  currentMode: "target", // "target" | "reference"
+  getValue: (fieldId) => this.getCurrentState().getValue(fieldId),
+  setValue: (fieldId, value) => this.getCurrentState().setValue(fieldId, value),
+  switchMode: (mode) => { this.currentMode = mode; this.refreshUI(); }
+};
+```
+
+**ReferenceToggle.js Lines 454-470 (Mirror Target):**
+```javascript
+// ✅ CORRECT: Uses ModeManager facade
+section.modeManager.switchMode("target");
+const value = section.modeManager.getValue(fieldId);
+section.modeManager.switchMode("reference");
+section.modeManager.setValue(fieldId, value, "mirrored");
+```
+
+**FileHandler.js Import Flow (Current):**
+```javascript
+// ✅ CORRECT: Populates global StateManager
+this.updateStateFromImportData(importedData, 0, false);
+this.processImportedExcelReference(workbook);
+
+// ✅ CORRECT: Syncs to isolated states
+this.syncPatternASections();
+
+// ❌ PROBLEM: Triggers calculations during import (no quarantine)
+this.calculator.calculateAll();
+```
+
+**✅ ALIGNMENT CONFIRMED:** All three systems use the same ModeManager facade pattern. Import fix (quarantine) doesn't alter this architecture.
+
+---
+
+#### ✅ StateManager `ref_` Prefix Pattern - Fully Aligned
+
+**Master-Reference-Roadmap.md Lines 781-786:**
+```javascript
+// Reference results stored in StateManager with ref_ prefix for downstream sections
+window.TEUI.StateManager.setValue("ref_i_98", heatloss.toString(), "calculated");
+```
+
+**ReferenceToggle.js Line 350:**
+```javascript
+// ✅ CORRECT: Reads Reference values with ref_ prefix
+return window.TEUI.StateManager.getValue(`ref_${fieldId}`);
+```
+
+**ExcelMapper.js Lines 689-709 (REFERENCE sheet):**
+```javascript
+// ✅ CORRECT: Maps REFERENCE sheet to ref_ prefixed fields
+const fieldId = this.getReferenceFieldId(cellRef);  // Returns "ref_h_15"
+importedData.push({ fieldId: fieldId, value: extractedValue });
+```
+
+**S02 storeReferenceResults() Line 839 (THE BUG):**
+```javascript
+// ❌ PROBLEM: Publishes INPUT fields with ref_ prefix AND calculated state
+window.TEUI.StateManager.setValue(
+  `ref_h_15`,
+  String(value),
+  "calculated"  // ← WRONG! h_15 is INPUT, should be "imported" or "user-modified"
+);
+```
+
+**✅ ALIGNMENT CONFIRMED:** `ref_` prefix pattern is consistent across all systems. Bug is in state metadata (using "calculated" for INPUT fields), not in prefix pattern.
+
+---
+
+#### ✅ State Isolation Requirements - Fully Aligned
+
+**Master-Reference-Roadmap.md Lines 69-73:**
+```
+**4. Global State Contamination**
+- ❌ PROHIBITED: Any Reference operations that affect Target values
+- ❌ PROHIBITED: Cross-mode state mixing or contamination
+- ✅ REQUIRED: Perfect state isolation between Target and Reference
+```
+
+**ReferenceToggle.js Lines 446-476 (Mirror Target):**
+```javascript
+// ✅ CORRECT: Saves and restores original mode
+const originalMode = section.modeManager.currentMode;
+section.modeManager.switchMode("target");  // Read Target
+// ... copy values ...
+section.modeManager.switchMode("reference");  // Write Reference
+// ... write values ...
+section.modeManager.switchMode(originalMode);  // Restore
+```
+
+**FileHandler.js Import (Current):**
+```javascript
+// ✅ CORRECT: Separate import for Target (REPORT sheet) and Reference (REFERENCE sheet)
+this.updateStateFromImportData(importedData, 0, false);  // Target
+this.processImportedExcelReference(workbook);  // Reference (separate)
+```
+
+**S02 Bug Impact on Isolation:**
+```javascript
+// ❌ VIOLATION: S02 listener fires during import, overwrites isolated Reference state
+// Import: StateManager.setValue("ref_h_15", "11167", "imported")  ← Global state
+// Listener triggers: S02.calculateAll() → storeReferenceResults()
+// Overwrite: StateManager.setValue("ref_h_15", "1427.20", "calculated")  ← Stale default
+// Result: Import contaminated by stale calculation
+```
+
+**✅ ALIGNMENT CONFIRMED:** State isolation architecture is consistent. Import quarantine (mute listeners) will prevent contamination during import phase, preserving isolation.
+
+---
+
+### Functional Overlap Analysis
+
+#### ✅ No Duplication - Distinct Responsibilities
+
+**FileHandler.js (Import):**
+- **Responsibility:** Load values from external Excel file → StateManager
+- **Scope:** One-time operation (user-triggered file upload)
+- **Target:** Both Target and Reference states (REPORT + REFERENCE sheets)
+- **State Applied:** IMPORTED
+
+**ReferenceValues.js (Code Standards):**
+- **Responsibility:** Store building code minimum values (static data)
+- **Scope:** Reference to data only (no state modification logic)
+- **Target:** Reference state only
+- **State Applied:** N/A (data source only)
+
+**ReferenceToggle.js (Display + Setup):**
+- **Responsibility 1:** Switch display between Target/Reference (display-only)
+- **Responsibility 2:** Copy Target → Reference (Mirror Target setup)
+- **Responsibility 3:** Apply ReferenceValues overlays (Mirror + Reference setup)
+- **Scope:** User-triggered setup operations + display toggling
+- **Target:** Reference state (reads from Target, writes to Reference)
+- **State Applied:** "mirrored" (should be IMPORTED), "reference-standard" (should be OVER_RIDDEN)
+
+**ReferenceManager.js (Coordination):**
+- **Responsibility:** Coordinate access to ReferenceValues based on d_13 selection
+- **Scope:** Query/helper module (no direct state modification)
+- **Target:** Both states (identifies code-defined fields, manages standard selection)
+- **State Applied:** N/A (coordination only)
+
+**✅ NO DUPLICATION FOUND:** Each module has distinct responsibilities with clear boundaries.
+
+---
+
+### Integration Points
+
+#### 1. d_13 (Reference Standard) Changes
+
+**Current Flow:**
+1. User changes d_13 dropdown → StateManager.setValue("d_13", value, "user-modified")
+2. ReferenceManager listens (line 35) → updates currentStandard
+3. ReferenceToggle.handleStandardChange() (line 262) → notifies sections
+4. Sections with `onReferenceStandardChange` method → apply new ReferenceValues
+
+**Import Impact:**
+- Import can load d_13 from Excel → setValue("d_13", value, "imported")
+- Same listener chain fires → ReferenceValues update correctly
+- ✅ **No conflict:** Import integrates seamlessly with existing d_13 change handling
+
+---
+
+#### 2. Import Quarantine Integration
+
+**Proposed Fix (Import Quarantine):**
+```javascript
+// FileHandler.js
+function importExcelFile(workbook) {
+  // 1. Mute listeners
+  StateManager.muteListeners();
+
+  // 2. Import all values (both sheets)
+  this.updateStateFromImportData(importedData, 0, false);
+  this.processImportedExcelReference(workbook);
+
+  // 3. Sync isolated states
+  this.syncPatternASections();
+
+  // 4. Unmute listeners
+  StateManager.unmuteListeners();
+
+  // 5. Calculate once (clean calculation with fresh values)
+  this.calculator.calculateAll();
+}
+```
+
+**ReferenceToggle.js Mirror Target (Current):**
+```javascript
+// Lines 421-492: No listener muting
+section.modeManager.switchMode("target");
+const value = section.modeManager.getValue(fieldId);
+section.modeManager.switchMode("reference");
+section.modeManager.setValue(fieldId, value, "mirrored");
+```
+
+**✅ COMPATIBLE:** Mirror Target doesn't need quarantine because:
+- Operates on one section at a time (controlled loop)
+- Reads then writes (no intermediate calculations)
+- Uses isolated state (section.modeManager), not global StateManager listeners
+- **Import quarantine** only affects global StateManager listener chain
+
+---
+
+#### 3. ReferenceValues Overlay Integration
+
+**Master-Reference-Roadmap.md Lines 210-216 (Mirror + Reference Mode):**
+```
+- Copies all Target user inputs (geometry, climate, energy costs) to Reference state
+- Exception: Reference Standard (d_13) drives ReferenceValues.js overrides
+- Locks ReferenceValues-derived fields to prevent user confusion
+```
+
+**ReferenceToggle.js Lines 498-564 (Current Implementation):**
+```javascript
+function mirrorTargetWithReference() {
+  // 1. Mirror Target first (copy all values)
+  mirrorTarget();
+
+  // 2. Apply ReferenceValues overlay
+  Object.entries(refValues).forEach(([fieldId, value]) => {
+    section.modeManager.setValue(fieldId, value, "reference-standard");
+  });
+}
+```
+
+**Import Scenario:**
+```
+1. User imports Excel with h_15 = 11167 → StateManager.setValue("h_15", "11167", "imported")
+2. User runs "Mirror Target + Reference"
+   - Mirror copies: h_15 = 11167 (Target → Reference)
+   - ReferenceValues overlay: f_85 = 4.87 (code minimum RSI)
+3. Result: Reference has imported geometry + code minimums
+```
+
+**✅ COMPATIBLE:** Import + Mirror + Reference work together:
+- Import sets IMPORTED state (strongest for user-provided values)
+- Mirror copies values with state metadata (preserves IMPORTED state)
+- ReferenceValues overlay only affects subset of fields (f_85, g_88, etc.)
+- **No conflict:** Different field sets, state priority respected
+
+---
+
+### State Priority Matrix
+
+#### Current State Priorities (Implicit - Not Enforced)
+
+| Current State | Can Be Replaced By | Cannot Be Replaced By |
+|---------------|-------------------|----------------------|
+| DEFAULT | IMPORTED, USER_MODIFIED, OVER_RIDDEN, CALCULATED | (none - weakest) |
+| USER_MODIFIED | IMPORTED, OVER_RIDDEN | DEFAULT, CALCULATED |
+| OVER_RIDDEN | IMPORTED, USER_MODIFIED | DEFAULT, CALCULATED |
+| IMPORTED | USER_MODIFIED, OVER_RIDDEN | DEFAULT, CALCULATED |
+| CALCULATED | (should only be on calculated fields) | (INPUT fields should never have this) |
+
+**❌ CURRENT BUG:** No enforcement in StateManager.setValue() - last write always wins
+
+---
+
+#### Proposed State Priorities (Enforced)
+
+**For INPUT Fields (h_15, d_13, f_85, etc.):**
+
+```javascript
+// Priority: IMPORTED ≈ USER_MODIFIED ≈ OVER_RIDDEN > DEFAULT
+// Last write wins among top tier (non-hierarchical)
+// CALCULATED/DERIVED should NEVER appear on INPUT fields
+
+if (isInputField(fieldId)) {
+  if (state === VALUE_STATES.CALCULATED || state === VALUE_STATES.DERIVED) {
+    console.error(`Cannot set ${state} on INPUT field ${fieldId}`);
+    return false;  // REJECT
+  }
+
+  if (currentState === VALUE_STATES.DEFAULT) {
+    // DEFAULT always gets replaced
+    return true;  // ACCEPT
+  }
+
+  // Among IMPORTED/USER_MODIFIED/OVER_RIDDEN: last write wins
+  if ([IMPORTED, USER_MODIFIED, OVER_RIDDEN].includes(state)) {
+    return true;  // ACCEPT
+  }
+}
+```
+
+**For CALCULATED Fields (j_32, k_32, d_16, etc.):**
+
+```javascript
+// Only CALCULATED and DERIVED states allowed
+// User cannot modify calculated fields
+
+if (isCalculatedField(fieldId)) {
+  if (![VALUE_STATES.CALCULATED, VALUE_STATES.DERIVED].includes(state)) {
+    console.warn(`Calculated field ${fieldId} should only have CALCULATED/DERIVED state`);
+    // Allow for initialization with DEFAULT, but log warning
+  }
+  return true;  // ACCEPT
+}
+```
+
+---
+
+### Reference System State Handling
+
+#### ReferenceValues.js Overlay Behavior
+
+**Master-Reference-Roadmap.md Lines 249-274 (User Override Behavior):**
+```
+- User Edits Highlighted Field: When user changes a highlighted ReferenceValues field:
+  - Field loses reference-input-display-locked class (highlighting disappears)
+  - Field becomes regular user input with normal Reference styling
+  - Value is stored as "user-modified" in ReferenceState
+  - User override takes precedence over ReferenceValues
+
+- Running "Mirror Target + Reference" Again:
+  - ReferenceValues subset re-applied (overwrites ALL ReferenceValues fields)
+  - User overrides are lost - ReferenceValues subset takes precedence
+```
+
+**Current Implementation (ReferenceToggle.js Lines 530-539):**
+```javascript
+// Applies ReferenceValues overlay WITHOUT checking existing state
+Object.entries(refValues).forEach(([fieldId, value]) => {
+  section.modeManager.setValue(fieldId, value, "reference-standard");
+  // ← PROBLEM: Always overwrites, even USER_MODIFIED
+});
+```
+
+**✅ BEHAVIOR IS INTENTIONAL:** Re-running Mirror + Reference is designed to reset Reference model to code minimums, discarding user customizations. Documentation clearly states "user overrides are lost."
+
+**Import Interaction:**
+```
+Scenario: User imports h_15 = 11167, then runs Mirror + Reference
+- Import: StateManager.setValue("h_15", "11167", "imported")
+- Mirror + Reference: Does NOT overwrite h_15 (not in ReferenceValues subset)
+- Result: h_15 = 11167 preserved (not a ReferenceValues field)
+```
+
+**✅ COMPATIBLE:** ReferenceValues only affects specific subset of fields (f_85, g_88, d_118, etc.) listed in ReferenceValues.js. Import of geometry (h_15, d_12, etc.) is unaffected.
+
+---
+
+### Terminology Standardization Recommendations
+
+#### 1. Add OVER_RIDDEN to VALUE_STATES
+
+**StateManager.js:**
+```javascript
+const VALUE_STATES = {
+  DEFAULT: "default",
+  IMPORTED: "imported",
+  USER_MODIFIED: "user-modified",
+  OVER_RIDDEN: "over-ridden",  // NEW: ReferenceValues overlays
+  CALCULATED: "calculated",
+  DERIVED: "derived"
+};
+```
+
+---
+
+#### 2. Update ReferenceToggle.js State Names
+
+**Line 470 (Mirror Target):**
+```javascript
+// BEFORE:
+section.modeManager.setValue(fieldId, value, "mirrored");
+
+// AFTER:
+section.modeManager.setValue(fieldId, value, VALUE_STATES.IMPORTED);
+// Rationale: Mirror Target is copying from Target (acts like import)
+```
+
+**Line 535 (Mirror + Reference):**
+```javascript
+// BEFORE:
+section.modeManager.setValue(fieldId, value, "reference-standard");
+
+// AFTER:
+section.modeManager.setValue(fieldId, value, VALUE_STATES.OVER_RIDDEN);
+// Rationale: ReferenceValues overlay is "over-riding" user/imported values
+```
+
+---
+
+#### 3. ReferenceValues.js Documentation
+
+**Add state terminology comment:**
+```javascript
+/**
+ * 4011-ReferenceValues.js
+ *
+ * Building code minimum values applied to Reference model when d_13 (Reference Standard) is set.
+ *
+ * STATE TERMINOLOGY:
+ * - When these values are applied via ReferenceToggle.mirrorTargetWithReference(),
+ *   they are stored with state = VALUE_STATES.OVER_RIDDEN
+ * - User can override these values by editing Reference fields directly
+ *   (changes state from OVER_RIDDEN → USER_MODIFIED)
+ * - Re-running Mirror + Reference resets all ReferenceValues fields to OVER_RIDDEN state
+ */
+```
+
+---
+
+### Import Quarantine Implementation Details
+
+#### Listener Muting Strategy
+
+**StateManager.js (Add new methods):**
+```javascript
+let listenersActive = true;  // New flag
+
+function muteListeners() {
+  listenersActive = false;
+  console.log('[StateManager] Listeners MUTED (import quarantine active)');
+}
+
+function unmuteListeners() {
+  listenersActive = true;
+  console.log('[StateManager] Listeners UNMUTED (import quarantine ended)');
+}
+
+function notifyListeners(fieldId, value) {
+  if (!listenersActive) {
+    console.log(`[StateManager] Skipped listener for ${fieldId} (muted)`);
+    return;  // Skip notification during import
+  }
+
+  // ... existing notification logic ...
+}
+```
+
+**FileHandler.js Integration:**
+```javascript
+async importExcelFile(workbook) {
+  console.log('[FileHandler] 🔒 IMPORT QUARANTINE START - Muting listeners');
+  window.TEUI.StateManager.muteListeners();
+
+  try {
+    // Import Target values (REPORT sheet)
+    const importedData = await this.excelMapper.processImportedExcelData(workbook);
+    this.updateStateFromImportData(importedData, 0, false);
+    console.log(`[FileHandler] Imported ${importedData.length} Target values`);
+
+    // Import Reference values (REFERENCE sheet)
+    const refCount = await this.processImportedExcelReference(workbook);
+    console.log(`[FileHandler] Imported ${refCount} Reference values`);
+
+    // Sync Pattern A sections (global → isolated state)
+    this.syncPatternASections();
+    console.log('[FileHandler] Synced Pattern A sections with imported values');
+
+  } finally {
+    // Always unmute, even if import fails
+    window.TEUI.StateManager.unmuteListeners();
+    console.log('[FileHandler] 🔓 IMPORT QUARANTINE END - Unmuting listeners');
+  }
+
+  // Now trigger clean calculation with all imported values loaded
+  console.log('[FileHandler] Triggering post-import calculation...');
+  this.calculator.calculateAll();
+}
+```
+
+**✅ ARCHITECTURE ALIGNMENT:**
+- Mirror Target doesn't need quarantine (operates on isolated section state)
+- ReferenceValues overlay doesn't need quarantine (controlled application, no cascading)
+- Import needs quarantine (global StateManager, cascading listeners)
+- **No interference:** Each system operates in its own context
+
+---
+
+### S02 storeReferenceResults() Fix
+
+#### Current Code (THE BUG - Line 817-845)
+
+```javascript
+function storeReferenceResults() {
+  const referenceResults = {
+    h_12: ReferenceState.getValue("h_12"), // ❌ INPUT FIELD
+    h_13: ReferenceState.getValue("h_13"), // ❌ INPUT FIELD
+    d_12: ReferenceState.getValue("d_12"), // ❌ INPUT FIELD
+    d_13: ReferenceState.getValue("d_13"), // ❌ INPUT FIELD
+    h_15: ReferenceState.getValue("h_15"), // ❌ INPUT FIELD (THE BUG!)
+    l_12: ReferenceState.getValue("l_12"), // ❌ INPUT FIELD
+    // ... more INPUT fields ...
+    d_16: ReferenceState.getValue("d_16"), // ✅ CALCULATED FIELD
+  };
+
+  Object.entries(referenceResults).forEach(([fieldId, value]) => {
+    window.TEUI.StateManager.setValue(
+      `ref_${fieldId}`,
+      String(value),
+      "calculated"  // ❌ WRONG! INPUT fields should never have "calculated" state
+    );
+  });
+}
+```
+
+---
+
+#### Proposed Fix (Remove INPUT Fields)
+
+```javascript
+function storeReferenceResults() {
+  // ✅ ONLY publish CALCULATED outputs, NOT input fields
+  const referenceResults = {
+    d_16: ReferenceState.getValue("d_16"), // Carbon target (CALCULATED) ✅
+    // Remove all INPUT fields (h_12, h_13, d_12, d_13, h_15, l_12, etc.)
+    // INPUT fields are managed by:
+    // 1. User input → StateManager.setValue("ref_h_15", value, "user-modified")
+    // 2. Import → StateManager.setValue("ref_h_15", value, "imported")
+    // 3. ReferenceValues → StateManager.setValue("ref_f_85", value, "over-ridden")
+    // Section calculations should ONLY publish calculated outputs!
+  };
+
+  Object.entries(referenceResults).forEach(([fieldId, value]) => {
+    window.TEUI.StateManager.setValue(
+      `ref_${fieldId}`,
+      String(value),
+      "calculated"  // ✅ CORRECT: Only calculated fields get "calculated" state
+    );
+  });
+}
+```
+
+**✅ ARCHITECTURE ALIGNMENT:**
+- Matches ReferenceToggle pattern (only publishes calculated results, not inputs)
+- Matches Master-Reference-Roadmap.md display-only principle (no input modification)
+- Fixes import bug (imported ref_h_15 won't be overwritten by stale default)
+
+---
+
+### Conclusion
+
+**✅ ALL SYSTEMS ARCHITECTURALLY ALIGNED**
+
+1. **Terminology:** Consistent use of VALUE_STATES vs Model States (Target/Reference)
+2. **Patterns:** All use ModeManager facade and StateManager `ref_` prefix
+3. **Isolation:** All respect Target/Reference state separation
+4. **No Duplication:** Each module has distinct, non-overlapping responsibilities
+5. **Integration:** Import quarantine, Mirror Target, and ReferenceValues overlay work together without conflicts
+
+**Proposed Fixes Are Safe to Implement:**
+
+1. ✅ Add OVER_RIDDEN to VALUE_STATES → No breaking changes
+2. ✅ Update ReferenceToggle state names → Semantic improvement only
+3. ✅ Implement import quarantine → Isolated to FileHandler, no impact on Reference system
+4. ✅ Fix S02 storeReferenceResults() → Removes bug, aligns with architectural principles
+5. ✅ Add state validation to setValue() → Prevents future bugs, doesn't break existing code
+
+**Next Step:** Implement fixes in order:
+1. Add OVER_RIDDEN constant
+2. Implement import quarantine (FileHandler + StateManager)
+3. Fix S02 storeReferenceResults()
+4. Update ReferenceToggle state names
+5. Add state validation rules
