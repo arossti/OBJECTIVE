@@ -44,7 +44,7 @@
 - **Purpose**: Switch display between Target and Reference **calculated values only**
 - **No Calculation Changes**: System must not modify, trigger, or interfere with calculations
 - **Pre-Calculated Values**: Both Target and Reference values are already calculated by dual-state engines
-- **UI Toggle Only**: Master toggle is purely a display/styling system (but with ability foir user to write to target or reference models based on mode)
+- **UI Toggle Only**: Master toggle is purely a display/styling system (but with ability for user to write to target or reference models based on mode)
 
 #### **2. Dual-State Architecture Compliance**
 - **Section Structure**: Must work with `window.TEUI.sect03.ModeManager` pattern
@@ -212,7 +212,7 @@ Based on comprehensive documentation analysis, the master Reference toggle shoul
 - **Behavior**:
   - Copies all Target user inputs (geometry, climate, energy costs) to Reference state
   - **Exception**: Reference Standard (`d_13`) drives `ReferenceValues.js` overrides
-  - **Locks ReferenceValues-derived fields** to prevent user confusion
+  - **Locks ReferenceValues-derived fields** to prevent user confusion(or maybe don't lock but show as red or some other visual cue that shows this as an over-ridden value)
 - **Use Case**: "How does my building design compare to code minimums?" (most common)
 
 ### **3. Independent Models**
