@@ -138,19 +138,33 @@
         return;
       }
 
-      this.updateStateFromImportData(importedData, 0, false);
+      // 🔒 START IMPORT QUARANTINE - Mute listeners to prevent premature calculations
+      console.log('[FileHandler] 🔒 IMPORT QUARANTINE START - Muting listeners');
+      window.TEUI.StateManager.muteListeners();
 
-      // Import REFERENCE data from REFERENCE sheet (optional)
-      console.log("[FileHandler DEBUG] About to call processImportedExcelReference");
-      this.processImportedExcelReference(workbook);
-      console.log("[FileHandler DEBUG] Returned from processImportedExcelReference");
+      try {
+        // Import Target values (REPORT sheet)
+        this.updateStateFromImportData(importedData, 0, false);
+        console.log(`[FileHandler] Imported ${Object.keys(importedData).length} Target values`);
 
-      // ✅ CRITICAL: Sync Pattern A sections AFTER both Target and Reference imports
-      console.log("[FileHandler] 🔧 Syncing all Pattern A sections after BOTH imports complete...");
-      this.syncPatternASections();
-      console.log("[FileHandler] ✅ Pattern A sections synced");
+        // Import REFERENCE data from REFERENCE sheet (optional)
+        console.log("[FileHandler DEBUG] About to call processImportedExcelReference");
+        this.processImportedExcelReference(workbook);
+        console.log("[FileHandler DEBUG] Returned from processImportedExcelReference");
 
-      // Trigger recalculation after both imports and sync
+        // ✅ CRITICAL: Sync Pattern A sections AFTER both Target and Reference imports
+        console.log("[FileHandler] 🔧 Syncing all Pattern A sections after BOTH imports complete...");
+        this.syncPatternASections();
+        console.log("[FileHandler] ✅ Pattern A sections synced with imported values");
+
+      } finally {
+        // 🔓 END IMPORT QUARANTINE - Always unmute, even if import fails
+        window.TEUI.StateManager.unmuteListeners();
+        console.log('[FileHandler] 🔓 IMPORT QUARANTINE END - Unmuting listeners');
+      }
+
+      // Trigger clean recalculation with all imported values loaded
+      console.log('[FileHandler] Triggering post-import calculation with fresh values...');
       if (this.calculator && typeof this.calculator.calculateAll === "function") {
         this.calculator.calculateAll();
 
