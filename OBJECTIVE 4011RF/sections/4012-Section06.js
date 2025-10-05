@@ -47,6 +47,22 @@ window.TEUI.SectionModules.sect06 = (function () {
     getValue: function (fieldId) {
       return this.state[fieldId];
     },
+
+    /**
+     * ✅ PHASE 2: Sync from global StateManager after import
+     * Bridges global StateManager → isolated TargetState for imported values
+     */
+    syncFromGlobalState: function (fieldIds = ["d_44", "d_45", "d_46", "i_45", "k_45", "i_46", "m_43"]) {
+      fieldIds.forEach((fieldId) => {
+        const globalValue = window.TEUI.StateManager.getValue(fieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue, "imported");
+          console.log(
+            `S06 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`,
+          );
+        }
+      });
+    },
   };
 
   const ReferenceState = {
@@ -104,6 +120,23 @@ window.TEUI.SectionModules.sect06 = (function () {
     },
     getValue: function (fieldId) {
       return this.state[fieldId];
+    },
+
+    /**
+     * ✅ PHASE 2: Sync from global StateManager after import
+     * Bridges global StateManager → isolated ReferenceState for imported values
+     */
+    syncFromGlobalState: function (fieldIds = ["d_44", "d_45", "d_46", "i_45", "k_45", "i_46", "m_43"]) {
+      fieldIds.forEach((fieldId) => {
+        const refFieldId = `ref_${fieldId}`;
+        const globalValue = window.TEUI.StateManager.getValue(refFieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue, "imported");
+          console.log(
+            `S06 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (${refFieldId})`,
+          );
+        }
+      });
     },
   };
 
@@ -735,5 +768,9 @@ window.TEUI.SectionModules.sect06 = (function () {
 
     // ✅ PATTERN A: Expose ModeManager for cross-section communication
     ModeManager: ModeManager,
+
+    // ✅ PHASE 2: Expose state objects for import sync
+    TargetState: TargetState,
+    ReferenceState: ReferenceState,
   };
 })();
