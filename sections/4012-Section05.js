@@ -58,6 +58,22 @@ window.TEUI.SectionModules.sect05 = (function () {
     getValue: function (fieldId) {
       return this.state[fieldId];
     },
+
+    /**
+     * ✅ PHASE 2: Sync from global StateManager after import
+     * Bridges global StateManager → isolated TargetState for imported values
+     */
+    syncFromGlobalState: function (fieldIds = ["d_39"]) {
+      fieldIds.forEach((fieldId) => {
+        const globalValue = window.TEUI.StateManager.getValue(fieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue, "imported");
+          console.log(
+            `S05 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`,
+          );
+        }
+      });
+    },
   };
 
   const ReferenceState = {
@@ -125,6 +141,23 @@ window.TEUI.SectionModules.sect05 = (function () {
     },
     getValue: function (fieldId) {
       return this.state[fieldId];
+    },
+
+    /**
+     * ✅ PHASE 2: Sync from global StateManager after import
+     * Bridges global StateManager → isolated ReferenceState for imported values
+     */
+    syncFromGlobalState: function (fieldIds = ["d_39", "i_41"]) {
+      fieldIds.forEach((fieldId) => {
+        const refFieldId = `ref_${fieldId}`;
+        const globalValue = window.TEUI.StateManager.getValue(refFieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue, "imported");
+          console.log(
+            `S05 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (${refFieldId})`,
+          );
+        }
+      });
     },
   };
 

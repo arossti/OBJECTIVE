@@ -1509,6 +1509,7 @@ window.TEUI.SectionModules.sect12 = (function () {
     const g93 = getUValueFromS11("93", useRef);
     const g94 = getUValueFromS11("94", useRef);
     const g95 = getUValueFromS11("95", useRef);
+    
 
     const d85 = parseFloat(getGlobalNumericValue("d_85"));
     const d86 = parseFloat(getGlobalNumericValue("d_86"));
@@ -2196,10 +2197,7 @@ window.TEUI.SectionModules.sect12 = (function () {
   }
 
   function calculateAll() {
-    // console.log(`[S12DEBUG] calculateAll() triggered in ${ModeManager.currentMode} mode`);
-
     // ✅ DUAL-ENGINE: Always run BOTH engines as per DUAL-STATE-CHEATSHEET mandate
-    // console.log(`[S12DEBUG] Running dual-engine calculations...`);
     calculateReferenceModel(); // Reads ReferenceState → stores ref_ prefixed
     calculateTargetModel(); // Reads TargetState → stores unprefixed
 
@@ -2593,6 +2591,10 @@ window.TEUI.SectionModules.sect12 = (function () {
 
   function addStateManagerListeners() {
     if (!window.TEUI?.StateManager) return;
+    if (s12ListenersAdded) {
+      console.log("[S12] ⚠️ Listeners already added, skipping duplicate registration");
+      return;
+    }
     console.log("[S12] 🚀 INITIALIZING CLIMATE LISTENERS");
     const externalDependencies = [
       // Section 11 Inputs influencing U-Values (g_101, g_102) and Areas (d_101, d_102)
@@ -2699,54 +2701,30 @@ window.TEUI.SectionModules.sect12 = (function () {
     });
 
     // ✅ CRITICAL: Listen for Target climate data changes to trigger recalculation
-    window.TEUI.StateManager.addListener("d_20", (newValue) => {
-      console.log(
-        `[S12] Target HDD changed: d_20=${newValue} → triggering calculations`,
-      );
+    window.TEUI.StateManager.addListener("d_20", (newValue, oldValue) => {
       calculateAll();
     });
     window.TEUI.StateManager.addListener("d_21", (newValue) => {
-      console.log(
-        `[S12] Target CDD changed: d_21=${newValue} → triggering calculations`,
-      );
       calculateAll();
     });
     window.TEUI.StateManager.addListener("d_22", (newValue) => {
-      console.log(
-        `[S12] Target GF HDD changed: d_22=${newValue} → triggering calculations`,
-      );
       calculateAll();
     });
     window.TEUI.StateManager.addListener("h_22", (newValue) => {
-      console.log(
-        `[S12] Target GF CDD changed: h_22=${newValue} → triggering calculations`,
-      );
       calculateAll();
     });
 
     // ✅ CRITICAL: Listen for Reference climate data changes to trigger recalculation
     window.TEUI.StateManager.addListener("ref_d_20", (newValue) => {
-      console.log(
-        `[S12] Reference HDD changed: ref_d_20=${newValue} → triggering calculations`,
-      );
       calculateAll();
     });
     window.TEUI.StateManager.addListener("ref_d_21", (newValue) => {
-      console.log(
-        `[S12] Reference CDD changed: ref_d_21=${newValue} → triggering calculations`,
-      );
       calculateAll();
     });
     window.TEUI.StateManager.addListener("ref_d_22", (newValue) => {
-      console.log(
-        `[S12] Reference GF HDD changed: ref_d_22=${newValue} → triggering calculations`,
-      );
       calculateAll();
     });
     window.TEUI.StateManager.addListener("ref_h_22", (newValue) => {
-      console.log(
-        `[S12] Reference GF CDD changed: ref_h_22=${newValue} → triggering calculations`,
-      );
       calculateAll();
     });
 
@@ -2869,7 +2847,11 @@ window.TEUI.SectionModules.sect12 = (function () {
     initializeEventHandlers: initializeEventHandlers,
     onSectionRendered: onSectionRendered,
     calculateAll: calculateAll,
+    calculateTargetModel: calculateTargetModel, // ✅ CRITICAL: Expose for state-isolated forced recalculation
     calculateCombinedUValue: calculateCombinedUValue,
     ModeManager: ModeManager, // ✅ CRITICAL FIX: Enable FieldManager integration
+    // ✅ BACKUP: Expose initialization state and force method for S03 integration
+    get isInitialized() { return isInitialized; },
+    forceInitialization: onSectionRendered
   };
 })();

@@ -914,7 +914,21 @@ class ExcelMapper {
 
   extractCellValue(cell) {
     if (!cell) return null; // Handle cases where cell might be null/undefined
-    if (cell.t === "n") return cell.v; // Number
+
+    // ✅ FIX (Oct 5, 2025): Handle percentage cells
+    // Excel stores percentages as decimals (50% = 0.5), but our app expects 50
+    // Check if cell has percentage formatting:
+    // - cell.z (format string like "0%") OR
+    // - cell.w (formatted display like "50%")
+    if (cell.t === "n") {
+      const hasPercentFormat = (cell.z && cell.z.includes("%")) || (cell.w && cell.w.includes("%"));
+      if (hasPercentFormat) {
+        // Multiply by 100 to convert decimal to percentage (Excel 0.5 → App 50)
+        return cell.v * 100;
+      }
+      return cell.v; // Regular number
+    }
+
     if (cell.t === "s") return cell.v; // String
     if (cell.t === "b") return cell.v; // Boolean
     if (cell.t === "d") return cell.v; // Date

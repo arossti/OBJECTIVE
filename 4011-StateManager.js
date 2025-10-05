@@ -158,6 +158,7 @@ TEUI.StateManager = (function () {
     DEFAULT: "default", // Original default value
     IMPORTED: "imported", // Value imported from saved data
     USER_MODIFIED: "user-modified", // Value changed by user
+    OVER_RIDDEN: "over-ridden", // Value overridden by ReferenceValues overlay (when d_13 changes)
     CALCULATED: "calculated", // Value calculated by the system
     DERIVED: "derived", // Value derived from another field
   };
@@ -168,6 +169,7 @@ TEUI.StateManager = (function () {
   let calculatedFields = new Set(); // Set of fields that are calculated
   let dirtyFields = new Set(); // Fields needing recalculation
   let listeners = new Map(); // Field change listeners
+  let listenersActive = true; // Flag to mute listeners during import quarantine
   let activeReferenceDataSet = {};
   let independentReferenceState = {}; // << NEW: For independently editable Reference fields (like h_12)
   let isApplicationStateMuted = false; // << NEW: Flag for muting application state updates
@@ -542,6 +544,12 @@ TEUI.StateManager = (function () {
    * @param {string} state - Value state
    */
   function notifyListeners(fieldId, newValue, oldValue, state) {
+    // Check if listeners are muted (import quarantine)
+    if (!listenersActive) {
+      console.log(`[StateManager] Skipped listener for ${fieldId} (quarantine active)`);
+      return;
+    }
+
     // Original loop for other fieldIds
     if (!listeners.has(fieldId)) {
       return;
@@ -1802,6 +1810,24 @@ TEUI.StateManager = (function () {
     return getReferenceValue(tCellId);
   }
 
+  /**
+   * Mute all listeners (import quarantine)
+   * Used during Excel import to prevent cascading calculations with stale values
+   */
+  function muteListeners() {
+    listenersActive = false;
+    console.log('[StateManager] 🔒 Listeners MUTED (import quarantine active)');
+  }
+
+  /**
+   * Unmute all listeners (end import quarantine)
+   * Restores normal listener notification after import completes
+   */
+  function unmuteListeners() {
+    listenersActive = true;
+    console.log('[StateManager] 🔓 Listeners UNMUTED (import quarantine ended)');
+  }
+
   // Public API
   return {
     // Constants
@@ -1823,6 +1849,8 @@ TEUI.StateManager = (function () {
     // Listener management
     addListener: addListener,
     removeListener: removeListener,
+    muteListeners: muteListeners,
+    unmuteListeners: unmuteListeners,
 
     // UI updates
     updateUI: updateUI,
