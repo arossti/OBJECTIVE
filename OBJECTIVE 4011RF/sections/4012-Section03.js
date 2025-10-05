@@ -153,6 +153,18 @@ window.TEUI.SectionModules.sect03 = (function () {
         this.listeners[fieldId].forEach((callback) => callback(value));
       }
     },
+    syncFromGlobalState: function (fieldIds = ["d_19", "h_19", "i_21"]) {
+      fieldIds.forEach((fieldId) => {
+        const refFieldId = `ref_${fieldId}`;
+        const globalValue = window.TEUI.StateManager.getValue(refFieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue, "imported");
+          console.log(
+            `S03 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (${refFieldId})`,
+          );
+        }
+      });
+    },
   };
 
   // PATTERN 2: The ModeManager Facade (Standardized Pattern A)
