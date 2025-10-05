@@ -411,12 +411,112 @@ function storeReferenceResults() {
 - `f8bf50c` - Add architecture consistency analysis for import fix
 - `319f78c` - Implement import quarantine fix - prevent calculated defaults from overwriting imports
 - `201f111` - Document successful import fix implementation and test results
+- `a273a61` - Streamline MAPPER.md - archive full debug session, focus on solutions
+
+**Oct 5, 2025 Session - S03 Fixes:**
+- `89aa4c1` - Fix S03 storeReferenceResults - remove INPUT fields (location)
+- `e45ed91` - Add S03 ReferenceState.syncFromGlobalState() for location sync
+- `20fe5d2` - Fix percentage cell import - convert Excel decimal to app percentage
+- `712d980` - Improve percentage detection - check both format string and display value
 
 **Total Implementation:**
-- ~50 lines of production code
-- ~2 hours (analysis + implementation + testing)
+- ~100 lines of production code across 2 sessions
+- ~4 hours total (analysis + implementation + testing)
 - Zero breaking changes
 - Full architecture alignment confirmed
+
+---
+
+## ✅ Section 03 Climate - Complete (Oct 5, 2025)
+
+### Three Fixes Required
+
+**Issue 1: Location Import (Milton → Alexandria)**
+- **Problem:** Imported ref_h_19 = "Milton, Ontario" displayed as "Alexandria, Ontario" in Reference mode
+- **Root Cause:** S03 storeReferenceResults() published INPUT fields (d_19, h_19, h_20) with "calculated" state, overwriting imports
+- **Fix:** Removed INPUT fields from storeReferenceResults(), only publish CALCULATED climate data
+
+**Issue 2: Missing ReferenceState Sync**
+- **Problem:** Even with fix #1, imported location didn't sync to S03's isolated ReferenceState
+- **Root Cause:** S03 ReferenceState lacked syncFromGlobalState() method (TargetState had it)
+- **Fix:** Added ReferenceState.syncFromGlobalState() to read ref_d_19, ref_h_19 from global StateManager
+
+**Issue 3: Percentage Slider Import (50% → 0.5%)**
+- **Problem:** Imported i_21 = 50% displayed as 0.5% with slider at far left
+- **Root Cause:** Excel stores 50% as 0.5 (decimal), but app expects 50 (percentage value)
+- **Fix:** ExcelMapper.extractCellValue() detects percentage format (cell.z or cell.w includes "%") and multiplies by 100
+
+### Implementation Details
+
+#### S03 storeReferenceResults() - Removed INPUT Fields
+```javascript
+// BEFORE (Publishing INPUT fields - BAD)
+const referenceResults = {
+  d_19: ReferenceState.getValue("d_19"), // ❌ Province (INPUT)
+  h_19: ReferenceState.getValue("h_19"), // ❌ City (INPUT)
+  h_20: ReferenceState.getValue("h_20"), // ❌ Weather toggle (INPUT)
+  d_20: ReferenceState.getValue("d_20"), // HDD (CALCULATED)
+  // ... etc
+};
+
+// AFTER (Only CALCULATED outputs - GOOD)
+const referenceResults = {
+  // ❌ REMOVED: d_19, h_19, h_20 (INPUT fields)
+  d_20: ReferenceState.getValue("d_20"), // HDD (CALCULATED) ✅
+  d_21: ReferenceState.getValue("d_21"), // CDD (CALCULATED) ✅
+  j_19: ReferenceState.getValue("j_19"), // Climate zone (CALCULATED) ✅
+  // ... etc
+};
+```
+
+#### S03 ReferenceState.syncFromGlobalState() - Added Method
+```javascript
+syncFromGlobalState: function (fieldIds = ["d_19", "h_19", "i_21"]) {
+  fieldIds.forEach((fieldId) => {
+    const refFieldId = `ref_${fieldId}`;
+    const globalValue = window.TEUI.StateManager.getValue(refFieldId);
+    if (globalValue !== null && globalValue !== undefined) {
+      this.setValue(fieldId, globalValue, "imported");
+      console.log(`S03 ReferenceState: Synced ${fieldId} = ${globalValue} from (${refFieldId})`);
+    }
+  });
+}
+```
+
+#### ExcelMapper.extractCellValue() - Percentage Detection
+```javascript
+if (cell.t === "n") {
+  // Check cell.z (format string) OR cell.w (display value) for %
+  const hasPercentFormat = (cell.z && cell.z.includes("%")) ||
+                           (cell.w && cell.w.includes("%"));
+  if (hasPercentFormat) {
+    // Excel 0.5 → App 50
+    return cell.v * 100;
+  }
+  return cell.v; // Regular number
+}
+```
+
+### Test Results
+
+**Before Fixes:**
+- Location: Milton, Ontario (Target) / Alexandria, Ontario (Reference) ❌
+- Capacitance: 50% (Target) / 0.5% slider at far left (Reference) ❌
+
+**After Fixes:**
+- Location: Milton, Ontario (both Target and Reference) ✅
+- Capacitance: 50% slider at center (both Target and Reference) ✅
+- Climate data: Correct for Milton (4164 HDD, 237 CDD) ✅
+
+### Pattern Learned: Percentage Sliders
+
+**Excel Storage vs App Storage:**
+- Excel: Percentage cells store decimal (50% = 0.5 in cell.v)
+- App: Sliders expect integer (50 for 50%)
+- Format detection: Check `cell.z` (format string) OR `cell.w` (display "50%")
+- Conversion: `cell.v * 100` when percentage detected
+
+**Applies to any percentage field imports (not just i_21)**
 
 ---
 
@@ -429,4 +529,4 @@ function storeReferenceResults() {
 
 ---
 
-*Last Updated: October 4, 2025 - Import quarantine fix implemented and tested successfully*
+*Last Updated: October 5, 2025 - S03 Climate fixes complete and verified*

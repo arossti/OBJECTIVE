@@ -923,8 +923,7 @@ class ExcelMapper {
     if (cell.t === "n") {
       const hasPercentFormat = (cell.z && cell.z.includes("%")) || (cell.w && cell.w.includes("%"));
       if (hasPercentFormat) {
-        console.log(`[ExcelMapper] Percentage cell detected: v=${cell.v}, z="${cell.z}", w="${cell.w}" → converting to ${cell.v * 100}`);
-        // Multiply by 100 to convert decimal to percentage
+        // Multiply by 100 to convert decimal to percentage (Excel 0.5 → App 50)
         return cell.v * 100;
       }
       return cell.v; // Regular number
