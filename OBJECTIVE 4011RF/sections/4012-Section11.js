@@ -339,7 +339,9 @@ window.TEUI.SectionModules.sect11 = (function () {
         
         // ✅ CRITICAL: Force S12 TARGET-ONLY recalculation for U-value changes
         // IMPORTANT: Only trigger Target engine to preserve state isolation
-        if (fieldId.startsWith("f_") || fieldId.startsWith("g_") || fieldId === "d_97") {
+        // PERFORMANCE: Only trigger for user-modified changes, not calculated cascades
+        if ((fieldId.startsWith("f_") || fieldId.startsWith("g_") || fieldId === "d_97") && 
+            (source === "user-modified" || source === "user")) {
           if (window.TEUI?.SectionModules?.sect12?.calculateTargetModel) {
             window.TEUI.SectionModules.sect12.calculateTargetModel();
             // Update DOM display after Target-only calculation

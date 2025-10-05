@@ -1734,16 +1734,19 @@ window.TEUI.SectionModules.sect03 = (function () {
       // ✅ FIX: Store Target calculation results to StateManager (was missing!)
       storeTargetResults();
 
-      // ✅ CRITICAL: Force S12 recalculation after climate data publication
+      // ✅ CRITICAL: Force S12 recalculation after climate data publication (user changes only)
       // This ensures S12 gets updated climate data even if listeners fail
+      // PERFORMANCE: Only trigger for user-initiated climate changes, not calculated cascades
       if (window.TEUI?.SectionModules?.sect12) {
         // Check if S12 is properly initialized
         if (!window.TEUI.SectionModules.sect12.isInitialized) {
           window.TEUI.SectionModules.sect12.forceInitialization();
         }
         
-        if (window.TEUI.SectionModules.sect12.calculateAll) {
-          window.TEUI.SectionModules.sect12.calculateAll();
+        // Only force recalculation for user-initiated changes (location changes)
+        // Skip during initialization cascades to improve performance
+        if (window.TEUI.SectionModules.sect12.calculateTargetModel) {
+          window.TEUI.SectionModules.sect12.calculateTargetModel();
           
           // Ensure DOM display values are updated after forced calculation
           if (window.TEUI.SectionModules.sect12.ModeManager?.updateCalculatedDisplayValues) {
