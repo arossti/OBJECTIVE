@@ -1509,6 +1509,7 @@ window.TEUI.SectionModules.sect12 = (function () {
     const g93 = getUValueFromS11("93", useRef);
     const g94 = getUValueFromS11("94", useRef);
     const g95 = getUValueFromS11("95", useRef);
+    
 
     const d85 = parseFloat(getGlobalNumericValue("d_85"));
     const d86 = parseFloat(getGlobalNumericValue("d_86"));

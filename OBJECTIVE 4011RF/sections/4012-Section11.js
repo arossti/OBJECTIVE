@@ -336,6 +336,13 @@ window.TEUI.SectionModules.sect11 = (function () {
             ? "user-modified"
             : source || "calculated";
         window.TEUI.StateManager.setValue(fieldId, value, writeSource);
+        
+        // ✅ CRITICAL: Force S12 recalculation for U-value changes (same fix as S03 climate data)
+        if (fieldId.startsWith("f_") || fieldId.startsWith("g_") || fieldId === "d_97") {
+          if (window.TEUI?.SectionModules?.sect12?.calculateAll) {
+            window.TEUI.SectionModules.sect12.calculateAll();
+          }
+        }
       } else if (this.currentMode === "reference") {
         // Write Reference-side updates with ref_ prefix
         const writeSource =
