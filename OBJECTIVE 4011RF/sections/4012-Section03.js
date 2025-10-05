@@ -1761,35 +1761,37 @@ window.TEUI.SectionModules.sect03 = (function () {
 
   /**
    * Store Reference Model calculation results with ref_ prefix for downstream sections
+   *
+   * ✅ FIX (Oct 5, 2025): Only publish CALCULATED outputs, NOT input fields
+   * INPUT fields (d_19, h_19, h_20) are managed by:
+   * - User input → StateManager.setValue("ref_d_19", value, "user-modified")
+   * - Import → StateManager.setValue("ref_d_19", value, "imported")
+   * - ReferenceValues → Not applicable for S03 location fields
+   *
+   * Section calculations should ONLY publish calculated climate data and outputs!
    */
   function storeReferenceResults() {
     if (!window.TEUI?.StateManager) return;
 
-    // ✅ CRITICAL FIX: Read from published Reference values, not local state
-    // This prevents contamination when Target location changes but Reference should stay unchanged
+    // ✅ ONLY publish CALCULATED outputs from Reference model calculations
     const referenceResults = {
-      // Location identifiers - read from StateManager ref_ values
-      d_19:
-        window.TEUI.StateManager.getValue("ref_d_19") ||
-        ReferenceState.getValue("d_19"),
-      h_19:
-        window.TEUI.StateManager.getValue("ref_h_19") ||
-        ReferenceState.getValue("h_19"),
-      h_20:
-        window.TEUI.StateManager.getValue("ref_h_20") ||
-        ReferenceState.getValue("h_20"),
-      // Climate data - read from current Reference calculation
-      d_20: ReferenceState.getValue("d_20"), // Reference HDD
-      d_21: ReferenceState.getValue("d_21"), // Reference CDD
-      j_19: ReferenceState.getValue("j_19"), // Reference climate zone
-      d_23: ReferenceState.getValue("d_23"), // Reference coldest day
-      d_24: ReferenceState.getValue("d_24"), // Reference hottest day
-      l_22: ReferenceState.getValue("l_22"), // Elevation
-      // Calculated values
-      h_23: ReferenceState.getValue("h_23"), // Reference heating setpoint
-      h_24: ReferenceState.getValue("h_24"), // Reference cooling setpoint
-      d_22: ReferenceState.getValue("d_22"), // Reference GF HDD
-      h_22: ReferenceState.getValue("h_22"), // Reference GF CDD
+      // ❌ REMOVED INPUT FIELDS - they are NOT calculated by S03:
+      // d_19 (province), h_19 (city), h_20 (current/future weather toggle)
+      // These INPUT fields are set via user input or import, NOT calculated
+
+      // ✅ Climate data - CALCULATED from location lookup (KEEP)
+      d_20: ReferenceState.getValue("d_20"), // Reference HDD (CALCULATED) ✅
+      d_21: ReferenceState.getValue("d_21"), // Reference CDD (CALCULATED) ✅
+      j_19: ReferenceState.getValue("j_19"), // Reference climate zone (CALCULATED) ✅
+      d_23: ReferenceState.getValue("d_23"), // Reference coldest day (CALCULATED) ✅
+      d_24: ReferenceState.getValue("d_24"), // Reference hottest day (CALCULATED) ✅
+      l_22: ReferenceState.getValue("l_22"), // Elevation (CALCULATED) ✅
+
+      // ✅ Calculated setpoints and values (KEEP)
+      h_23: ReferenceState.getValue("h_23"), // Reference heating setpoint (CALCULATED) ✅
+      h_24: ReferenceState.getValue("h_24"), // Reference cooling setpoint (CALCULATED) ✅
+      d_22: ReferenceState.getValue("d_22"), // Reference GF HDD (CALCULATED) ✅
+      h_22: ReferenceState.getValue("h_22"), // Reference GF CDD (CALCULATED) ✅
     };
 
     // Store with ref_ prefix for downstream sections
@@ -1802,6 +1804,10 @@ window.TEUI.SectionModules.sect03 = (function () {
         );
       }
     });
+
+    console.log(
+      "[S03] Reference CALCULATED results stored (climate data + setpoints - INPUT fields excluded)",
+    );
   }
 
   // --- New Calculation Functions ---
