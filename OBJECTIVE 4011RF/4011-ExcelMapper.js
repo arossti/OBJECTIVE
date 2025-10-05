@@ -917,13 +917,19 @@ class ExcelMapper {
 
     // ✅ FIX (Oct 5, 2025): Handle percentage cells
     // Excel stores percentages as decimals (50% = 0.5), but our app expects 50
-    // Check if cell has percentage formatting (cell.z contains format string like "0%")
-    if (cell.t === "n" && cell.z && cell.z.includes("%")) {
-      // Multiply by 100 to convert decimal to percentage
-      return cell.v * 100;
+    // Check if cell has percentage formatting:
+    // - cell.z (format string like "0%") OR
+    // - cell.w (formatted display like "50%")
+    if (cell.t === "n") {
+      const hasPercentFormat = (cell.z && cell.z.includes("%")) || (cell.w && cell.w.includes("%"));
+      if (hasPercentFormat) {
+        console.log(`[ExcelMapper] Percentage cell detected: v=${cell.v}, z="${cell.z}", w="${cell.w}" → converting to ${cell.v * 100}`);
+        // Multiply by 100 to convert decimal to percentage
+        return cell.v * 100;
+      }
+      return cell.v; // Regular number
     }
 
-    if (cell.t === "n") return cell.v; // Number
     if (cell.t === "s") return cell.v; // String
     if (cell.t === "b") return cell.v; // Boolean
     if (cell.t === "d") return cell.v; // Date
