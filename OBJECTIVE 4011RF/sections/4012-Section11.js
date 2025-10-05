@@ -337,10 +337,15 @@ window.TEUI.SectionModules.sect11 = (function () {
             : source || "calculated";
         window.TEUI.StateManager.setValue(fieldId, value, writeSource);
         
-        // ✅ CRITICAL: Force S12 recalculation for U-value changes (same fix as S03 climate data)
+        // ✅ CRITICAL: Force S12 TARGET-ONLY recalculation for U-value changes
+        // IMPORTANT: Only trigger Target engine to preserve state isolation
         if (fieldId.startsWith("f_") || fieldId.startsWith("g_") || fieldId === "d_97") {
-          if (window.TEUI?.SectionModules?.sect12?.calculateAll) {
-            window.TEUI.SectionModules.sect12.calculateAll();
+          if (window.TEUI?.SectionModules?.sect12?.calculateTargetModel) {
+            window.TEUI.SectionModules.sect12.calculateTargetModel();
+            // Update DOM display after Target-only calculation
+            if (window.TEUI.SectionModules.sect12.ModeManager?.updateCalculatedDisplayValues) {
+              window.TEUI.SectionModules.sect12.ModeManager.updateCalculatedDisplayValues();
+            }
           }
         }
       } else if (this.currentMode === "reference") {

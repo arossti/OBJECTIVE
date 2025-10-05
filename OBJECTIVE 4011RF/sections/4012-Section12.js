@@ -2847,6 +2847,7 @@ window.TEUI.SectionModules.sect12 = (function () {
     initializeEventHandlers: initializeEventHandlers,
     onSectionRendered: onSectionRendered,
     calculateAll: calculateAll,
+    calculateTargetModel: calculateTargetModel, // ✅ CRITICAL: Expose for state-isolated forced recalculation
     calculateCombinedUValue: calculateCombinedUValue,
     ModeManager: ModeManager, // ✅ CRITICAL FIX: Enable FieldManager integration
     // ✅ BACKUP: Expose initialization state and force method for S03 integration
