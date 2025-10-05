@@ -904,6 +904,29 @@ The TEUI 4.011 Calculator has been successfully transformed into a modular, main
 - **Modularized Architecture**: Core functionality divided into 15+ code modules
 - **Section-Based Organization**: Each section implements its own layout, data structures, and calculations
 - **State Management System**: Central registry handling multiple value states (Default, User-Modified, Saved, Imported and Reference)
+
+  **⚠️ IMPORTANT STATE TERMINOLOGY CLARIFICATION** *(Added Oct 4, 2025)*
+
+  The term "state" has **two distinct meanings** in this application:
+
+  1. **Value States** (metadata about how a value was set):
+     - `DEFAULT` - Initial value at app startup
+     - `USER-MODIFIED` - User typed/selected value in UI
+     - `IMPORTED` - Value loaded from Excel file
+     - `CALCULATED` - Computed result (for calculated fields ONLY)
+     - `DERIVED` - Secondary calculation (for calculated fields ONLY)
+
+  2. **Model States** (which building model the value belongs to):
+     - `Target` - The proposed/design building model
+     - `Reference` - The code-compliant baseline building model
+
+  **Critical Rules:**
+  - **INPUT fields** (h_15, d_13, etc) can have: DEFAULT, USER-MODIFIED, IMPORTED states
+  - **CALCULATED fields** (j_32, k_32, etc) ONLY have: CALCULATED, DERIVED states
+  - **Model states** are orthogonal - both Target and Reference can have any value state
+  - A Reference calculated value (ref_j_32 with CALCULATED state) can be published to StateManager for consumption by other sections
+  - **Planned improvement**: Enforce value state rules to prevent CALCULATED state on INPUT fields (see MAPPER.md for details)
+
 - **Field Management**: Consolidated system for defining, rendering, and updating UI elements
 - **DOM-Based Field Identification**: Consistent ID system mapping directly to Excel cell references for both legacy support as well as import and export
 - **Component Bridge**: Integration system for connecting sections and calculations
