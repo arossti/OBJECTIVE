@@ -2024,3 +2024,272 @@ if (fieldId === "ref_h_15") {
 ```
 
 **Once Identified:** Remove/fix the code that publishes reference defaults after import.
+
+---
+
+## 🎯 ROOT CAUSE CONFIRMED - Listener Chain During Import (Oct 4, 6pm)
+
+**The Full Stack Trace Revealed:**
+```
+[StateManager DEBUG] ref_h_15 setValue: "1427.20" (state: calculated, prev: 11167)
+
+Stack trace:
+setValue @ StateManager.js:354
+(anonymous) @ Section02.js:839          ← storeReferenceResults()
+storeReferenceResults @ Section02.js:837
+calculateReferenceModel @ Section02.js:803
+calculateAll @ Section02.js:928
+calculateAndRefresh @ Section02.js:1145  ← LISTENER TRIGGERED!
+(anonymous) @ StateManager.js:551        ← notifyListeners()
+setValue @ StateManager.js:409
+(anonymous) @ FileHandler.js:324         ← DURING IMPORT!
+updateStateFromImportData @ FileHandler.js:304
+processImportedExcelReference @ FileHandler.js:190
+```
+
+**The Bug Mechanism:**
+1. FileHandler imports ref_h_15 = 11167 ✅
+2. StateManager.setValue("ref_h_15", 11167) is called
+3. **StateManager notifies ALL listeners** (this is the problem!)
+4. S02.calculateAndRefresh listener fires **DURING import**
+5. S02.calculateAll() runs BUT ReferenceState still has DEFAULT (1427.20)
+   - Sync hasn't happened yet - import is still in progress
+   - ReferenceState.getValue("h_15") returns 1427.20
+6. S02.storeReferenceResults() publishes calculated 1427.20 back to StateManager
+7. Overwrites the just-imported 11167! ❌
+
+**Why This Happens:**
+- Import triggers listeners on EVERY field imported
+- Each setValue() during import fires notifyListeners()
+- Sections calculate with stale isolated state (not yet synced)
+- Calculated results overwrite imported values
+
+**The Solution: Import Quarantine Pattern**
+
+Import needs to be **atomic** - all values imported, THEN sync, THEN calculations:
+
+```javascript
+// 1. QUARANTINE: Suppress listeners during import
+StateManager.muteListeners();
+
+// 2. Import all values (no calculations triggered)
+this.updateStateFromImportData(importedData);
+this.processImportedExcelReference(workbook);
+
+// 3. Sync Pattern A sections (bridge global → isolated state)
+this.syncPatternASections();
+
+// 4. RESUME: Unmute and trigger ONE calculateAll
+StateManager.unmuteListeners();
+this.calculator.calculateAll();
+```
+
+**Implementation Requirements:**
+1. Add `muteListeners()` / `unmuteListeners()` to StateManager
+2. Modify `setValue()` to skip notifyListeners() when muted
+3. FileHandler imports with listeners muted
+4. After sync complete, unmute and trigger single calculateAll()
+
+**Critical Architecture Principle:**
+> Import is not "fast user entry" - it's a **batch state restoration** that must complete atomically before calculations resume.
+
+---
+
+## ⚠️ BROADER ARCHITECTURAL CONCERNS - State Hierarchy & Primacy
+
+**User Observation (Oct 4, 6pm):**
+After implementing import renovation, two critical issues emerged:
+
+1. **Calculation Chain Breaks:** Some sections calculate internally but don't propagate to S01 (stale summary)
+2. **State Mixing:** Target values change when Reference is modified, and vice versa (contamination)
+
+**The Core Problem:**
+We have multiple state systems with unclear hierarchy:
+- User-Modified state (should be KING)
+- Imported state
+- Calculated state
+- Reference overrides (AppendixE)
+- Defaults (should be WEAKEST)
+- LocalStorage persistence (complicates everything)
+
+**State Hierarchy (From User Requirements):**
+```
+1. USER-MODIFIED     ← Highest priority, always wins
+2. IMPORTED          ← Batch restoration, one-time
+3. CALCULATED        ← Derived from inputs
+4. REFERENCE-LOOKUP  ← AppendixE regulatory values
+5. DEFAULTS          ← Lowest priority, only when nothing else exists
+```
+
+**Current Architecture Issues:**
+- ✅ Dual-state isolation works in normal operation (months of refinement)
+- ❌ Import triggers listeners → premature calculations → overwrites
+- ❌ Calculation chain blocked after import → S01 stale
+- ❌ State mixing observed post-import (contamination)
+- ❌ LocalStorage may persist defaults, overriding imports
+- ❌ No clear "strength" comparison when multiple states compete
+
+**Questions to Resolve:**
+1. Does StateManager enforce state hierarchy (user-modified > imported > calculated > default)?
+2. Does LocalStorage respect state strength or blindly restore defaults?
+3. How do we ensure import doesn't trigger premature calculations?
+4. How do we preserve dual-state isolation during import?
+5. Should imported state be permanent or overridable by calculations?
+
+**Investigation Needed:**
+- Review README.md state architecture documentation
+- Audit StateManager state comparison logic
+- Check LocalStorage save/restore for state strength
+- Verify Pattern A isolation preserved during import
+- Define import state transition: quarantine → sync → calculate → normal
+
+**Proposed Solution Path:**
+1. Implement import quarantine (mute listeners)
+2. Audit state hierarchy enforcement
+3. Document state strength rules
+4. Add state comparison logic (stronger state wins)
+5. Fix LocalStorage to respect state hierarchy
+6. Test dual-state isolation post-import
+
+---
+
+## 🔍 STATE HIERARCHY AUDIT - Documentation vs Implementation (Oct 4, 6:15pm)
+
+**What Documentation Says:**
+
+README.md (line 906):
+> State Management System: Central registry handling multiple value states (Default, User-Modified, Saved, Imported and Reference)
+
+VALUE_STATES defined in StateManager.js:
+```javascript
+const VALUE_STATES = {
+    DEFAULT: "default",           // Original default value
+    IMPORTED: "imported",          // Value imported from saved data
+    USER_MODIFIED: "user-modified", // Value changed by user
+    CALCULATED: "calculated",      // Value calculated by the system
+    DERIVED: "derived",            // Value derived from another field
+};
+```
+
+**What Implementation Actually Does:**
+
+StateManager.js setValue() (lines 420-421):
+```javascript
+field.value = value;
+field.state = state;
+```
+
+**❌ CRITICAL FLAW: NO STATE HIERARCHY ENFORCEMENT!**
+
+The current implementation:
+- **Last write wins** - any state can overwrite any other state
+- `calculated` can overwrite `user-modified` ❌
+- `default` can overwrite `imported` ❌
+- No comparison of state "strength" or "priority"
+- No protection for user intent
+
+**Real-World Failure Example:**
+1. User sets h_15 = 11167 (user-modified) ✅
+2. User imports file with h_15 = 5000 (imported)
+3. Import triggers calculations
+4. S02 calculates h_15 = 1427.20 (calculated) using stale state
+5. Calculated value **overwrites user's choice** ❌
+
+**Required State Hierarchy (User Requirements):**
+```
+┌─────────────────────────┐
+│  USER-MODIFIED (KING)   │ ← Never overwrite
+├─────────────────────────┤
+│  IMPORTED               │ ← Batch restore
+├─────────────────────────┤
+│  CALCULATED             │ ← Derived values
+├─────────────────────────┤
+│  DERIVED                │ ← Secondary calculations
+├─────────────────────────┤
+│  DEFAULT (weakest)      │ ← Only when nothing else exists
+└─────────────────────────┘
+```
+
+**Implementation Required:**
+
+```javascript
+// StateManager.js - Add state strength comparison
+const STATE_PRIORITY = {
+  [VALUE_STATES.USER_MODIFIED]: 5,  // Highest - user intent is sacred
+  [VALUE_STATES.IMPORTED]: 4,        // Batch restoration
+  [VALUE_STATES.CALCULATED]: 3,      // Derived values
+  [VALUE_STATES.DERIVED]: 2,         // Secondary calculations
+  [VALUE_STATES.DEFAULT]: 1          // Lowest - fallback only
+};
+
+function setValue(fieldId, value, state = VALUE_STATES.USER_MODIFIED) {
+  // ... existing code ...
+
+  const field = fields.get(fieldId);
+
+  // ✅ STATE HIERARCHY CHECK: Only allow overwrite if new state is stronger
+  const currentPriority = STATE_PRIORITY[field.state] || 0;
+  const newPriority = STATE_PRIORITY[state] || 0;
+
+  if (newPriority < currentPriority) {
+    console.log(
+      `[StateManager] Rejected ${state} for ${fieldId} - current state ${field.state} has higher priority`
+    );
+    return false; // Reject weaker state
+  }
+
+  // ✅ SPECIAL CASE: Same priority level - allow update
+  // (e.g., multiple calculated updates, multiple imports)
+
+  if (field.value === value && field.state === state) {
+    return false;
+  }
+
+  field.value = value;
+  field.state = state;
+
+  // ... rest of function ...
+}
+```
+
+**LocalStorage Concern:**
+
+Current code (line 430-435):
+```javascript
+if (
+  state === VALUE_STATES.USER_MODIFIED ||
+  state === VALUE_STATES.IMPORTED
+) {
+  // Debounce saves to avoid excessive localStorage writes
+```
+
+**Question:** When page loads, does localStorage restore:
+- Last saved value regardless of state? ❌
+- Strongest state from saved session? ✅ (needs verification)
+
+**If defaults persist in localStorage**, they could override imports on page load!
+
+**Testing Required:**
+1. Set field to user-modified value
+2. Save to localStorage
+3. Reload page
+4. Import different value
+5. **Expected:** User-modified value should persist (not overwritten)
+6. **Actual:** ??? (needs testing)
+
+**Dual-State Isolation Concern:**
+
+Pattern A sections (S02, S03, S04...) use **isolated DualState**:
+- TargetState and ReferenceState are separate from global StateManager
+- Import populates global StateManager
+- Sync bridges global → isolated state
+- **Question:** Does isolated state respect hierarchy?
+
+**Critical Gap:** If S02.ReferenceState.setValue() doesn't check state priority, the same overwrite bug exists in isolated state!
+
+**Recommendation:**
+1. **Immediate:** Implement import quarantine (mute listeners)
+2. **Short-term:** Add state hierarchy to StateManager.setValue()
+3. **Medium-term:** Audit all setValue() calls (global and isolated)
+4. **Long-term:** Document state transition rules in CHEATSHEET
+5. **Essential:** Add unit tests for state hierarchy enforcement
