@@ -2199,25 +2199,31 @@ The current implementation:
 
 **Key Principle:** States apply ONLY to INPUT FIELDS (number/text/slider/dropdown). Calculated/Derived fields are IMMUTABLE - they never receive state changes.
 
-**Input Field State Hierarchy:**
+**Input Field Value States (Non-Hierarchical - Last Write Wins):**
 ```
-For USER INPUT FIELDS ONLY (h_15, d_13, etc):
+For USER INPUT FIELDS ONLY (h_15, d_13, ref_f_85, etc):
 
-IMPORTED (Most Recent Write)
-    ↓
-USER-MODIFIED (Last User Edit)
-    ↓
-REFERENCE-OVERRIDE (Standard Change)
-    ↓
-DEFAULT (Initialization Only)
+Value States Available:
+- DEFAULT        → App initialization (weakest, replaced by any action)
+- USER-MODIFIED  → User typed/selected in UI
+- OVER-RIDDEN    → ReferenceValues overlay (d_13 change applies ref_f_85, etc)
+- IMPORTED       → Excel file loaded
 
-Special Rules:
-1. IMPORT replaces EVERYTHING (last write wins)
-2. USER-MODIFIED replaces REFERENCE-OVERRIDE
-3. REFERENCE-OVERRIDE replaces USER-MODIFIED (when d_13 changes)
-4. USER-MODIFIED after override → USER-MODIFIED wins (until next d_13 change)
-5. DEFAULT only exists at initialization, replaced by ANY action
+Flow Example (ref_f_85 insulation RSI):
+DEFAULT (0.5)
+  → USER-MODIFIED (0.9)     [user types 0.9]
+  → OVER-RIDDEN (0.7)        [user changes d_13, ReferenceValues applies]
+  → USER-MODIFIED (0.8)     [user types 0.8]
+  → IMPORTED (0.6)          [Excel import]
+  → USER-MODIFIED (1.0)     [user types 1.0]
+
+Rules:
+1. Last write wins among USER-MODIFIED, OVER-RIDDEN, IMPORTED
+2. DEFAULT only exists at initialization, replaced by ANY action
+3. These states are ONLY for INPUT fields, NEVER for calculated fields
 ```
+
+**Note:** Currently VALUE_STATES lacks OVER_RIDDEN constant. ReferenceValues.js incorrectly uses "user-modified" for overlays. Planned addition: `VALUE_STATES.OVER_RIDDEN = "over-ridden"`
 
 **What This Means:**
 
