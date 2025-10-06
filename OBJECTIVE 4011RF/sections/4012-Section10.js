@@ -43,10 +43,6 @@ window.TEUI.SectionModules.sect10 = (function () {
           this.state[fieldId] = defaultValue;
         }
       });
-
-      console.log(
-        "S10: TargetState defaults loaded from field definitions (single source of truth)",
-      );
     },
     /**
      * ✅ PHASE 2: Sync from global StateManager after import
@@ -64,9 +60,6 @@ window.TEUI.SectionModules.sect10 = (function () {
         const globalValue = window.TEUI.StateManager.getValue(fieldId);
         if (globalValue !== null && globalValue !== undefined) {
           this.setValue(fieldId, globalValue);
-          console.log(
-            `S10 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`,
-          );
         }
       });
     },
@@ -163,16 +156,9 @@ window.TEUI.SectionModules.sect10 = (function () {
               value,
               "default",
             );
-            console.log(
-              `[S10 REF DEFAULTS] Published ref_${fieldId}=${value} to StateManager`,
-            );
           }
         });
       }
-
-      console.log(
-        "S10: ReferenceState defaults loaded from field definitions with Reference overrides",
-      );
     },
     /**
      * ✅ PHASE 2: Sync from global StateManager after import
@@ -191,9 +177,6 @@ window.TEUI.SectionModules.sect10 = (function () {
         const globalValue = window.TEUI.StateManager.getValue(refFieldId);
         if (globalValue !== null && globalValue !== undefined) {
           this.setValue(fieldId, globalValue);
-          console.log(
-            `S10 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (${refFieldId})`,
-          );
         }
       });
     },
