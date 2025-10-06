@@ -37,6 +37,18 @@ window.TEUI.SectionModules.sect12 = (function () {
         g_109: "1.50", // Measured value (conditional editable, N/A when not MEASURED)
       };
     },
+    /**
+     * ✅ PHASE 2: Sync from global StateManager after import
+     */
+    syncFromGlobalState: function (fieldIds = ["d_103", "g_103", "d_105", "d_108", "g_109"]) {
+      fieldIds.forEach((fieldId) => {
+        const globalValue = window.TEUI.StateManager.getValue(fieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue, "imported");
+          console.log(`S12 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`);
+        }
+      });
+    },
     saveState: function () {
       localStorage.setItem("S12_TARGET_STATE", JSON.stringify(this.state));
     },
@@ -125,6 +137,19 @@ window.TEUI.SectionModules.sect12 = (function () {
     },
     saveState: function () {
       localStorage.setItem("S12_REFERENCE_STATE", JSON.stringify(this.state));
+    },
+    /**
+     * ✅ PHASE 2: Sync from global StateManager after import
+     */
+    syncFromGlobalState: function (fieldIds = ["d_103", "g_103", "d_105", "d_108", "g_109"]) {
+      fieldIds.forEach((fieldId) => {
+        const refFieldId = `ref_${fieldId}`;
+        const globalValue = window.TEUI.StateManager.getValue(refFieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue, "imported");
+          console.log(`S12 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (${refFieldId})`);
+        }
+      });
     },
     setValue: function (fieldId, value, source = "user") {
       this.state[fieldId] = value;
@@ -2850,6 +2875,9 @@ window.TEUI.SectionModules.sect12 = (function () {
     calculateTargetModel: calculateTargetModel, // ✅ CRITICAL: Expose for state-isolated forced recalculation
     calculateCombinedUValue: calculateCombinedUValue,
     ModeManager: ModeManager, // ✅ CRITICAL FIX: Enable FieldManager integration
+    // ✅ PHASE 2: Expose state objects for import sync
+    TargetState: TargetState,
+    ReferenceState: ReferenceState,
     // ✅ BACKUP: Expose initialization state and force method for S03 integration
     get isInitialized() { return isInitialized; },
     forceInitialization: onSectionRendered
