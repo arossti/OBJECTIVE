@@ -67,6 +67,21 @@ window.TEUI.SectionModules.sect09 = (function () {
       }
       return null;
     },
+    /**
+     * ✅ PHASE 2: Sync from global StateManager after import
+     * Bridges global StateManager → isolated TargetState for imported values
+     */
+    syncFromGlobalState: function (fieldIds = ["d_63", "g_63", "d_64", "d_65", "d_66", "d_67", "d_68", "g_67"]) {
+      fieldIds.forEach((fieldId) => {
+        const globalValue = window.TEUI.StateManager.getValue(fieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue);
+          console.log(
+            `S09 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`,
+          );
+        }
+      });
+    },
     saveState: function () {
       localStorage.setItem("S09_TARGET_STATE", JSON.stringify(this.state));
     },
@@ -123,6 +138,22 @@ window.TEUI.SectionModules.sect09 = (function () {
     },
     getValue: function (fieldId) {
       return this.state[fieldId];
+    },
+    /**
+     * ✅ PHASE 2: Sync from global StateManager after import
+     * Bridges global StateManager → isolated ReferenceState for imported values
+     */
+    syncFromGlobalState: function (fieldIds = ["d_63", "g_63", "d_64", "d_65", "d_66", "d_67", "d_68", "g_67"]) {
+      fieldIds.forEach((fieldId) => {
+        const refFieldId = `ref_${fieldId}`;
+        const globalValue = window.TEUI.StateManager.getValue(refFieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue);
+          console.log(
+            `S09 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (${refFieldId})`,
+          );
+        }
+      });
     },
     // Dynamic reloading when reference standard changes
     onReferenceStandardChange: function (newStandard) {
@@ -2820,6 +2851,10 @@ window.TEUI.SectionModules.sect09 = (function () {
     // Event handling and initialization - REQUIRED
     initializeEventHandlers: initializeEventHandlers,
     onSectionRendered: onSectionRendered,
+
+    // ✅ PHASE 2: Expose state objects for import sync
+    TargetState: TargetState,
+    ReferenceState: ReferenceState,
 
     // Section-specific utility functions - OPTIONAL
     calculateAll: calculateAll,
