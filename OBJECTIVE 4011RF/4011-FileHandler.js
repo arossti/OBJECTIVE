@@ -466,6 +466,7 @@
         { id: "sect08", name: "S08" },
         { id: "sect09", name: "S09" },
         { id: "sect10", name: "S10" },
+        { id: "sect11", name: "S11" },
         { id: "sect15", name: "S15" },
       ];
 

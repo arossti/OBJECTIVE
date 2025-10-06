@@ -857,10 +857,44 @@ If you DON'T see these logs:
 - **Reference Input Fields:** Sync if independent (e.g., S06 m_43)
 - **Reference Calculated Fields:** DON'T sync, calculate instead (e.g., S05 i_41 = i_39)
 
-### Commits Applied
+### Commits Applied (Oct 5, 2025)
 
-- `[commit hash]` - S05: Fix import sync - expose states, fix field lists, add i_41 Reference calculation
-- `[commit hash]` - S06: Fix import sync - expose states for FileHandler access
+- `8ec6bbc` - S05 and S06 import sync complete
+- `7ec2981` - S07 and S08 import sync complete with 3-step pattern documented
+- `dbaccf9` - S09 import sync complete
+- `6801eb0` - S10 import sync complete (all 31 fields including sliders)
+
+---
+
+## ⚠️ TODO: S11 Window/Door Area Sync from S10 (Oct 6+ work)
+
+**Current Status (Oct 5, 2025):**
+- S11 d_88-d_93 (window/door areas) are **user-editable** and **import from Excel**
+- This creates duplicate data entry (user enters in S10, then again in S11 Excel import)
+
+**Original Design (surgically removed during refactor):**
+- S11 should **read** d_88-d_93 areas from S10 d_73-d_78
+- Target mode: Read from `d_73-d_78`
+- Reference mode: Read from `ref_d_73-ref_d_78`
+- S11 area fields should be **readonly** (type: "calculated")
+
+**Challenge:**
+- Dual-state architecture makes S10→S11 sync complex
+- Need listeners that trigger on S10 changes in both modes
+- Must sync after import (S10 imports first, then S11 needs to pull areas)
+- Initial attempt caused syntax errors and recursion issues
+
+**Solution Path for Oct 6+:**
+1. Restore `areaSourceMap` in S11 (maps d_88→d_73, d_89→d_74, etc.)
+2. Add `setupS10AreaListeners()` with dual-state awareness
+3. Add `syncAreasFromS10()` called after import and mode switches
+4. Change S11 area fields from "editable" to "calculated"
+5. Test thoroughly without breaking existing functionality
+
+**For Now:**
+- S11 imports all 24 fields including window areas (works but duplicates S10)
+- User can manually edit S11 areas if they differ from S10
+- This is safe fallback until proper S10→S11 sync is implemented
 
 ---
 

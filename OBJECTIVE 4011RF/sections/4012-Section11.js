@@ -119,6 +119,24 @@ window.TEUI.SectionModules.sect11 = (function () {
         d_97: "20", // Thermal Bridge Penalty %
       };
     },
+    /**
+     * ✅ PHASE 2: Sync from global StateManager after import
+     */
+    syncFromGlobalState: function (fieldIds = [
+      "d_85", "f_85", "d_86", "f_86", "d_87", "f_87",  // Roof, walls AG, floor exp
+      "d_88", "d_89", "d_90", "d_91", "d_92", "d_93",  // Window/door areas (user editable in S11)
+      "g_88", "g_89", "g_90", "g_91", "g_92", "g_93",  // U-values
+      "d_94", "f_94", "d_95", "f_95",                  // Walls BG, floor slab
+      "d_96", "d_97"                                    // Interior floor, thermal bridge
+    ]) {
+      fieldIds.forEach((fieldId) => {
+        const globalValue = window.TEUI.StateManager.getValue(fieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue);
+          console.log(`S11 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`);
+        }
+      });
+    },
     saveState: function () {
       localStorage.setItem("S11_TARGET_STATE", JSON.stringify(this.state));
     },
@@ -266,6 +284,25 @@ window.TEUI.SectionModules.sect11 = (function () {
 
     saveState: function () {
       localStorage.setItem("S11_REFERENCE_STATE", JSON.stringify(this.state));
+    },
+    /**
+     * ✅ PHASE 2: Sync from global StateManager after import
+     */
+    syncFromGlobalState: function (fieldIds = [
+      "d_85", "f_85", "d_86", "f_86", "d_87", "f_87",  // Roof, walls AG, floor exp
+      "d_88", "d_89", "d_90", "d_91", "d_92", "d_93",  // Window/door areas (user editable in S11)
+      "g_88", "g_89", "g_90", "g_91", "g_92", "g_93",  // U-values
+      "d_94", "f_94", "d_95", "f_95",                  // Walls BG, floor slab
+      "d_96", "d_97"                                    // Interior floor, thermal bridge
+    ]) {
+      fieldIds.forEach((fieldId) => {
+        const refFieldId = `ref_${fieldId}`;
+        const globalValue = window.TEUI.StateManager.getValue(refFieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue);
+          console.log(`S11 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (${refFieldId})`);
+        }
+      });
     },
     setValue: function (fieldId, value) {
       this.state[fieldId] = value;
@@ -2082,6 +2119,10 @@ window.TEUI.SectionModules.sect11 = (function () {
 
     // ✅ CRITICAL FIX: Export ModeManager for dual-state field routing
     ModeManager: ModeManager,
+
+    // ✅ PHASE 2: Expose state objects for import sync
+    TargetState: TargetState,
+    ReferenceState: ReferenceState,
   };
 })();
 
