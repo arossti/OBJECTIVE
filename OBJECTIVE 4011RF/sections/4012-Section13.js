@@ -188,6 +188,11 @@ window.TEUI.SectionModules.sect13 = (function () {
         return;
       this.currentMode = mode;
 
+      // 🔍 DEBUG: Log d_118 state during mode switch
+      console.log(`[S13 MODE SWITCH] Switching to ${mode} mode`);
+      console.log(`[S13 MODE SWITCH] ReferenceState.d_118 = ${ReferenceState.getValue("d_118")}`);
+      console.log(`[S13 MODE SWITCH] TargetState.d_118 = ${TargetState.getValue("d_118")}`);
+
       this.refreshUI();
       // CRITICAL: Update ghosting for new mode's system
       this.updateConditionalUI();
@@ -360,6 +365,14 @@ window.TEUI.SectionModules.sect13 = (function () {
           // ✅ S10 SUCCESS PATTERN: Handle sliders/coefficient fields
           const numericValue = window.TEUI.parseNumeric(stateValue, 0);
 
+          // 🔍 DEBUG: Log d_118 slider updates
+          if (fieldId === "d_118") {
+            console.log(`[S13 REFRESH] mode=${this.currentMode}, d_118 stateValue=${stateValue}, numericValue=${numericValue}, slider.value before=${slider.value}`);
+          }
+
+          // ✅ S10 SUCCESS PATTERN: Update slider value
+          slider.value = numericValue;
+
           // ✅ S10 SUCCESS PATTERN: Update display (use slider's nextElementSibling)
           const display = slider.nextElementSibling;
           if (display) {
@@ -373,6 +386,9 @@ window.TEUI.SectionModules.sect13 = (function () {
               fieldId === "k_120"
             ) {
               display.textContent = numericValue.toFixed(0) + "%"; // Percentage slider format (e.g., "89%")
+              if (fieldId === "d_118") {
+                console.log(`[S13 REFRESH] d_118 display updated to ${display.textContent}`);
+              }
             } else if (fieldId === "f_118") {
               display.textContent = (numericValue * 100).toFixed(0) + "%"; // Decimal efficiency format (e.g., "89%")
             } else {
@@ -2559,16 +2575,19 @@ window.TEUI.SectionModules.sect13 = (function () {
       // Fallback: read from StateManager mode-aware
       ventRate = window.TEUI.parseNumeric(getExternalValue("d_120", isReferenceCalculation)) || 0;
     }
-    
+
     // 🔧 BUG #4 FIX: Read mode-aware HDD for ventilation energy calculation
     // This fixes 12-month state mixing issue where Reference calculations used Target climate data
     const hdd = isReferenceCalculation
       ? getGlobalNumericValue("ref_d_20")  // Reference reads ref_d_20 (independent location)
       : getGlobalNumericValue("d_20");      // Target reads d_20 (independent location)
-    
+
     // ✅ PATTERN 1: Mode-aware reading (automatic with temporary mode switching)
-    const efficiency =
-      (window.TEUI.parseNumeric(ModeManager.getValue("d_118")) || 0) / 100;
+    const d_118_value = ModeManager.getValue("d_118");
+    const efficiency = (window.TEUI.parseNumeric(d_118_value) || 0) / 100;
+
+    // 🔍 DEBUG: Log d_118 during ventilation calculations
+    console.log(`[S13 VENT CALC] isRef=${isReferenceCalculation}, mode=${ModeManager.currentMode}, d_118=${d_118_value}, efficiency=${efficiency}`);
     const heatingVentEnergy = (1.21 * ventRate * hdd * 24) / 1000;
     const recoveredEnergy = heatingVentEnergy * efficiency;
     const netHeatLoss = heatingVentEnergy - recoveredEnergy;
