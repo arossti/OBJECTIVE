@@ -540,7 +540,6 @@ window.TEUI.SectionModules.sect04 = (function () {
         d_31: getFieldDefault("d_31"), // Wood m³/yr
         h_35: getFieldDefault("h_35"), // PER Factor
       };
-      console.log("S04-RF: Target defaults set from field definitions - single source of truth");
     },
 
     loadState: function () {
@@ -549,7 +548,6 @@ window.TEUI.SectionModules.sect04 = (function () {
         if (saved) {
           const savedData = JSON.parse(saved);
           this.data = { ...this.data, ...savedData };
-          console.log("S04-RF: Target state loaded from localStorage");
         }
       } catch (error) {
         console.warn("S04-RF: Error loading Target state:", error);
@@ -584,9 +582,6 @@ window.TEUI.SectionModules.sect04 = (function () {
         const globalValue = window.TEUI.StateManager.getValue(fieldId);
         if (globalValue !== null && globalValue !== undefined) {
           this.setValue(fieldId, globalValue, "imported");
-          console.log(
-            `S04 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`,
-          );
         }
       });
     },
@@ -615,7 +610,6 @@ window.TEUI.SectionModules.sect04 = (function () {
         d_31: getFieldDefault("d_31"), // Wood m³/yr
         h_35: getFieldDefault("h_35"), // PER Factor
       };
-      console.log("S04-RF: Reference defaults set from field definitions - single source of truth");
     },
 
     loadState: function () {
@@ -624,7 +618,6 @@ window.TEUI.SectionModules.sect04 = (function () {
         if (saved) {
           const savedData = JSON.parse(saved);
           this.data = { ...this.data, ...savedData };
-          console.log("S04-RF: Reference state loaded from localStorage");
         }
       } catch (error) {
         console.warn("S04-RF: Error loading Reference state:", error);
@@ -660,9 +653,6 @@ window.TEUI.SectionModules.sect04 = (function () {
         const globalValue = window.TEUI.StateManager.getValue(refFieldId);
         if (globalValue !== null && globalValue !== undefined) {
           this.setValue(fieldId, globalValue, "imported");
-          console.log(
-            `S04 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (ref_${fieldId})`,
-          );
         }
       });
     },
@@ -675,7 +665,6 @@ window.TEUI.SectionModules.sect04 = (function () {
     currentMode: "target",
 
     initialize: function () {
-      console.log("S04-RF: Initializing Pattern A ModeManager");
       TargetState.initialize();
       ReferenceState.initialize();
     },
@@ -686,7 +675,6 @@ window.TEUI.SectionModules.sect04 = (function () {
         return;
       }
       this.currentMode = mode;
-      console.log(`S04-RF: Switched to ${mode.toUpperCase()} mode`);
 
       // ✅ PATTERN A: UI toggle only switches display, values should already be calculated
       this.refreshUI();
@@ -716,8 +704,6 @@ window.TEUI.SectionModules.sect04 = (function () {
     },
 
     refreshUI: function () {
-      console.log(`[S04-RF] Refreshing UI for ${this.currentMode.toUpperCase()} mode`);
-
       const sectionElement = document.getElementById("actualTargetEnergy");
       if (!sectionElement) return;
 
@@ -750,8 +736,6 @@ window.TEUI.SectionModules.sect04 = (function () {
 
     updateCalculatedDisplayValues: function () {
       if (!window.TEUI?.StateManager) return;
-
-      console.log(`[S04-RF] 🔄 Updating calculated display values for ${this.currentMode} mode`);
 
       // All calculated fields in S04
       const calculatedFields = [
@@ -1014,10 +998,8 @@ window.TEUI.SectionModules.sect04 = (function () {
     // ✅ CRITICAL FOR S01: Store subtotals for downstream consumption
     setFieldValue("f_32", f_32); // Actual energy subtotal
     setFieldValue("g_32", g_32); // Actual emissions subtotal (with wood offset)
-    setFieldValue("j_32", j_32); // Target energy subtotal  
+    setFieldValue("j_32", j_32); // Target energy subtotal
     setFieldValue("k_32", k_32); // Target emissions subtotal (with wood offset)
-
-    console.log(`[S04-RF] Row 32 subtotals: f_32=${f_32}, g_32=${g_32}, j_32=${j_32}, k_32=${k_32} (wood offset: ${d_60} MT/yr)`);
   }
 
   function calculateRow33() {
@@ -1061,7 +1043,6 @@ window.TEUI.SectionModules.sect04 = (function () {
   }
 
   function calculateAll() {
-    console.log("[S04-RF] Starting complete Excel-compliant calculations");
     const originalMode = ModeManager.currentMode;
     
     // Target calculations
@@ -1087,9 +1068,8 @@ window.TEUI.SectionModules.sect04 = (function () {
     calculateRow33(); // Uses ref_d_43, ref_i_43
     calculateRow34(); // Uses ref_d_63
     calculateRow35(); // Uses ref_d_14, ref_h_15
-    
+
     ModeManager.currentMode = originalMode;
-    console.log("[S04-RF] ✅ Complete dual-engine calculations finished");
   }
 
   function getFieldDefault(fieldId) {
@@ -1217,19 +1197,15 @@ window.TEUI.SectionModules.sect04 = (function () {
     controlsContainer.appendChild(stateIndicator);
     controlsContainer.appendChild(toggleSwitch);
     sectionHeader.appendChild(controlsContainer);
-
-    console.log("S04-RF: Header controls injected");
   }
 
   function onSectionRendered() {
-    console.log("S04-RF: Section rendered - initializing Excel-compliant Pattern A module");
     ModeManager.initialize();
-    injectHeaderControls(); // ✅ ADD: Header controls for mode switching
+    injectHeaderControls();
     initializeEventHandlers();
     calculateAll();
     ModeManager.updateCalculatedDisplayValues();
     ModeManager.refreshUI();
-    console.log("S04-RF: Excel-compliant initialization complete");
   }
 
   function initializeEventHandlers() {
@@ -1319,11 +1295,7 @@ window.TEUI.SectionModules.sect04 = (function () {
       dependencies.forEach((fieldId) => {
         window.TEUI.StateManager.addListener(fieldId, calculateAndRefresh);
       });
-
-      console.log(`[S04-RF] Added ${dependencies.length} clean dependency listeners`);
     }
-
-    console.log("S04-RF: Event handlers initialized with proper Enter key handling");
   }
 
   // Expose ModeManager globally
