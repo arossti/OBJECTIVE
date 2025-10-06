@@ -2755,15 +2755,19 @@ window.TEUI.SectionModules.sect13 = (function () {
     const ventilationMethod =
       getSectionValue("g_118", isReferenceCalculation) || "Constant";
     const setbackValueStr = ModeManager.getValue("k_120");
-    const ventRateM3hr_h120 =
-      window.TEUI.parseNumeric(getFieldValue("h_120")) || 0; // Get h_120 value used in limit calc
 
-    // Logging removed
-    // console.warn(`[S13 Debug FreeCool Inputs] Vent Method(g118): ${ventilationMethod}, Setback Factor(k120 str): ${setbackValueStr}, Vent Rate(h120): ${ventRateM3hr_h120.toFixed(2)}`);
+    // ✅ FIX (Oct 6, 2025): Mode-aware read for h_120
+    const ventRateM3hr_h120 = window.TEUI.parseNumeric(
+      isReferenceCalculation
+        ? window.TEUI.StateManager.getValue("ref_h_120")
+        : getFieldValue("h_120")
+    ) || 0;
 
     try {
-      // Leniently read h_124 from Cooling.js - will be 0 on first pass
-      const h_124_raw = window.TEUI.StateManager.getValue("cooling_h_124");
+      // ✅ FIX (Oct 6, 2025): Mode-aware read for cooling_h_124
+      const h_124_raw = isReferenceCalculation
+        ? window.TEUI.StateManager.getValue("ref_cooling_h_124")
+        : window.TEUI.StateManager.getValue("cooling_h_124");
       potentialLimit = window.TEUI.parseNumeric(h_124_raw) || 0;
 
       if (setbackValueStr) {
@@ -2792,30 +2796,34 @@ window.TEUI.SectionModules.sect13 = (function () {
         finalFreeCoolingLimit = potentialLimit; // Default to full potential if method is unclear
       }
 
-      // Logging removed
-      // console.warn(`[S13 Debug FreeCool Outputs] Potential Limit: ${potentialLimit.toFixed(2)}, Setback Applied: ${setbackFactor.toFixed(2)}, Final Limit(h124): ${finalFreeCoolingLimit.toFixed(2)}`);
+      // ✅ FIX (Oct 6, 2025): Update values for BOTH Target and Reference calculations
+      setFieldValue("h_124", finalFreeCoolingLimit, "number-2dp-comma", isReferenceCalculation);
 
-      // Only update DOM for Target calculations
-      if (!isReferenceCalculation) {
-        setFieldValue("h_124", finalFreeCoolingLimit, "number-2dp-comma");
+      // Calculate D124 (% Free Cooling Capacity)
+      // ✅ FIX (Oct 6, 2025): Mode-aware read for d_129
+      const coolingLoadUnmitigated = window.TEUI.parseNumeric(
+        isReferenceCalculation
+          ? window.TEUI.StateManager.getValue("ref_d_129")
+          : getFieldValue("d_129")
+      ) || 0;
 
-        // Calculate D124 (% Free Cooling Capacity)
-        const coolingLoadUnmitigated =
-          window.TEUI.parseNumeric(getFieldValue("d_129")) || 0;
-        let percentFreeCooling = 0;
-        if (coolingLoadUnmitigated > 0) {
-          percentFreeCooling = finalFreeCoolingLimit / coolingLoadUnmitigated;
-        }
-        setFieldValue("d_124", percentFreeCooling, "percent-0dp");
-
-        // Read m_124 from Cooling.js via StateManager (STRICT - no fallback)
-        const m_124_raw = window.TEUI.StateManager.getValue("cooling_m_124");
-        if (!m_124_raw && m_124_raw !== 0) {
-          throw new Error("[S13] REQUIRED cooling_m_124 missing from Cooling.js");
-        }
-        const activeCoolingDays = window.TEUI.parseNumeric(m_124_raw);
-        setFieldValue("m_124", activeCoolingDays, "number-2dp");
+      let percentFreeCooling = 0;
+      if (coolingLoadUnmitigated > 0) {
+        percentFreeCooling = finalFreeCoolingLimit / coolingLoadUnmitigated;
       }
+      setFieldValue("d_124", percentFreeCooling, "percent-0dp", isReferenceCalculation);
+
+      // Read m_124 from Cooling.js via StateManager (mode-aware)
+      // ✅ FIX (Oct 6, 2025): Mode-aware read for cooling_m_124
+      const m_124_raw = isReferenceCalculation
+        ? window.TEUI.StateManager.getValue("ref_cooling_m_124")
+        : window.TEUI.StateManager.getValue("cooling_m_124");
+
+      if (!m_124_raw && m_124_raw !== 0) {
+        throw new Error("[S13] REQUIRED cooling_m_124 missing from Cooling.js");
+      }
+      const activeCoolingDays = window.TEUI.parseNumeric(m_124_raw);
+      setFieldValue("m_124", activeCoolingDays, "number-2dp", isReferenceCalculation);
 
     } catch (error) {
       console.error("[S13 Error] Error during calculateFreeCooling:", error);
