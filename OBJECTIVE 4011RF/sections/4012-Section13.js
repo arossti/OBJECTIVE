@@ -2709,18 +2709,31 @@ window.TEUI.SectionModules.sect13 = (function () {
    * Moved from Cooling.js - needs D123 from S13
    */
   function calculateCEDMitigated(isReferenceCalculation = false) {
-    const d129 = window.TEUI.parseNumeric(getFieldValue("d_129")) || 0;
-    const h124 = window.TEUI.parseNumeric(getFieldValue("h_124")) || 0;
-    const d123 = window.TEUI.parseNumeric(getFieldValue("d_123")) || 0;
-    
+    // ✅ FIX (Oct 6, 2025): Mode-aware reads for Reference calculation
+    const d129 = window.TEUI.parseNumeric(
+      isReferenceCalculation
+        ? window.TEUI.StateManager.getValue("ref_d_129")
+        : getFieldValue("d_129")
+    ) || 0;
+
+    const h124 = window.TEUI.parseNumeric(
+      isReferenceCalculation
+        ? window.TEUI.StateManager.getValue("ref_h_124")
+        : getFieldValue("h_124")
+    ) || 0;
+
+    const d123 = window.TEUI.parseNumeric(
+      isReferenceCalculation
+        ? window.TEUI.StateManager.getValue("ref_d_123")
+        : getFieldValue("d_123")
+    ) || 0;
+
     // Excel formula: M129 = MAX(0, D129 - H124 - D123)
     const cedMitigated = Math.max(0, d129 - h124 - d123);
-    
-    // Only update DOM for Target calculations
-    if (!isReferenceCalculation) {
-      setFieldValue("m_129", cedMitigated, "number-2dp-comma");
-    }
-    
+
+    // Update DOM for both Target and Reference calculations
+    setFieldValue("m_129", cedMitigated, "number-2dp-comma", isReferenceCalculation);
+
     return { m_129: cedMitigated };
   }
 
