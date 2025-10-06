@@ -25,6 +25,22 @@ window.TEUI.SectionModules.sect07 = (function () {
       this.values[fieldId] = value;
     },
 
+    /**
+     * ✅ PHASE 2: Sync from global StateManager after import
+     * Bridges global StateManager → isolated TargetState for imported values
+     */
+    syncFromGlobalState: function (fieldIds = ["d_49", "e_49", "e_50", "d_51", "d_52", "d_53", "k_52"]) {
+      fieldIds.forEach((fieldId) => {
+        const globalValue = window.TEUI.StateManager.getValue(fieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue);
+          console.log(
+            `S07 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`,
+          );
+        }
+      });
+    },
+
     // ✅ DUAL-STATE-CHEATSHEET.md COMPLIANCE: Initialize from FieldDefinitions (single source of truth)
     setDefaults: function () {
       console.log(
@@ -62,6 +78,23 @@ window.TEUI.SectionModules.sect07 = (function () {
     },
     setValue: function (fieldId, value) {
       this.values[fieldId] = value;
+    },
+
+    /**
+     * ✅ PHASE 2: Sync from global StateManager after import
+     * Bridges global StateManager → isolated ReferenceState for imported values
+     */
+    syncFromGlobalState: function (fieldIds = ["d_49", "e_49", "e_50", "d_51", "d_52", "d_53", "k_52"]) {
+      fieldIds.forEach((fieldId) => {
+        const refFieldId = `ref_${fieldId}`;
+        const globalValue = window.TEUI.StateManager.getValue(refFieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue);
+          console.log(
+            `S07 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (${refFieldId})`,
+          );
+        }
+      });
     },
 
     // ✅ DUAL-STATE-CHEATSHEET.md COMPLIANCE: Initialize from FieldDefinitions (single source of truth)
@@ -1479,6 +1512,10 @@ window.TEUI.SectionModules.sect07 = (function () {
     injectHeaderControls,
     // ✅ PATTERN A: Expose state objects for external access
     ModeManager: ModeManager,
+
+    // ✅ PHASE 2: Expose state objects for import sync
+    TargetState: TargetState,
+    ReferenceState: ReferenceState,
   };
 })();
 
