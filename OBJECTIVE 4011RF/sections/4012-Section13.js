@@ -2512,27 +2512,36 @@ window.TEUI.SectionModules.sect13 = (function () {
     const totalHours = window.TEUI.parseNumeric(getExternalValue("j_63", isReferenceCalculation)) || 8760;
     const occupants_d63 = window.TEUI.parseNumeric(getExternalValue("d_63", isReferenceCalculation)) || 0;
 
-    // Log all input values for d_120 calculation
+    // 🔍 DEBUG: Log all d_120 calculation inputs
+    console.log(`[S13 d_120 CALC] isRef=${isReferenceCalculation}, mode=${ModeManager.currentMode}`);
+    console.log(`[S13 d_120 CALC] ventMethod=${ventMethod}, volume=${volume}, ach=${ach}`);
+    console.log(`[S13 d_120 CALC] ratePerPerson=${ratePerPerson_d119}, occupants=${occupants_d63}`);
+    console.log(`[S13 d_120 CALC] occupiedHours=${occupiedHours}, totalHours=${totalHours}`);
 
     let ventRateLs = 0;
 
     if (ventMethod === "Occupant Constant") {
       ventRateLs = ratePerPerson_d119 * occupants_d63;
+      console.log(`[S13 d_120 CALC] Method: Occupant Constant → ventRateLs=${ventRateLs}`);
     } else if (ventMethod === "Occupant by Schedule") {
       ventRateLs =
         totalHours > 0
           ? ratePerPerson_d119 * occupants_d63 * (occupiedHours / totalHours)
           : 0;
+      console.log(`[S13 d_120 CALC] Method: Occupant by Schedule → ventRateLs=${ventRateLs}`);
     } else if (ventMethod === "Volume by Schedule") {
       ventRateLs =
         totalHours > 0 && volume > 0
           ? ((ach * volume) / 3.6) * (occupiedHours / totalHours)
           : 0;
+      console.log(`[S13 d_120 CALC] Method: Volume by Schedule → ventRateLs=${ventRateLs}`);
     } else if (ventMethod === "Volume Constant") {
       ventRateLs = volume > 0 ? (ach * volume) / 3.6 : 0;
+      console.log(`[S13 d_120 CALC] Method: Volume Constant → formula: (${ach} * ${volume}) / 3.6 = ${ventRateLs}`);
     } else {
       // Default to Volume Constant
       ventRateLs = volume > 0 ? (ach * volume) / 3.6 : 0;
+      console.log(`[S13 d_120 CALC] Method: Default (Volume Constant) → ventRateLs=${ventRateLs}`);
     }
 
     const ventilationRateLs_d120 = ventRateLs;
