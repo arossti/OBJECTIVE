@@ -326,19 +326,25 @@ The term "state" has **two distinct meanings** in this application:
 
 ---
 
-## 📋 Pattern A Sections - Remaining Work
+## 📋 Pattern A Sections - Import Sync Status
 
-### Sections Requiring storeReferenceResults() Fix
+### Sections Complete (Oct 5-6, 2025)
 
-All Pattern A dual-state sections need audit to remove INPUT fields from publishing:
+All Pattern A dual-state sections have import sync implemented:
 
-- ✅ **S02** - Building Info (FIXED Oct 4, 2025)
-- ⏳ **S03** - Climate Calculations (e.g., location: Milton → Alexandria bug)
-- ⏳ **S04** - Actual Target Energy
-- ⏳ **S05** - Emissions
-- ⏳ **S06** - On-Site Energy
-- ⏳ **S08** - Indoor Air Quality
-- ⏳ **S15** - TEUI Summary
+- ✅ **S02** - Building Info (Oct 4, 2025)
+- ✅ **S03** - Climate Calculations (Oct 5, 2025)
+- ✅ **S04** - Actual Target Energy (Oct 5, 2025)
+- ✅ **S05** - Emissions (Oct 5, 2025)
+- ✅ **S06** - On-Site Energy (Oct 5, 2025)
+- ✅ **S07** - Renewables (Oct 5, 2025)
+- ✅ **S08** - Indoor Air Quality (Oct 5, 2025)
+- ✅ **S09** - Occupancy & Gains (Oct 5, 2025)
+- ✅ **S10** - Building Enclosure (Oct 5, 2025)
+- ✅ **S11** - Transmission Losses (Oct 5, 2025)
+- ✅ **S12** - Volume Metrics (Oct 6, 2025)
+- ⏳ **S13** - Mechanical Loads (Oct 6, 2025 - calculation fixes in progress, import sync ready)
+- ✅ **S15** - TEUI Summary (Oct 5, 2025)
 
 ### Fix Pattern (Apply to Each Section)
 
@@ -388,42 +394,54 @@ function storeReferenceResults() {
 - ✅ Document architecture consistency analysis
 - ✅ Verify no breaking changes
 
-### Pending (Oct 5, 2025)
+### Pending
 
-- ⏳ Audit S03 storeReferenceResults (fix Milton/Alexandria location bug)
-- ⏳ Audit S04 storeReferenceResults
-- ⏳ Audit S05 storeReferenceResults
-- ⏳ Audit S06 storeReferenceResults
-- ⏳ Audit S08 storeReferenceResults
-- ⏳ Audit S15 storeReferenceResults
+- ⏳ **S13 Import Sync:** Apply saved commit `639e119` after calculation bugs are fixed
+- ⏳ **S11 Area Sync:** Implement S10→S11 window/door area sync (remove duplicate data entry)
 
 ### Future Enhancements (Optional)
 
 - ⏳ Update ReferenceToggle state names ("mirrored" → IMPORTED, "reference-standard" → OVER_RIDDEN)
 - ⏳ Add state validation to setValue() (prevent CALCULATED on INPUT fields)
-- ⏳ Remove debug logging after Pattern A deployment complete
+- ⏳ Remove debug logging after full deployment complete
 
 ---
 
 ## 📊 Commits
 
-**Oct 4, 2025 Session:**
+**Oct 4, 2025 Session - Import Quarantine Infrastructure:**
 - `f8bf50c` - Add architecture consistency analysis for import fix
 - `319f78c` - Implement import quarantine fix - prevent calculated defaults from overwriting imports
 - `201f111` - Document successful import fix implementation and test results
 - `a273a61` - Streamline MAPPER.md - archive full debug session, focus on solutions
 
-**Oct 5, 2025 Session - S03 Fixes:**
+**Oct 5, 2025 Session - Pattern A Import Sync (S03-S12):**
 - `89aa4c1` - Fix S03 storeReferenceResults - remove INPUT fields (location)
 - `e45ed91` - Add S03 ReferenceState.syncFromGlobalState() for location sync
 - `20fe5d2` - Fix percentage cell import - convert Excel decimal to app percentage
 - `712d980` - Improve percentage detection - check both format string and display value
+- `42148e4` - Fix S12 climate data updates: Add missing storeTargetResults() and forced recalculation
+- `667628c` - Fix S12 U-value updates: Add forced recalculation for S11 changes
+- `f27e77b` - CRITICAL: Fix state isolation - use Target-only recalculation
+- `8fcbb3e` - Optimize performance: Limit forced recalculation to user changes only
+- `8ec6bbc` - S05 and S06 import sync complete
+- `7ec2981` - S07 and S08 import sync complete with 3-step pattern documented
+- `dbaccf9` - S09 import sync complete
+- `6801eb0` - S10 import sync complete (all 31 fields including sliders)
+- `3dc84d7` - Fix S11 import sync - transmission losses with TODO for S10 area sync
+- `0fc4ee7` - Fix S12 import sync - volume metrics with 5 fields
+
+**Oct 6, 2025 Session - S13 Calculation Fixes:**
+- `286a27d` - Fix S13 slider.value update in refreshUI
+- `ae66290` - CRITICAL: S12 publishes ref_d_105 (THE FIX for S13 ventilation)
+- `37359d5` - Clean up S13 diagnostic logging (STABLE BASELINE)
+- `d40de0d` - Document S13 known issues and implementation plans
 
 **Total Implementation:**
-- ~100 lines of production code across 2 sessions
-- ~4 hours total (analysis + implementation + testing)
-- Zero breaking changes
-- Full architecture alignment confirmed
+- ~500 lines of production code across 3 sessions
+- ~12 hours total (analysis + implementation + testing)
+- Zero breaking changes to state isolation architecture
+- Full Pattern A import sync (S02-S12) complete
 
 ---
 
@@ -945,14 +963,42 @@ If you DON'T see these logs:
 
 ## 📚 Related Documentation
 
+- **4012-S13-DEBUG.md** - S13 Mechanical Loads known issues, fixes, and testing checklist (Oct 6, 2025)
 - **Master-Reference-Roadmap.md** - Reference system architecture and anti-patterns
 - **README.md** - State terminology clarification (Oct 4, 2025 section)
 - **DUAL-STATE-CHEATSHEET.md** - Pattern A implementation patterns
-- **MAPPER-FULL-DEBUG-OCT4.md** - Complete debugging session archive (3,273 lines)
+- **history/MAPPER-FULL-DEBUG-OCT4.md** - Complete debugging session archive (3,273 lines, moved to history)
 
 ---
 
-*Last Updated: October 5, 2025 - S03 Climate fixes complete and verified*
+## 📖 S13 Mechanical Loads - Import Sync Status (Oct 6, 2025)
+
+**Current Status:**
+- ✅ S13 Reference mode ventilation calculations **WORKING** (commit `37359d5`)
+- ✅ S12 publishes `ref_d_105` (conditioned volume) - critical fix for S13 calculation chain
+- ✅ Slider values update correctly on mode switch
+- ❌ Import sync **NOT YET IMPLEMENTED** (pattern ready, waiting for calculation bug fixes)
+
+**Known Issues (see [4012-S13-DEBUG.md](4012-S13-DEBUG.md) for details):**
+1. **Number Formatting:** Percentages show as decimals (1.7 instead of 170%) in Reference mode
+2. **Free Cooling Math:** d_124 and m_129 show 0.00 in Reference mode (should calculate)
+
+**S13 Import Sync Preparation:**
+- 11 user input fields identified for import: d_113, f_113, j_115, d_116, j_116, d_118, g_118, l_118, d_119, l_119, k_120
+- syncFromGlobalState() pattern documented in S13-DEBUG.md
+- Commit `639e119` has complete implementation (saved, not yet applied)
+- **Decision:** Fix calculation bugs first (formatting, cooling math), then apply import sync
+
+**Next Steps for S13:**
+1. Fix number formatting in Reference mode (low risk)
+2. Fix free cooling calculations (high risk - requires mode-aware reads)
+3. Apply import sync from saved commit `639e119` (low risk - proven pattern)
+
+See [4012-S13-DEBUG.md](4012-S13-DEBUG.md) for detailed implementation plans, risk assessments, and testing checklists.
+
+---
+
+*Last Updated: October 6, 2025 - S13 calculation fixes complete, import sync pending*
 
 Theory: Why Import Breaks State Isolation during partial refactors... (But Our MAPPER.md Fixes Won't)
 Let me analyze the mechanism that's causing state mixing after import but not before.
