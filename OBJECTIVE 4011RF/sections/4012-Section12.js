@@ -1473,11 +1473,20 @@ window.TEUI.SectionModules.sect12 = (function () {
       "number-2dp",
       isReferenceCalculation,
     );
+    // ✅ FIX: Publish d_105 (Conditioned Volume) for Reference mode
+    // This is critical for S13 ventilation calculations which depend on volume
+    setCalculatedValue(
+      "d_105",
+      d105_vol,
+      "number-2dp-comma",
+      isReferenceCalculation,
+    );
 
     // Return calculated values for Reference engine storage
     return {
       d_101: d101_areaAir,
       d_102: d102_areaGround,
+      d_105: d105_vol, // ✅ FIX: Include d_105 for ref_ prefix storage
       d_106: d106_floorArea,
       g_105: g105_volAreaRatio,
       i_105: i105_areaVolRatio,
