@@ -768,5 +768,9 @@ window.TEUI.SectionModules.sect06 = (function () {
 
     // ✅ PATTERN A: Expose ModeManager for cross-section communication
     ModeManager: ModeManager,
+
+    // ✅ PHASE 2: Expose state objects for import sync
+    TargetState: TargetState,
+    ReferenceState: ReferenceState,
   };
 })();

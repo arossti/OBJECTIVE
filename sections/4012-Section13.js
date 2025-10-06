@@ -360,6 +360,9 @@ window.TEUI.SectionModules.sect13 = (function () {
           // ✅ S10 SUCCESS PATTERN: Handle sliders/coefficient fields
           const numericValue = window.TEUI.parseNumeric(stateValue, 0);
 
+          // ✅ S10 SUCCESS PATTERN: Update slider value
+          slider.value = numericValue;
+
           // ✅ S10 SUCCESS PATTERN: Update display (use slider's nextElementSibling)
           const display = slider.nextElementSibling;
           if (display) {
@@ -2496,8 +2499,6 @@ window.TEUI.SectionModules.sect13 = (function () {
     const totalHours = window.TEUI.parseNumeric(getExternalValue("j_63", isReferenceCalculation)) || 8760;
     const occupants_d63 = window.TEUI.parseNumeric(getExternalValue("d_63", isReferenceCalculation)) || 0;
 
-    // Log all input values for d_120 calculation
-
     let ventRateLs = 0;
 
     if (ventMethod === "Occupant Constant") {
@@ -2559,16 +2560,16 @@ window.TEUI.SectionModules.sect13 = (function () {
       // Fallback: read from StateManager mode-aware
       ventRate = window.TEUI.parseNumeric(getExternalValue("d_120", isReferenceCalculation)) || 0;
     }
-    
+
     // 🔧 BUG #4 FIX: Read mode-aware HDD for ventilation energy calculation
     // This fixes 12-month state mixing issue where Reference calculations used Target climate data
     const hdd = isReferenceCalculation
       ? getGlobalNumericValue("ref_d_20")  // Reference reads ref_d_20 (independent location)
       : getGlobalNumericValue("d_20");      // Target reads d_20 (independent location)
-    
+
     // ✅ PATTERN 1: Mode-aware reading (automatic with temporary mode switching)
-    const efficiency =
-      (window.TEUI.parseNumeric(ModeManager.getValue("d_118")) || 0) / 100;
+    const d_118_value = ModeManager.getValue("d_118");
+    const efficiency = (window.TEUI.parseNumeric(d_118_value) || 0) / 100;
     const heatingVentEnergy = (1.21 * ventRate * hdd * 24) / 1000;
     const recoveredEnergy = heatingVentEnergy * efficiency;
     const netHeatLoss = heatingVentEnergy - recoveredEnergy;
@@ -2873,6 +2874,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       const copResults = calculateCOPValues();
       const heatingResults = calculateHeatingSystem(copResults, tedValueRef);
       const ventilationRatesResults = calculateVentilationRates(true);
+
       // 🔧 BUG #5 FIX: Pass calculated d_120 to prevent reading Target value
       const ventilationEnergyResults = calculateVentilationEnergy(true, ventilationRatesResults.d_120);
       
@@ -3128,17 +3130,12 @@ window.TEUI.SectionModules.sect13 = (function () {
       ...freeCoolingResults,
     };
 
-    // Track what Reference values we're about to store
-
     // ✅ PHASE 5: Store Reference results in module-level cache for persistence pattern
     lastReferenceResults = { ...allResults };
 
     // Store Reference results with ref_ prefix for downstream consumption
     Object.entries(allResults).forEach(([fieldId, value]) => {
       if (value !== null && value !== undefined) {
-    // Track what we're writing to StateManager
-        if (fieldId === "h_115" || fieldId === "f_115") {
-        }
         window.TEUI.StateManager.setValue(
           `ref_${fieldId}`,
           value.toString(),

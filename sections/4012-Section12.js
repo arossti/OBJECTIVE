@@ -37,6 +37,18 @@ window.TEUI.SectionModules.sect12 = (function () {
         g_109: "1.50", // Measured value (conditional editable, N/A when not MEASURED)
       };
     },
+    /**
+     * ✅ PHASE 2: Sync from global StateManager after import
+     */
+    syncFromGlobalState: function (fieldIds = ["d_103", "g_103", "d_105", "d_108", "g_109"]) {
+      fieldIds.forEach((fieldId) => {
+        const globalValue = window.TEUI.StateManager.getValue(fieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue, "imported");
+          console.log(`S12 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`);
+        }
+      });
+    },
     saveState: function () {
       localStorage.setItem("S12_TARGET_STATE", JSON.stringify(this.state));
     },
@@ -125,6 +137,19 @@ window.TEUI.SectionModules.sect12 = (function () {
     },
     saveState: function () {
       localStorage.setItem("S12_REFERENCE_STATE", JSON.stringify(this.state));
+    },
+    /**
+     * ✅ PHASE 2: Sync from global StateManager after import
+     */
+    syncFromGlobalState: function (fieldIds = ["d_103", "g_103", "d_105", "d_108", "g_109"]) {
+      fieldIds.forEach((fieldId) => {
+        const refFieldId = `ref_${fieldId}`;
+        const globalValue = window.TEUI.StateManager.getValue(refFieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue, "imported");
+          console.log(`S12 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (${refFieldId})`);
+        }
+      });
     },
     setValue: function (fieldId, value, source = "user") {
       this.state[fieldId] = value;
@@ -1448,11 +1473,20 @@ window.TEUI.SectionModules.sect12 = (function () {
       "number-2dp",
       isReferenceCalculation,
     );
+    // ✅ FIX: Publish d_105 (Conditioned Volume) for Reference mode
+    // This is critical for S13 ventilation calculations which depend on volume
+    setCalculatedValue(
+      "d_105",
+      d105_vol,
+      "number-2dp-comma",
+      isReferenceCalculation,
+    );
 
     // Return calculated values for Reference engine storage
     return {
       d_101: d101_areaAir,
       d_102: d102_areaGround,
+      d_105: d105_vol, // ✅ FIX: Include d_105 for ref_ prefix storage
       d_106: d106_floorArea,
       g_105: g105_volAreaRatio,
       i_105: i105_areaVolRatio,
@@ -2850,6 +2884,9 @@ window.TEUI.SectionModules.sect12 = (function () {
     calculateTargetModel: calculateTargetModel, // ✅ CRITICAL: Expose for state-isolated forced recalculation
     calculateCombinedUValue: calculateCombinedUValue,
     ModeManager: ModeManager, // ✅ CRITICAL FIX: Enable FieldManager integration
+    // ✅ PHASE 2: Expose state objects for import sync
+    TargetState: TargetState,
+    ReferenceState: ReferenceState,
     // ✅ BACKUP: Expose initialization state and force method for S03 integration
     get isInitialized() { return isInitialized; },
     forceInitialization: onSectionRendered

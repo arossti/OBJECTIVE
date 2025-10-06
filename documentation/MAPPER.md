@@ -649,7 +649,256 @@ The calculation chain is broken somewhere between:
 
 ---
 
-## 🔍 Active Investigation - S11 Import & S04 Update Issues (Oct 5, 2025)
+## ✅ S05-S06 Import Sync Complete (Oct 5, 2025)
+
+### Problem: Values Clearing on Mode Switch
+
+**Symptom:**
+- S05 i_41: Imported 600 in Target, but reverted to default 345.82 on mode switch
+- S06 m_43: Imported 800000, but cleared to 0 on mode switch to Reference
+- Values appeared in DOM after import but vanished when toggling between Target/Reference
+
+### Root Cause Analysis
+
+**Three Critical Issues Found:**
+
+1. **Missing Module Exposure (S05 & S06)**
+   - syncFromGlobalState() methods existed but weren't accessible
+   - Module export only exposed ModeManager, NOT TargetState/ReferenceState
+   - FileHandler couldn't call section.TargetState.syncFromGlobalState()
+
+2. **Incorrect Field Sync Lists (S05)**
+   - TargetState only synced d_39, missing i_41
+   - ReferenceState tried to sync i_41 (should be calculated, not imported)
+   - Excel formula: Reference i_41 = i_39 (typology-based cap)
+
+3. **Missing Calculation (S05 Reference)**
+   - Reference mode didn't calculate i_41 = i_39
+   - Comment said "IMPLEMENTED" but actual calculation was missing
+
+### Fixes Applied
+
+#### 1. Expose State Objects (S05 & S06)
+
+**Before:**
+```javascript
+return {
+  ModeManager: ModeManager,
+};
+```
+
+**After:**
+```javascript
+return {
+  ModeManager: ModeManager,
+  // ✅ PHASE 2: Expose state objects for import sync
+  TargetState: TargetState,
+  ReferenceState: ReferenceState,
+};
+```
+
+#### 2. Fix S05 Sync Lists
+
+**TargetState (line 66):**
+```javascript
+syncFromGlobalState: function (fieldIds = ["d_39", "i_41"]) {
+  // ✅ Now syncs BOTH d_39 and i_41 from import
+```
+
+**ReferenceState (line 151):**
+```javascript
+syncFromGlobalState: function (fieldIds = ["d_39"]) {
+  // ✅ Removed i_41 - it's calculated, not imported
+  // NOTE: i_41 is NOT synced - it's calculated as i_41 = i_39 in Reference mode
+```
+
+#### 3. Add S05 Reference i_41 Calculation (line 1007)
+
+```javascript
+function calculateReferenceModel() {
+  const typology = ReferenceState.getValue("d_39");
+  const cap = calculateTypologyBasedCap(typology, true);
+  window.TEUI.StateManager.setValue("ref_i_39", cap, "calculated");
+
+  // ✅ FIX (Oct 5, 2025): In Reference mode, i_41 = i_39 (Excel formula)
+  window.TEUI.StateManager.setValue("ref_i_41", cap, "calculated");
+  ReferenceState.setValue("i_41", cap, "calculated");
+
+  // ... rest of calculations
+}
+```
+
+### Test Results
+
+**Before Fixes:**
+- S05 Target i_41: 600 → 345.82 (reverts to default on mode switch) ❌
+- S05 Reference i_41: Shows default 345.82 instead of calculated 350 ❌
+- S06 Target m_43: 800000 → 0 (clears on mode switch) ❌
+- S06 Reference m_43: 0 (not synced) ❌
+
+**After Fixes:**
+- S05 Target i_41: 600 (persists on mode switch) ✅
+- S05 Reference i_41: 350 (calculated from Steel typology) ✅
+- S06 Target m_43: 800000 (persists on mode switch) ✅
+- S06 Reference m_43: 800000 (synced from import) ✅
+
+### ⭐ COMPLETE FIX PATTERN for Pattern A Import Sync
+
+**When adding import sync to any Pattern A section, you MUST complete ALL THREE steps:**
+
+#### Step 1: Add syncFromGlobalState() Methods to Section File
+
+**TargetState.syncFromGlobalState():**
+```javascript
+const TargetState = {
+  // ... existing methods ...
+
+  /**
+   * ✅ PHASE 2: Sync from global StateManager after import
+   * Bridges global StateManager → isolated TargetState for imported values
+   */
+  syncFromGlobalState: function (fieldIds = ["field1", "field2", "field3"]) {
+    fieldIds.forEach((fieldId) => {
+      const globalValue = window.TEUI.StateManager.getValue(fieldId);
+      if (globalValue !== null && globalValue !== undefined) {
+        this.setValue(fieldId, globalValue);
+        console.log(
+          `S0X TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`,
+        );
+      }
+    });
+  },
+};
+```
+
+**ReferenceState.syncFromGlobalState():**
+```javascript
+const ReferenceState = {
+  // ... existing methods ...
+
+  /**
+   * ✅ PHASE 2: Sync from global StateManager after import
+   * Bridges global StateManager → isolated ReferenceState for imported values
+   */
+  syncFromGlobalState: function (fieldIds = ["field1", "field2", "field3"]) {
+    fieldIds.forEach((fieldId) => {
+      const refFieldId = `ref_${fieldId}`;
+      const globalValue = window.TEUI.StateManager.getValue(refFieldId);
+      if (globalValue !== null && globalValue !== undefined) {
+        this.setValue(fieldId, globalValue);
+        console.log(
+          `S0X ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (${refFieldId})`,
+        );
+      }
+    });
+  },
+};
+```
+
+#### Step 2: Expose State Objects in Module Return Statement
+
+**Module Export Pattern:**
+```javascript
+return {
+  getFields: getFields,
+  getLayout: getLayout,
+  ModeManager: ModeManager,
+
+  // ✅ REQUIRED for FileHandler import sync
+  TargetState: TargetState,
+  ReferenceState: ReferenceState,
+};
+```
+
+#### Step 3: Add Section to FileHandler.syncPatternASections() Array
+
+**File:** `4011-FileHandler.js` (around line 459)
+
+```javascript
+const patternASections = [
+  { id: "sect02", name: "S02" },
+  { id: "sect03", name: "S03" },
+  { id: "sect04", name: "S04" },
+  { id: "sect05", name: "S05" },
+  { id: "sect06", name: "S06" },
+  { id: "sect07", name: "S07" },  // ✅ Add your section here
+  { id: "sect08", name: "S08" },
+  { id: "sect15", name: "S15" },
+];
+```
+
+**⚠️ CRITICAL:** Missing ANY of these 3 steps will cause import to fail silently!
+
+**Common Symptoms When Steps Are Missing:**
+- **Missing Step 1 or 2:** FileHandler logs "S0X TargetState.syncFromGlobalState() not available"
+- **Missing Step 3:** No FileHandler sync logs for that section at all
+- **Result:** Values import to global StateManager but isolated state uses defaults → values clear on mode switch
+
+#### Debugging Checklist
+
+After implementing, verify in browser console logs after import:
+```
+✅ [FileHandler] Syncing S0X TargetState...
+✅ S0X TargetState: Synced field1 = value1 from global StateManager
+✅ [FileHandler] Syncing S0X ReferenceState...
+✅ S0X ReferenceState: Synced field1 = value1 from global StateManager (ref_field1)
+```
+
+If you DON'T see these logs:
+1. **Hard refresh browser** (Cmd+Shift+R on Mac, Ctrl+Shift+R on Windows)
+2. **Delete browser cache/history** if needed
+3. Check FileHandler array includes your section (Step 3)
+4. Check module exposes TargetState/ReferenceState (Step 2)
+
+#### Field Classification for Sync
+
+**Which fields to include in sync array:**
+- **Target Input Fields:** Sync from Excel import (e.g., S05 i_41, S06 m_43)
+- **Reference Input Fields:** Sync if independent (e.g., S06 m_43)
+- **Reference Calculated Fields:** DON'T sync, calculate instead (e.g., S05 i_41 = i_39)
+
+### Commits Applied (Oct 5, 2025)
+
+- `8ec6bbc` - S05 and S06 import sync complete
+- `7ec2981` - S07 and S08 import sync complete with 3-step pattern documented
+- `dbaccf9` - S09 import sync complete
+- `6801eb0` - S10 import sync complete (all 31 fields including sliders)
+
+---
+
+## ⚠️ TODO: S11 Window/Door Area Sync from S10 (Oct 6+ work)
+
+**Current Status (Oct 5, 2025):**
+- S11 d_88-d_93 (window/door areas) are **user-editable** and **import from Excel**
+- This creates duplicate data entry (user enters in S10, then again in S11 Excel import)
+
+**Original Design (surgically removed during refactor):**
+- S11 should **read** d_88-d_93 areas from S10 d_73-d_78
+- Target mode: Read from `d_73-d_78`
+- Reference mode: Read from `ref_d_73-ref_d_78`
+- S11 area fields should be **readonly** (type: "calculated")
+
+**Challenge:**
+- Dual-state architecture makes S10→S11 sync complex
+- Need listeners that trigger on S10 changes in both modes
+- Must sync after import (S10 imports first, then S11 needs to pull areas)
+- Initial attempt caused syntax errors and recursion issues
+
+**Solution Path for Oct 6+:**
+1. Restore `areaSourceMap` in S11 (maps d_88→d_73, d_89→d_74, etc.)
+2. Add `setupS10AreaListeners()` with dual-state awareness
+3. Add `syncAreasFromS10()` called after import and mode switches
+4. Change S11 area fields from "editable" to "calculated"
+5. Test thoroughly without breaking existing functionality
+
+**For Now:**
+- S11 imports all 24 fields including window areas (works but duplicates S10)
+- User can manually edit S11 areas if they differ from S10
+- This is safe fallback until proper S10→S11 sync is implemented
+
+---
+
+## 🔍 Remaining Work - S07-S15 Import Sync (Oct 5, 2025)
 
 ### Issue 1: S11 RSI Values Not Importing
 
@@ -704,3 +953,135 @@ The calculation chain is broken somewhere between:
 ---
 
 *Last Updated: October 5, 2025 - S03 Climate fixes complete and verified*
+
+Theory: Why Import Breaks State Isolation during partial refactors... (But Our MAPPER.md Fixes Won't)
+Let me analyze the mechanism that's causing state mixing after import but not before.
+The Core Mechanism
+Before Import (State Isolation Works ✅):
+1. App loads → Each section calls TargetState.initialize() / ReferenceState.initialize()
+2. States load from localStorage OR call setDefaults()
+3. Isolated states are populated with defaults
+4. User changes field → ModeManager.setValue() → Updates isolated state + publishes to global
+5. Listener fires → Section reads from isolated state → Calculates → Publishes to global
+6. State isolation maintained: Target changes don't affect Reference, vice versa
+After Import (State Mixing Occurs ❌):
+1. Import quarantine starts → Listeners muted
+2. Excel values written to global StateManager (h_15="11167", ref_h_15="11167")
+3. FileHandler calls syncFromGlobalState() for Pattern A sections (S02, S03, S04, S05, S06)
+4. ❌ S07-S15 DON'T have syncFromGlobalState() → Isolated states still have DEFAULTS
+5. Listeners unmute → calculateAll() fires for all sections
+6. 🔥 STATE MIXING: Sections read from MIXED sources:
+   - Pattern A (synced): Read imported values from isolated state ✅
+   - Non-synced sections: Read DEFAULTS from isolated state ❌
+   - When they calculate, they use robot fingers to read upstream values
+   - Robot fingers read from GLOBAL StateManager (has imports)
+   - They calculate with imports + defaults MIX
+   - Publish results that contaminate downstream
+Why Changes to i_59 (S08 RH%) Cause State Mixing
+The Cascade Failure:
+User changes i_59 in S08 after import
+S08 has isolated state with DEFAULTS (not synced from import)
+S08 calculates using:
+Its own field: i_59 (user just changed) ✅
+Upstream fields: Read via robot fingers from global StateManager
+Global has IMPORTS for some sections, DEFAULTS for others
+S08 publishes mixed results to global StateManager
+S13 listener fires (complex section, reads many upstream values)
+S13 reads from global StateManager (now contaminated with mixed values)
+S13's dual-engine calculates with contaminated data
+Reference calculations use Target-contaminated values (or vice versa)
+State mixing visible in UI
+Why This DIDN'T Happen Before Import
+Before import, there was NO MIXING because:
+All sections started with consistent defaults
+LocalStorage had clean state from previous session
+No "half-imported, half-default" scenario existed
+When user changed a field, the cascade used all-defaults or all-user-values
+Clean state throughout
+After import, MIXING happens because:
+Global StateManager has imports (some sections)
+Isolated states have defaults (sections without syncFromGlobalState)
+Sections calculate using robot fingers that read global (imports)
+But their isolated state has defaults
+Two sources of truth diverge
+Why Our Fix WILL Maintain State Isolation
+The fix (adding syncFromGlobalState to ALL sections) ensures:
+Single Source of Truth Restored:
+Import → Global StateManager → syncFromGlobalState() → Isolated State
+All sections now have IMPORTS in isolated state (not defaults)
+Consistent Calculation Context:
+Target calculations:
+- Read from TargetState (has Target imports)
+- Read upstream via robot fingers → Global StateManager (has Target imports)
+- Publish to Global StateManager (Target prefix or no prefix)
+
+Reference calculations:
+- Read from ReferenceState (has Reference imports)
+- Read upstream via robot fingers → Global StateManager (has ref_ imports)
+- Publish to Global StateManager (ref_ prefix)
+No Mixed Data:
+Every section's isolated state matches global StateManager
+Robot fingers read clean imported values
+Calculations use all-imports (not half-imports, half-defaults)
+The Mechanism of State Mixing (Technical)
+Why i_59 change cascades into mixing: S08 calculates → Uses getValue() which checks:
+getValue: function(fieldId) {
+  if (ReferenceMode) {
+    return StateManager.getValue(`ref_${fieldId}`); // Robot finger
+  } else {
+    return StateManager.getValue(fieldId); // Robot finger
+  }
+}
+If S08's isolated state has defaults but global StateManager has imports:
+S08 reads its own i_59 from isolated state (default or user change)
+S08 reads upstream d_20 from global (import)
+Mixed calculation: i_59 (default) + d_20 (import) = contaminated result
+Publishes contaminated result to global
+S13 reads contaminated value
+S13's Reference calculation gets Target-contaminated data (or vice versa)
+Assurance: Our Pattern Won't Make It Worse
+Why I'm confident:
+Pattern Already Proven in S02, S03, S04, S05, S06:
+They have clean state isolation POST-import
+Mode switching works perfectly
+No contamination visible
+The Pattern is Additive (Not Destructive):
+We're ONLY adding syncFromGlobalState() methods
+We're ONLY exposing existing TargetState/ReferenceState objects
+We're NOT changing calculation logic
+We're NOT changing ModeManager routing
+We're NOT touching listener registration
+Root Cause is ABSENCE, Not Presence:
+State mixing comes from MISSING sync
+Adding sync FIXES the gap
+It doesn't introduce new mechanisms
+S13 Complexity is Orthogonal:
+S13's complexity is in its calculations (mechanical systems)
+That complexity existed before import
+Our fix only ensures S13 reads CLEAN imported data
+We don't touch S13's calculation logic
+What Could Go Wrong (Low Risk)
+Potential issues (all fixable):
+Wrong fields in sync list:
+Syncing a calculated field instead of an input field
+Fix: Review field types, only sync editable/input fields
+Missing field in sync list:
+Input field not synced, still defaults
+Fix: Add missing field to syncFromGlobalState() array
+Reference field that should be calculated:
+Like S05 i_41 (we already found and fixed this pattern)
+Fix: Remove from ReferenceState sync, add to calculateReferenceModel()
+None of these make state isolation WORSE. They just mean some fields don't import correctly (fixable).
+Conclusion: Safe to Proceed
+Your state isolation is safe because:
+We're following the exact pattern that works in S02-S06
+We're not modifying dual-engine logic
+We're not changing ModeManager routing
+We're only adding sync methods (fills gap, doesn't break existing)
+S13's complexity is in calculations, not state management (we don't touch that)
+The uphill battle is WORTH IT because:
+Each section fixed makes the next easier (pattern is clear)
+State mixing gets BETTER with each section (not worse)
+By the time we reach S13, upstream sections (S03, S05, S08, S11) will be clean
+S13 will read clean data from upstream, calculate cleanly, publish cleanly
+You can proceed confidently. The pattern is sound, proven in 5 sections already, and the mechanism is well-understood. Rest well! Tomorrow we'll systematically complete S07-S15 with the confidence that we're FIXING state mixing, not creating it. 🛡️

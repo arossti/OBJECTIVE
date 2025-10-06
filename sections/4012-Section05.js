@@ -63,7 +63,7 @@ window.TEUI.SectionModules.sect05 = (function () {
      * ✅ PHASE 2: Sync from global StateManager after import
      * Bridges global StateManager → isolated TargetState for imported values
      */
-    syncFromGlobalState: function (fieldIds = ["d_39"]) {
+    syncFromGlobalState: function (fieldIds = ["d_39", "i_41"]) {
       fieldIds.forEach((fieldId) => {
         const globalValue = window.TEUI.StateManager.getValue(fieldId);
         if (globalValue !== null && globalValue !== undefined) {
@@ -146,8 +146,9 @@ window.TEUI.SectionModules.sect05 = (function () {
     /**
      * ✅ PHASE 2: Sync from global StateManager after import
      * Bridges global StateManager → isolated ReferenceState for imported values
+     * NOTE: i_41 is NOT synced - it's calculated as i_41 = i_39 in Reference mode
      */
-    syncFromGlobalState: function (fieldIds = ["d_39", "i_41"]) {
+    syncFromGlobalState: function (fieldIds = ["d_39"]) {
       fieldIds.forEach((fieldId) => {
         const refFieldId = `ref_${fieldId}`;
         const globalValue = window.TEUI.StateManager.getValue(refFieldId);
@@ -1001,6 +1002,12 @@ window.TEUI.SectionModules.sect05 = (function () {
       const cap = calculateTypologyBasedCap(typology, true);
       window.TEUI.StateManager.setValue("ref_i_39", cap, "calculated");
 
+      // ✅ FIX (Oct 5, 2025): In Reference mode, i_41 = i_39 (Excel formula)
+      // Target mode: i_41 is user input (pure input field)
+      // Reference mode: i_41 = i_39 (calculated from typology)
+      window.TEUI.StateManager.setValue("ref_i_41", cap, "calculated");
+      ReferenceState.setValue("i_41", cap, "calculated");
+
       // Run all calculations in Reference context
       calculateGHGI(true);
       calculate_i_38(true);
@@ -1309,5 +1316,9 @@ window.TEUI.SectionModules.sect05 = (function () {
 
     // ✅ PATTERN A: Expose ModeManager for cross-section communication
     ModeManager: ModeManager,
+
+    // ✅ PHASE 2: Expose state objects for import sync
+    TargetState: TargetState,
+    ReferenceState: ReferenceState,
   };
 })();
