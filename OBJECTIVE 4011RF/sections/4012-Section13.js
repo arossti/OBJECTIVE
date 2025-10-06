@@ -200,87 +200,80 @@ window.TEUI.SectionModules.sect13 = (function () {
     updateCalculatedDisplayValues: function () {
       if (!window.TEUI?.StateManager) return;
 
+      // ✅ FIX (Oct 6, 2025): Field-specific format map matching setFieldValue() calls
+      // Mirrors the format types used in calculation functions for consistency
+      const fieldFormats = {
+        // Percentages (0 decimal places)
+        "m_115": "percent-0dp",  // AFUE efficiency
+        "m_116": "percent-0dp",  // Cooling EUI ratio
+        "m_117": "percent-0dp",  // Cooling intensity
+        "i_122": "percent-0dp",  // Latent load factor
+        "d_124": "percent-0dp",  // Free cooling %
 
-      const calculatedFields = [
-    // All calculated fields in S13 for complete DOM updates
-        "h_113",
-        "j_113",
-        "j_114", // COP values
-        "d_114",
-        "l_113", // Heating system demand and sink
-        "d_115",
-        "f_115",
-        "h_115",
-        "l_115",
-        "m_115",
-        "f_114", // Heating fuel impact and emissions
-        "j_116",
-        "l_116",
-        "l_114", // Cooling system COP and sinks
-        "d_117",
-        "f_117",
-        "j_117",
-        "m_116",
-        "m_117", // Cooling system loads and intensity
-        "f_119",
-        "h_119", // Per-person ventilation rates
-        "d_120",
-        "f_120",
-        "h_120", // Volumetric ventilation rates
-        "d_121",
-        "i_121",
-        "m_121", // Heating season ventilation energy
-        "i_122",
-        "d_122",
-        "d_123", // Cooling season ventilation energy
-        "d_124",
-        "h_124",
-        "m_124", // Free cooling capacity and metrics
-      ];
+        // Numbers with comma separators (2 decimal places)
+        "d_114": "number-2dp-comma",  // Heating sink
+        "l_113": "number-2dp-comma",  // Heating demand
+        "d_115": "number-2dp-comma",  // Gas volume
+        "f_115": "number-2dp-comma",  // Oil volume
+        "h_115": "number-2dp-comma",  // Gas volume alt
+        "l_115": "number-2dp-comma",  // Heating sink alt
+        "f_114": "number-2dp-comma",  // Heating fuel impact
+        "l_116": "number-2dp-comma",  // Cooling sink
+        "l_114": "number-2dp-comma",  // Cooling sink alt
+        "d_117": "number-2dp-comma",  // Cooling load
+        "d_120": "number-2dp-comma",  // Vent rate L/s
+        "f_120": "number-2dp-comma",  // Vent rate CFM
+        "h_120": "number-2dp-comma",  // Vent rate m³/hr
+        "d_121": "number-2dp-comma",  // Heating vent energy
+        "i_121": "number-2dp-comma",  // Recovered energy
+        "m_121": "number-2dp-comma",  // Net heat loss
+        "d_122": "number-2dp-comma",  // Cooling vent energy
+        "d_123": "number-2dp-comma",  // Vent energy recovered
+        "h_124": "number-2dp-comma",  // Free cooling limit
+        "m_129": "number-2dp-comma",  // CED mitigated
+        "d_129": "number-2dp-comma",  // CED unmitigated
+
+        // Numbers without commas (2 decimal places) - COPs and smaller values
+        "h_113": "number-2dp",  // COP
+        "j_113": "number-2dp",  // COP
+        "j_114": "number-2dp",  // COP
+        "j_116": "number-2dp",  // COP cooling
+        "f_117": "number-2dp",  // Cooling factor
+        "j_117": "number-2dp",  // Cooling value
+        "f_119": "number-2dp",  // Per-person rate
+        "h_119": "number-2dp",  // Per-person rate
+        "m_124": "number-2dp",  // Active cooling days
+      };
+
+      const calculatedFields = Object.keys(fieldFormats);
 
       calculatedFields.forEach((fieldId) => {
         let valueToDisplay;
 
         if (this.currentMode === "reference") {
-          // STRICT MODE: Reference shows ONLY ref_ values (no Target contamination per CHEATSHEET Phase 6)
+          // STRICT MODE: Reference shows ONLY ref_ values
           valueToDisplay = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
           if (valueToDisplay === null || valueToDisplay === undefined) {
-            valueToDisplay = "0"; // Show 0 if Reference not calculated yet, NEVER Target value
+            valueToDisplay = "0";
           }
         } else {
-          // In Target mode, show regular values
+          // Target mode: show regular values
           valueToDisplay = window.TEUI.StateManager.getValue(fieldId);
         }
 
         if (valueToDisplay !== null && valueToDisplay !== undefined) {
-          const element = document.querySelector(
-            `[data-field-id="${fieldId}"]`,
-          );
+          const element = document.querySelector(`[data-field-id="${fieldId}"]`);
           if (element && !element.hasAttribute("contenteditable")) {
-            // Only update calculated fields, not user-editable ones
             const numericValue = window.TEUI.parseNumeric(valueToDisplay);
             if (!isNaN(numericValue)) {
-              // Use appropriate formatting for different field types
-              let formattedValue;
-              if (fieldId === "m_115") {
-                // Only m_115 (AFUE efficiency) should be percent
-                formattedValue = window.TEUI.formatNumber(
-                  numericValue,
-                  "percent-0dp",
-                );
-              } else {
-                // All other fields should use number-2dp formatting
-                formattedValue = window.TEUI.formatNumber(
-                  numericValue,
-                  "number-2dp",
-                );
-              }
+              // ✅ Use field-specific format from map (S10 pattern)
+              const formatType = fieldFormats[fieldId] || "number-2dp";
+              const formattedValue = window.TEUI.formatNumber(numericValue, formatType);
               element.textContent = formattedValue;
             }
           }
         }
       });
-
     },
     resetState: function () {
 
