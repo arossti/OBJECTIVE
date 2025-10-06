@@ -2880,6 +2880,8 @@ window.TEUI.SectionModules.sect13 = (function () {
   function calculateReferenceModel() {
     const originalMode = ModeManager.currentMode;
 
+    console.log("[S13 REF ENGINE] 🔵 Starting Reference Model calculation...");
+
     try {
       // Temporary mode switching (CHEATSHEET Pattern 1)
       ModeManager.currentMode = "reference";
@@ -2888,12 +2890,17 @@ window.TEUI.SectionModules.sect13 = (function () {
       const tedValueRef =
         parseFloat(window.TEUI?.StateManager?.getValue("ref_d_127")) || 0;
 
+      console.log(`[S13 REF ENGINE] ref_d_127 (TED) = ${tedValueRef}`);
+
       // S13 core calculations (heating, ventilation) - use unified functions
       const copResults = calculateCOPValues();
       const heatingResults = calculateHeatingSystem(copResults, tedValueRef);
       const ventilationRatesResults = calculateVentilationRates(true);
+      console.log(`[S13 REF ENGINE] Ventilation Rates Results:`, ventilationRatesResults);
+
       // 🔧 BUG #5 FIX: Pass calculated d_120 to prevent reading Target value
       const ventilationEnergyResults = calculateVentilationEnergy(true, ventilationRatesResults.d_120);
+      console.log(`[S13 REF ENGINE] Ventilation Energy Results:`, ventilationEnergyResults);
       
       // ✅ CALCULATION ORDER FIX: Call Cooling.js directly before it's needed
       // ✅ BUG #9 FIX: Pass mode parameter to make cooling calculations mode-aware
@@ -3134,6 +3141,11 @@ window.TEUI.SectionModules.sect13 = (function () {
   ) {
     if (!window.TEUI?.StateManager) return;
 
+    console.log("[S13 REF STORE] 🔵 Storing Reference results...");
+    console.log("[S13 REF STORE] ventilationRatesResults:", ventilationRatesResults);
+    console.log("[S13 REF STORE] ventilationEnergyResults:", ventilationEnergyResults);
+    console.log("[S13 REF STORE] coolingVentilationResults:", coolingVentilationResults);
+
     // Combine all Reference calculation results
     const allResults = {
       ...copResults,
@@ -3147,7 +3159,19 @@ window.TEUI.SectionModules.sect13 = (function () {
       ...freeCoolingResults,
     };
 
-    // Track what Reference values we're about to store
+    console.log("[S13 REF STORE] Combined allResults keys:", Object.keys(allResults));
+    console.log("[S13 REF STORE] Ventilation fields in allResults:", {
+      d_120: allResults.d_120,
+      f_120: allResults.f_120,
+      h_120: allResults.h_120,
+      d_121: allResults.d_121,
+      i_121: allResults.i_121,
+      m_121: allResults.m_121,
+      d_122: allResults.d_122,
+      d_123: allResults.d_123,
+      f_119: allResults.f_119,
+      h_119: allResults.h_119,
+    });
 
     // ✅ PHASE 5: Store Reference results in module-level cache for persistence pattern
     lastReferenceResults = { ...allResults };
@@ -3155,8 +3179,9 @@ window.TEUI.SectionModules.sect13 = (function () {
     // Store Reference results with ref_ prefix for downstream consumption
     Object.entries(allResults).forEach(([fieldId, value]) => {
       if (value !== null && value !== undefined) {
-    // Track what we're writing to StateManager
-        if (fieldId === "h_115" || fieldId === "f_115") {
+        // 🔍 DEBUG: Log ventilation field storage
+        if (["d_120", "d_121", "i_121", "m_121", "d_122", "d_123", "f_119", "h_119"].includes(fieldId)) {
+          console.log(`[S13 REF STORE] Setting ref_${fieldId} = ${value}`);
         }
         window.TEUI.StateManager.setValue(
           `ref_${fieldId}`,
@@ -3165,6 +3190,8 @@ window.TEUI.SectionModules.sect13 = (function () {
         );
       }
     });
+
+    console.log("[S13 REF STORE] ✅ Reference storage complete");
 
   }
 
