@@ -188,11 +188,6 @@ window.TEUI.SectionModules.sect13 = (function () {
         return;
       this.currentMode = mode;
 
-      // 🔍 DEBUG: Log d_118 state during mode switch
-      console.log(`[S13 MODE SWITCH] Switching to ${mode} mode`);
-      console.log(`[S13 MODE SWITCH] ReferenceState.d_118 = ${ReferenceState.getValue("d_118")}`);
-      console.log(`[S13 MODE SWITCH] TargetState.d_118 = ${TargetState.getValue("d_118")}`);
-
       this.refreshUI();
       // CRITICAL: Update ghosting for new mode's system
       this.updateConditionalUI();
@@ -365,11 +360,6 @@ window.TEUI.SectionModules.sect13 = (function () {
           // ✅ S10 SUCCESS PATTERN: Handle sliders/coefficient fields
           const numericValue = window.TEUI.parseNumeric(stateValue, 0);
 
-          // 🔍 DEBUG: Log d_118 slider updates
-          if (fieldId === "d_118") {
-            console.log(`[S13 REFRESH] mode=${this.currentMode}, d_118 stateValue=${stateValue}, numericValue=${numericValue}, slider.value before=${slider.value}`);
-          }
-
           // ✅ S10 SUCCESS PATTERN: Update slider value
           slider.value = numericValue;
 
@@ -386,9 +376,6 @@ window.TEUI.SectionModules.sect13 = (function () {
               fieldId === "k_120"
             ) {
               display.textContent = numericValue.toFixed(0) + "%"; // Percentage slider format (e.g., "89%")
-              if (fieldId === "d_118") {
-                console.log(`[S13 REFRESH] d_118 display updated to ${display.textContent}`);
-              }
             } else if (fieldId === "f_118") {
               display.textContent = (numericValue * 100).toFixed(0) + "%"; // Decimal efficiency format (e.g., "89%")
             } else {
@@ -2512,36 +2499,25 @@ window.TEUI.SectionModules.sect13 = (function () {
     const totalHours = window.TEUI.parseNumeric(getExternalValue("j_63", isReferenceCalculation)) || 8760;
     const occupants_d63 = window.TEUI.parseNumeric(getExternalValue("d_63", isReferenceCalculation)) || 0;
 
-    // 🔍 DEBUG: Log all d_120 calculation inputs
-    console.log(`[S13 d_120 CALC] isRef=${isReferenceCalculation}, mode=${ModeManager.currentMode}`);
-    console.log(`[S13 d_120 CALC] ventMethod=${ventMethod}, volume=${volume}, ach=${ach}`);
-    console.log(`[S13 d_120 CALC] ratePerPerson=${ratePerPerson_d119}, occupants=${occupants_d63}`);
-    console.log(`[S13 d_120 CALC] occupiedHours=${occupiedHours}, totalHours=${totalHours}`);
-
     let ventRateLs = 0;
 
     if (ventMethod === "Occupant Constant") {
       ventRateLs = ratePerPerson_d119 * occupants_d63;
-      console.log(`[S13 d_120 CALC] Method: Occupant Constant → ventRateLs=${ventRateLs}`);
     } else if (ventMethod === "Occupant by Schedule") {
       ventRateLs =
         totalHours > 0
           ? ratePerPerson_d119 * occupants_d63 * (occupiedHours / totalHours)
           : 0;
-      console.log(`[S13 d_120 CALC] Method: Occupant by Schedule → ventRateLs=${ventRateLs}`);
     } else if (ventMethod === "Volume by Schedule") {
       ventRateLs =
         totalHours > 0 && volume > 0
           ? ((ach * volume) / 3.6) * (occupiedHours / totalHours)
           : 0;
-      console.log(`[S13 d_120 CALC] Method: Volume by Schedule → ventRateLs=${ventRateLs}`);
     } else if (ventMethod === "Volume Constant") {
       ventRateLs = volume > 0 ? (ach * volume) / 3.6 : 0;
-      console.log(`[S13 d_120 CALC] Method: Volume Constant → formula: (${ach} * ${volume}) / 3.6 = ${ventRateLs}`);
     } else {
       // Default to Volume Constant
       ventRateLs = volume > 0 ? (ach * volume) / 3.6 : 0;
-      console.log(`[S13 d_120 CALC] Method: Default (Volume Constant) → ventRateLs=${ventRateLs}`);
     }
 
     const ventilationRateLs_d120 = ventRateLs;
@@ -2594,9 +2570,6 @@ window.TEUI.SectionModules.sect13 = (function () {
     // ✅ PATTERN 1: Mode-aware reading (automatic with temporary mode switching)
     const d_118_value = ModeManager.getValue("d_118");
     const efficiency = (window.TEUI.parseNumeric(d_118_value) || 0) / 100;
-
-    // 🔍 DEBUG: Log d_118 during ventilation calculations
-    console.log(`[S13 VENT CALC] isRef=${isReferenceCalculation}, mode=${ModeManager.currentMode}, d_118=${d_118_value}, efficiency=${efficiency}`);
     const heatingVentEnergy = (1.21 * ventRate * hdd * 24) / 1000;
     const recoveredEnergy = heatingVentEnergy * efficiency;
     const netHeatLoss = heatingVentEnergy - recoveredEnergy;
@@ -2889,8 +2862,6 @@ window.TEUI.SectionModules.sect13 = (function () {
   function calculateReferenceModel() {
     const originalMode = ModeManager.currentMode;
 
-    console.log("[S13 REF ENGINE] 🔵 Starting Reference Model calculation...");
-
     try {
       // Temporary mode switching (CHEATSHEET Pattern 1)
       ModeManager.currentMode = "reference";
@@ -2899,17 +2870,13 @@ window.TEUI.SectionModules.sect13 = (function () {
       const tedValueRef =
         parseFloat(window.TEUI?.StateManager?.getValue("ref_d_127")) || 0;
 
-      console.log(`[S13 REF ENGINE] ref_d_127 (TED) = ${tedValueRef}`);
-
       // S13 core calculations (heating, ventilation) - use unified functions
       const copResults = calculateCOPValues();
       const heatingResults = calculateHeatingSystem(copResults, tedValueRef);
       const ventilationRatesResults = calculateVentilationRates(true);
-      console.log(`[S13 REF ENGINE] Ventilation Rates Results:`, ventilationRatesResults);
 
       // 🔧 BUG #5 FIX: Pass calculated d_120 to prevent reading Target value
       const ventilationEnergyResults = calculateVentilationEnergy(true, ventilationRatesResults.d_120);
-      console.log(`[S13 REF ENGINE] Ventilation Energy Results:`, ventilationEnergyResults);
       
       // ✅ CALCULATION ORDER FIX: Call Cooling.js directly before it's needed
       // ✅ BUG #9 FIX: Pass mode parameter to make cooling calculations mode-aware
@@ -3150,11 +3117,6 @@ window.TEUI.SectionModules.sect13 = (function () {
   ) {
     if (!window.TEUI?.StateManager) return;
 
-    console.log("[S13 REF STORE] 🔵 Storing Reference results...");
-    console.log("[S13 REF STORE] ventilationRatesResults:", ventilationRatesResults);
-    console.log("[S13 REF STORE] ventilationEnergyResults:", ventilationEnergyResults);
-    console.log("[S13 REF STORE] coolingVentilationResults:", coolingVentilationResults);
-
     // Combine all Reference calculation results
     const allResults = {
       ...copResults,
@@ -3168,30 +3130,12 @@ window.TEUI.SectionModules.sect13 = (function () {
       ...freeCoolingResults,
     };
 
-    console.log("[S13 REF STORE] Combined allResults keys:", Object.keys(allResults));
-    console.log("[S13 REF STORE] Ventilation fields in allResults:", {
-      d_120: allResults.d_120,
-      f_120: allResults.f_120,
-      h_120: allResults.h_120,
-      d_121: allResults.d_121,
-      i_121: allResults.i_121,
-      m_121: allResults.m_121,
-      d_122: allResults.d_122,
-      d_123: allResults.d_123,
-      f_119: allResults.f_119,
-      h_119: allResults.h_119,
-    });
-
     // ✅ PHASE 5: Store Reference results in module-level cache for persistence pattern
     lastReferenceResults = { ...allResults };
 
     // Store Reference results with ref_ prefix for downstream consumption
     Object.entries(allResults).forEach(([fieldId, value]) => {
       if (value !== null && value !== undefined) {
-        // 🔍 DEBUG: Log ventilation field storage
-        if (["d_120", "d_121", "i_121", "m_121", "d_122", "d_123", "f_119", "h_119"].includes(fieldId)) {
-          console.log(`[S13 REF STORE] Setting ref_${fieldId} = ${value}`);
-        }
         window.TEUI.StateManager.setValue(
           `ref_${fieldId}`,
           value.toString(),
@@ -3199,8 +3143,6 @@ window.TEUI.SectionModules.sect13 = (function () {
         );
       }
     });
-
-    console.log("[S13 REF STORE] ✅ Reference storage complete");
 
   }
 
