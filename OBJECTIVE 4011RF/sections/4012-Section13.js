@@ -2724,8 +2724,8 @@ window.TEUI.SectionModules.sect13 = (function () {
     // Excel formula: M129 = MAX(0, D129 - H124 - D123)
     const cedMitigated = Math.max(0, d129 - h124 - d123);
 
-    // Update DOM for both Target and Reference calculations
-    setFieldValue("m_129", cedMitigated, "number-2dp-comma", isReferenceCalculation);
+    // ✅ Update DOM for both Target and Reference (mode-aware via ModeManager.currentMode)
+    setFieldValue("m_129", cedMitigated, "number-2dp-comma");
 
     return { m_129: cedMitigated };
   }
@@ -2789,8 +2789,8 @@ window.TEUI.SectionModules.sect13 = (function () {
         finalFreeCoolingLimit = potentialLimit; // Default to full potential if method is unclear
       }
 
-      // ✅ FIX (Oct 6, 2025): Update values for BOTH Target and Reference calculations
-      setFieldValue("h_124", finalFreeCoolingLimit, "number-2dp-comma", isReferenceCalculation);
+      // ✅ Update values (mode-aware via ModeManager.currentMode)
+      setFieldValue("h_124", finalFreeCoolingLimit, "number-2dp-comma");
 
       // Calculate D124 (% Free Cooling Capacity)
       // ✅ FIX (Oct 6, 2025): Mode-aware read for d_129
@@ -2804,7 +2804,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       if (coolingLoadUnmitigated > 0) {
         percentFreeCooling = finalFreeCoolingLimit / coolingLoadUnmitigated;
       }
-      setFieldValue("d_124", percentFreeCooling, "percent-0dp", isReferenceCalculation);
+      setFieldValue("d_124", percentFreeCooling, "percent-0dp");
 
       // Read m_124 from Cooling.js via StateManager (mode-aware)
       // ✅ FIX (Oct 6, 2025): Mode-aware read for cooling_m_124
@@ -2816,7 +2816,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         throw new Error("[S13] REQUIRED cooling_m_124 missing from Cooling.js");
       }
       const activeCoolingDays = window.TEUI.parseNumeric(m_124_raw);
-      setFieldValue("m_124", activeCoolingDays, "number-2dp", isReferenceCalculation);
+      setFieldValue("m_124", activeCoolingDays, "number-2dp");
 
     } catch (error) {
       console.error("[S13 Error] Error during calculateFreeCooling:", error);
