@@ -165,6 +165,13 @@ window.TEUI.SectionModules.sect01 = (function () {
         #keyValues {
             margin-bottom: 8px;
         }
+        #keyValues .section-header {
+            height: 40px !important;
+            min-height: 40px !important;
+            max-height: 40px !important;
+            display: flex !important;
+            align-items: center !important;
+        }
         #keyValues .section-header .toggle-icon {
             display: none !important;
         }
@@ -557,7 +564,7 @@ window.TEUI.SectionModules.sect01 = (function () {
       return;
     }
 
-    const fieldsToAnimate = ["h_10", "k_10", "e_10"];
+    const fieldsToAnimate = ["e_6", "e_8", "e_10", "h_6", "h_8", "h_10", "k_6", "k_8", "k_10"];
 
     if (fieldsToAnimate.includes(fieldId)) {
       const startValue = getCurrentNumericValue(element);
@@ -600,6 +607,10 @@ window.TEUI.SectionModules.sect01 = (function () {
               element.innerHTML = `<span class="tier-indicator t1-tag">tier1</span> <span class="numeric-value">${formattedValue}</span>`;
             }
             element.classList.add("ref-value");
+          } else if (fieldId === "e_6" || fieldId === "e_8") {
+            // Reference carbon values get ref-value styling
+            element.textContent = formattedValue;
+            element.classList.add("ref-value");
           } else {
             element.textContent = formattedValue;
           }
@@ -626,6 +637,10 @@ window.TEUI.SectionModules.sect01 = (function () {
               } else {
                 element.innerHTML = `<span class="tier-indicator t1-tag">tier1</span> <span class="numeric-value">${finalFormattedValue}</span>`;
               }
+              element.classList.add("ref-value");
+            } else if (fieldId === "e_6" || fieldId === "e_8") {
+              // Reference carbon values get ref-value styling
+              element.textContent = finalFormattedValue;
               element.classList.add("ref-value");
             } else {
               element.textContent = finalFormattedValue;
