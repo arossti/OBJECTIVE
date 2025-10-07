@@ -584,10 +584,15 @@
           if (window.TEUI.SectionModules.sect10) {
             // Get the module but don't call onSectionRendered yet
             window.S10Module = window.TEUI.SectionModules.sect10;
-            window.S10ModeManager = window.TEUI.SectionModules.sect10.ModeManager;
-            console.log("✅ S10 Module loaded (event handlers will be overridden)");
+            window.S10ModeManager =
+              window.TEUI.SectionModules.sect10.ModeManager;
+            console.log(
+              "✅ S10 Module loaded (event handlers will be overridden)",
+            );
           } else {
-            console.warn("⚠️ S10 Module not available, using test calculations only");
+            console.warn(
+              "⚠️ S10 Module not available, using test calculations only",
+            );
           }
 
           // Start debug panel updates
@@ -605,16 +610,40 @@
           // Set some default values in Target mode
           switchMode("target");
           setTimeout(() => {
-            window.TEUI.StateManager.setValue("target_e_73", "South", "test-init");
-            window.TEUI.StateManager.setValue("target_e_74", "North", "test-init");
-            window.TEUI.StateManager.setValue("target_f_73", "0.45", "test-init");
+            window.TEUI.StateManager.setValue(
+              "target_e_73",
+              "South",
+              "test-init",
+            );
+            window.TEUI.StateManager.setValue(
+              "target_e_74",
+              "North",
+              "test-init",
+            );
+            window.TEUI.StateManager.setValue(
+              "target_f_73",
+              "0.45",
+              "test-init",
+            );
 
             // Set different values in Reference mode
             switchMode("reference");
             setTimeout(() => {
-              window.TEUI.StateManager.setValue("ref_e_73", "Average", "test-init");
-              window.TEUI.StateManager.setValue("ref_e_74", "East", "test-init");
-              window.TEUI.StateManager.setValue("ref_f_73", "0.55", "test-init");
+              window.TEUI.StateManager.setValue(
+                "ref_e_73",
+                "Average",
+                "test-init",
+              );
+              window.TEUI.StateManager.setValue(
+                "ref_e_74",
+                "East",
+                "test-init",
+              );
+              window.TEUI.StateManager.setValue(
+                "ref_f_73",
+                "0.55",
+                "test-init",
+              );
 
               // Return to Target mode and run initial calculations
               switchMode("target");
@@ -750,8 +779,12 @@
           ];
 
           fields.forEach((fieldId) => {
-            const value = window.TEUI.StateManager.getValue(`${prefix}${fieldId}`);
-            const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+            const value = window.TEUI.StateManager.getValue(
+              `${prefix}${fieldId}`,
+            );
+            const element = document.querySelector(
+              `[data-field-id="${fieldId}"]`,
+            );
 
             console.log(`  ${fieldId}: ${prefix}${fieldId} = ${value}`);
 
@@ -891,7 +924,9 @@
 
           html += "<h4>Target Inputs:</h4>";
           inputFields.forEach((fieldId) => {
-            const value = window.TEUI.StateManager.getValue(`target_${fieldId}`);
+            const value = window.TEUI.StateManager.getValue(
+              `target_${fieldId}`,
+            );
             if (value !== undefined) {
               html += `<pre style="color: blue;">target_${fieldId}: ${value}</pre>`;
             }
@@ -917,7 +952,9 @@
           html += "<h4>🔍 Isolation Check:</h4>";
           const testFields = ["e_73", "f_73", "g_73", "h_73"];
           testFields.forEach((fieldId) => {
-            const targetVal = window.TEUI.StateManager.getValue(`target_${fieldId}`);
+            const targetVal = window.TEUI.StateManager.getValue(
+              `target_${fieldId}`,
+            );
             const refVal = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
             const isolated = targetVal !== refVal && targetVal && refVal;
             html += `<pre style="color: ${isolated ? "green" : "red"};">${fieldId}: T=${targetVal} R=${refVal} ${isolated ? "✅" : "❌"}</pre>`;
@@ -980,7 +1017,9 @@
           };
 
           Object.entries(defaults).forEach(([fieldId, defaultValue]) => {
-            const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+            const element = document.querySelector(
+              `[data-field-id="${fieldId}"]`,
+            );
             if (element) {
               if (element.tagName === "SELECT") {
                 element.value = defaultValue;
@@ -1059,7 +1098,9 @@
 
           // Get current mode values from prefixed state
           const getFieldValue = (fieldId) => {
-            const value = window.TEUI.StateManager.getValue(`${prefix}${fieldId}`);
+            const value = window.TEUI.StateManager.getValue(
+              `${prefix}${fieldId}`,
+            );
             return value !== undefined
               ? value
               : window.TEUI.StateManager.getValue(fieldId) || // Fallback to global
@@ -1116,7 +1157,9 @@
           // Calculate percentages for each row (using the calculated values from above)
           let totalCoolingGains = 0;
           rows.forEach((rowId) => {
-            const element = document.querySelector(`[data-field-id="k_${rowId}"]`);
+            const element = document.querySelector(
+              `[data-field-id="k_${rowId}"]`,
+            );
             const coolingGain = parseFloat(element?.textContent || "0");
             totalCoolingGains += coolingGain;
           });
@@ -1143,8 +1186,16 @@
 
           // Update cooling subtotal
           updateCalculatedField("k_79", totalCoolingGains, "number");
-          updateCalculatedField("j_79", totalHeatingGains > 0 ? 1 : 0, "percent");
-          updateCalculatedField("l_79", totalCoolingGains > 0 ? 1 : 0, "percent");
+          updateCalculatedField(
+            "j_79",
+            totalHeatingGains > 0 ? 1 : 0,
+            "percent",
+          );
+          updateCalculatedField(
+            "l_79",
+            totalCoolingGains > 0 ? 1 : 0,
+            "percent",
+          );
 
           // Calculate PHPP utilization factors
           const method = getFieldValue("d_80");
@@ -1208,7 +1259,9 @@
         }
 
         function updateCalculatedField(fieldId, value, format = "number") {
-          const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+          const element = document.querySelector(
+            `[data-field-id="${fieldId}"]`,
+          );
           if (!element) return;
 
           let formattedValue;

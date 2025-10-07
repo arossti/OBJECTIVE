@@ -7,15 +7,16 @@ const CONFIG = {
   EMISSIONS: {
     GAS_INTENSITY: 1921, // gCO2e/m3
     GAS_ENERGY_DENSITY: 10.36, // ekWh/m3
-    DEFAULT_GAS_COST: 0.507, // $/m3
-    DEFAULT_ELECTRICITY_COST: 0.13, // $/kWh
+    DEFAULT_GAS_COST: 0.507, // $/m3 Ontario average
+    DEFAULT_ELECTRICITY_COST: 0.13, // $/kWh Ontario average
   },
-  // Excel cell mapping configuration
+  // Excel cell mapping configuration (added REFERENCE)
   EXCEL_MAPPING: {
     SHEETS: {
       ENERGY_BALANCE: "ENERGY BALANCE",
       REPORT: "REPORT",
       NBC2025C2: "NBC-2025-C2",
+      REFERENCE: "REFERENCE",
     },
     // Placeholder for the old/combined mapping structure
     // We will define a specific mapping for Report sheet import later
@@ -24,11 +25,7 @@ const CONFIG = {
       "e-6": "REPORT!E6", // Adjusted sheet assumption
       "T.1_target": "REPORT!C5",
       "T.1_actual": "REPORT!D5",
-      // ... other mappings ...
-      "a-5": "NBC-2025-C2!A5", // Climate Data mappings remain separate
-      "a-115": "NBC-2025-C2!A115",
-      // ... rest of climate mappings ...
-      "a-683": "NBC-2025-C2!A683",
+      // ... other mappings ... (deleted climate mappings as this is internal now)
     },
   },
 };
@@ -644,12 +641,20 @@ class ExcelMapper {
 
   /**
    * NEW function for importing reference data from REFERENCE sheet.
-   * Mirrors mapExcelToReportModel but uses REFERENCE sheet and ref_ prefixed field IDs
+   * ✅ FIX: Handle formula cells (=REPORT!H15) vs user-entered values
+   * - If cell has formula referencing REPORT sheet → use REPORT value
+   * - If cell has user-entered value → use that value (user override)
    */
   mapExcelToReferenceModel(workbook) {
     const importedData = {};
-    const sheetName = "REFERENCE"; // REFERENCE sheet name
+    const sheetName = CONFIG.EXCEL_MAPPING.SHEETS.REFERENCE;
+    const reportSheetName = CONFIG.EXCEL_MAPPING.SHEETS.REPORT;
     const worksheet = workbook.Sheets[sheetName];
+    const reportWorksheet = workbook.Sheets[reportSheetName];
+
+    console.log(
+      `[ExcelMapper] mapExcelToReferenceModel called. Sheet '${sheetName}' exists: ${!!worksheet}`,
+    );
 
     if (!worksheet) {
       console.warn(
@@ -658,11 +663,75 @@ class ExcelMapper {
       return {}; // Return empty object, not null - this is optional data
     }
 
+    console.log(`[ExcelMapper] Starting REFERENCE sheet processing...`);
+    console.log(`[ExcelMapper] REFERENCE worksheet exists:`, !!worksheet);
+    console.log(
+      `[ExcelMapper] Sample cells from REFERENCE:`,
+      Object.keys(worksheet).slice(0, 20),
+    );
+
     Object.entries(this.excelReferenceInputMapping).forEach(
       ([cellRef, fieldId]) => {
         const cell = worksheet[cellRef];
+
+        // 🔍 DEBUG: Enhanced logging for H15
+        if (cellRef === "H15") {
+          console.log(`[ExcelMapper H15] Checking cell H15...`);
+          console.log(`[ExcelMapper H15] Cell exists:`, cell !== undefined);
+          console.log(`[ExcelMapper H15] Cell object:`, cell);
+          console.log(`[ExcelMapper H15] Field ID:`, fieldId);
+        }
+
+        // 🔍 DEBUG: Log whether key cells exist
+        if (cellRef === "H15" || cellRef === "D13") {
+          console.log(
+            `[ExcelMapper DEBUG] ${cellRef} exists: ${cell !== undefined}, cell:`,
+            cell,
+          );
+        }
+
         if (cell !== undefined) {
-          let extractedValue = this.extractCellValue(cell);
+          let extractedValue;
+
+          // 🔍 DEBUG: Log cell structure to understand what we're working with
+          if (cellRef === "H15" || cellRef === "D13") {
+            console.log(`[ExcelMapper DEBUG] ${cellRef} cell:`, {
+              value: cell.v,
+              formula: cell.f,
+              type: cell.t,
+              hasFormula: !!cell.f,
+              startsWithREPORT: cell.f?.startsWith("=REPORT!"),
+            });
+          }
+
+          // ✅ Check if cell contains a formula referencing REPORT sheet
+          // SheetJS stores formulas WITHOUT the leading = (e.g., "REPORT!H15" not "=REPORT!H15")
+          if (
+            cell.f &&
+            (cell.f.startsWith("REPORT!") || cell.f.startsWith("=REPORT!"))
+          ) {
+            // Extract REPORT sheet cell reference (e.g., "REPORT!H15" → "H15")
+            const reportCellRef = cell.f.replace(/^=?REPORT!/, "");
+
+            // Read from REPORT sheet instead
+            const reportCell = reportWorksheet?.[reportCellRef];
+            if (reportCell) {
+              extractedValue = this.extractCellValue(reportCell);
+              console.log(
+                `[ExcelMapper] ${cellRef} has formula ${cell.f}, using REPORT!${reportCellRef} = ${extractedValue}`,
+              );
+            } else {
+              extractedValue = this.extractCellValue(cell); // Fallback
+            }
+          } else {
+            // User-entered value (no formula or different formula)
+            extractedValue = this.extractCellValue(cell);
+            if (cellRef === "H15" || cellRef === "D13") {
+              console.log(
+                `[ExcelMapper DEBUG] ${cellRef} no REPORT formula, using cell value: ${extractedValue}`,
+              );
+            }
+          }
 
           // Apply same normalizations as REPORT sheet but for reference fields
           // Remove ref_ prefix temporarily for normalization checks
@@ -860,7 +929,22 @@ class ExcelMapper {
 
   extractCellValue(cell) {
     if (!cell) return null; // Handle cases where cell might be null/undefined
-    if (cell.t === "n") return cell.v; // Number
+
+    // ✅ FIX (Oct 5, 2025): Handle percentage cells
+    // Excel stores percentages as decimals (50% = 0.5), but our app expects 50
+    // Check if cell has percentage formatting:
+    // - cell.z (format string like "0%") OR
+    // - cell.w (formatted display like "50%")
+    if (cell.t === "n") {
+      const hasPercentFormat =
+        (cell.z && cell.z.includes("%")) || (cell.w && cell.w.includes("%"));
+      if (hasPercentFormat) {
+        // Multiply by 100 to convert decimal to percentage (Excel 0.5 → App 50)
+        return cell.v * 100;
+      }
+      return cell.v; // Regular number
+    }
+
     if (cell.t === "s") return cell.v; // String
     if (cell.t === "b") return cell.v; // Boolean
     if (cell.t === "d") return cell.v; // Date

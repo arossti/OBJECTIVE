@@ -1,22 +1,22 @@
 #!/bin/bash
 
-# OBJECTIVE 4011GS to gh-pages deployment script
+# OBJECTIVE 4011RF to gh-pages deployment script
 # Usage: ./deploy-to-gh-pages.sh [commit-message]
 
 set -e  # Exit on any error
 
-echo "🚀 Starting deployment from OBJECTIVE 4011GS to gh-pages..."
+echo "🚀 Starting deployment from OBJECTIVE 4011RF to gh-pages..."
 
 # Check if we're in the right directory
-if [ ! -d "OBJECTIVE 4011GS" ] || [ ! -d "gh-pages-local" ]; then
+if [ ! -d "OBJECTIVE 4011RF" ] || [ ! -d "gh-pages-local" ]; then
     echo "❌ Error: Must run from OBJECTIVE WORKSPACE root directory"
     exit 1
 fi
 
 # Get commit message
-COMMIT_MSG=${1:-"Deploy updates from OBJECTIVE 4011GS"}
+COMMIT_MSG=${1:-"Deploy updates from OBJECTIVE 4011RF"}
 
-echo "📂 Syncing files from OBJECTIVE 4011GS to gh-pages-local..."
+echo "📂 Syncing files from OBJECTIVE 4011RF to gh-pages-local..."
 
 # Sync the main files (excluding .git and other meta files)
 rsync -av --delete \
@@ -24,7 +24,7 @@ rsync -av --delete \
     --exclude='node_modules' \
     --exclude='.DS_Store' \
     --exclude='*.tmp' \
-    "OBJECTIVE 4011GS/" "gh-pages-local/"
+    "OBJECTIVE 4011RF/" "gh-pages-local/"
 
 echo "📝 Committing changes to gh-pages-local..."
 

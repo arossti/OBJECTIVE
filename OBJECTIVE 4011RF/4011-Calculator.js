@@ -512,7 +512,9 @@ TEUI.Calculator = (function () {
         // Special handling for Cooling module
         if (window.TEUI?.CoolingCalculations?.calculateAll) {
           try {
-            console.log("[Calculator] 🌀 Calling CoolingCalculations module...");
+            console.log(
+              "[Calculator] 🌀 Calling CoolingCalculations module...",
+            );
             // ✅ BUG #9 FIX: Pass "target" mode for default calculator run
             window.TEUI.CoolingCalculations.calculateAll("target");
             console.log("[Calculator] ✅ CoolingCalculations module finished.");

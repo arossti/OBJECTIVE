@@ -1605,11 +1605,11 @@ window.TEUI.SectionModules.sect13 = (function () {
         // if (fieldId === 'l_118') {
         //     console.log(`[S13 DEBUG l_118] Attempting to set StateManager for l_118 to: "${valueToStore}". Display will be: "${formattedDisplay}"`);
         // }
-          window.TEUI.StateManager.setValue(
-            fieldId,
-            valueToStore,
-            "user-modified",
-          );
+        window.TEUI.StateManager.setValue(
+          fieldId,
+          valueToStore,
+          "user-modified",
+        );
         // ADDED: Explicitly trigger calculateAll after user modifies AFUE
         if (fieldId === "j_115") {
           // console.log("[S13 DEBUG] j_115 changed by user, explicitly calling calculateAll().")
@@ -1997,7 +1997,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       ref_intensity_T117 > 0 ? intensity_f117 / ref_intensity_T117 : 0;
     setCalculatedValue("m_117", m117_value, "percent-0dp");
 
-      calculateCoolingVentilation();
+    calculateCoolingVentilation();
   }
 
   /**
@@ -2150,8 +2150,10 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     setCalculatedValue("i_122", latentLoadFactor_i122, "percent-0dp");
     // ✅ REMOVED: d_122/d_123 calculations moved to Cooling.js - S13 now reads these values
-    const d_122_from_cooling = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("d_122")) || 0;
-    const d_123_from_cooling = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("d_123")) || 0;
+    const d_122_from_cooling =
+      window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("d_122")) || 0;
+    const d_123_from_cooling =
+      window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("d_123")) || 0;
     setCalculatedValue("d_122", d_122_from_cooling, "number-2dp-comma");
     setCalculatedValue("d_123", d_123_from_cooling, "number-2dp-comma");
 
@@ -2220,17 +2222,20 @@ window.TEUI.SectionModules.sect13 = (function () {
       setCalculatedValue("h_124", finalFreeCoolingLimit, "number-2dp-comma");
       coolingState.freeCoolingLimit = finalFreeCoolingLimit; // Keep local state consistent
 
-        // Calculate D124 (% Free Cooling Capacity)
-        const coolingLoadUnmitigated =
-          window.TEUI.parseNumeric(getFieldValue("d_129")) || 0;
-        let percentFreeCooling = 0;
-        if (coolingLoadUnmitigated > 0) {
-          percentFreeCooling = finalFreeCoolingLimit / coolingLoadUnmitigated;
-        }
+      // Calculate D124 (% Free Cooling Capacity)
+      const coolingLoadUnmitigated =
+        window.TEUI.parseNumeric(getFieldValue("d_129")) || 0;
+      let percentFreeCooling = 0;
+      if (coolingLoadUnmitigated > 0) {
+        percentFreeCooling = finalFreeCoolingLimit / coolingLoadUnmitigated;
+      }
       setCalculatedValue("d_124", percentFreeCooling, "percent-0dp");
 
       // 🔄 COOLING.JS INTEGRATION: Read M124 from Cooling.js via StateManager
-      const activeCoolingDays = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue("cooling_m_124")) || 0;
+      const activeCoolingDays =
+        window.TEUI.parseNumeric(
+          window.TEUI.StateManager.getValue("cooling_m_124"),
+        ) || 0;
       setCalculatedValue("m_124", activeCoolingDays, "calculated");
     } catch (error) {
       console.error("[S13 Error] Error during calculateFreeCooling:", error);

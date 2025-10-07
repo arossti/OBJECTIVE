@@ -542,7 +542,8 @@ All dual-state implementations MUST follow these naming conventions:
 
 ### **🎯 The Correct Dual-Engine Architecture**
 
-**FUNDAMENTAL PRINCIPLE**: 
+**FUNDAMENTAL PRINCIPLE**:
+
 - **Calculations run automatically** when data changes (dual-engine always producing both Target and Reference results)
 - **UI toggles only switch display** (no calculation triggering)
 - **Values are pre-calculated** and stored in StateManager with `ref_` prefixes
@@ -553,11 +554,11 @@ All dual-state implementations MUST follow these naming conventions:
 // ✅ ALWAYS runs both engines to maintain dual data streams
 function calculateAll() {
   console.log("[Section] Running dual-engine calculations...");
-  
+
   // BOTH engines run in parallel, regardless of UI mode
-  calculateTargetModel();    // Stores unprefixed values in StateManager
+  calculateTargetModel(); // Stores unprefixed values in StateManager
   calculateReferenceModel(); // Stores ref_ prefixed values in StateManager
-  
+
   console.log("[Section] Dual-engine calculations complete");
 }
 
@@ -565,10 +566,10 @@ function calculateReferenceModel() {
   // Switch to reference mode temporarily for calculations
   const originalMode = ModeManager.currentMode;
   ModeManager.currentMode = "reference";
-  
+
   try {
     // Run calculations using Reference state inputs
-    // Store results with ref_ prefix for downstream sections  
+    // Store results with ref_ prefix for downstream sections
     setReferenceCalculatedValue("j_32", value); // → StateManager.setValue("ref_j_32", value)
   } finally {
     ModeManager.currentMode = originalMode;
@@ -582,14 +583,14 @@ function calculateReferenceModel() {
 // ✅ CORRECT: UI toggle only switches display, never triggers calculations
 switchMode: function (mode) {
   if (this.currentMode === mode) return; // No change needed
-  
+
   this.currentMode = mode;
   console.log(`Switched to ${mode.toUpperCase()} mode`);
-  
+
   // ONLY update display - values should already be calculated
   this.refreshUI();                    // 1. Update input field displays
   this.updateCalculatedDisplayValues(); // 2. Read pre-calculated values from StateManager
-  
+
   // ❌ NEVER call calculateAll() here - it's a UI action, not a data change
 }
 ```
@@ -605,7 +606,7 @@ element.addEventListener('blur', function() {
   calculateAll(); // Recalculate because data changed
 });
 
-// ✅ External dependency changes  
+// ✅ External dependency changes
 StateManager.addListener('d_136', () => {
   console.log('Upstream value changed');
   calculateAll(); // Recalculate because dependency changed
@@ -625,6 +626,7 @@ onSectionRendered: function() {
 **Fix**: Ensure `calculateReferenceModel()` stores values with `ref_` prefixes
 
 **Debug Steps:**
+
 1. Check if Reference values exist in StateManager:
    ```javascript
    const refValue = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
@@ -640,7 +642,7 @@ onSectionRendered: function() {
 When implementing dual-state sections:
 
 - [ ] **Dual-Engine**: `calculateAll()` always runs both Target and Reference models
-- [ ] **Reference Storage**: `calculateReferenceModel()` stores `ref_` prefixed values in StateManager  
+- [ ] **Reference Storage**: `calculateReferenceModel()` stores `ref_` prefixed values in StateManager
 - [ ] **UI Toggle**: `switchMode()` only calls `refreshUI()` and `updateCalculatedDisplayValues()`
 - [ ] **Data Triggers**: `calculateAll()` called on user input, external changes, and initialization
 - [ ] **Never**: Call `calculateAll()` from UI toggle functions
@@ -757,6 +759,7 @@ onReferenceStandardChange: function () {
 ```
 
 **Why This is Critical:**
+
 - User changes `d_13` in S02 → All sections must reload building code minimums
 - Ensures Reference mode always reflects current building standard
 - Maintains regulatory compliance across standard changes
@@ -1089,7 +1092,7 @@ S03 ✅ (Climate) ────────────────────�
 
 1. **Add Dual-State Structure**: TargetState + ReferenceState + ModeManager
 2. **🚨 MANDATORY: Add d_13 Standard Change Integration**: `addListener("d_13")` + `onReferenceStandardChange()`
-3. **Implement Header Controls**: Toggle switch + Reset button  
+3. **Implement Header Controls**: Toggle switch + Reset button
 4. **Add State Persistence**: localStorage with section-specific keys
 5. **Update Helper Functions**: Route all data through ModeManager
 6. **Test & Validate**: Reference mode, Target mode, cross-section flow, d_13 standard changes
@@ -1172,18 +1175,19 @@ The primary villain of the S12 bug was a subtle interaction between a logical fl
 4.  **The Loop**: On every subsequent page load, the `TargetState.initialize()` function would find the corrupt `S12_TARGET_STATE` in `localStorage` and load it, skipping the `setDefaults()` call entirely. This is why the bug was so persistent.
 
 **The Fix**:
+
 - **Manually deleting the `S12_TARGET_STATE` key** from the browser's developer tools was the essential first step to break the cycle.
 - **Correcting the `setDefaults` logic** for `d_108` to `"MEASURED"` prevented the corrupt state from being created in the first place.
 - **Aligning the module with the S10 pattern** (adding `listeners: {}`, simplifying event handlers) made the entire component more robust and less prone to such errors.
 
 ### **🎯 Comparison: Why S10/S11 Work vs S12 Struggled**
 
-| **Aspect** | **S10/S11 (Working)** | **S12 (Problematic)** | **Resolution** |
-| --- | --- | --- | --- |
-| **State Objects** | Contains `listeners: {}` | Missing `listeners: {}` | Added to match standard |
-| **Initialization** | Cleanly loads defaults | Loaded corrupt `localStorage` | Corrected default logic |
-| **Event Pattern** | Pure inline handlers | Mixed/conflicting patterns | Simplified to match S10 |
-| **UI Refresh** | Reads valid state | Read `undefined` from corrupt state | Now reads valid state |
+| **Aspect**         | **S10/S11 (Working)**    | **S12 (Problematic)**               | **Resolution**          |
+| ------------------ | ------------------------ | ----------------------------------- | ----------------------- |
+| **State Objects**  | Contains `listeners: {}` | Missing `listeners: {}`             | Added to match standard |
+| **Initialization** | Cleanly loads defaults   | Loaded corrupt `localStorage`       | Corrected default logic |
+| **Event Pattern**  | Pure inline handlers     | Mixed/conflicting patterns          | Simplified to match S10 |
+| **UI Refresh**     | Reads valid state        | Read `undefined` from corrupt state | Now reads valid state   |
 
 ### **🔧 Debugging Sequence for Future Refactors**
 
@@ -1201,7 +1205,7 @@ The primary villain of the S12 bug was a subtle interaction between a logical fl
 The application implements a **three-column performance display** in S01:
 
 1. **Reference Column (Red)**: Building code minimum performance ← `ref_` prefixed values
-2. **Target Column (Center)**: Optimized design performance ← unprefixed values  
+2. **Target Column (Center)**: Optimized design performance ← unprefixed values
 3. **Actual Column**: Real utility bill data ← S04 inputs
 
 ### **🔧 Correct Calculation Pattern (from working S11)**
@@ -1209,11 +1213,11 @@ The application implements a **three-column performance display** in S01:
 ```javascript
 function calculateAll() {
   console.log("[Section] Running dual-engine calculations...");
-  
+
   // ✅ ALWAYS run BOTH engines in parallel
   calculateReferenceModel(); // Reads ReferenceState → stores ref_ prefixed
-  calculateTargetModel();    // Reads TargetState → stores unprefixed
-  
+  calculateTargetModel(); // Reads TargetState → stores unprefixed
+
   console.log("[Section] Dual-engine calculations complete");
 }
 
@@ -1224,7 +1228,7 @@ function calculateReferenceModel() {
 }
 
 function calculateTargetModel() {
-  // Use Target state inputs to calculate Target performance  
+  // Use Target state inputs to calculate Target performance
   // Store results unprefixed for downstream sections
   setCalculatedValue("i_104", value);
 }
@@ -1235,7 +1239,7 @@ function calculateTargetModel() {
 **Mode switching is a UI display filter, NOT a calculation trigger:**
 
 - **Target Mode**: User sees Target input values and Target calculated outputs from StateManager
-- **Reference Mode**: User sees Reference input values and Reference calculated outputs from StateManager (ref_ prefixed)
+- **Reference Mode**: User sees Reference input values and Reference calculated outputs from StateManager (ref\_ prefixed)
 
 **Key Principle**: Values are **pre-calculated and waiting** in StateManager. UI toggles just choose which set to display.
 
@@ -1247,19 +1251,22 @@ function calculateTargetModel() {
 
 Both S12 and S13 were incorrectly implemented with "mode-aware calculations" that broke the dual-stream architecture. They need correction to follow the working S11 pattern.
 
-#### **Phase 1: S12 Correction** 
+#### **Phase 1: S12 Correction**
 
 **Issues to Fix:**
+
 - `calculateAll()` only runs one engine based on mode
 - No `ref_` prefixed output storage for downstream sections
 - Mode switching affects calculation streams instead of just UI
 
 **Correction Steps:**
+
 1. **Restore dual-engine `calculateAll()`**:
+
    ```javascript
    function calculateAll() {
      calculateReferenceModel(); // Always → ref_ prefixed
-     calculateTargetModel();    // Always → unprefixed
+     calculateTargetModel(); // Always → unprefixed
    }
    ```
 
@@ -1270,11 +1277,13 @@ Both S12 and S13 were incorrectly implemented with "mode-aware calculations" tha
 #### **Phase 2: S13 Correction**
 
 **Issues to Fix:**
+
 - Same calculation engine problems as S12
 - Complex cooling calculations need dual-stream outputs
 - Missing `ref_` storage for mechanical load results
 
 **Correction Steps:**
+
 1. **Apply same dual-engine pattern** as S12 correction
 2. **Ensure cooling calculations** run for both Target and Reference states
 3. **Add Reference mechanical load outputs** with `ref_` prefixes
@@ -1283,14 +1292,16 @@ Both S12 and S13 were incorrectly implemented with "mode-aware calculations" tha
 #### **Phase 3: Validation**
 
 **Success Criteria:**
+
 - ✅ Reference toggle updates **Reference column** (red values) in S01
-- ✅ Target edits update **Target column** (center values) in S01  
+- ✅ Target edits update **Target column** (center values) in S01
 - ✅ No cross-contamination between streams
 - ✅ Downstream sections (S14, S15, S04) receive both data streams
 
 ### **📊 Current Implementation Status (August 2, 2025)**
 
 #### **✅ Completed Sections - 100% Operational**
+
 - **S03, S08, S09, S10, S11**: Gold standard dual-state implementations
 - **S12 (Volume & Surface Metrics)**: ✅ **COMPLETED** - Full dual-engine architecture working perfectly
   - Both Target and Reference calculations run in parallel
@@ -1300,8 +1311,9 @@ Both S12 and S13 were incorrectly implemented with "mode-aware calculations" tha
   - All calculated values update immediately when switching modes
 
 #### **🚧 In Progress**
+
 - **S13 (Mechanical Loads)**: ⚠️ **80% COMPLETE** - Critical state mixing issue identified
-  - ✅ Fixed: Dual-engine `calculateAll()` structure implemented  
+  - ✅ Fixed: Dual-engine `calculateAll()` structure implemented
   - ✅ Fixed: Reference calculations no longer contaminate Target state
   - ✅ Fixed: Upstream flow from S10/S11 now working (timing issue resolved)
   - ✅ Fixed: Cooling system toggle now affects calculations
@@ -1314,14 +1326,18 @@ Both S12 and S13 were incorrectly implemented with "mode-aware calculations" tha
   - ⚠️ **Issue**: Reference TED (`ref_d_127`) may not be available from S14
 
 #### **📋 Pending Sections**
+
 - **S05, S06, S07**: Need dual-state Pattern A implementation (final 3 sections)
 
 #### **🚨 Critical Issue Resolution**
+
 - **S13 Heating Mode**: Fix mode detection to properly switch between Target/Reference
 - **Reference Value Flow**: All upstream sections now provide correct `ref_` values to S01
 
 #### **🔍 Root Cause Analysis**
+
 The S13 zeros issue suggests **missing upstream Reference data flow**:
+
 1. S13 correctly reads `ref_d_127` for Reference calculations
 2. But `ref_d_127` may not exist or equals 0 from S14
 3. S14/S15 refactoring should provide proper Reference TED values
@@ -1342,17 +1358,19 @@ The S13 zeros issue suggests **missing upstream Reference data flow**:
 Two valid dual-state patterns have emerged in the codebase:
 
 **Pattern 1: Boolean Parameters (S11, S12)**
+
 ```javascript
 function calculateValues(isReferenceCalculation = false) {
   if (isReferenceCalculation) {
     // Reference logic
   } else {
-    // Target logic  
+    // Target logic
   }
 }
 ```
 
 **Pattern 2: Separate Functions + Helpers (S14, S15, S01, S13)**
+
 ```javascript
 function calculateReferenceModel() {
   const getRefValue = (fieldId) => {
@@ -1367,6 +1385,7 @@ function calculateTargetModel() {
 ```
 
 **Recommendation**: **Pattern 2 is preferred** for new implementations and future refactoring:
+
 - Cleaner code without boolean parameters throughout
 - Natural separation of concerns
 - Easier to debug and maintain
@@ -1379,31 +1398,37 @@ This correction process has successfully restored the intended architecture in S
 ### **🔧 Planned Investigation & Audit (Evening Session)**
 
 #### **Immediate S13 Investigation**
+
 1. **Verify upstream Reference data**: Check if `ref_d_127` exists in StateManager from S14
 2. **Debug Reference TED flow**: Track why Reference calculations result in zeros
 3. **Validate Reference state object**: Ensure Reference defaults are being read correctly
 4. **Test gas system calculations**: Verify AFUE, emissions, and exhaust calculations in Reference mode
 
 #### **Comprehensive Section Audit Plan**
+
 Once S13 is stabilized, conduct systematic audit of all Pattern A sections:
 
 **Target Mode Validation:**
+
 - S03, S08, S09, S10, S11, S12, S13: Verify Target calculations use Target state
 - Confirm no Reference contamination in Target calculations
 - Validate Target TEUI stability (93.6) across all section interactions
 
-**Reference Mode Validation:**  
+**Reference Mode Validation:**
+
 - S03, S08, S09, S10, S11, S12, S13: Verify Reference calculations use Reference state
 - Confirm Reference values display immediately upon mode switch
 - Validate Reference defaults match expected building code baselines
 - Ensure Reference calculations flow to S01 Reference column (red values)
 
 **Cross-Section Data Flow:**
+
 - Verify `ref_` prefixed values flow correctly between sections
 - Confirm Target values flow correctly without `ref_` prefix
 - Test edge cases and complex interactions (thermal bridges, cooling systems, etc.)
 
 **Success Criteria:**
+
 - S01 displays three distinct columns with appropriate values
 - Reference TEUI appears in red column (not 0.0)
 - No state mixing or cross-contamination between Target/Reference streams
@@ -1421,34 +1446,34 @@ Here are three potential paths forward:
 
 This approach acknowledges that the direct call worked and focuses on making it safer and more explicit.
 
-*   **How:** Restore the direct call from S11 to a function in S12, but instead of calling `calculateCombinedUValue` directly, call a new, dedicated function like `TEUI.SectionModules.sect12.updateUValuesFromSlider(newValue)`.
-*   **Inside S12:** This new function would be very lightweight. It would *only* calculate the two affected U-values (`g_101`, `g_102`) and update their DOM elements. It would **not** trigger a full `calculateAll()` in S12, preventing calculation storms.
-*   **The Final Update:** The `change` event on the slider (when the user lets go) would still fire a standard `StateManager` event to trigger the full, proper calculation chain for all dependent values.
-*   **Pros:** High likelihood of success, excellent performance. Explicitly naming the function makes the architectural exception clear.
-*   **Cons:** Still technically violates the principle of section sovereignty.
+- **How:** Restore the direct call from S11 to a function in S12, but instead of calling `calculateCombinedUValue` directly, call a new, dedicated function like `TEUI.SectionModules.sect12.updateUValuesFromSlider(newValue)`.
+- **Inside S12:** This new function would be very lightweight. It would _only_ calculate the two affected U-values (`g_101`, `g_102`) and update their DOM elements. It would **not** trigger a full `calculateAll()` in S12, preventing calculation storms.
+- **The Final Update:** The `change` event on the slider (when the user lets go) would still fire a standard `StateManager` event to trigger the full, proper calculation chain for all dependent values.
+- **Pros:** High likelihood of success, excellent performance. Explicitly naming the function makes the architectural exception clear.
+- **Cons:** Still technically violates the principle of section sovereignty.
 
 #### **Option 2: The "Direct State Injection" (A Better Listener)**
 
 This is a more architecturally pure approach that aims to fix the flaws in our previous listener attempt.
 
-*   **How:** Use the `StateManager` listener in S12, but make the callback function much smarter and more direct.
-*   **Inside the S12 Listener:** When the `d_97` or `ref_d_97` event is received, the callback function will *immediately* and *directly* call a lightweight calculation for only the affected U-values, just as in Option 1. It will read the new slider value directly from the event payload.
-*   **Why It Might Work Now:** Our previous attempt tried to trigger a full `calculateAll`, which caused instability. By making the listener's action very small and targeted, we may get the same performance benefit as the direct call but keep the communication flowing through the proper channels.
-*   **Pros:** Architecturally pure; all communication is decoupled.
-*   **Cons:** Requires careful implementation to avoid the timing issues and instability we've already encountered.
+- **How:** Use the `StateManager` listener in S12, but make the callback function much smarter and more direct.
+- **Inside the S12 Listener:** When the `d_97` or `ref_d_97` event is received, the callback function will _immediately_ and _directly_ call a lightweight calculation for only the affected U-values, just as in Option 1. It will read the new slider value directly from the event payload.
+- **Why It Might Work Now:** Our previous attempt tried to trigger a full `calculateAll`, which caused instability. By making the listener's action very small and targeted, we may get the same performance benefit as the direct call but keep the communication flowing through the proper channels.
+- **Pros:** Architecturally pure; all communication is decoupled.
+- **Cons:** Requires careful implementation to avoid the timing issues and instability we've already encountered.
 
 #### **Option 3: Merge U-Value Calculations into Section 11 (User Preferred)**
 
 This is the most robust solution, as it solves the communication problem by eliminating it entirely. Given the persistent difficulties in linking S11 and S12, this is the recommended path forward.
 
-*   **How:** Move the relevant rows (101, 102, and the total row 104) and their corresponding calculation logic (`calculateCombinedUValue`) from `4011-Section12.js` directly into `4011-Section11.js`.
-*   **Rationale:** Section 11 is fundamentally about the building envelope's transmission losses. The aggregate U-values are a direct summation and weighted average of the components defined in S11, making them a logical "total" for that section.
-*   **Impact:**
-    *   **Section 11:** Becomes the sole owner of all transmission-related data, from individual components to the final weighted average U-values. The `d_97` slider and its effects are now entirely local to the section, eliminating all cross-section communication issues for this feature.
-    *   **Section 12:** Becomes a leaner, more focused module dedicated purely to volume, surface area ratios, and airtightness metrics (`d_103` through `d_110`). Its complexity is significantly reduced.
-    *   **DOM/Import/Export:** The DOM structure and field IDs (`d_101`, `g_101`, etc.) remain unchanged, ensuring that import/export functionality and Excel parity are completely unaffected.
-*   **Pros:** Permanently eliminates the "robot fingers" problem. Architecturally clean and logical. Reduces the complexity of S12, making it easier to maintain.
-*   **Cons:** Requires a more significant, albeit straightforward, refactoring effort than the other options.
+- **How:** Move the relevant rows (101, 102, and the total row 104) and their corresponding calculation logic (`calculateCombinedUValue`) from `4011-Section12.js` directly into `4011-Section11.js`.
+- **Rationale:** Section 11 is fundamentally about the building envelope's transmission losses. The aggregate U-values are a direct summation and weighted average of the components defined in S11, making them a logical "total" for that section.
+- **Impact:**
+  - **Section 11:** Becomes the sole owner of all transmission-related data, from individual components to the final weighted average U-values. The `d_97` slider and its effects are now entirely local to the section, eliminating all cross-section communication issues for this feature.
+  - **Section 12:** Becomes a leaner, more focused module dedicated purely to volume, surface area ratios, and airtightness metrics (`d_103` through `d_110`). Its complexity is significantly reduced.
+  - **DOM/Import/Export:** The DOM structure and field IDs (`d_101`, `g_101`, etc.) remain unchanged, ensuring that import/export functionality and Excel parity are completely unaffected.
+- **Pros:** Permanently eliminates the "robot fingers" problem. Architecturally clean and logical. Reduces the complexity of S12, making it easier to maintain.
+- **Cons:** Requires a more significant, albeit straightforward, refactoring effort than the other options.
 
 ---
 
@@ -1558,8 +1583,9 @@ const value = window.TEUI.sect12.ModeManager.getValue("d_103");
 ## 🎯 **Implementation Status**
 
 **COMPLETED SECTIONS (Pattern A Architecture Implemented):**
+
 - ✅ **S03**: Climate & Location → COMPLETE (Full functionality verified)
-- ✅ **S04**: Energy Use Summary → **COMPLETE** (Rebuilt from scratch as pure consumer section)  
+- ✅ **S04**: Energy Use Summary → **COMPLETE** (Rebuilt from scratch as pure consumer section)
 - ✅ **S11**: Building Envelope → COMPLETE (Full functionality verified)
 - ✅ **S12**: Air Leakage & Volume → COMPLETE (Full functionality verified)
 - ✅ **S13**: HVAC Systems → COMPLETE (Full functionality verified)
@@ -1567,27 +1593,32 @@ const value = window.TEUI.sect12.ModeManager.getValue("d_103");
 - ✅ **S15**: TEUI Summary → COMPLETE (Full functionality verified)
 
 **COMPLETED SECTIONS (Minor refinements may be needed):**
+
 - ✅ **S02**: Building Information → Pattern A implemented and functional
-- ✅ **S08**: Capacity & Efficiency → Pattern A implemented and functional  
+- ✅ **S08**: Capacity & Efficiency → Pattern A implemented and functional
 - ✅ **S09**: Internal Gains → Pattern A implemented and functional
 - ✅ **S10**: Solar Gains → Pattern A implemented and functional
 
 **GLOBAL ARCHITECTURE (Pattern A Compatible):**
+
 - ✅ **ReferenceToggle.js**: Modernized for Pattern A → COMPLETE
 - ⚠️ **Global "Show Reference" Toggle**: UI styling works, **value switching partially failing**
 - ✅ **Reference Standard (d_13) Changes**: Auto-updates ReferenceValues.js → COMPLETE
 - ❌ **Zero State Contamination**: **Critical gaps discovered in S02, S01**
 
 **PENDING SECTIONS:**
+
 - 🔄 **S01**: Summary (Final consumer section - special structure, may not need refactoring)
 - 🔄 **S05, S06, S07**: Additional sections
 
 **ADVANCED FEATURES (Planned):**
+
 - 🔄 **"Show Reference Differentiation"**: Highlight Target vs Reference input differences
 - 🔄 **"Match Target Building Inputs"**: Copy Target inputs to Reference (except d_13 values)
-- 🔄 **Component Bridge Retirement**: Remove Pattern B target_ prefix translations
+- 🔄 **Component Bridge Retirement**: Remove Pattern B target\_ prefix translations
 
 **PATTERN ANALYSIS:**
+
 - **Pattern 1 (Boolean Parameters)**: S11, S12 - Working but could be simplified
 - **Pattern 2 (Separate Functions)**: S13, S14, S15 - Cleaner architecture, **RECOMMENDED**
 
@@ -1596,6 +1627,7 @@ const value = window.TEUI.sect12.ModeManager.getValue("d_103");
 **Pattern 2** represents the evolution from early Pattern A implementations to **cleaner architectural patterns**:
 
 #### **Pattern 1 → Pattern 2 Evolution**
+
 ```javascript
 // ❌ Pattern 1: Boolean parameter approach (early sections)
 function calculateSomething(useReferenceState = false) {
@@ -1609,16 +1641,18 @@ function calculateTargetSomething() {
 }
 
 function calculateReferenceSomething() {
-  // Clean, focused function for Reference calculations  
+  // Clean, focused function for Reference calculations
 }
 ```
 
 #### **Sections Needing Pattern 2 Refinements**
+
 1. **S11, S12**: Simplify boolean parameter complexity
 2. **S13**: Fix heating calculation mode detection (state mixing issue)
 3. **Future sections**: Apply Pattern 2 from the start
 
 #### **Pattern 2 Benefits**
+
 - ✅ **Cleaner code**: No complex boolean logic within functions
 - ✅ **Easier debugging**: Separate functions for each mode
 - ✅ **Better state isolation**: Prevents mode detection bugs like S13 heating issue
@@ -1633,16 +1667,18 @@ function calculateReferenceSomething() {
 ### 🎯 **Core Reference Toggle Functionality**
 
 **Primary Global Toggle: "Show Reference" / "Show Target"**
+
 - **Purpose**: Switch ALL dual-state sections simultaneously between Target and Reference calculated values
 - **Architecture**: Leverages Pattern A `ModeManager.switchMode()` across all sections
 - **Button Location**: Global dropdown in header (`index.html`)
-- **Functionality**: 
+- **Functionality**:
   - ✅ **"Show Reference"**: Displays Reference calculated values (stored with `ref_` prefix) across all sections
   - ✅ **"Show Target"**: Displays Target calculated values (default application state) across all sections
   - ✅ **State Isolation**: No cross-contamination between Target and Reference calculations
   - ✅ **Real-time Updates**: Both Target and Reference calculations run in parallel always
 
 **Reference Standard Selection (d_13)**
+
 - **Purpose**: Selects which building code standard to use for Reference calculations
 - **Location**: Section 02 (Building Information)
 - **Functionality**: Changes ReferenceValues.js dataset loaded across all sections
@@ -1655,8 +1691,9 @@ function calculateReferenceSomething() {
 The ReferenceToggle.js system provides three distinct scenarios for setting up Reference model comparisons, each serving different analysis purposes:
 
 #### **1. Mirror Target**
+
 - **Purpose**: Create 100% identical Target and Reference models for pure building code standard comparison
-- **Behavior**: 
+- **Behavior**:
   - Copies ALL Target state values (user inputs, defaults, even calculated values initially) to Reference state
   - Results in identical Target/Reference totals initially (perfect synchronization)
   - Subsequently allows user edits to Reference values for fine-tuning
@@ -1664,6 +1701,7 @@ The ReferenceToggle.js system provides three distinct scenarios for setting up R
 - **Expected Result**: Initially perfect Target/Reference match until user makes Reference modifications
 
 #### **2. Mirror Target + Overlay (Reference) [Default]**
+
 - **Purpose**: Apply Target building design with Reference Standard building code values
 - **Behavior**:
   - Copies all Target user inputs (geometry, climate, energy costs) to Reference state
@@ -1674,6 +1712,7 @@ The ReferenceToggle.js system provides three distinct scenarios for setting up R
 - **Expected Result**: Same building envelope/geometry, different performance due to code requirements
 
 #### **3. Independent Models**
+
 - **Purpose**: Complete flexibility for custom Target vs Reference comparisons
 - **Behavior**:
   - Unlocks all Reference values for user editing
@@ -1685,17 +1724,20 @@ The ReferenceToggle.js system provides three distinct scenarios for setting up R
 ### 🎨 **User Experience Design**
 
 #### **Reference Differentiation Highlighting (Always Active)**
+
 - **Visual**: Automatic highlighting of fields that differ between Target and Reference states
 - **Replaces**: Previous "Highlight Reference Values" as separate command
 - **Benefit**: Users immediately see where models differ without manual activation
 
 #### **Smart Field Locking**
+
 - **Mode 1 (Mirror Target)**: All fields editable after initial copying
-- **Mode 2 (Mirror Target * Reference)**: ReferenceValues-derived fields locked, others editable  
+- **Mode 2 (Mirror Target \* Reference)**: ReferenceValues-derived fields locked, others editable
 - **Mode 3 (Reference Independence)**: All fields editable
 - **Visual Indication**: Locked fields clearly marked as "Code-Derived" with lock icon
 
 #### **Reference Standard (d_13) Separation**
+
 - **Target d_13**: Only affects L/M/O comparison displays in Target mode
 - **Reference d_13**: Drives actual ReferenceValues.js dataset for Reference calculations
 - **Benefit**: Eliminates confusion about which standard affects which calculations
@@ -1703,13 +1745,15 @@ The ReferenceToggle.js system provides three distinct scenarios for setting up R
 ### 🎮 **Updated Global Controls Architecture**
 
 **Primary Display Toggle**:
+
 - **"View Target State" / "View Reference State"**: Switches display between Target and Reference calculated values
 - **Location**: Global header toggle
 - **Function**: Pure display switching, no model setup
 
 **Reference Setup Dropdown**:
+
 - **"Mirror Target"**: Setup function for identical model comparison
-- **"Mirror Target * Reference"**: Setup function for standard building vs code comparison  
+- **"Mirror Target \* Reference"**: Setup function for standard building vs code comparison
 - **"Reference Independence"**: Setup function for custom comparison scenarios
 - **Location**: Reference setup dropdown (separate from display toggle)
 - **Function**: Model configuration, not display switching
@@ -1718,48 +1762,62 @@ The ReferenceToggle.js system provides three distinct scenarios for setting up R
 
 ```javascript
 // 1. Mirror Target Mode Implementation
-TEUI.ReferenceToggle.mirrorTarget = function() {
-  getAllDualStateSections().forEach(section => {
+TEUI.ReferenceToggle.mirrorTarget = function () {
+  getAllDualStateSections().forEach((section) => {
     const targetState = section.ModeManager.TargetState.data;
     // Copy ALL Target values to Reference state
-    Object.keys(targetState).forEach(fieldId => {
-      section.ModeManager.ReferenceState.setValue(fieldId, targetState[fieldId], "mirrored");
+    Object.keys(targetState).forEach((fieldId) => {
+      section.ModeManager.ReferenceState.setValue(
+        fieldId,
+        targetState[fieldId],
+        "mirrored",
+      );
     });
     section.ModeManager.refreshUI();
   });
-  console.log("🔗 Mirror Target: Reference state synchronized with Target state");
+  console.log(
+    "🔗 Mirror Target: Reference state synchronized with Target state",
+  );
 };
 
-// 2. Mirror Target * Reference Mode Implementation  
-TEUI.ReferenceToggle.mirrorTargetWithReference = function() {
-  getAllDualStateSections().forEach(section => {
+// 2. Mirror Target * Reference Mode Implementation
+TEUI.ReferenceToggle.mirrorTargetWithReference = function () {
+  getAllDualStateSections().forEach((section) => {
     const targetState = section.ModeManager.TargetState.data;
     // Copy Target inputs except d_13-derived ReferenceValues
-    Object.keys(targetState).forEach(fieldId => {
+    Object.keys(targetState).forEach((fieldId) => {
       if (!section.isReferenceValueField?.(fieldId)) {
-        section.ModeManager.ReferenceState.setValue(fieldId, targetState[fieldId], "mirrored");
+        section.ModeManager.ReferenceState.setValue(
+          fieldId,
+          targetState[fieldId],
+          "mirrored",
+        );
       }
     });
     // Lock ReferenceValues-derived fields
     section.lockReferenceValueFields?.();
     section.ModeManager.refreshUI();
   });
-  console.log("🔗 Mirror Target * Reference: Target inputs + locked Reference values");
+  console.log(
+    "🔗 Mirror Target * Reference: Target inputs + locked Reference values",
+  );
 };
 
 // 3. Reference Independence Mode Implementation
-TEUI.ReferenceToggle.enableReferenceIndependence = function() {
-  getAllDualStateSections().forEach(section => {
+TEUI.ReferenceToggle.enableReferenceIndependence = function () {
+  getAllDualStateSections().forEach((section) => {
     // Unlock all Reference fields for editing
     section.unlockAllReferenceFields?.();
     section.ModeManager.refreshUI();
   });
-  console.log("🔓 Reference Independence: All Reference fields unlocked for custom editing");
+  console.log(
+    "🔓 Reference Independence: All Reference fields unlocked for custom editing",
+  );
 };
 
 // Display Toggle (unchanged)
-TEUI.ReferenceToggle.switchAllSectionsMode = function(mode) {
-  getAllDualStateSections().forEach(section => {
+TEUI.ReferenceToggle.switchAllSectionsMode = function (mode) {
+  getAllDualStateSections().forEach((section) => {
     section.ModeManager.switchMode(mode);
     section.ModeManager.updateCalculatedDisplayValues();
   });
@@ -1771,18 +1829,21 @@ TEUI.ReferenceToggle.switchAllSectionsMode = function(mode) {
 **Global Reference Controls Location**: Header in `index.html`
 
 **Primary Display Toggle**:
+
 - **"View Target State"** / **"View Reference State"**: Pure display switching
 - **Visual**: Blue (Target) / Red (Reference) UI styling
 - **Function**: Shows Target or Reference calculated values across all sections
 
-**Reference Setup Dropdown**: 
+**Reference Setup Dropdown**:
+
 - **"Mirror Target"**: Setup function for identical model comparison
-- **"Mirror Target * Reference"**: Setup function for building vs code comparison (default)
+- **"Mirror Target \* Reference"**: Setup function for building vs code comparison (default)
 - **"Reference Independence"**: Setup function for custom comparison scenarios
 - **Visual**: Setup dropdown separate from display toggle
 - **Function**: Configures Reference model relationship to Target model
 
 **Visual Indicators**:
+
 - **Body Classes**: `viewing-target-state`, `viewing-reference-state` for global mode styling
 - **Field Highlighting**: Automatic highlighting of fields that differ between Target/Reference
 - **Field Locking**: Locked ReferenceValues fields show lock icon and "Code-Derived" tooltip
@@ -1801,16 +1862,19 @@ TEUI.ReferenceToggle.switchAllSectionsMode = function(mode) {
 **⚠️ CRITICAL ISSUES DISCOVERED**:
 
 #### **1. Partial Section Mode Switching**
+
 - **S10, S9, S8**: Still showing **Target values** when global Reference toggle is active
 - **Expected**: Should show Reference calculated values when global toggle is "Show Reference"
 - **Root Cause**: These sections may not be responding to `ModeManager.switchMode()` calls from `ReferenceToggle.js`
 
-#### **2. S02 State Contamination** 
+#### **2. S02 State Contamination**
+
 - **Issue**: Reference year changes appear in **both Target and Reference states**
 - **Symptom**: No state isolation - last edited value "bleeds through" to other mode
 - **Impact**: Violates core dual-state architecture principle
 
 #### **3. S01 State Mixing**
+
 - **Issue**: When reporting year modified, **Target TEUI appears in Reference state S01 column**
 - **Symptom**: S01 still showing cross-contamination despite all refactoring work
 - **Impact**: Final consumer section not properly displaying Reference vs Target values
@@ -1820,13 +1884,15 @@ TEUI.ReferenceToggle.switchAllSectionsMode = function(mode) {
 #### **Phase 1: Complete Remaining Sections (High Priority)**
 
 **Sections Requiring Pattern A Implementation**:
+
 - **S05 (CO2e Emissions)**: Apply Pattern 2 approach from start
-- **S06 (Renewable Energy)**: Apply Pattern 2 approach from start  
+- **S06 (Renewable Energy)**: Apply Pattern 2 approach from start
 - **S07 (Water Use)**: Apply Pattern 2 approach with state mixing prevention
 
 #### **Phase 2: Pattern 2 Refinements (Optional)**
 
 **Code Quality Improvements**:
+
 - **S13**: Fix heating calculation mode detection issue
 - **S11, S12**: Simplify boolean parameter complexity
 - **Documentation**: Update examples to show Pattern 2 best practices
@@ -1834,27 +1900,29 @@ TEUI.ReferenceToggle.switchAllSectionsMode = function(mode) {
 #### **Phase 3: Final System Testing**
 
 **Comprehensive Validation**:
+
 - All 13 sections respond to global Reference/Target toggle
 - State isolation confirmed across all sections
 - Cross-section data flow validated
 - Performance optimization and cleanup
 
-
-
 ### 🧪 **TESTING VALIDATION CHECKLIST**
 
 **Global Toggle Test**:
+
 - [ ] "Show Reference" → All sections show red UI ✅
 - [x] "Show Reference" → All sections show Reference **values** ✅ (All sections operational)
 - [ ] "Show Target" → All sections show normal UI ✅
 - [ ] "Show Target" → All sections show Target **values** ✅
 
 **State Isolation Test**:
+
 - [ ] S02 Reference year change → Target year unchanged ❌
-- [ ] S01 Reference mode → Shows Reference TEUI (138.3) ❌  
+- [ ] S01 Reference mode → Shows Reference TEUI (138.3) ❌
 - [ ] S01 Target mode → Shows Target TEUI (93.6) ✅
 
 **Cross-Section Integration Test**:
+
 - [ ] Reference calculations flow properly S10→S11→S12→S13→S14→S15→S01 ⚠️
 - [ ] Target calculations flow properly (working baseline) ✅
 
@@ -1874,6 +1942,7 @@ TEUI.ReferenceToggle.switchAllSectionsMode = function(mode) {
 Some sections (notably **S03**) have **excellent Pattern A dual-state UI** but are missing the **Reference calculation engine** that stores `ref_` prefixed values for downstream consumption.
 
 **Symptoms:**
+
 - ✅ **Internal state switching**: Perfect (Target vs Reference locations work)
 - ✅ **Header controls**: Working (local toggles function)
 - ✅ **State isolation**: Complete (no contamination)
@@ -1882,14 +1951,16 @@ Some sections (notably **S03**) have **excellent Pattern A dual-state UI** but a
 ### **🎯 S03 Specific Issue**
 
 **S03 Currently Working:**
+
 - **Target**: Ontario, Alexandria climate data
-- **Reference**: BC, Vancouver climate data  
+- **Reference**: BC, Vancouver climate data
 - **UI Switching**: Perfect between both climate locations
 
 **S03 Missing for S15:**
+
 - `ref_h_23` (Reference heating setpoint - Vancouver)
 - `ref_d_23` (Reference coldest day - Vancouver)
-- `ref_d_24` (Reference hottest day - Vancouver)  
+- `ref_d_24` (Reference hottest day - Vancouver)
 - `ref_h_24` (Reference cooling setpoint - Vancouver)
 
 **Result**: S15 cooling load calculations (rows 137-145) show identical Target/Reference values because they can't read Vancouver climate data.
@@ -1907,29 +1978,28 @@ Some sections (notably **S03**) have **excellent Pattern A dual-state UI** but a
  */
 function calculateReferenceModel() {
   console.log("[Section03] Running Reference Model calculations...");
-  
+
   try {
     // Force Reference mode temporarily to get Reference calculations
     const originalMode = ModeManager.currentMode;
     ModeManager.currentMode = "reference";
-    
+
     // Run all calculations using Reference state values (Vancouver climate)
     calculateHeatingSetpoint();
     calculateCoolingSetpoint_h24();
     calculateTemperatures();
     calculateGroundFacing();
     updateCoolingDependents();
-    
+
     // Restore original mode
     ModeManager.currentMode = originalMode;
-    
+
     // Store Reference results for downstream consumption
     storeReferenceResults();
-    
   } catch (error) {
     console.error("Error during Section 03 calculateReferenceModel:", error);
   }
-  
+
   console.log("[Section03] Reference Model calculations complete");
 }
 ```
@@ -1942,7 +2012,7 @@ function calculateReferenceModel() {
  */
 function storeReferenceResults() {
   if (!window.TEUI?.StateManager) return;
-  
+
   // Get Reference state climate values and store with ref_ prefix
   const referenceResults = {
     h_23: ReferenceState.getValue("h_23"), // Vancouver heating setpoint
@@ -1955,15 +2025,21 @@ function storeReferenceResults() {
     h_22: ReferenceState.getValue("h_22"), // Vancouver GF CDD
     j_19: ReferenceState.getValue("j_19"), // Vancouver climate zone
   };
-  
+
   // Store with ref_ prefix for downstream sections
   Object.entries(referenceResults).forEach(([fieldId, value]) => {
     if (value !== null && value !== undefined) {
-      window.TEUI.StateManager.setValue(`ref_${fieldId}`, String(value), "calculated");
+      window.TEUI.StateManager.setValue(
+        `ref_${fieldId}`,
+        String(value),
+        "calculated",
+      );
     }
   });
-  
-  console.log("[Section03] Reference results stored with ref_ prefix for downstream sections");
+
+  console.log(
+    "[Section03] Reference results stored with ref_ prefix for downstream sections",
+  );
 }
 ```
 
@@ -1972,7 +2048,7 @@ function storeReferenceResults() {
 ```javascript
 function calculateAll() {
   // ALWAYS run BOTH engines in parallel for complete downstream data
-  calculateTargetModel();   // Updates UI for current mode
+  calculateTargetModel(); // Updates UI for current mode
   calculateReferenceModel(); // Stores ref_ values for downstream sections
 }
 
@@ -1990,6 +2066,7 @@ function calculateTargetModel() {
 ### **🧪 Testing Success**
 
 **After Implementation:**
+
 - ✅ **S03 UI**: Still works perfectly (Target Ontario ↔ Reference BC)
 - ✅ **S03 Storage**: Now provides `ref_h_23`, `ref_d_23`, etc. to StateManager
 - ✅ **S15 Cooling Loads**: Will show different values using Vancouver vs Ontario climate data
@@ -1998,8 +2075,9 @@ function calculateTargetModel() {
 ### **🎯 Apply This Pattern To:**
 
 **Any section showing these symptoms:**
+
 1. **Perfect local UI switching** ✅
-2. **Perfect header controls** ✅  
+2. **Perfect header controls** ✅
 3. **Downstream sections showing identical Target/Reference values** ❌
 
 **Likely candidates**: S03 (confirmed), potentially other early Pattern A refactors.
@@ -2011,6 +2089,7 @@ function calculateTargetModel() {
 ### **S02 Dual-State Corrections & Remaining Issues**
 
 #### **✅ FIXED: Core Architecture Issues**
+
 - **StateManager Bridge**: Added missing bridge in `ModeManager.setValue()` to sync Target→StateManager and Reference→ref_StateManager
 - **Pattern B Contamination**: Removed direct StateManager calls in dropdown handlers, now use `ModeManager.setValue()`
 - **Defaults Override Bug**: Removed `...this.data` spread in `setDefaults()` that allowed empty localStorage to override defaults
@@ -2018,11 +2097,13 @@ function calculateTargetModel() {
 #### **🔴 REMAINING CRITICAL ISSUES**
 
 **1. Reset Behavior Inconsistency**
+
 - **Local Reset Button**: Works correctly, loads proper Target/Reference defaults and energy costs
 - **Global Reset/Browser Refresh**: Clears Target mode energy costs, causes Reference d_13 (2010) to contaminate Target mode
 - **Root Cause**: Global reset mechanism differs from local reset, likely bypassing `setDefaults()` entirely
 
-**2. Initialization Order Problem** 
+**2. Initialization Order Problem**
+
 - `setDefaults()` → `loadState()` order is correct
 - Issue occurs during global reset or page reload, not local section reset
 - Suggests StateManager or ComponentBridge interference during global initialization
@@ -2030,16 +2111,19 @@ function calculateTargetModel() {
 ### **S04 Critical Regression & Reversion**
 
 #### **🚨 SEVERE REGRESSION DISCOVERED**
+
 - **S04 Toggle Breaking S03**: Our S04 dual-state implementation caused S03's location dropdowns to malfunction
 - **Cross-Section Contamination**: S04's `ModeManager` interfering with working S03 functionality
 - **Immediate Action**: S04 reverted to backup, modified version suffixed 'ERROR' and taken offline
 
 #### **S04 Architecture Problems Identified**
+
 1. **No Reference State Display**: Toggle didn't show different Reference values
 2. **Cross-Section Interference**: Our implementation broke other working sections
 3. **Incorrect Scope**: S04 should read upstream values (d_19 from S03), not manage internal dual-state for them
 
 #### **Lessons Learned**
+
 - **Test Cross-Section Impact**: Always verify changes don't break working sections
 - **Derived Sections Different**: S04's architecture should differ from input sections like S02/S03
 - **StateManager Dependencies**: Sections that primarily read upstream values need different patterns
@@ -2053,6 +2137,7 @@ function calculateTargetModel() {
 ### **📋 1. ARCHITECTURAL COMPLIANCE**
 
 #### **✅ Pattern A Implementation**
+
 - [ ] **TargetState Object**: Properly defined with `setDefaults()`, `saveState()`, `loadState()`, `setValue()`, `getValue()`
 - [ ] **ReferenceState Object**: Properly defined with same methods as TargetState
 - [ ] **ModeManager Facade**: Contains `initialize()`, `switchMode()`, `refreshUI()`, `resetState()`, `getValue()`, `setValue()`
@@ -2060,6 +2145,7 @@ function calculateTargetModel() {
 - [ ] **Global Exposure**: `window.TEUI.sectXX.ModeManager` accessible for cross-section integration
 
 #### **✅ Pattern B Contamination Elimination**
+
 - [ ] **No Global Prefixed State**: No `target_*`, `ref_*` in internal state management
 - [ ] **No getAppNumericValue()**: All external dependencies use `getGlobalNumericValue()`
 - [ ] **No ComponentBridge Interference**: Section doesn't interfere with other sections' DOM/state
@@ -2068,6 +2154,7 @@ function calculateTargetModel() {
 ### **📋 2. DUAL-ENGINE ARCHITECTURE**
 
 #### **✅ Calculation Pattern**
+
 - [ ] **calculateAll() Dual-Engine**: Always runs both `calculateTargetModel()` and `calculateReferenceModel()`
 - [ ] **Target Storage**: `calculateTargetModel()` stores unprefixed values in StateManager
 - [ ] **Reference Storage**: `calculateReferenceModel()` stores `ref_` prefixed values in StateManager
@@ -2075,6 +2162,7 @@ function calculateTargetModel() {
 - [ ] **Parallel Execution**: Both engines run in same `calculateAll()` call
 
 #### **✅ UI Toggle Pattern**
+
 - [ ] **Display-Only switchMode()**: Only calls `refreshUI()` and `updateCalculatedDisplayValues()`
 - [ ] **NO calculateAll() in switchMode()**: UI toggles never trigger calculations
 - [ ] **Pre-calculated Values**: All values exist in StateManager before mode switch
@@ -2083,6 +2171,7 @@ function calculateTargetModel() {
 ### **📋 3. FUNCTIONAL TESTING**
 
 #### **✅ Core Functionality**
+
 - [ ] **Distinct Values**: Reference mode shows different values from Target mode
 - [ ] **User Input Persistence**: Input changes survive mode toggles
 - [ ] **localStorage Persistence**: State survives browser refresh
@@ -2090,6 +2179,7 @@ function calculateTargetModel() {
 - [ ] **Downstream Provision**: Provides calculated values to dependent sections
 
 #### **✅ UI Testing**
+
 - [ ] **Header Controls**: Target/Reference toggle and Reset button present and functional
 - [ ] **Visual Feedback**: Toggle shows current mode (blue=Target, red=Reference)
 - [ ] **Input Synchronization**: `refreshUI()` correctly loads state into input fields
@@ -2099,12 +2189,14 @@ function calculateTargetModel() {
 ### **📋 4. INTEGRATION TESTING**
 
 #### **✅ StateManager Integration**
+
 - [ ] **Value Storage**: Section stores values in StateManager for downstream consumption
 - [ ] **Value Retrieval**: Section reads external dependencies from StateManager
 - [ ] **Reference Value Provision**: Stores `ref_` prefixed values for Reference column in S01
 - [ ] **Listener Registration**: Reacts to external changes via `StateManager.addListener()`
 
 #### **✅ Cross-Section Communication**
+
 - [ ] **Upstream Dependencies**: Correctly reads from required upstream sections
 - [ ] **Downstream Provision**: Provides required values to dependent sections
 - [ ] **S01 Dashboard Display**: Values appear correctly in Reference/Target/Actual columns
@@ -2113,6 +2205,7 @@ function calculateTargetModel() {
 ### **📋 5. ERROR HANDLING & EDGE CASES**
 
 #### **✅ Robustness**
+
 - [ ] **Missing Dependencies**: Graceful handling when upstream values are undefined
 - [ ] **Invalid Input Values**: Proper validation and error handling for user inputs
 - [ ] **localStorage Corruption**: Falls back to defaults if saved state is invalid
@@ -2120,6 +2213,7 @@ function calculateTargetModel() {
 - [ ] **Console Error Free**: No JavaScript errors in browser console
 
 #### **✅ Performance**
+
 - [ ] **Calculation Efficiency**: No redundant calculations on mode switches
 - [ ] **Memory Management**: No memory leaks from event listeners
 - [ ] **DOM Updates**: Minimal DOM manipulation, no layout thrashing
@@ -2128,6 +2222,7 @@ function calculateTargetModel() {
 ### **📋 6. CODE QUALITY**
 
 #### **✅ Maintainability**
+
 - [ ] **Consistent Naming**: Follows established naming conventions
 - [ ] **Clear Documentation**: Functions and complex logic documented
 - [ ] **Helper Function Reuse**: Uses established patterns like `setCalculatedValue()`
@@ -2135,6 +2230,7 @@ function calculateTargetModel() {
 - [ ] **Code Organization**: Clear separation of concerns (state, calculations, UI)
 
 #### **✅ Standards Compliance**
+
 - [ ] **Linter Clean**: No ESLint errors or warnings
 - [ ] **DUAL-STATE Guide Compliance**: Follows all patterns from this guide
 - [ ] **Excel Methodology**: Calculations match Excel reference implementation
@@ -2148,13 +2244,13 @@ function calculateTargetModel() {
 
 **Status**: Identified - Fix Pending After S05-S07 Refactors  
 **Affects**: S04, S13, S15, and potentially other sections  
-**Discovered**: During S04 gas/oil calculation implementation  
+**Discovered**: During S04 gas/oil calculation implementation
 
 **Issue Description**:
 The Reference state calculations work correctly when manually triggered (e.g., user changes fuel types), but **default Reference values are not properly initialized on initial page load**. This means:
 
 - ✅ **Manual Triggers Work**: Changing fuel types correctly recalculates gas/oil flows
-- ✅ **Cross-Section Flow Works**: S07/S13 → S04 integration functions properly  
+- ✅ **Cross-Section Flow Works**: S07/S13 → S04 integration functions properly
 - ❌ **Initial Load Broken**: Default Reference state shows zero instead of calculated values
 - ❌ **Mode Toggle Shows Same Values**: Target=Reference on fresh load
 
@@ -2162,12 +2258,14 @@ The Reference state calculations work correctly when manually triggered (e.g., u
 The dual-engine architecture correctly calculates both models, but the **Reference state storage and initialization sequence** may have timing issues or missing triggers during initial section rendering.
 
 **Examples Observed**:
+
 - S13 defaults to Gas heating in Reference mode
 - S13 calculates `ref_h_115 = 27,214.94 m³` correctly (visible in logs)
 - S04 H28 shows `0.00 m³` instead of S13's gas volume on initial load
 - After manually changing fuel types, calculations flow correctly
 
 **Fix Strategy (Post S05-S07)**:
+
 1. **Complete remaining section refactors** to ensure all upstream dependencies are Pattern A compliant
 2. **Review initialization sequence** across all sections for Reference state triggers
 3. **Test complete calculation flow** with all sections using dual-state architecture
@@ -2186,6 +2284,7 @@ The dual-engine architecture correctly calculates both models, but the **Referen
 #### **🔍 Diagnostic Sequence**
 
 **Step 1: Verify Calculation Mode Detection**
+
 ```bash
 # Check if heating calculations properly switch to Reference mode
 grep -n "HEATING CALC.*mode=REF" documentation/Logs.md
@@ -2197,6 +2296,7 @@ grep -n "COOLING CALC.*mode=TGT" documentation/Logs.md | tail -3
 ```
 
 **Step 2: Verify Reference Value Storage**
+
 ```bash
 # Check if section stores ref_ prefixed values when in Reference mode
 grep -n "Storing ref_" documentation/Logs.md | tail -10
@@ -2206,8 +2306,9 @@ grep -n "Storing ref_d_XXX" documentation/Logs.md
 ```
 
 **Step 3: Verify S01 Column Flow**
+
 ```bash
-# Check if S01 receives Reference values for Reference column  
+# Check if S01 receives Reference values for Reference column
 grep -n "\[S01\].*ref_.*from" documentation/Logs.md | tail -5
 
 # Check if changes flow to correct columns
@@ -2218,44 +2319,53 @@ grep -n "\[S01\] TARGET RESULTS" documentation/Logs.md | tail -3
 #### **🚨 Common State Mixing Patterns**
 
 **❌ PATTERN 1: Calculation Engine Mode Stuck**
+
 ```
 [SectionXX] 🔥 CALC: mode=TGT, systemType="Gas"  // Always Target mode
 [SectionXX] 🔥 CALC: mode=TGT, systemType="Oil"  // Never switches to REF
 ```
+
 **Root Cause**: Calculation engine not detecting UI mode changes
 **Fix**: Update mode detection in calculation functions
 
 **❌ PATTERN 2: Missing Reference Storage**
+
 ```
 [SectionXX] Storing d_XXX = 12345    // Unprefixed (Target) storage
 [SectionXX] Storing k_32 = 5678      // No ref_ equivalent stored
 ```
+
 **Root Cause**: Reference calculations not storing `ref_` prefixed values
 **Fix**: Add Reference storage in calculation engine
 
 **❌ PATTERN 3: S01 Reading Wrong Values**
+
 ```
 🔍 [S01] ref_k_32 from S04: 14740.8  // Default fallback (no Reference data)
 🎯 [S01] Energy: k_32=15000          // Target value updated instead
 ```
+
 **Root Cause**: Upstream section not providing Reference data
 **Fix**: Fix upstream Reference storage (Pattern 2)
 
 #### **✅ CORRECT STATE FLOW PATTERNS**
 
 **✅ PATTERN 1: Proper Mode Switching**
+
 ```
 [SectionXX] 🔥 HEATING CALC: mode=TGT, systemType="Electricity"
 [SectionXX] 🔥 HEATING CALC: mode=REF, systemType="Gas"  // Switches to REF
 ```
 
 **✅ PATTERN 2: Dual Value Storage**
+
 ```
 [SectionXX] Storing k_32 = 5000      // Target value (unprefixed)
 [SectionXX] Storing ref_k_32 = 8000  // Reference value (prefixed)
 ```
 
 **✅ PATTERN 3: S01 Column Separation**
+
 ```
 🔍 [S01] ref_k_32 from S04: 8000     // Reference data available
 🔍 [S01] REFERENCE RESULTS: e_8=HIGHER  // Reference column updated
@@ -2266,11 +2376,13 @@ grep -n "\[S01\] TARGET RESULTS" documentation/Logs.md | tail -3
 #### **🔧 Section-Specific Fix Patterns**
 
 **For Dual-Engine Sections (S04, S13, S14, S15):**
+
 1. **Mode-Aware Calculation Functions**: Accept `mode` parameter or detect current UI mode
 2. **Dual Storage**: Store both unprefixed (Target) and `ref_` prefixed (Reference) values
 3. **UI Toggle Validation**: Verify mode switches trigger appropriate calculations
 
 **For Consumer Sections (S01):**
+
 1. **Clean External Dependencies**: Use `getGlobalNumericValue()` for all reads
 2. **Reference Column Logic**: Read `ref_` values for Column E display
 3. **Target Column Logic**: Read unprefixed values for Column H display
@@ -2278,14 +2390,16 @@ grep -n "\[S01\] TARGET RESULTS" documentation/Logs.md | tail -3
 #### **📋 State Mixing Prevention Checklist**
 
 **During Refactoring:**
+
 - [ ] **Mode Detection**: Calculation functions properly detect UI mode
 - [ ] **Dual Storage**: Reference calculations store `ref_` prefixed values
 - [ ] **UI Independence**: Mode switches don't affect which calculations run
 - [ ] **Column Separation**: S01 Reference/Target columns show distinct values
 
 **During Testing:**
+
 - [ ] **Reference Test**: Change value in Reference mode → Reference column updates
-- [ ] **Target Test**: Change value in Target mode → Target column updates  
+- [ ] **Target Test**: Change value in Target mode → Target column updates
 - [ ] **No Cross-Contamination**: Reference changes don't affect Target values
 - [ ] **Log Verification**: Calculation logs show correct mode detection
 
@@ -2309,6 +2423,7 @@ Section 01 has a **dedicated workplan** due to its unique role as a consumer sec
 ### **🎯 Remaining Section Refactors**
 
 **Next Priority Sections** (following corrected DUAL-STATE guide):
+
 - **S05, S06, S07**: Standard dual-state refactors following the patterns established in S04
 - **S11 Correction**: Remove `calculateAll()` from `switchMode()` (architectural error)
 - **S12, S13 Review**: Verify compliance with dual-engine architecture
@@ -2316,21 +2431,27 @@ Section 01 has a **dedicated workplan** due to its unique role as a consumer sec
 ### **🎯 REMAINING SECTION REFACTOR WORKPLANS**
 
 #### **Section 05 (CO2e Emissions) - Pattern A Refactor**
+
 **Status**: 🚧 **PENDING** - Next priority section
+
 - **Dependencies**: S02 ✅ (building info), embodied carbon calculations
 - **Scope**: Carbon emissions, embodied carbon targets, lifecycle assessments
 - **Pattern**: Apply **Pattern 2** (separate functions) from the start
 - **Expected Duration**: 2-3 hours
 
-#### **Section 06 (Renewable Energy) - Pattern A Refactor**  
+#### **Section 06 (Renewable Energy) - Pattern A Refactor**
+
 **Status**: 🚧 **PENDING** - Medium priority
+
 - **Dependencies**: S02 ✅ (building info), renewable energy systems
 - **Scope**: Solar PV, wind, green gas, renewable energy credits
 - **Pattern**: Apply **Pattern 2** (separate functions) from the start
 - **Expected Duration**: 2-3 hours
 
 #### **Section 07 (Water Use) - Pattern A Refactor**
-**Status**: 🚧 **PENDING** - Medium priority  
+
+**Status**: 🚧 **PENDING** - Medium priority
+
 - **Dependencies**: S02 ✅ (building info), S03 ✅ (climate)
 - **Scope**: Water consumption, DHW heating systems, hot water loads
 - **Pattern**: Apply **Pattern 2** (separate functions) from the start
@@ -2341,6 +2462,7 @@ Section 01 has a **dedicated workplan** due to its unique role as a consumer sec
 **Section 07 will need state mixing fixes similar to S13.** Apply this workplan to prevent heating calculation mode issues:
 
 #### **Critical Focus Areas:**
+
 1. **DHW Heating Calculations**: Ensure mode detection works properly
    - Verify DHW heating calculations switch between `mode=TGT` and `mode=REF`
    - Check that Reference mode stores `ref_` prefixed values
@@ -2352,10 +2474,11 @@ Section 01 has a **dedicated workplan** due to its unique role as a consumer sec
    - Store `ref_` prefixed values for Reference calculations
 
 #### **State Mixing Prevention (S07-Specific):**
+
 ```bash
 # During S07 refactor, verify these patterns work correctly:
 
-# 1. Mode detection in water heating calculations  
+# 1. Mode detection in water heating calculations
 grep -n "WATER.*CALC.*mode=REF" documentation/Logs.md
 grep -n "WATER.*CALC.*mode=TGT" documentation/Logs.md
 
@@ -2367,6 +2490,7 @@ grep -n "\[S01\].*ref_.*from S07" documentation/Logs.md
 ```
 
 #### **Testing Sequence (S07):**
+
 1. **Load app** → Default values displayed
 2. **Switch to S07 Reference mode** → UI changes to red
 3. **Change water heating fuel** (e.g., Gas → Oil) → Should trigger Reference calculations
@@ -2389,9 +2513,11 @@ grep -n "\[S01\].*ref_.*from S07" documentation/Logs.md
 **Final Validation**: Section must contribute correctly to S01 dashboard display showing distinct Reference vs Target performance metrics.
 
 ---
+
 ---
 
 ## 🧐 **ARCHITECTURAL REVIEW & CLARIFICATIONS (August 2025)**
+
 **Generated by AI Agent**
 
 This section provides an overarching review of the `DUAL-STATE-IMPLEMENTATION-GUIDE.md` itself, reinforcing key principles and clarifying potentially confusing points to guide future development.
@@ -2399,32 +2525,35 @@ This section provides an overarching review of the `DUAL-STATE-IMPLEMENTATION-GU
 ### **1. Guide Strengths & Core Mandates**
 
 The guide is fundamentally sound and correctly identifies the "Gold Standard" patterns. Its greatest strengths are:
--   **Unyielding Stance on Pattern A**: It is absolutely correct to mandate **Pattern A (Self-Contained State Objects)** as the sole approved architecture.
--   **Invaluable Anti-Pattern Library**: The detailed descriptions of "Pattern B Contamination" and historical project issues (like the S12 refactor) are critical for preventing regressions.
--   **Correct Core Principles**: The guide's two most important rules are correct and must be followed without exception:
-    1.  Calculations for both Target and Reference models **must always run in parallel** whenever data changes.
-    2.  The UI mode toggle (`switchMode()`) is for **display only** and **must never trigger calculations**.
+
+- **Unyielding Stance on Pattern A**: It is absolutely correct to mandate **Pattern A (Self-Contained State Objects)** as the sole approved architecture.
+- **Invaluable Anti-Pattern Library**: The detailed descriptions of "Pattern B Contamination" and historical project issues (like the S12 refactor) are critical for preventing regressions.
+- **Correct Core Principles**: The guide's two most important rules are correct and must be followed without exception:
+  1.  Calculations for both Target and Reference models **must always run in parallel** whenever data changes.
+  2.  The UI mode toggle (`switchMode()`) is for **display only** and **must never trigger calculations**.
 
 ### **2. Points of Clarification**
 
 While the guide is excellent, its organic, log-book style has created minor inconsistencies that should be clarified.
 
 #### **Clarification on `ComponentBridge`**
--   **Observation**: The guide correctly marks `ComponentBridge` for future retirement (line 1524) but also includes it in a "correct" code pattern for the `ModeManager` (line 101).
--   **Official Stance**: For all current refactoring, the `ComponentBridge` sync logic shown in the `ModeManager.setValue` function **is a required part of the pattern**. It provides essential backward compatibility with sections that have not yet been fully migrated. It should be implemented now and will be removed later in a separate, global refactor.
+
+- **Observation**: The guide correctly marks `ComponentBridge` for future retirement (line 1524) but also includes it in a "correct" code pattern for the `ModeManager` (line 101).
+- **Official Stance**: For all current refactoring, the `ComponentBridge` sync logic shown in the `ModeManager.setValue` function **is a required part of the pattern**. It provides essential backward compatibility with sections that have not yet been fully migrated. It should be implemented now and will be removed later in a separate, global refactor.
 
 #### **Clarification on Architectural Patterns (`Pattern 1` vs. `Pattern 2`)**
--   **Observation**: The guide identifies two "valid" dual-state patterns: `Pattern 1 (Boolean Parameters)` and the preferred `Pattern 2 (Separate Functions)`.
--   **Official Stance**: To ensure future consistency, **Pattern 2 is now the mandated standard for all new refactoring work**. The use of separate `calculateTargetModel()` and `calculateReferenceModel()` functions provides better separation of concerns and has proven more robust. Sections still using Pattern 1 (S11, S12) are functional but should be considered candidates for a future cleanup refactor to align them with Pattern 2.
+
+- **Observation**: The guide identifies two "valid" dual-state patterns: `Pattern 1 (Boolean Parameters)` and the preferred `Pattern 2 (Separate Functions)`.
+- **Official Stance**: To ensure future consistency, **Pattern 2 is now the mandated standard for all new refactoring work**. The use of separate `calculateTargetModel()` and `calculateReferenceModel()` functions provides better separation of concerns and has proven more robust. Sections still using Pattern 1 (S11, S12) are functional but should be considered candidates for a future cleanup refactor to align them with Pattern 2.
 
 ### **3. Review of `4011-Section02.js` vs. This Guide**
 
 A review of `4011-Section02.js` revealed **critical architectural flaws** when compared to this guide:
--   **Status**: Partially refactored, but **NOT COMPLETE**.
--   **Primary Violation**: Its core helper functions (`getNumericValue`, `setFieldValue`) are textbook examples of **Pattern B contamination**. They manually construct `target_` and `ref_` prefixes to interact with the global `StateManager` instead of using the section's own internal `TargetState` and `ReferenceState` objects.
--   **Secondary Violation**: Its `ModeManager.switchMode()` function incorrectly triggers `calculateAll()`, violating a core principle of this guide.
--   **Conclusion**: Section 02 requires a significant overhaul to remove the Pattern B contamination and properly implement the internal state management, calculation, and UI patterns documented in this guide as the "Gold Standard".
 
+- **Status**: Partially refactored, but **NOT COMPLETE**.
+- **Primary Violation**: Its core helper functions (`getNumericValue`, `setFieldValue`) are textbook examples of **Pattern B contamination**. They manually construct `target_` and `ref_` prefixes to interact with the global `StateManager` instead of using the section's own internal `TargetState` and `ReferenceState` objects.
+- **Secondary Violation**: Its `ModeManager.switchMode()` function incorrectly triggers `calculateAll()`, violating a core principle of this guide.
+- **Conclusion**: Section 02 requires a significant overhaul to remove the Pattern B contamination and properly implement the internal state management, calculation, and UI patterns documented in this guide as the "Gold Standard".
 
 ---
 
@@ -2450,7 +2579,7 @@ During debugging of Target h_10 contamination during Reference mode operations, 
 Functions like `getFieldValue(fieldId)` read from an ambiguous "current" state that changes based on UI mode, rather than from explicit state objects. This creates **implicit state contamination** where:
 
 - **Target calculations** incorrectly read current UI values instead of Target defaults
-- **Reference calculations** may read stale or incorrect state data  
+- **Reference calculations** may read stale or incorrect state data
 - **State isolation is impossible** when calculations depend on current UI context
 
 ### The Fix
@@ -2461,10 +2590,10 @@ Functions like `getFieldValue(fieldId)` read from an ambiguous "current" state t
 // ❌ BROKEN: Ambiguous current state
 const systemType = getFieldValue("d_113"); // Could be Target or Reference!
 
-// ✅ CORRECT: Always know which state you're reading  
+// ✅ CORRECT: Always know which state you're reading
 const systemType = isReferenceCalculation
-  ? ReferenceState.getValue("d_113")  // Explicit Reference state
-  : TargetState.getValue("d_113");    // Explicit Target state
+  ? ReferenceState.getValue("d_113") // Explicit Reference state
+  : TargetState.getValue("d_113"); // Explicit Target state
 ```
 
 ### Implementation Priority

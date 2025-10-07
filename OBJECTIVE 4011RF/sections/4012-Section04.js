@@ -1,23 +1,23 @@
 /**
  * 4012-Section04-RF.js (REFACTOR)
  * Actual vs. Target Energy & Carbon (Section 4) - EXCEL-COMPLIANT SIMPLIFICATION
- * 
+ *
  * ✅ REFACTOR COMPLETED (September 25, 2025): 87% code reduction achieved
- * 
+ *
  * SUCCESS METRICS:
  * - 1,431 lines vs 2,837 lines (1,406 lines eliminated)
  * - Zero fallback contamination patterns (vs 100+ in original)
  * - Perfect Excel compliance (FORMULAE-3039.csv lines 26-36)
  * - Clean Pattern A dual-state architecture
  * - Sub-100ms calculation performance
- * 
+ *
  * CRITICAL FEATURES:
  * - Wood emissions offset (S08 d_60 integration)
  * - Dual fuel systems (S07+S13 gas/oil combination logic)
  * - Ontario grid intensity XLOOKUP (province d_19 + year h_12)
  * - Row 32 subtotals (j_32, k_32 for S01 dashboard)
  * - Mode-aware dependencies (15 upstream Target/Reference pairs)
- * 
+ *
  * ARCHITECTURAL LESSON: Excel source material reveals true complexity requirements.
  * When implementation is 280x more complex than source, over-engineering is the problem.
  */
@@ -28,27 +28,35 @@ window.TEUI.SectionModules = window.TEUI.SectionModules || {};
 
 // Section 4: Actual vs. Target Energy & Carbon Module (Excel-Compliant Refactor)
 window.TEUI.SectionModules.sect04 = (function () {
-  
   //==========================================================================
   // EXCEL-COMPLIANT FIELD DEFINITIONS (FORMULAE-3039.csv lines 26-36)
   //==========================================================================
-  
+
   const sectionRows = {
     // Unit Subheader
     header: {
       id: "04-ID",
-      rowId: "04-ID", 
+      rowId: "04-ID",
       label: "Actual vs. Target Energy & Carbon",
       cells: {
-        c: { content: "SECTION 4. Actual vs. Target Energy & Carbon", classes: ["section-header"] },
+        c: {
+          content: "SECTION 4. Actual vs. Target Energy & Carbon",
+          classes: ["section-header"],
+        },
         d: { content: "ACTUAL ENERGY", classes: ["section-subheader"] },
         e: { content: "UNITS", classes: ["section-subheader"] },
         f: { content: "ACTUAL NET", classes: ["section-subheader"] },
-        g: { content: "E.1 EMISSIONS\nkgCO2e/yr", classes: ["section-subheader"] },
+        g: {
+          content: "E.1 EMISSIONS\nkgCO2e/yr",
+          classes: ["section-subheader"],
+        },
         h: { content: "TARGET ENERGY", classes: ["section-subheader"] },
         i: { content: "UNITS", classes: ["section-subheader"] },
         j: { content: "TARGET NET", classes: ["section-subheader"] },
-        k: { content: "E.1 EMISSIONS\nkgCO2e/yr", classes: ["section-subheader"] },
+        k: {
+          content: "E.1 EMISSIONS\nkgCO2e/yr",
+          classes: ["section-subheader"],
+        },
         l: { content: "EMISSION FACTORS", classes: ["section-subheader"] },
         m: { content: "UNITS", classes: ["section-subheader"] },
         n: { content: "", classes: ["section-subheader"] },
@@ -71,7 +79,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         },
         e: { content: "kWh/yr" },
         f: {
-          fieldId: "f_27", 
+          fieldId: "f_27",
           type: "calculated",
           value: "0",
           section: "actualTargetEnergy",
@@ -79,7 +87,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         },
         g: {
           fieldId: "g_27",
-          type: "calculated", 
+          type: "calculated",
           value: "0",
           section: "actualTargetEnergy",
           // Excel: =F27*L27/1000 (actual emissions)
@@ -87,7 +95,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         h: {
           fieldId: "h_27",
           type: "calculated",
-          value: "0", 
+          value: "0",
           section: "actualTargetEnergy",
           // Excel: =D136 (from S15 target electricity)
         },
@@ -96,7 +104,7 @@ window.TEUI.SectionModules.sect04 = (function () {
           fieldId: "j_27",
           type: "calculated",
           value: "0",
-          section: "actualTargetEnergy", 
+          section: "actualTargetEnergy",
           // Excel: =H27-D43-I43 (target minus renewables)
         },
         k: {
@@ -118,7 +126,7 @@ window.TEUI.SectionModules.sect04 = (function () {
       },
     },
 
-    // Row 28: T.3.2 Total Fossil Gas Use  
+    // Row 28: T.3.2 Total Fossil Gas Use
     28: {
       id: "T.3.2",
       rowId: "T.3.2",
@@ -135,7 +143,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         e: { content: "m³/yr" },
         f: {
           fieldId: "f_28",
-          type: "calculated", 
+          type: "calculated",
           value: "0",
           section: "actualTargetEnergy",
           // Excel: =D28*0.0373*277.7778 (gas to ekWh)
@@ -143,7 +151,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         g: {
           fieldId: "g_28",
           type: "calculated",
-          value: "0", 
+          value: "0",
           section: "actualTargetEnergy",
           // Excel: =D28*L28/1000 (gas emissions)
         },
@@ -151,7 +159,7 @@ window.TEUI.SectionModules.sect04 = (function () {
           fieldId: "h_28",
           type: "calculated",
           value: "0",
-          section: "actualTargetEnergy", 
+          section: "actualTargetEnergy",
           // Excel: Complex dual-fuel logic from S07/S13
         },
         i: { content: "m³/yr" },
@@ -163,7 +171,7 @@ window.TEUI.SectionModules.sect04 = (function () {
           // Excel: =H28*0.0373*277.7778 (target gas to ekWh)
         },
         k: {
-          fieldId: "k_28", 
+          fieldId: "k_28",
           type: "calculated",
           value: "0",
           section: "actualTargetEnergy",
@@ -177,7 +185,7 @@ window.TEUI.SectionModules.sect04 = (function () {
 
     // Row 29: T.3.3 Total Propane Use
     29: {
-      id: "T.3.3", 
+      id: "T.3.3",
       rowId: "T.3.3",
       label: "Total Propane Use",
       cells: {
@@ -198,7 +206,7 @@ window.TEUI.SectionModules.sect04 = (function () {
           // Excel: =D29*14.019 (propane to ekWh)
         },
         g: {
-          fieldId: "g_29", 
+          fieldId: "g_29",
           type: "calculated",
           value: "0",
           section: "actualTargetEnergy",
@@ -206,7 +214,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         },
         h: {
           fieldId: "h_29",
-          type: "calculated", 
+          type: "calculated",
           value: "0",
           section: "actualTargetEnergy",
           // Excel: =D29 (target mirrors actual for user-controlled fuel)
@@ -215,7 +223,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         j: {
           fieldId: "j_29",
           type: "calculated",
-          value: "0", 
+          value: "0",
           section: "actualTargetEnergy",
           // Excel: =H29*14.019 (target propane to ekWh)
         },
@@ -223,7 +231,7 @@ window.TEUI.SectionModules.sect04 = (function () {
           fieldId: "k_29",
           type: "calculated",
           value: "0",
-          section: "actualTargetEnergy", 
+          section: "actualTargetEnergy",
           // Excel: =H29*L29/1000 (target propane emissions)
         },
         l: { content: "2970" }, // Static propane emission factor
@@ -235,7 +243,7 @@ window.TEUI.SectionModules.sect04 = (function () {
     // Row 30: T.3.4 Total Oil Use
     30: {
       id: "T.3.4",
-      rowId: "T.3.4", 
+      rowId: "T.3.4",
       label: "Total Oil Use",
       cells: {
         c: { label: "T.3.4 Total Oil Use" },
@@ -243,7 +251,7 @@ window.TEUI.SectionModules.sect04 = (function () {
           fieldId: "d_30",
           type: "editable",
           value: "0", // User utility bill input
-          classes: ["user-input", "editable"], 
+          classes: ["user-input", "editable"],
           section: "actualTargetEnergy",
         },
         e: { content: "litres/yr" },
@@ -256,7 +264,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         },
         g: {
           fieldId: "g_30",
-          type: "calculated", 
+          type: "calculated",
           value: "0",
           section: "actualTargetEnergy",
           // Excel: =D30*L30/1000 (oil emissions)
@@ -266,7 +274,7 @@ window.TEUI.SectionModules.sect04 = (function () {
           type: "calculated",
           value: "0",
           section: "actualTargetEnergy",
-          // Excel: Complex dual-fuel logic from S07/S13  
+          // Excel: Complex dual-fuel logic from S07/S13
         },
         i: { content: "litres/yr" },
         j: {
@@ -278,7 +286,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         },
         k: {
           fieldId: "k_30",
-          type: "calculated", 
+          type: "calculated",
           value: "0",
           section: "actualTargetEnergy",
           // Excel: =H30*L30/1000 (target oil emissions)
@@ -293,7 +301,7 @@ window.TEUI.SectionModules.sect04 = (function () {
     31: {
       id: "T.3.5",
       rowId: "T.3.5",
-      label: "Total Wood Use", 
+      label: "Total Wood Use",
       cells: {
         c: { label: "T.3.5 Total Wood Use" },
         d: {
@@ -307,7 +315,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         f: {
           fieldId: "f_31",
           type: "calculated",
-          value: "0", 
+          value: "0",
           section: "actualTargetEnergy",
           // Excel: =D31*1000 (wood to ekWh)
         },
@@ -322,7 +330,7 @@ window.TEUI.SectionModules.sect04 = (function () {
           fieldId: "h_31",
           type: "calculated",
           value: "0",
-          section: "actualTargetEnergy", 
+          section: "actualTargetEnergy",
           // Excel: =D31 (target mirrors actual for user-controlled fuel)
         },
         i: { content: "m³/yr" },
@@ -335,7 +343,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         },
         k: {
           fieldId: "k_31",
-          type: "calculated", 
+          type: "calculated",
           value: "0",
           section: "actualTargetEnergy",
           // Excel: =H31*L31 (target wood emissions)
@@ -349,7 +357,7 @@ window.TEUI.SectionModules.sect04 = (function () {
     // Row 32: E.1.1 Operational GHG & Energy Subtotals
     32: {
       id: "E.1.1",
-      rowId: "E.1.1", 
+      rowId: "E.1.1",
       label: "Operational GHG & Energy Subtotals",
       cells: {
         c: { label: "E.1.1 Operational GHG & Energy Subtotals" },
@@ -363,7 +371,7 @@ window.TEUI.SectionModules.sect04 = (function () {
           // Excel: =SUM(F27:F31) (actual energy subtotal)
         },
         g: {
-          fieldId: "g_32", 
+          fieldId: "g_32",
           type: "calculated",
           value: "0",
           section: "actualTargetEnergy",
@@ -374,7 +382,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         j: {
           fieldId: "j_32",
           type: "calculated",
-          value: "0", 
+          value: "0",
           section: "actualTargetEnergy",
           // Excel: =SUM(J27:J31) (target energy subtotal)
         },
@@ -399,7 +407,7 @@ window.TEUI.SectionModules.sect04 = (function () {
       cells: {
         c: { label: "T.3.6 Total Net Energy" },
         d: {
-          fieldId: "d_33", 
+          fieldId: "d_33",
           type: "calculated",
           value: "0",
           section: "actualTargetEnergy",
@@ -428,7 +436,7 @@ window.TEUI.SectionModules.sect04 = (function () {
     34: {
       id: "T.3.7",
       rowId: "T.3.7",
-      label: "Annual Percapita Energy", 
+      label: "Annual Percapita Energy",
       cells: {
         c: { label: "T.3.7 Annual Percapita Energy" },
         d: {
@@ -441,7 +449,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         e: { content: "kWh Actual" },
         f: {
           fieldId: "f_34",
-          type: "calculated", 
+          type: "calculated",
           value: "0",
           section: "actualTargetEnergy",
           // Excel: =D33/D63 (actual GJ per person)
@@ -456,7 +464,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         },
         i: { content: "kWh Target" },
         j: {
-          fieldId: "j_34", 
+          fieldId: "j_34",
           type: "calculated",
           value: "0",
           section: "actualTargetEnergy",
@@ -478,7 +486,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         c: { label: "T.3.8 Primary Energy" },
         d: {
           fieldId: "d_35",
-          type: "calculated", 
+          type: "calculated",
           value: "0",
           section: "actualTargetEnergy",
           // Excel: =IF(D14="Targeted Use", J27*H35, F27*H35)
@@ -540,7 +548,6 @@ window.TEUI.SectionModules.sect04 = (function () {
         d_31: getFieldDefault("d_31"), // Wood m³/yr
         h_35: getFieldDefault("h_35"), // PER Factor
       };
-      console.log("S04-RF: Target defaults set from field definitions - single source of truth");
     },
 
     loadState: function () {
@@ -549,7 +556,6 @@ window.TEUI.SectionModules.sect04 = (function () {
         if (saved) {
           const savedData = JSON.parse(saved);
           this.data = { ...this.data, ...savedData };
-          console.log("S04-RF: Target state loaded from localStorage");
         }
       } catch (error) {
         console.warn("S04-RF: Error loading Target state:", error);
@@ -573,6 +579,21 @@ window.TEUI.SectionModules.sect04 = (function () {
 
     getValue: function (fieldId) {
       return this.data[fieldId] || "";
+    },
+
+    /**
+     * ✅ PHASE 2: Sync from global StateManager after import
+     * Bridges global StateManager → isolated TargetState for imported values
+     */
+    syncFromGlobalState: function (
+      fieldIds = ["d_27", "d_28", "d_29", "d_30", "d_31", "h_35"],
+    ) {
+      fieldIds.forEach((fieldId) => {
+        const globalValue = window.TEUI.StateManager.getValue(fieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue, "imported");
+        }
+      });
     },
   };
 
@@ -599,7 +620,6 @@ window.TEUI.SectionModules.sect04 = (function () {
         d_31: getFieldDefault("d_31"), // Wood m³/yr
         h_35: getFieldDefault("h_35"), // PER Factor
       };
-      console.log("S04-RF: Reference defaults set from field definitions - single source of truth");
     },
 
     loadState: function () {
@@ -608,7 +628,6 @@ window.TEUI.SectionModules.sect04 = (function () {
         if (saved) {
           const savedData = JSON.parse(saved);
           this.data = { ...this.data, ...savedData };
-          console.log("S04-RF: Reference state loaded from localStorage");
         }
       } catch (error) {
         console.warn("S04-RF: Error loading Reference state:", error);
@@ -633,6 +652,22 @@ window.TEUI.SectionModules.sect04 = (function () {
     getValue: function (fieldId) {
       return this.data[fieldId] || "";
     },
+
+    /**
+     * ✅ PHASE 2: Sync from global StateManager after import
+     * Bridges global StateManager → isolated ReferenceState for imported values
+     */
+    syncFromGlobalState: function (
+      fieldIds = ["d_27", "d_28", "d_29", "d_30", "d_31", "h_35"],
+    ) {
+      fieldIds.forEach((fieldId) => {
+        const refFieldId = `ref_${fieldId}`;
+        const globalValue = window.TEUI.StateManager.getValue(refFieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue, "imported");
+        }
+      });
+    },
   };
 
   /**
@@ -642,7 +677,6 @@ window.TEUI.SectionModules.sect04 = (function () {
     currentMode: "target",
 
     initialize: function () {
-      console.log("S04-RF: Initializing Pattern A ModeManager");
       TargetState.initialize();
       ReferenceState.initialize();
     },
@@ -653,7 +687,6 @@ window.TEUI.SectionModules.sect04 = (function () {
         return;
       }
       this.currentMode = mode;
-      console.log(`S04-RF: Switched to ${mode.toUpperCase()} mode`);
 
       // ✅ PATTERN A: UI toggle only switches display, values should already be calculated
       this.refreshUI();
@@ -683,8 +716,6 @@ window.TEUI.SectionModules.sect04 = (function () {
     },
 
     refreshUI: function () {
-      console.log(`[S04-RF] Refreshing UI for ${this.currentMode.toUpperCase()} mode`);
-
       const sectionElement = document.getElementById("actualTargetEnergy");
       if (!sectionElement) return;
 
@@ -697,7 +728,9 @@ window.TEUI.SectionModules.sect04 = (function () {
         const stateValue = currentState.getValue(fieldId);
         if (stateValue === undefined || stateValue === null) return;
 
-        const element = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
+        const element = sectionElement.querySelector(
+          `[data-field-id="${fieldId}"]`,
+        );
         if (!element) return;
 
         if (element.hasAttribute("contenteditable")) {
@@ -705,7 +738,9 @@ window.TEUI.SectionModules.sect04 = (function () {
           if (["d_27", "d_28", "d_29", "d_30", "d_31"].includes(fieldId)) {
             const numericValue = window.TEUI?.parseNumeric?.(stateValue, 0);
             if (numericValue >= 0) {
-              const formattedValue = window.TEUI?.formatNumber?.(numericValue, "number-2dp-comma") ?? stateValue;
+              const formattedValue =
+                window.TEUI?.formatNumber?.(numericValue, "number-2dp-comma") ??
+                stateValue;
               element.textContent = formattedValue;
             }
           } else {
@@ -718,19 +753,46 @@ window.TEUI.SectionModules.sect04 = (function () {
     updateCalculatedDisplayValues: function () {
       if (!window.TEUI?.StateManager) return;
 
-      console.log(`[S04-RF] 🔄 Updating calculated display values for ${this.currentMode} mode`);
-
       // All calculated fields in S04
       const calculatedFields = [
-        "f_27", "g_27", "h_27", "j_27", "k_27", "l_27", // Row 27
-        "f_28", "g_28", "h_28", "j_28", "k_28",         // Row 28
-        "f_29", "g_29", "h_29", "j_29", "k_29",         // Row 29
-        "f_30", "g_30", "h_30", "j_30", "k_30",         // Row 30
-        "f_31", "g_31", "h_31", "j_31", "k_31",         // Row 31
-        "f_32", "g_32", "j_32", "k_32",                 // Row 32 (subtotals)
-        "d_33", "h_33",                                 // Row 33 (GJ totals)
-        "d_34", "f_34", "h_34", "j_34",                 // Row 34 (per capita)
-        "d_35", "f_35",                                 // Row 35 (primary energy)
+        "f_27",
+        "g_27",
+        "h_27",
+        "j_27",
+        "k_27",
+        "l_27", // Row 27
+        "f_28",
+        "g_28",
+        "h_28",
+        "j_28",
+        "k_28", // Row 28
+        "f_29",
+        "g_29",
+        "h_29",
+        "j_29",
+        "k_29", // Row 29
+        "f_30",
+        "g_30",
+        "h_30",
+        "j_30",
+        "k_30", // Row 30
+        "f_31",
+        "g_31",
+        "h_31",
+        "j_31",
+        "k_31", // Row 31
+        "f_32",
+        "g_32",
+        "j_32",
+        "k_32", // Row 32 (subtotals)
+        "d_33",
+        "h_33", // Row 33 (GJ totals)
+        "d_34",
+        "f_34",
+        "h_34",
+        "j_34", // Row 34 (per capita)
+        "d_35",
+        "f_35", // Row 35 (primary energy)
       ];
 
       calculatedFields.forEach((fieldId) => {
@@ -756,7 +818,10 @@ window.TEUI.SectionModules.sect04 = (function () {
             if (fieldId === "l_27") {
               formatType = "integer"; // Emission factor as integer
             }
-            const formattedValue = window.TEUI.formatNumber(numericValue, formatType);
+            const formattedValue = window.TEUI.formatNumber(
+              numericValue,
+              formatType,
+            );
             element.textContent = formattedValue;
           }
         }
@@ -798,10 +863,12 @@ window.TEUI.SectionModules.sect04 = (function () {
    * Set calculated value with proper dual-state routing
    */
   function setFieldValue(fieldId, value, formatType = "number-2dp-comma") {
-    const valueToStore = value !== null && value !== undefined ? String(value) : "0";
+    const valueToStore =
+      value !== null && value !== undefined ? String(value) : "0";
 
     // Store in current state
-    const currentState = ModeManager.currentMode === "target" ? TargetState : ReferenceState;
+    const currentState =
+      ModeManager.currentMode === "target" ? TargetState : ReferenceState;
     currentState.setValue(fieldId, valueToStore, "calculated");
 
     // Store in StateManager for cross-section communication
@@ -811,7 +878,11 @@ window.TEUI.SectionModules.sect04 = (function () {
       }
     } else {
       if (window.TEUI?.StateManager) {
-        window.TEUI.StateManager.setValue(`ref_${fieldId}`, valueToStore, "calculated");
+        window.TEUI.StateManager.setValue(
+          `ref_${fieldId}`,
+          valueToStore,
+          "calculated",
+        );
       }
     }
   }
@@ -822,16 +893,47 @@ window.TEUI.SectionModules.sect04 = (function () {
 
   const GRID_INTENSITY_FACTORS = {
     ON: {
-      2015: 46, 2016: 40, 2017: 18, 2018: 29, 2019: 29, 2020: 36,
-      2021: 44, 2022: 51, 2023: 67, 2024: 71, 2025: 138, 2026: 145,
-      2027: 132, 2028: 133, 2029: 126, 2030: 126, 2031: 122, 2032: 122,
-      2033: 104, 2034: 58, 2035: 40, 2036: 34, 2037: 33, 2038: 32,
-      2039: 13, 2040: 8, 2041: 3, default: 51
+      2015: 46,
+      2016: 40,
+      2017: 18,
+      2018: 29,
+      2019: 29,
+      2020: 36,
+      2021: 44,
+      2022: 51,
+      2023: 67,
+      2024: 71,
+      2025: 138,
+      2026: 145,
+      2027: 132,
+      2028: 133,
+      2029: 126,
+      2030: 126,
+      2031: 122,
+      2032: 122,
+      2033: 104,
+      2034: 58,
+      2035: 40,
+      2036: 34,
+      2037: 33,
+      2038: 32,
+      2039: 13,
+      2040: 8,
+      2041: 3,
+      default: 51,
     },
-    QC: { default: 1 }, BC: { default: 12 }, AB: { default: 650 },
-    SK: { default: 720 }, MB: { default: 3 }, NS: { default: 600 },
-    NB: { default: 340 }, NL: { default: 30 }, PE: { default: 12 },
-    NT: { default: 180 }, YT: { default: 2 }, NU: { default: 200 },
+    QC: { default: 1 },
+    BC: { default: 12 },
+    AB: { default: 650 },
+    SK: { default: 720 },
+    MB: { default: 3 },
+    NS: { default: 600 },
+    NB: { default: 340 },
+    NL: { default: 30 },
+    PE: { default: 12 },
+    NT: { default: 180 },
+    YT: { default: 2 },
+    NU: { default: 200 },
   };
 
   /**
@@ -840,8 +942,9 @@ window.TEUI.SectionModules.sect04 = (function () {
   function getElectricityEmissionFactor() {
     const province = getGlobalStringValue("d_19") || "ON";
     const year = getGlobalNumericValue("h_12") || 2022;
-    
-    const provinceFactors = GRID_INTENSITY_FACTORS[province] || GRID_INTENSITY_FACTORS["ON"];
+
+    const provinceFactors =
+      GRID_INTENSITY_FACTORS[province] || GRID_INTENSITY_FACTORS["ON"];
     return provinceFactors[year] || provinceFactors.default;
   }
 
@@ -855,7 +958,7 @@ window.TEUI.SectionModules.sect04 = (function () {
     const i_43 = getGlobalNumericValue("i_43") || 0;
     const h_27 = getGlobalNumericValue("d_136") || 0; // Reads ref_d_136 in Reference mode
     const l_27 = getElectricityEmissionFactor();
-    
+
     setFieldValue("h_27", h_27);
     setFieldValue("f_27", d_27 - d_43 - i_43);
     setFieldValue("g_27", ((d_27 - d_43 - i_43) * l_27) / 1000);
@@ -866,7 +969,7 @@ window.TEUI.SectionModules.sect04 = (function () {
 
   function calculateRow28() {
     const d_28 = window.TEUI.parseNumeric(ModeManager.getValue("d_28")) || 0;
-    
+
     // Excel H28 dual-fuel logic: =IF(AND(D113="Gas", D51="Gas"), E51+H115, IF(D51="Gas", E51, IF(D113="Gas", H115, 0)))
     const spaceHeatingFuel = getGlobalStringValue("d_113");
     const waterHeatingFuel = getGlobalStringValue("d_51");
@@ -902,7 +1005,7 @@ window.TEUI.SectionModules.sect04 = (function () {
 
   function calculateRow30() {
     const d_30 = window.TEUI.parseNumeric(ModeManager.getValue("d_30")) || 0;
-    
+
     // Excel H30 dual-fuel logic: =IF(AND(D113="Oil", D51="Oil"), K54+F115, IF(D51="Oil", K54, IF(D113="Oil", F115, 0)))
     const spaceHeatingFuel = getGlobalStringValue("d_113");
     const waterHeatingFuel = getGlobalStringValue("d_51");
@@ -965,26 +1068,24 @@ window.TEUI.SectionModules.sect04 = (function () {
     // ✅ CRITICAL: Wood emissions offset from S08 (MT/yr to kgCO2e/yr conversion)
     // Mode-aware reading: Target uses d_60, Reference uses ref_d_60
     const d_60 = getGlobalNumericValue("d_60") || 0; // Forestry offset from S08
-    
+
     // 🌲 REFERENCE MODEL CONSIDERATION: Reference mode should use ref_d_60 for proper state isolation
     // This ensures Reference model wood offsets are independent of Target model forestry planning
     // Wood emissions are counted outside building boundary per reporting frameworks
-    
+
     const f_32 = f_27 + f_28 + f_29 + f_30 + f_31; // Excel: =SUM(F27:F31)
-    const g_32 = g_27 + g_28 + g_29 + g_30 + g_31 - (d_60 * 1000); // Excel: =SUM(G27:G31)-(D60*1000)
+    const g_32 = g_27 + g_28 + g_29 + g_30 + g_31 - d_60 * 1000; // Excel: =SUM(G27:G31)-(D60*1000)
     const j_32 = j_27 + j_28 + j_29 + j_30 + j_31; // Excel: =SUM(J27:J31)
-    const k_32 = k_27 + k_28 + k_29 + k_30 + k_31 - (d_60 * 1000); // Excel: =SUM(K27:K31)-(D60*1000)
-    
+    const k_32 = k_27 + k_28 + k_29 + k_30 + k_31 - d_60 * 1000; // Excel: =SUM(K27:K31)-(D60*1000)
+
     // Note: Both Target and Reference currently use same wood offset (d_60) as per current Excel model
     // Future enhancement: Reference model could use independent ref_d_60 for scenario comparison
 
     // ✅ CRITICAL FOR S01: Store subtotals for downstream consumption
     setFieldValue("f_32", f_32); // Actual energy subtotal
     setFieldValue("g_32", g_32); // Actual emissions subtotal (with wood offset)
-    setFieldValue("j_32", j_32); // Target energy subtotal  
+    setFieldValue("j_32", j_32); // Target energy subtotal
     setFieldValue("k_32", k_32); // Target emissions subtotal (with wood offset)
-
-    console.log(`[S04-RF] Row 32 subtotals: f_32=${f_32}, g_32=${g_32}, j_32=${j_32}, k_32=${k_32} (wood offset: ${d_60} MT/yr)`);
   }
 
   function calculateRow33() {
@@ -1028,22 +1129,21 @@ window.TEUI.SectionModules.sect04 = (function () {
   }
 
   function calculateAll() {
-    console.log("[S04-RF] Starting complete Excel-compliant calculations");
     const originalMode = ModeManager.currentMode;
-    
+
     // Target calculations
     ModeManager.currentMode = "target";
     calculateRow27(); // Electricity
     calculateRow28(); // Gas
-    calculateRow29(); // Propane  
+    calculateRow29(); // Propane
     calculateRow30(); // Oil
     calculateRow31(); // Wood
     calculateRow32(); // ✅ CRITICAL: Subtotals for S01 consumption
     calculateRow33(); // Net Energy (GJ)
     calculateRow34(); // Per Capita
     calculateRow35(); // Primary Energy
-    
-    // Reference calculations  
+
+    // Reference calculations
     ModeManager.currentMode = "reference";
     calculateRow27(); // Uses ref_d_136, ref_d_43, ref_i_43
     calculateRow28(); // Uses ref_d_113, ref_d_51, ref_e_51, ref_h_115
@@ -1054,9 +1154,8 @@ window.TEUI.SectionModules.sect04 = (function () {
     calculateRow33(); // Uses ref_d_43, ref_i_43
     calculateRow34(); // Uses ref_d_63
     calculateRow35(); // Uses ref_d_14, ref_h_15
-    
+
     ModeManager.currentMode = originalMode;
-    console.log("[S04-RF] ✅ Complete dual-engine calculations finished");
   }
 
   function getFieldDefault(fieldId) {
@@ -1094,7 +1193,8 @@ window.TEUI.SectionModules.sect04 = (function () {
 
   function getLayout() {
     const layoutRows = [];
-    if (sectionRows["header"]) layoutRows.push(createLayoutRow(sectionRows["header"]));
+    if (sectionRows["header"])
+      layoutRows.push(createLayoutRow(sectionRows["header"]));
     Object.entries(sectionRows).forEach(([key, row]) => {
       if (key !== "header") layoutRows.push(createLayoutRow(row));
     });
@@ -1103,7 +1203,20 @@ window.TEUI.SectionModules.sect04 = (function () {
 
   function createLayoutRow(row) {
     const rowDef = { id: row.id, cells: [{}, {}] };
-    const columns = ["c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n"];
+    const columns = [
+      "c",
+      "d",
+      "e",
+      "f",
+      "g",
+      "h",
+      "i",
+      "j",
+      "k",
+      "l",
+      "m",
+      "n",
+    ];
     columns.forEach((col) => {
       if (row.cells && row.cells[col]) {
         const cell = { ...row.cells[col] };
@@ -1127,17 +1240,25 @@ window.TEUI.SectionModules.sect04 = (function () {
   }
 
   function injectHeaderControls() {
-    const sectionHeader = document.querySelector("#actualTargetEnergy .section-header");
-    if (!sectionHeader || sectionHeader.querySelector(".local-controls-container")) return;
+    const sectionHeader = document.querySelector(
+      "#actualTargetEnergy .section-header",
+    );
+    if (
+      !sectionHeader ||
+      sectionHeader.querySelector(".local-controls-container")
+    )
+      return;
 
     const controlsContainer = document.createElement("div");
     controlsContainer.className = "local-controls-container";
-    controlsContainer.style.cssText = "display: flex; align-items: center; gap: 10px; margin-left: auto;";
+    controlsContainer.style.cssText =
+      "display: flex; align-items: center; gap: 10px; margin-left: auto;";
 
     // Reset button
     const resetButton = document.createElement("button");
     resetButton.textContent = "Reset";
-    resetButton.style.cssText = "padding: 4px 8px; font-size: 12px; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 3px;";
+    resetButton.style.cssText =
+      "padding: 4px 8px; font-size: 12px; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 3px;";
     resetButton.addEventListener("click", (event) => {
       event.stopPropagation();
       if (confirm("Reset all utility bill values to defaults?")) {
@@ -1152,14 +1273,17 @@ window.TEUI.SectionModules.sect04 = (function () {
     // State indicator
     const stateIndicator = document.createElement("div");
     stateIndicator.textContent = "TARGET";
-    stateIndicator.style.cssText = "padding: 4px 8px; font-size: 12px; font-weight: bold; color: white; background-color: rgba(0, 123, 255, 0.5); border-radius: 3px;";
+    stateIndicator.style.cssText =
+      "padding: 4px 8px; font-size: 12px; font-weight: bold; color: white; background-color: rgba(0, 123, 255, 0.5); border-radius: 3px;";
 
     // Toggle switch
     const toggleSwitch = document.createElement("div");
-    toggleSwitch.style.cssText = "position: relative; width: 40px; height: 20px; background-color: #ccc; border-radius: 10px; cursor: pointer;";
+    toggleSwitch.style.cssText =
+      "position: relative; width: 40px; height: 20px; background-color: #ccc; border-radius: 10px; cursor: pointer;";
 
     const slider = document.createElement("div");
-    slider.style.cssText = "position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: white; border-radius: 50%; transition: transform 0.2s;";
+    slider.style.cssText =
+      "position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: white; border-radius: 50%; transition: transform 0.2s;";
     toggleSwitch.appendChild(slider);
 
     toggleSwitch.addEventListener("click", (event) => {
@@ -1184,19 +1308,15 @@ window.TEUI.SectionModules.sect04 = (function () {
     controlsContainer.appendChild(stateIndicator);
     controlsContainer.appendChild(toggleSwitch);
     sectionHeader.appendChild(controlsContainer);
-
-    console.log("S04-RF: Header controls injected");
   }
 
   function onSectionRendered() {
-    console.log("S04-RF: Section rendered - initializing Excel-compliant Pattern A module");
     ModeManager.initialize();
-    injectHeaderControls(); // ✅ ADD: Header controls for mode switching
+    injectHeaderControls();
     initializeEventHandlers();
     calculateAll();
     ModeManager.updateCalculatedDisplayValues();
     ModeManager.refreshUI();
-    console.log("S04-RF: Excel-compliant initialization complete");
   }
 
   function initializeEventHandlers() {
@@ -1204,11 +1324,13 @@ window.TEUI.SectionModules.sect04 = (function () {
     if (!sectionElement) return;
 
     // Set up editable field handlers (from working S04 pattern)
-    const editableFields = sectionElement.querySelectorAll(".editable.user-input");
+    const editableFields = sectionElement.querySelectorAll(
+      ".editable.user-input",
+    );
     editableFields.forEach((field) => {
       if (!field.hasEditableListeners) {
         field.setAttribute("contenteditable", "true");
-        
+
         // Add focus styling and original value tracking
         field.addEventListener("focus", function () {
           this.classList.add("editing");
@@ -1225,22 +1347,37 @@ window.TEUI.SectionModules.sect04 = (function () {
 
           // Only update if value has changed
           if (this.dataset.originalValue !== newValue) {
-            console.log(`[S04-RF] User modified ${fieldId}: ${this.dataset.originalValue} → ${newValue}`);
-            
+            console.log(
+              `[S04-RF] User modified ${fieldId}: ${this.dataset.originalValue} → ${newValue}`,
+            );
+
             // Parse and validate
             const numericValue = window.TEUI.parseNumeric(newValue, NaN);
             if (!isNaN(numericValue)) {
               // Format and store
-              const formattedValue = window.TEUI.formatNumber(numericValue, "number-2dp-comma");
+              const formattedValue = window.TEUI.formatNumber(
+                numericValue,
+                "number-2dp-comma",
+              );
               this.textContent = formattedValue;
-              ModeManager.setValue(fieldId, numericValue.toString(), "user-modified");
+              ModeManager.setValue(
+                fieldId,
+                numericValue.toString(),
+                "user-modified",
+              );
               calculateAll();
               ModeManager.updateCalculatedDisplayValues();
             } else {
               // Revert to previous value
               const previousValue = ModeManager.getValue(fieldId) || "0";
-              const prevNumericValue = window.TEUI.parseNumeric(previousValue, 0);
-              this.textContent = window.TEUI.formatNumber(prevNumericValue, "number-2dp-comma");
+              const prevNumericValue = window.TEUI.parseNumeric(
+                previousValue,
+                0,
+              );
+              this.textContent = window.TEUI.formatNumber(
+                prevNumericValue,
+                "number-2dp-comma",
+              );
             }
           }
         });
@@ -1252,7 +1389,7 @@ window.TEUI.SectionModules.sect04 = (function () {
             this.blur(); // Remove focus to trigger the blur event
           }
         });
-        
+
         field.hasEditableListeners = true;
       }
     });
@@ -1266,31 +1403,42 @@ window.TEUI.SectionModules.sect04 = (function () {
 
       // Critical upstream dependencies (complete list from TODO)
       const dependencies = [
-        "d_136", "ref_d_136", // S15 target electricity
-        "d_43", "ref_d_43",   // S06 onsite renewables
-        "i_43", "ref_i_43",   // S06 offsite renewables
-        "d_60", "ref_d_60",   // S08 forestry offset (wood emissions)
-        "d_63", "ref_d_63",   // S09 occupants (per capita calculations)
-        "d_19", "ref_d_19",   // S02 province (affects emission factors)
-        "h_12", "ref_h_12",   // S02 reporting year (affects emission factors)
-        "h_15", "ref_h_15",   // S02 conditioned area
-        "d_14", "ref_d_14",   // S02 actual/target mode
-        "d_51", "ref_d_51",   // S07 water heating fuel
-        "e_51", "ref_e_51",   // S07 water gas volume
-        "k_54", "ref_k_54",   // S07 water oil volume
-        "d_113", "ref_d_113", // S13 space heating fuel
-        "h_115", "ref_h_115", // S13 space gas volume
-        "f_115", "ref_f_115", // S13 space oil volume
+        "d_136",
+        "ref_d_136", // S15 target electricity
+        "d_43",
+        "ref_d_43", // S06 onsite renewables
+        "i_43",
+        "ref_i_43", // S06 offsite renewables
+        "d_60",
+        "ref_d_60", // S08 forestry offset (wood emissions)
+        "d_63",
+        "ref_d_63", // S09 occupants (per capita calculations)
+        "d_19",
+        "ref_d_19", // S02 province (affects emission factors)
+        "h_12",
+        "ref_h_12", // S02 reporting year (affects emission factors)
+        "h_15",
+        "ref_h_15", // S02 conditioned area
+        "d_14",
+        "ref_d_14", // S02 actual/target mode
+        "d_51",
+        "ref_d_51", // S07 water heating fuel
+        "e_51",
+        "ref_e_51", // S07 water gas volume
+        "k_54",
+        "ref_k_54", // S07 water oil volume
+        "d_113",
+        "ref_d_113", // S13 space heating fuel
+        "h_115",
+        "ref_h_115", // S13 space gas volume
+        "f_115",
+        "ref_f_115", // S13 space oil volume
       ];
 
       dependencies.forEach((fieldId) => {
         window.TEUI.StateManager.addListener(fieldId, calculateAndRefresh);
       });
-
-      console.log(`[S04-RF] Added ${dependencies.length} clean dependency listeners`);
     }
-
-    console.log("S04-RF: Event handlers initialized with proper Enter key handling");
   }
 
   // Expose ModeManager globally
@@ -1300,21 +1448,25 @@ window.TEUI.SectionModules.sect04 = (function () {
   //==========================================================================
   // PUBLIC API (MINIMAL INTERFACE)
   //==========================================================================
-  
+
   return {
     // Standard section interface
     getFields: getFields,
-    getDropdownOptions: function() { return {}; },
+    getDropdownOptions: function () {
+      return {};
+    },
     getLayout: getLayout,
-    
-    // Initialization 
+
+    // Initialization
     onSectionRendered: onSectionRendered,
     initializeEventHandlers: initializeEventHandlers,
-    
+
     // Calculations
     calculateAll: calculateAll,
-    
-    // Dual-state management
-    ModeManager: ModeManager
+
+    // Dual-state management (✅ Phase 2: Export state objects for import sync)
+    ModeManager: ModeManager,
+    TargetState: TargetState,
+    ReferenceState: ReferenceState,
   };
 })();

@@ -3,7 +3,7 @@
     "description": "Comprehensive mapping of COOLING-TARGET.csv variables to DOM elements and internal calculations",
     "purpose": "Enable future agents to understand Excel cooling logic and implement proper parity",
     "created": "2025-09-28",
-    
+
     "CRITICAL_CALCULATIONS": {
       "E55_m_124": {
         "excel_formula": "=E52/(E54*24)",
@@ -12,7 +12,7 @@
         "our_equivalent": "m_124"
       },
       "E52": {
-        "excel_formula": "=E50-E51", 
+        "excel_formula": "=E50-E51",
         "description": "kWh Remaining UnMet Cooling Load",
         "dependencies": ["E50", "E51"]
       },
@@ -22,7 +22,7 @@
         "dependencies": ["E37", "E45"]
       },
       "E51": {
-        "excel_formula": "=E36*E45", 
+        "excel_formula": "=E36*E45",
         "description": "kWh Total Seasonal Free Cooling Potential",
         "dependencies": ["E36", "E45"]
       }
@@ -35,7 +35,7 @@
         "our_equivalent": "state.nightTimeTemp"
       },
       "A4": {
-        "value": "0.5585", 
+        "value": "0.5585",
         "description": "Cooling Season Mean RH in % at 15h00 LST (Jun-Sept)",
         "our_equivalent": "state.coolingSeasonMeanRH"
       },
@@ -45,13 +45,13 @@
         "our_equivalent": "h_24 (cooling setpoint)"
       },
       "A9": {
-        "excel_formula": "=REPORT!D105", 
+        "excel_formula": "=REPORT!D105",
         "description": "Volume of Space in m3",
         "our_equivalent": "d_105"
       },
       "A10": {
         "excel_formula": "=REPORT!D101",
-        "description": "Surface Area Ae in m2", 
+        "description": "Surface Area Ae in m2",
         "our_equivalent": "d_101"
       },
       "A11": {
@@ -74,13 +74,13 @@
         "our_equivalent": "state.airMass"
       },
       "E4": {
-        "value": "1005", 
+        "value": "1005",
         "description": "Spec. Heat Cap. of Air J/(kg•K)",
         "our_equivalent": "state.specificHeatCapacity"
       },
       "E6": {
         "value": "2501000",
-        "description": "Latent Heat of Vaporization J/kg", 
+        "description": "Latent Heat of Vaporization J/kg",
         "our_equivalent": "state.latentHeatVaporization"
       }
     },
@@ -167,7 +167,7 @@
         "description": "m3/second ventilation rate"
       },
       "A30": {
-        "excel_formula": "=A29*E3", 
+        "excel_formula": "=A29*E3",
         "description": "Mass-Flow Rate of Air kg/s"
       },
       "A31": {
@@ -179,7 +179,7 @@
         "description": "Heat Removed in one Day (Joules)"
       },
       "A33": {
-        "excel_formula": "=A32/3600000", 
+        "excel_formula": "=A32/3600000",
         "description": "Heat Removed in one Day (kWh)",
         "note": "This is the daily free cooling potential"
       },
@@ -193,13 +193,13 @@
         "our_equivalent": "m_129"
       },
       "E45": {
-        "excel_formula": "=REPORT!D21", 
+        "excel_formula": "=REPORT!D21",
         "description": "CDD for Named Location (in °C)",
         "our_equivalent": "d_21"
       },
       "E54": {
         "excel_formula": "=REPORT!M19",
-        "description": "Length of Cooling Period in Days", 
+        "description": "Length of Cooling Period in Days",
         "our_equivalent": "m_19"
       }
     },
@@ -219,7 +219,7 @@
         "our_calculation": "m_129 * d_21"
       },
       "E51_seasonal_free_cooling": {
-        "excel_formula": "=E36*E45", 
+        "excel_formula": "=E36*E45",
         "description": "Seasonal free cooling potential (daily_potential * d_21)",
         "our_calculation": "daily_free_cooling_kWh * d_21"
       },

@@ -84,20 +84,20 @@ window.TEUI.Clock = {
 
     if (this.initTime && this.initDisplayed) {
       // Show initialization time (persistent)
-      displayText = `Initialization: ${this.formatTime(this.initTime)}`;
+      displayText = `Load: ${this.formatTime(this.initTime)}`;
 
       // Add current time if we have recent calculation data
       if (window.TEUI.timing.lastCalculationTime) {
-        displayText += `\nCurrent: ${this.formatTime(window.TEUI.timing.lastCalculationTime)}`;
+        displayText += ` | Current: ${this.formatTime(window.TEUI.timing.lastCalculationTime)}`;
       }
     } else if (window.TEUI.timing.initStartTime) {
       // Show ongoing initialization
       const elapsed = performance.now() - window.TEUI.timing.initStartTime;
-      displayText = `Initializing: ${this.formatTime(elapsed)}...`;
+      displayText = `Loading: ${this.formatTime(elapsed)}...`;
     }
 
     // Apply styling for white text and proper formatting
-    feedbackArea.innerHTML = displayText.replace(/\n/g, "<br>");
+    feedbackArea.innerHTML = displayText;
     feedbackArea.style.color = "white";
     feedbackArea.style.fontSize = "0.8rem";
     feedbackArea.style.fontFamily = "monospace";

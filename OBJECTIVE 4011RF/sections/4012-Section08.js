@@ -30,6 +30,23 @@ window.TEUI.SectionModules.sect08 = (function () {
       }
       this.state = defaults;
     },
+    /**
+     * ✅ PHASE 2: Sync from global StateManager after import
+     * Bridges global StateManager → isolated TargetState for imported values
+     */
+    syncFromGlobalState: function (
+      fieldIds = ["d_56", "d_57", "d_58", "d_59"],
+    ) {
+      fieldIds.forEach((fieldId) => {
+        const globalValue = window.TEUI.StateManager.getValue(fieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue);
+          console.log(
+            `S08 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`,
+          );
+        }
+      });
+    },
     setValue: function (fieldId, value) {
       this.state[fieldId] = value;
     },
@@ -58,6 +75,24 @@ window.TEUI.SectionModules.sect08 = (function () {
       defaults["d_59"] = "30";
       defaults["i_59"] = "50";
       this.state = defaults;
+    },
+    /**
+     * ✅ PHASE 2: Sync from global StateManager after import
+     * Bridges global StateManager → isolated ReferenceState for imported values
+     */
+    syncFromGlobalState: function (
+      fieldIds = ["d_56", "d_57", "d_58", "d_59"],
+    ) {
+      fieldIds.forEach((fieldId) => {
+        const refFieldId = `ref_${fieldId}`;
+        const globalValue = window.TEUI.StateManager.getValue(refFieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue);
+          console.log(
+            `S08 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (${refFieldId})`,
+          );
+        }
+      });
     },
     setValue: function (fieldId, value) {
       this.state[fieldId] = value;
@@ -672,5 +707,8 @@ window.TEUI.SectionModules.sect08 = (function () {
     onSectionRendered,
     calculateAll,
     ModeManager, // Expose for external control if needed
+    // ✅ PHASE 2: Expose state objects for import sync
+    TargetState: TargetState,
+    ReferenceState: ReferenceState,
   };
 })();

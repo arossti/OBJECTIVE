@@ -105,7 +105,11 @@
         try {
           // Test: Set different cities in Target vs Reference mode
           setMode("target");
-          window.TEUI.StateManager.setValue("target_h_19", "Alexandria", "test");
+          window.TEUI.StateManager.setValue(
+            "target_h_19",
+            "Alexandria",
+            "test",
+          );
 
           setMode("reference");
           window.TEUI.StateManager.setValue("ref_h_19", "Attawapiskat", "test");

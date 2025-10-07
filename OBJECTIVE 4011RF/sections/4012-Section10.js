@@ -43,10 +43,52 @@ window.TEUI.SectionModules.sect10 = (function () {
           this.state[fieldId] = defaultValue;
         }
       });
-
-      console.log(
-        "S10: TargetState defaults loaded from field definitions (single source of truth)",
-      );
+    },
+    /**
+     * ✅ PHASE 2: Sync from global StateManager after import
+     * Bridges global StateManager → isolated TargetState for imported values
+     */
+    syncFromGlobalState: function (
+      fieldIds = [
+        "d_73",
+        "d_74",
+        "d_75",
+        "d_76",
+        "d_77",
+        "d_78", // Area fields
+        "e_73",
+        "e_74",
+        "e_75",
+        "e_76",
+        "e_77",
+        "e_78", // Orientation dropdowns
+        "f_73",
+        "f_74",
+        "f_75",
+        "f_76",
+        "f_77",
+        "f_78", // SHGC values
+        "g_73",
+        "g_74",
+        "g_75",
+        "g_76",
+        "g_77",
+        "g_78", // Winter shading %
+        "h_73",
+        "h_74",
+        "h_75",
+        "h_76",
+        "h_77",
+        "h_78", // Summer shading %
+        "d_80", // Gains utilization dropdown
+      ],
+    ) {
+      fieldIds.forEach((fieldId) => {
+        const globalValue = window.TEUI.StateManager.getValue(fieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue);
+        }
+      });
     },
     saveState: function () {
       localStorage.setItem("S10_TARGET_STATE", JSON.stringify(this.state));
@@ -141,16 +183,56 @@ window.TEUI.SectionModules.sect10 = (function () {
               value,
               "default",
             );
-            console.log(
-              `[S10 REF DEFAULTS] Published ref_${fieldId}=${value} to StateManager`,
-            );
           }
         });
       }
-
-      console.log(
-        "S10: ReferenceState defaults loaded from field definitions with Reference overrides",
-      );
+    },
+    /**
+     * ✅ PHASE 2: Sync from global StateManager after import
+     * Bridges global StateManager → isolated ReferenceState for imported values
+     */
+    syncFromGlobalState: function (
+      fieldIds = [
+        "d_73",
+        "d_74",
+        "d_75",
+        "d_76",
+        "d_77",
+        "d_78", // Area fields
+        "e_73",
+        "e_74",
+        "e_75",
+        "e_76",
+        "e_77",
+        "e_78", // Orientation dropdowns
+        "f_73",
+        "f_74",
+        "f_75",
+        "f_76",
+        "f_77",
+        "f_78", // SHGC values
+        "g_73",
+        "g_74",
+        "g_75",
+        "g_76",
+        "g_77",
+        "g_78", // Winter shading %
+        "h_73",
+        "h_74",
+        "h_75",
+        "h_76",
+        "h_77",
+        "h_78", // Summer shading %
+        "d_80", // Gains utilization dropdown
+      ],
+    ) {
+      fieldIds.forEach((fieldId) => {
+        const refFieldId = `ref_${fieldId}`;
+        const globalValue = window.TEUI.StateManager.getValue(refFieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue);
+        }
+      });
     },
     saveState: function () {
       localStorage.setItem("S10_REFERENCE_STATE", JSON.stringify(this.state));
@@ -2853,6 +2935,10 @@ window.TEUI.SectionModules.sect10 = (function () {
     initializeEventHandlers: initializeEventHandlers,
 
     onSectionRendered: onSectionRendered,
+
+    // ✅ PHASE 2: Expose state objects for import sync
+    TargetState: TargetState,
+    ReferenceState: ReferenceState,
 
     calculateAll: calculateAll,
     calculateUtilizationFactors: calculateUtilizationFactors,

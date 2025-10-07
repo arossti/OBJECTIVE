@@ -813,24 +813,24 @@ window.TEUI.SectionModules.sect02 = (function () {
 
   /**
    * Store Reference calculation results with ref_ prefix for downstream sections
+   *
+   * ✅ FIX (Oct 4, 2025): Only publish CALCULATED outputs, NOT input fields
+   * INPUT fields (h_15, d_13, l_12, etc.) are managed by:
+   * - User input → StateManager.setValue("ref_h_15", value, "user-modified")
+   * - Import → StateManager.setValue("ref_h_15", value, "imported")
+   * - ReferenceValues → StateManager.setValue("ref_f_85", value, "over-ridden")
+   *
+   * Section calculations should ONLY publish calculated outputs!
    */
   function storeReferenceResults() {
     if (!window.TEUI?.StateManager) return;
 
-    // Store Reference values for downstream consumption
+    // ✅ ONLY publish CALCULATED outputs from Reference model calculations
     const referenceResults = {
-      h_12: ReferenceState.getValue("h_12"), // Reference reporting year
-      h_13: ReferenceState.getValue("h_13"), // ✅ CRITICAL FIX: Service life (was missing!)
-      d_12: ReferenceState.getValue("d_12"), // ✅ CONTAMINATION FIX: Major Occupancy (was missing!)
-      d_13: ReferenceState.getValue("d_13"), // Reference building code standard
-      d_14: ReferenceState.getValue("d_14"), // ✅ CONTAMINATION FIX: Actual/Target Use (was missing!)
-      d_15: ReferenceState.getValue("d_15"), // Carbon standard
-      h_15: ReferenceState.getValue("h_15"), // Building area
-      l_12: ReferenceState.getValue("l_12"), // Electricity price
-      l_13: ReferenceState.getValue("l_13"), // Gas price
-      l_14: ReferenceState.getValue("l_14"), // Oil price
-      l_15: ReferenceState.getValue("l_15"), // Propane price
-      l_16: ReferenceState.getValue("l_16"), // Wood price
+      d_16: ReferenceState.getValue("d_16"), // Carbon target (CALCULATED) ✅
+      // ❌ REMOVED INPUT FIELDS - they are NOT calculated by S02:
+      // h_12, h_13, d_12, d_13, d_14, d_15, h_15, l_12, l_13, l_14, l_15, l_16
+      // These INPUT fields are set via user input, import, or ReferenceValues overlay
     };
 
     // Store with ref_ prefix for downstream sections
@@ -845,7 +845,7 @@ window.TEUI.SectionModules.sect02 = (function () {
     });
 
     console.log(
-      "[S02] Reference results stored with ref_ prefix for downstream sections",
+      "[S02] Reference CALCULATED results stored (d_16 only - INPUT fields excluded)",
     );
   }
 
@@ -1438,7 +1438,9 @@ window.TEUI.SectionModules.sect02 = (function () {
       // ✅ RACE CONDITION FIX: Let StateManager listeners handle the calculation cascade
       // S04 and S09 have h_15/ref_h_15 listeners that will trigger their calculateAll()
       // S02 doesn't need to call calculateAll() - it just publishes the area change
-      console.log(`[S02] Area updated to ${areaValue} - letting downstream sections handle calculations`);
+      console.log(
+        `[S02] Area updated to ${areaValue} - letting downstream sections handle calculations`,
+      );
     }
   }
 
@@ -1654,6 +1656,40 @@ window.TEUI.SectionModules.sect02 = (function () {
         `S02: Target defaults set from field definitions - single source of truth`,
       );
     },
+
+    /**
+     * ✅ PHASE 2: Sync from global StateManager after import
+     * Bridges global StateManager → isolated TargetState for imported values
+     */
+    syncFromGlobalState: function (
+      fieldIds = [
+        "d_12",
+        "d_13",
+        "d_14",
+        "d_15",
+        "h_12",
+        "h_13",
+        "h_14",
+        "h_15",
+        "i_16",
+        "i_17",
+        "l_12",
+        "l_13",
+        "l_14",
+        "l_15",
+        "l_16",
+      ],
+    ) {
+      fieldIds.forEach((fieldId) => {
+        const globalValue = window.TEUI.StateManager.getValue(fieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue, "imported");
+          console.log(
+            `S02 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`,
+          );
+        }
+      });
+    },
   };
 
   /**
@@ -1728,6 +1764,41 @@ window.TEUI.SectionModules.sect02 = (function () {
       console.log(
         `S02: Reference defaults set from field definitions - single source of truth with mode overrides`,
       );
+    },
+
+    /**
+     * ✅ PHASE 2: Sync from global StateManager after import
+     * Bridges global StateManager → isolated ReferenceState for imported values
+     */
+    syncFromGlobalState: function (
+      fieldIds = [
+        "d_12",
+        "d_13",
+        "d_14",
+        "d_15",
+        "h_12",
+        "h_13",
+        "h_14",
+        "h_15",
+        "i_16",
+        "i_17",
+        "l_12",
+        "l_13",
+        "l_14",
+        "l_15",
+        "l_16",
+      ],
+    ) {
+      fieldIds.forEach((fieldId) => {
+        const refFieldId = `ref_${fieldId}`;
+        const globalValue = window.TEUI.StateManager.getValue(refFieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue, "imported");
+          console.log(
+            `S02 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (ref_${fieldId})`,
+          );
+        }
+      });
     },
   };
 
@@ -1915,7 +1986,7 @@ window.TEUI.SectionModules.sect02 = (function () {
                 stateValue;
             }
           }
-          
+
           // ✅ CRITICAL FIX: Format h_15 area field consistently
           if (fieldId === "h_15") {
             const numericValue = window.TEUI?.parseNumeric?.(stateValue, 0);
@@ -2000,5 +2071,9 @@ window.TEUI.SectionModules.sect02 = (function () {
 
     // ✅ PATTERN A: Expose ModeManager for dual-state routing
     ModeManager: ModeManager,
+
+    // ✅ PHASE 2: Expose state objects for import sync
+    TargetState: TargetState,
+    ReferenceState: ReferenceState,
   };
 })();

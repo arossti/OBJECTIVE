@@ -25,6 +25,24 @@ window.TEUI.SectionModules.sect07 = (function () {
       this.values[fieldId] = value;
     },
 
+    /**
+     * ✅ PHASE 2: Sync from global StateManager after import
+     * Bridges global StateManager → isolated TargetState for imported values
+     */
+    syncFromGlobalState: function (
+      fieldIds = ["d_49", "e_49", "e_50", "d_51", "d_52", "d_53", "k_52"],
+    ) {
+      fieldIds.forEach((fieldId) => {
+        const globalValue = window.TEUI.StateManager.getValue(fieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue);
+          console.log(
+            `S07 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`,
+          );
+        }
+      });
+    },
+
     // ✅ DUAL-STATE-CHEATSHEET.md COMPLIANCE: Initialize from FieldDefinitions (single source of truth)
     setDefaults: function () {
       console.log(
@@ -64,6 +82,25 @@ window.TEUI.SectionModules.sect07 = (function () {
       this.values[fieldId] = value;
     },
 
+    /**
+     * ✅ PHASE 2: Sync from global StateManager after import
+     * Bridges global StateManager → isolated ReferenceState for imported values
+     */
+    syncFromGlobalState: function (
+      fieldIds = ["d_49", "e_49", "e_50", "d_51", "d_52", "d_53", "k_52"],
+    ) {
+      fieldIds.forEach((fieldId) => {
+        const refFieldId = `ref_${fieldId}`;
+        const globalValue = window.TEUI.StateManager.getValue(refFieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue);
+          console.log(
+            `S07 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (${refFieldId})`,
+          );
+        }
+      });
+    },
+
     // ✅ DUAL-STATE-CHEATSHEET.md COMPLIANCE: Initialize from FieldDefinitions (single source of truth)
     setDefaults: function () {
       console.log(
@@ -78,9 +115,21 @@ window.TEUI.SectionModules.sect07 = (function () {
 
       // ✅ CRITICAL: Publish Reference defaults to StateManager with ref_ prefix
       if (window.TEUI?.StateManager) {
-        window.TEUI.StateManager.setValue("ref_d_49", this.values.d_49, "default");
-        window.TEUI.StateManager.setValue("ref_d_51", this.values.d_51, "default");
-        window.TEUI.StateManager.setValue("ref_d_52", this.values.d_52, "default");
+        window.TEUI.StateManager.setValue(
+          "ref_d_49",
+          this.values.d_49,
+          "default",
+        );
+        window.TEUI.StateManager.setValue(
+          "ref_d_51",
+          this.values.d_51,
+          "default",
+        );
+        window.TEUI.StateManager.setValue(
+          "ref_d_52",
+          this.values.d_52,
+          "default",
+        );
         console.log(
           `🔗 [S07] ReferenceState.setDefaults: Published d_49, d_51="Electric", d_52="90%" with ref_ prefix`,
         );
@@ -190,14 +239,14 @@ window.TEUI.SectionModules.sect07 = (function () {
             console.log(
               `🎚️ [S07] refreshUI: Setting slider ${fieldId} = "${valueToShow || ""}"`,
             );
-            
+
             // ✅ CRITICAL FIX: Update d_52 slider range based on d_51 system type (Bug #8 fix)
             if (fieldId === "d_52") {
               const systemType = currentState.getValue("d_51") || "Heatpump";
               console.log(
                 `🎚️ [S07] refreshUI: Updating d_52 slider range for system="${systemType}"`,
               );
-              
+
               // Update range based on system type (following S10 pattern)
               if (systemType === "Electric") {
                 targetElement.min = 90;
@@ -207,7 +256,8 @@ window.TEUI.SectionModules.sect07 = (function () {
                 targetElement.min = 50;
                 targetElement.max = 98;
                 targetElement.step = 1;
-              } else { // Heatpump
+              } else {
+                // Heatpump
                 targetElement.min = 100;
                 targetElement.max = 450;
                 targetElement.step = 10;
@@ -216,16 +266,17 @@ window.TEUI.SectionModules.sect07 = (function () {
                 `🎚️ [S07] refreshUI: d_52 slider range updated to min=${targetElement.min}, max=${targetElement.max}, step=${targetElement.step}`,
               );
             }
-            
+
             // ✅ S10/S11 PATTERN: Parse to numeric, set as number, use nextElementSibling
-            const numericValue = window.TEUI?.parseNumeric?.(valueToShow, 0) ?? 0;
+            const numericValue =
+              window.TEUI?.parseNumeric?.(valueToShow, 0) ?? 0;
             targetElement.value = numericValue; // Set as NUMBER, not string
-            
+
             const display = targetElement.nextElementSibling; // Use nextElementSibling like S10/S11
             if (display) {
               display.textContent = `${numericValue}%`;
             }
-            
+
             // Store the default if no value was stored yet
             if (storedValue === null && fieldDefault) {
               currentState.setValue(fieldId, fieldDefault);
@@ -1479,6 +1530,10 @@ window.TEUI.SectionModules.sect07 = (function () {
     injectHeaderControls,
     // ✅ PATTERN A: Expose state objects for external access
     ModeManager: ModeManager,
+
+    // ✅ PHASE 2: Expose state objects for import sync
+    TargetState: TargetState,
+    ReferenceState: ReferenceState,
   };
 })();
 

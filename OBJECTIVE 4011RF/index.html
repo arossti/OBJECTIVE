@@ -276,16 +276,20 @@
               </ul>
             </div>
             <!-- Cross-Navigation to OBC Matrix -->
-            <button
+            <a
+              href="obc/indexobc.html"
               class="btn btn-sm btn-dark ms-2"
-              onclick="saveStateAndNavigate('obc/indexobc.html')"
-              title="Switch to OBC Matrix for Building Code Compliance (saves current work)"
-              style="transition: background-color 0.2s ease"
+              onclick="event.preventDefault(); return false;"
+              title="Pending feature - ask dev team for demo link"
+              style="
+                transition: background-color 0.2s ease;
+                cursor: not-allowed;
+              "
               onmouseover="this.style.backgroundColor='#6c757d'"
               onmouseout="this.style.backgroundColor=''"
             >
               <i class="bi bi-building"></i> OBC Matrix
-            </button>
+            </a>
           </div>
           <!-- Hidden File Input for Import -->
           <input
