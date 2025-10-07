@@ -59,6 +59,27 @@ window.TEUI.SectionModules.sect13 = (function () {
       // CHEATSHEET PATTERN: Fallback to field definitions (single source of truth)
       return this.state[fieldId] !== undefined ? this.state[fieldId] : getFieldDefault(fieldId);
     },
+    // ✅ PHASE 2: Import sync - bridge global StateManager → TargetState
+    syncFromGlobalState: function (fieldIds = [
+      "d_113",  // Primary Heating System
+      "f_113",  // HSPF
+      "j_115",  // AFUE
+      "d_116",  // Cooling System
+      "j_116",  // COPc (cooling efficiency)
+      "d_118",  // HRV/ERV SRE %
+      "g_118",  // Ventilation Method
+      "l_118",  // ACH
+      "d_119",  // Rate Per Person
+      "l_119",  // Summer Boost
+      "k_120",  // Unoccupied Setback %
+    ]) {
+      fieldIds.forEach((fieldId) => {
+        const globalValue = window.TEUI.StateManager.getValue(fieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue, "imported");
+        }
+      });
+    },
   };
 
   const ReferenceState = {
@@ -163,6 +184,28 @@ window.TEUI.SectionModules.sect13 = (function () {
     getValue: function (fieldId) {
       // CHEATSHEET PATTERN: Check state first (Reference overrides), then field definitions
       return this.state[fieldId] !== undefined ? this.state[fieldId] : getFieldDefault(fieldId);
+    },
+    // ✅ PHASE 2: Import sync - bridge global StateManager → ReferenceState
+    syncFromGlobalState: function (fieldIds = [
+      "d_113",  // Primary Heating System
+      "f_113",  // HSPF
+      "j_115",  // AFUE
+      "d_116",  // Cooling System
+      "j_116",  // COPc (cooling efficiency)
+      "d_118",  // HRV/ERV SRE %
+      "g_118",  // Ventilation Method
+      "l_118",  // ACH
+      "d_119",  // Rate Per Person
+      "l_119",  // Summer Boost
+      "k_120",  // Unoccupied Setback %
+    ]) {
+      fieldIds.forEach((fieldId) => {
+        const refFieldId = `ref_${fieldId}`;
+        const globalValue = window.TEUI.StateManager.getValue(refFieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue, "imported");
+        }
+      });
     },
   };
 
@@ -3512,6 +3555,10 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     // Removed getNumericValue from public API
     ModeManager: ModeManager, // ✅ CRITICAL FIX: Enable FieldManager integration
+
+    // ✅ PHASE 3: Expose state objects for import sync
+    TargetState: TargetState,
+    ReferenceState: ReferenceState,
 
     // Expose ghosting functions that are called from within module
     setFieldGhosted: setFieldGhosted,
