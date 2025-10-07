@@ -975,22 +975,36 @@ window.TEUI.SectionModules.sect14 = (function () {
       };
 
       // ✅ CRITICAL FIX: Read ONLY ref_ prefixed values for Reference calculations (no fallbacks)
-      const area = parseFloat(window.TEUI?.StateManager?.getValue("ref_h_15")) || 1; // Use 1 as fallback to avoid division by zero
-      
+      const area =
+        parseFloat(window.TEUI?.StateManager?.getValue("ref_h_15")) || 1; // Use 1 as fallback to avoid division by zero
+
       // ✅ CONTAMINATION FIX: Read actual ref_ prefixed values directly from StateManager
-      const i97 = parseFloat(window.TEUI?.StateManager?.getValue("ref_i_97")) || 0; // Thermal Bridge Penalty Heatloss
-      const i98 = parseFloat(window.TEUI?.StateManager?.getValue("ref_i_98")) || 0; // Envelope Totals Heatloss
-      const i103 = parseFloat(window.TEUI?.StateManager?.getValue("ref_i_103")) || 0; // Natural Air Leakage Heatloss
-      const m121 = parseFloat(window.TEUI?.StateManager?.getValue("ref_m_121")) || 0; // Net Htg Season Ventil. Lost
-      const i80 = parseFloat(window.TEUI?.StateManager?.getValue("ref_i_80")) || 0; // Internal heat gains - Occupants
-      const k71 = parseFloat(window.TEUI?.StateManager?.getValue("ref_k_71")) || 0; // Internal gains people
-      const k79 = parseFloat(window.TEUI?.StateManager?.getValue("ref_k_79")) || 0; // Internal gains equip/light
-      const k97 = parseFloat(window.TEUI?.StateManager?.getValue("ref_k_97")) || 0; // Solar
-      const k98 = parseFloat(window.TEUI?.StateManager?.getValue("ref_k_98")) || 0; // Transmission
-      const d122 = parseFloat(window.TEUI?.StateManager?.getValue("ref_d_122")) || 0; // Incoming Cooling Vent Energy from S13
-      const h124 = parseFloat(window.TEUI?.StateManager?.getValue("ref_h_124")) || 0; // Free Cooling Limit from S13
-      const d123 = parseFloat(window.TEUI?.StateManager?.getValue("ref_d_123")) || 0; // Recovered Cooling Vent Energy from S13
-      const k103 = parseFloat(window.TEUI?.StateManager?.getValue("ref_k_103")) || 0; // Natural Air Leakage Heatgain
+      const i97 =
+        parseFloat(window.TEUI?.StateManager?.getValue("ref_i_97")) || 0; // Thermal Bridge Penalty Heatloss
+      const i98 =
+        parseFloat(window.TEUI?.StateManager?.getValue("ref_i_98")) || 0; // Envelope Totals Heatloss
+      const i103 =
+        parseFloat(window.TEUI?.StateManager?.getValue("ref_i_103")) || 0; // Natural Air Leakage Heatloss
+      const m121 =
+        parseFloat(window.TEUI?.StateManager?.getValue("ref_m_121")) || 0; // Net Htg Season Ventil. Lost
+      const i80 =
+        parseFloat(window.TEUI?.StateManager?.getValue("ref_i_80")) || 0; // Internal heat gains - Occupants
+      const k71 =
+        parseFloat(window.TEUI?.StateManager?.getValue("ref_k_71")) || 0; // Internal gains people
+      const k79 =
+        parseFloat(window.TEUI?.StateManager?.getValue("ref_k_79")) || 0; // Internal gains equip/light
+      const k97 =
+        parseFloat(window.TEUI?.StateManager?.getValue("ref_k_97")) || 0; // Solar
+      const k98 =
+        parseFloat(window.TEUI?.StateManager?.getValue("ref_k_98")) || 0; // Transmission
+      const d122 =
+        parseFloat(window.TEUI?.StateManager?.getValue("ref_d_122")) || 0; // Incoming Cooling Vent Energy from S13
+      const h124 =
+        parseFloat(window.TEUI?.StateManager?.getValue("ref_h_124")) || 0; // Free Cooling Limit from S13
+      const d123 =
+        parseFloat(window.TEUI?.StateManager?.getValue("ref_d_123")) || 0; // Recovered Cooling Vent Energy from S13
+      const k103 =
+        parseFloat(window.TEUI?.StateManager?.getValue("ref_k_103")) || 0; // Natural Air Leakage Heatgain
 
       // Calculate Reference values with proper numeric safety
 

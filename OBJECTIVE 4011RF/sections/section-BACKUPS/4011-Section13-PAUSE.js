@@ -1,5 +1,5 @@
 /**
- * 4011-Section13.js - formerly 4011-Section13-CONTEXT.js. 
+ * 4011-Section13.js - formerly 4011-Section13-CONTEXT.js.
  * Mechanical Loads (Section 13) module for TEUI Calculator 4.011
  * HSPF fixed to work in both states (post Aug 31 refactor)
  * This section no longer needs to integrate with 4011-Cooling.js for complex cooling calculations - file still suffers from state mixing on ventilation changes
@@ -716,13 +716,19 @@ window.TEUI.SectionModules.sect13 = (function () {
     // CHUNK 2 "SWITCH-ON":
     // We now populate one property with a mode-aware value.
     context.ventilationMethod = stateSource.getValue("g_118");
-    
+
     // 🔍 CRITICAL DEBUG: Track what values we're reading for context creation
-    console.log(`🔍 [S13-CONTEXT] Creating ${mode} context: g_118="${context.ventilationMethod}" from ${mode === "reference" ? "ReferenceState" : "TargetState"}`);
+    console.log(
+      `🔍 [S13-CONTEXT] Creating ${mode} context: g_118="${context.ventilationMethod}" from ${mode === "reference" ? "ReferenceState" : "TargetState"}`,
+    );
     if (mode === "reference") {
-      console.log(`🔍 [S13-CONTEXT] ReferenceState.g_118="${ReferenceState.getValue("g_118")}", TargetState.g_118="${TargetState.getValue("g_118")}"`);
+      console.log(
+        `🔍 [S13-CONTEXT] ReferenceState.g_118="${ReferenceState.getValue("g_118")}", TargetState.g_118="${TargetState.getValue("g_118")}"`,
+      );
     } else {
-      console.log(`🔍 [S13-CONTEXT] TargetState.g_118="${TargetState.getValue("g_118")}", ReferenceState.g_118="${ReferenceState.getValue("g_118")}"`);
+      console.log(
+        `🔍 [S13-CONTEXT] TargetState.g_118="${TargetState.getValue("g_118")}", ReferenceState.g_118="${ReferenceState.getValue("g_118")}"`,
+      );
     }
 
     // CHUNK 3A "MICRO-STEP":
@@ -982,26 +988,28 @@ window.TEUI.SectionModules.sect13 = (function () {
   ) {
     // ✅ EXCEL PARITY: Use exact Excel formula from COOLING-TARGET.csv line 55
     // Excel: =E52/(E54*24) where E52=(E50-E51), E54=REPORT!M19
-    
+
     const d_129 = window.TEUI.parseNumeric(getFieldValue("d_129")) || 0; // E50: Seasonal Cooling Load
     const h_124 = currentFreeCoolingLimit; // E51: Free Cooling Potential
     const m_19 = window.TEUI.parseNumeric(getFieldValue("m_19")) || 120; // E54: Cooling Season Days
-    
+
     // Calculate E52: Unmet Cooling Load = E50 - E51
     const unmetCoolingLoad = d_129 - h_124; // E52 = E50 - E51
-    
+
     // Calculate E55: Days Active Cooling = E52 / (E54 * 24)
     let daysActiveCooling = 0;
     if (m_19 > 0) {
       daysActiveCooling = unmetCoolingLoad / (m_19 * 24);
     }
-    
-    // ✅ EXCEL COMMENT: "Obviously negative days of free cooling is not possible - 
+
+    // ✅ EXCEL COMMENT: "Obviously negative days of free cooling is not possible -
     // the goal here is to get close to zero - anything less than zero is overkill ventilation-wise"
     // So we preserve the raw calculation (can be negative) as per Excel methodology
-    
-    console.log(`[S13 m_124 EXCEL] E50(d_129)=${d_129}, E51(h_124)=${h_124}, E52(unmet)=${unmetCoolingLoad}, E54(m_19)=${m_19}, E55(result)=${daysActiveCooling}`);
-    
+
+    console.log(
+      `[S13 m_124 EXCEL] E50(d_129)=${d_129}, E51(h_124)=${h_124}, E52(unmet)=${unmetCoolingLoad}, E54(m_19)=${m_19}, E55(result)=${daysActiveCooling}`,
+    );
+
     return daysActiveCooling; // Return exact Excel calculation result
   }
 
@@ -1093,9 +1101,7 @@ window.TEUI.SectionModules.sect13 = (function () {
   }
 
   /** [Cooling Calc] Orchestrates the internal cooling-related calculations */
-  function runIntegratedCoolingCalculations(
-    coolingContext,
-  ) {
+  function runIntegratedCoolingCalculations(coolingContext) {
     updateCoolingInputs(coolingContext);
 
     // Ensure atmospheric & humidity are calculated BEFORE factors/limits that depend on them
@@ -1103,9 +1109,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     calculateHumidityRatios(coolingContext);
 
     // Now calculate factors/limits that use the results
-    coolingContext.latentLoadFactor = calculateLatentLoadFactor(
-      coolingContext,
-    );
+    coolingContext.latentLoadFactor = calculateLatentLoadFactor(coolingContext);
     // Calculate other intermediate cooling values if needed by core S13 funcs
     calculateWetBulbTemperature(coolingContext);
     // Note: calculateFreeCoolingLimit() is NOT called here, it's called by calculateFreeCooling()
@@ -2192,7 +2196,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       // This ensures complete calculation cycle + downstream updates (A7 proven pattern)
       sm.addListener("d_113", (newValue, oldValue) => {
         console.log(`[S13] Target d_113 → ${newValue}`);
-        
+
         // ✅ PATTERN 2: Run dual-engine calculations for proper Target/Reference state handling
         calculateAll();
         ModeManager.updateCalculatedDisplayValues(); // ✅ CRITICAL: Update DOM after calculations
@@ -2355,7 +2359,9 @@ window.TEUI.SectionModules.sect13 = (function () {
       };
 
       // ✅ SIMPLIFIED: Only essential S03 climate values that S13 actually needs
-      console.log("[Section13] 🔗 Attaching essential S03 climate listeners...");
+      console.log(
+        "[Section13] 🔗 Attaching essential S03 climate listeners...",
+      );
       sm.addListener("d_20", calculateAndRefresh); // HDD - needed for heating calculations
       sm.addListener("d_21", calculateAndRefresh); // CDD - needed for cooling calculations
       // Removed: d_23, d_24, h_23, h_24 - S13 doesn't directly use these (S11/S12 handle them)
@@ -2892,15 +2898,17 @@ window.TEUI.SectionModules.sect13 = (function () {
     // ✅ PHASE 2: Automatic mode-aware emissions factor reading (ENDGAME Pattern 1)
     if (systemType === "Oil") {
       // Automatic mode-aware reading - no manual mode checking needed
-      const oilEmissionsFactor = ModeManager.currentMode === "reference"
-        ? parseFloat(window.TEUI?.StateManager?.getValue("ref_l_30")) || 2753
-        : getGlobalNumericValue("l_30") || 2753;
+      const oilEmissionsFactor =
+        ModeManager.currentMode === "reference"
+          ? parseFloat(window.TEUI?.StateManager?.getValue("ref_l_30")) || 2753
+          : getGlobalNumericValue("l_30") || 2753;
       emissions_f114 = (oilLitres_f115 * oilEmissionsFactor) / 1000;
     } else if (systemType === "Gas") {
-      // Automatic mode-aware reading - no manual mode checking needed  
-      const gasEmissionsFactor = ModeManager.currentMode === "reference"
-        ? parseFloat(window.TEUI?.StateManager?.getValue("ref_l_28")) || 1921
-        : getGlobalNumericValue("l_28") || 1921;
+      // Automatic mode-aware reading - no manual mode checking needed
+      const gasEmissionsFactor =
+        ModeManager.currentMode === "reference"
+          ? parseFloat(window.TEUI?.StateManager?.getValue("ref_l_28")) || 1921
+          : getGlobalNumericValue("l_28") || 1921;
       emissions_f114 = (gasM3_h115 * gasEmissionsFactor) / 1000;
     }
 
@@ -3041,7 +3049,10 @@ window.TEUI.SectionModules.sect13 = (function () {
   /**
    * Calculate ventilation rates based on method (g_118) and per-person rate (d_119)
    */
-  function calculateVentilationRates(isReferenceCalculation = false, coolingContext = null) {
+  function calculateVentilationRates(
+    isReferenceCalculation = false,
+    coolingContext = null,
+  ) {
     // ✅ FIXED: Use mode-aware reading instead of getNumericValue
     const ratePerPerson =
       window.TEUI.parseNumeric(
@@ -3057,7 +3068,9 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     // Now calculate d_120 (Volumetric Rate) as it depends on d_119 and g_118
     // ✅ CONTEXT FIX: Read ventilation method from isolated cooling context
-    const ventMethod = coolingContext ? coolingContext.ventilationMethod : getSectionValue("g_118", isReferenceCalculation);
+    const ventMethod = coolingContext
+      ? coolingContext.ventilationMethod
+      : getSectionValue("g_118", isReferenceCalculation);
     const ratePerPerson_d119 =
       window.TEUI.parseNumeric(
         isReferenceCalculation
@@ -3191,7 +3204,8 @@ window.TEUI.SectionModules.sect13 = (function () {
       window.TEUI.parseNumeric(getFieldValue("j_63")) || 8760;
     const occupancyFactor =
       totalHours_j63 > 0 ? occupiedHours_i63 / totalHours_j63 : 0;
-    const latentLoadFactor_i122 = coolingContext?.latentLoadFactor || coolingState.latentLoadFactor;
+    const latentLoadFactor_i122 =
+      coolingContext?.latentLoadFactor || coolingState.latentLoadFactor;
     const summerBoostRawValue = ModeManager.getValue("l_119");
     const summerBoostFactor =
       summerBoostRawValue === "None" || summerBoostRawValue === ""
@@ -3292,9 +3306,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       // REMOVED: Call moved to calculateAll
       // runIntegratedCoolingCalculations();
 
-      potentialLimit = calculateFreeCoolingLimit(
-        coolingContext,
-      ); // Calculated Sensible Potential (kWh/yr)
+      potentialLimit = calculateFreeCoolingLimit(coolingContext); // Calculated Sensible Potential (kWh/yr)
 
       if (setbackValueStr) {
         // const parsedFactor = window.TEUI.parseNumeric(setbackValueStr); // OLD - assumed decimal
@@ -3339,7 +3351,11 @@ window.TEUI.SectionModules.sect13 = (function () {
         setFieldValue("d_124", percentFreeCooling, "percent-0dp");
 
         // Calculate M124 (Days Active Cooling) - Using corrected Excel formula
-        const activeCoolingDays = calculateDaysActiveCooling(finalFreeCoolingLimit, false, coolingContext);
+        const activeCoolingDays = calculateDaysActiveCooling(
+          finalFreeCoolingLimit,
+          false,
+          coolingContext,
+        );
         setFieldValue("m_124", activeCoolingDays, "number-2dp");
       }
 
@@ -3421,16 +3437,16 @@ window.TEUI.SectionModules.sect13 = (function () {
    */
   function calculateReferenceModel() {
     const originalMode = ModeManager.currentMode;
-    
+
     try {
       // ✅ PHASE 1: Temporary mode switching (ENDGAME Pattern 1)
       ModeManager.currentMode = "reference";
-      
+
       // CHUNK 3E-3G FIX: Create isolated context for Reference model
       const referenceCoolingContext = createIsolatedCoolingContext("reference");
 
       console.log("[Section13] Running Reference Model calculations...");
-      
+
       // ✅ CONTAMINATION FIX: Read ONLY ref_ prefixed values for Reference calculations (no fallbacks)
       // This eliminates the getRefValue fallback contamination pattern found in S14/S15
       // ✅ CONTAMINATION FIX: Read ONLY ref_ prefixed values for Reference calculations (no fallbacks)
@@ -3443,12 +3459,16 @@ window.TEUI.SectionModules.sect13 = (function () {
       );
 
       // ✅ CRITICAL FIX: Read ONLY ref_d_127 from S14 (no fallback to Target d_127)
-      const tedValueRef = parseFloat(window.TEUI?.StateManager?.getValue("ref_d_127")) || 0;
+      const tedValueRef =
+        parseFloat(window.TEUI?.StateManager?.getValue("ref_d_127")) || 0;
 
       // ✅ PHASE 2: Use unified functions with automatic mode awareness (ENDGAME Pattern 1)
       const copResults = calculateCOPValues();
       const heatingResults = calculateHeatingSystem(copResults, tedValueRef);
-      const ventilationRatesResults = calculateVentilationRates(true, referenceCoolingContext);
+      const ventilationRatesResults = calculateVentilationRates(
+        true,
+        referenceCoolingContext,
+      );
       const ventilationEnergyResults = calculateVentilationEnergy(true);
       // CHUNK 3E-3G FIX: Pass the reference context to calculateCoolingVentilation
       const coolingVentilationResults = calculateCoolingVentilation(
@@ -3514,7 +3534,10 @@ window.TEUI.SectionModules.sect13 = (function () {
       // ✅ PHASE 2: Chain calculations with automatic mode awareness (ENDGAME Pattern 1)
       const copResults = calculateCOPValues();
       const heatingResults = calculateHeatingSystem(copResults, tedValue);
-      const ventilationRatesResults = calculateVentilationRates(false, targetCoolingContext);
+      const ventilationRatesResults = calculateVentilationRates(
+        false,
+        targetCoolingContext,
+      );
       const ventilationEnergyResults = calculateVentilationEnergy(false);
       const coolingVentilationResults = calculateCoolingVentilation(
         false,
@@ -3784,7 +3807,8 @@ window.TEUI.SectionModules.sect13 = (function () {
   function calculateReferenceModelHeatingSystem() {
     // ✅ REVERT: Use exact S13-BACKUP methodology - same formulas, Reference state inputs
     const systemType = ReferenceState.getValue("d_113");
-    const tedReference = parseFloat(window.TEUI?.StateManager?.getValue("ref_d_127")) || 0; // Read Reference TED from S14
+    const tedReference =
+      parseFloat(window.TEUI?.StateManager?.getValue("ref_d_127")) || 0; // Read Reference TED from S14
     const hspf =
       window.TEUI.parseNumeric(ReferenceState.getValue("f_113")) || 3.5;
 

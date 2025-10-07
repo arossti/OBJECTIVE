@@ -235,12 +235,14 @@ User can now:
 ### Issues Encountered
 
 **Issue 1: Target Location Import Not Working**
+
 - **Symptom**: Excel file with D19="ON", H19="Milton" only imports to Reference mode, Target mode shows default "Alexandria"
 - **REFERENCE sheet works**: Milton appears correctly in Reference mode
 - **REPORT sheet fails**: Target mode doesn't update to Milton
 - **Diagnostic logs not appearing**: Added comprehensive logging but logs never show in console despite hard refresh, cache clear, browser restart
 
 **Issue 2: S03 Toggle Glitchy**
+
 - **Symptom**: S03 section header toggle (Target/Reference) is unresponsive, requires multiple clicks, slow to respond
 - **Possible cause**: New StateManager listeners (d_19, h_19, ref_d_19, ref_h_19) may be causing conflicts or calculation storms
 - **Impact**: Core S03 functionality degraded
@@ -248,7 +250,7 @@ User can now:
 ### Commits During Session
 
 1. **70adacd** - "Refactor Excel import: retire ExcelLocationHandler, add dual-state REPORT+REFERENCE import, S03 listeners for province-city dependency" ← **REVERTED TO THIS**
-2. **d584ec0** - "Fix import: allow ref_ fields bypass FieldManager validation, add S03 UI refresh after import" ← Contains S03 listener conflicts
+2. **d584ec0** - "Fix import: allow ref\_ fields bypass FieldManager validation, add S03 UI refresh after import" ← Contains S03 listener conflicts
 3. **cb92d08** - "Add granular Excel cell diagnostics for location import debugging" ← Diagnostics added here
 4. **5499565** - "Document import debugging session" ← **DIAGNOSTIC STATE** (revert from here if needed to retry)
 
@@ -257,18 +259,21 @@ User can now:
 **CURRENT COMMIT: d39c5ce** ✅ "Revert S03 to pre-listener state to restore toggle responsiveness"
 
 **What's Working:**
+
 - ✅ ExcelMapper with REPORT + REFERENCE mappings (d_19, h_19, i_21 added)
-- ✅ Reference field import (ref_ bypass in FileHandler)
+- ✅ Reference field import (ref\_ bypass in FileHandler)
 - ✅ Dual-state export (3-row CSV format)
 - ✅ ExcelLocationHandler retired
 - ✅ S03 toggle responsive (listeners removed)
 - ✅ All diagnostic logging intact for tomorrow
 
 **What's Deferred:**
+
 - ⏸️ Automated Target location import (d_19, h_19 from Excel → S03 dropdowns)
 - ⏸️ S03 StateManager listeners (caused toggle glitchiness)
 
 **Hash for Future S03 Listener Investigation:**
+
 - **5499565** contains full diagnostic state with all S03 listeners
 - Can cherry-pick S03 listeners from commits d584ec0 or 70adacd if needed tomorrow
 
@@ -281,7 +286,7 @@ User can now:
 
 ### Successful Changes
 
-✅ **Reference field import working** - 124 ref_ fields imported successfully
+✅ **Reference field import working** - 124 ref\_ fields imported successfully
 ✅ **Dual-state export working** - 3-row CSV format (headers, target, reference)
 ✅ **ExcelLocationHandler retired** - ClimateValues.js handles weather data
 ✅ **No linting errors** - Code is clean and formatted
@@ -296,6 +301,7 @@ User can now:
 
 **Theory 1: StateManager Listener Conflicts**
 The 6 new listeners in S03 (d_19, h_19, ref_d_19, ref_h_19, h_20, ref_h_20) may be:
+
 - Firing multiple times during import
 - Causing calculation storms
 - Interfering with existing S03 initialization
@@ -303,12 +309,14 @@ The 6 new listeners in S03 (d_19, h_19, ref_d_19, ref_h_19, h_20, ref_h_20) may 
 
 **Theory 2: Excel Cell Reading Issue**
 XLSX.js may not be reading D19/H19 cells correctly:
+
 - Cells might be merged or formatted unusually
 - Formula references in REFERENCE sheet (=REPORT!D19) might confuse reader
 - Cell data types might not match expectations
 
 **Theory 3: Caching/Loading Issue**
 Despite hard refresh attempts:
+
 - Service workers or other caching mechanisms
 - File system sync delays with iCloud
 - Browser loading old JavaScript despite new commit
@@ -316,11 +324,13 @@ Despite hard refresh attempts:
 ### Recommended Actions
 
 **Option A: Defer to Tomorrow**
+
 - Document current state ✅ (this section)
 - Keep current commits
 - Fresh debugging session tomorrow with Excel file inspection
 
 **Option B: Revert S03 Listeners**
+
 - Revert commit cb92d08 (diagnostics)
 - Revert commit d584ec0 (S03 refresh + ref bypass)
 - Keep commit 70adacd (core mapper refactor - MOST of the work)
@@ -328,7 +338,8 @@ Despite hard refresh attempts:
 - Test if toggle responsiveness returns
 
 **Option C: Selective Revert**
-- Keep ref_ field bypass (critical for import)
+
+- Keep ref\_ field bypass (critical for import)
 - Remove only S03 listeners from 4012-Section03.js
 - Keep export changes
 - Test import without S03 automated handling
@@ -374,8 +385,10 @@ git reset --hard 70adacd
 1. Import sets `ref_d_19` and `ref_h_19` in **global StateManager** ✅
 2. S03's `publishReferenceResults()` (lines 1762-1766) reads **StateManager first**:
    ```javascript
-   d_19: window.TEUI.StateManager.getValue("ref_d_19") || ReferenceState.getValue("d_19")
-   h_19: window.TEUI.StateManager.getValue("ref_h_19") || ReferenceState.getValue("h_19")
+   d_19: window.TEUI.StateManager.getValue("ref_d_19") ||
+     ReferenceState.getValue("d_19");
+   h_19: window.TEUI.StateManager.getValue("ref_h_19") ||
+     ReferenceState.getValue("h_19");
    ```
 3. Fallback pattern successfully bridges global → local state ✅
 
@@ -435,19 +448,25 @@ StateManager.setValue(fieldId, value) → [NO BRIDGE] → TargetState isolated �
 **Make Target import mirror Reference's fallback pattern.**
 
 **Changes Required:**
+
 - Add explicit sync method in S03: `syncFromGlobalState()`
 - Call after Target import completes in `FileHandler.processImportedExcel()`
 - No architectural changes needed
 
 **Implementation:**
+
 ```javascript
 // In 4012-Section03.js - add new method:
-TargetState.syncFromGlobalState = function(fieldIds = ['d_19', 'h_19', 'i_21']) {
-  fieldIds.forEach(fieldId => {
+TargetState.syncFromGlobalState = function (
+  fieldIds = ["d_19", "h_19", "i_21"],
+) {
+  fieldIds.forEach((fieldId) => {
     const globalValue = window.TEUI.StateManager.getValue(fieldId);
     if (globalValue !== null && globalValue !== undefined) {
       this.setValue(fieldId, globalValue, "imported");
-      console.log(`S03 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`);
+      console.log(
+        `S03 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`,
+      );
     }
   });
 };
@@ -457,12 +476,17 @@ this.updateStateFromImportData(importedData);
 
 // Add explicit S03 sync:
 if (window.TEUI?.SectionModules?.sect03?.TargetState) {
-  window.TEUI.SectionModules.sect03.TargetState.syncFromGlobalState(['d_19', 'h_19', 'i_21']);
+  window.TEUI.SectionModules.sect03.TargetState.syncFromGlobalState([
+    "d_19",
+    "h_19",
+    "i_21",
+  ]);
   window.TEUI.SectionModules.sect03.ModeManager.refreshUI(); // Update dropdowns
 }
 ```
 
 **Pros:**
+
 - ✅ Minimal code changes (2 locations)
 - ✅ Preserves S03's isolated architecture
 - ✅ Mirrors existing Reference fallback pattern
@@ -470,6 +494,7 @@ if (window.TEUI?.SectionModules?.sect03?.TargetState) {
 - ✅ Explicit, debuggable
 
 **Cons:**
+
 - ⚠️ Requires manual sync call for each Pattern A section
 - ⚠️ Hardcoded field list (d_19, h_19, i_21)
 
@@ -480,11 +505,13 @@ if (window.TEUI?.SectionModules?.sect03?.TargetState) {
 **Create a generic post-import hook for all Pattern A sections.**
 
 **Changes Required:**
+
 - Add `postImportSync()` method to Pattern A section modules
 - FileHandler calls hook for all registered Pattern A sections
 - One-time infrastructure, scales to S02, S05, S06, S08, S15
 
 **Implementation:**
+
 ```javascript
 // In 4011-FileHandler.js - new method:
 syncPatternASections(importedData) {
@@ -511,12 +538,14 @@ this.syncPatternASections(importedData); // ← New hook
 ```
 
 **Pros:**
+
 - ✅ Scalable to all Pattern A sections
 - ✅ Self-documenting (registry shows which sections need sync)
 - ✅ Future-proof for new Pattern A sections
 - ✅ Preserves architectural isolation
 
 **Cons:**
+
 - ⚠️ Slightly more complex than Solution 1
 - ⚠️ Requires each Pattern A section to implement `syncFromGlobalState()`
 
@@ -527,11 +556,13 @@ this.syncPatternASections(importedData); // ← New hook
 **Fix the original listener approach by adding import-aware logic.**
 
 **Why Original Listeners Failed:**
+
 - Listeners fired during import → triggered `calculateAll()` prematurely
 - Multiple listener firings caused calculation storms
 - No distinction between "user change" vs "import change"
 
 **Implementation:**
+
 ```javascript
 // In 4011-FileHandler.js - add import flag:
 this.isImporting = false;
@@ -562,11 +593,13 @@ window.TEUI.StateManager.addListener("d_19", function(newValue) {
 ```
 
 **Pros:**
+
 - ✅ Listeners work for both user input AND import
 - ✅ Automatic sync (no manual calls needed)
 - ✅ Prevents calculation storms during import
 
 **Cons:**
+
 - ❌ Adds complexity to listener logic
 - ❌ Global flag (`isImporting`) couples FileHandler to sections
 - ❌ Previous attempts failed even with this approach (timing issues?)
@@ -578,16 +611,19 @@ window.TEUI.StateManager.addListener("d_19", function(newValue) {
 **Move d_19, h_19, i_21 to global StateManager only (no local state).**
 
 **Implementation:**
+
 - Remove d_19, h_19, i_21 from TargetState/ReferenceState objects
 - Read directly from StateManager with prefix: `StateManager.getValue('d_19')` or `StateManager.getValue('ref_d_19')`
 - Keep calculated fields (d_20, j_19, etc.) in isolated state
 
 **Pros:**
+
 - ✅ Import works immediately (no sync needed)
 - ✅ Simplifies S03 state management
 - ✅ Location fields aren't calculated, no contamination risk
 
 **Cons:**
+
 - ❌ **Violates S03's architectural pattern**
 - ❌ Inconsistent state management within S03
 - ❌ Breaks documented Pattern A isolation
@@ -600,6 +636,7 @@ window.TEUI.StateManager.addListener("d_19", function(newValue) {
 **Use Solution 1 (Symmetric Import Bridge) for immediate fix, consider Solution 2 for long-term scalability.**
 
 **Rationale:**
+
 1. **Preserves architecture**: S03's Pattern A isolation is intentional and correct
 2. **Minimal risk**: Small, explicit code changes
 3. **Debuggable**: Clear console logs show sync happening
@@ -607,6 +644,7 @@ window.TEUI.StateManager.addListener("d_19", function(newValue) {
 5. **Quick to implement**: ~10 lines of code
 
 **Rejected Solutions:**
+
 - **Solution 3**: Already tried and failed (see commits 70adacd → d39c5ce)
 - **Solution 4**: Breaks documented architecture, high risk
 
@@ -627,11 +665,13 @@ window.TEUI.StateManager.addListener("d_19", function(newValue) {
 ### Open Questions for Architecture Review
 
 1. **Should Reference also use explicit sync instead of fallback?**
+
    - Current: `StateManager.getValue("ref_d_19") || ReferenceState.getValue("d_19")`
    - Alternative: Explicit `ReferenceState.syncFromGlobalState()` (symmetric with Target)
    - Benefit: More consistent, easier to debug
 
 2. **Should ALL Pattern A sections adopt this import pattern?**
+
    - S02, S05, S06, S08, S15 may have same import issues
    - Need audit: Do other sections have user-editable fields imported from Excel?
 
@@ -649,24 +689,28 @@ window.TEUI.StateManager.addListener("d_19", function(newValue) {
 ### Implementation Attempts
 
 **Attempt 1: Add syncFromGlobalState() method to TargetState**
+
 - ✅ Added method to S03 TargetState (lines 79-89 in 4012-Section03.js)
 - ✅ Calls `StateManager.getValue()` for d_19, h_19, i_21
 - ✅ Syncs values into TargetState via `setValue()`
 - ✅ Logs each sync for debugging
 
 **Attempt 2: Call sync after Target import**
+
 - ✅ Added sync call in FileHandler after `updateStateFromImportData()`
 - ❌ **Problem discovered**: Validation was rejecting d_19/h_19 as invalid dropdown values
 - Error: `"Skipping import for field d_19: Invalid value "ON" for type dropdown"`
 - **Root cause**: FileHandler validation can't validate S03's dynamically-populated dropdowns (managed by ClimateDataService, not FieldManager)
 
 **Attempt 3: Skip validation for S03 location fields**
+
 - ✅ Added `isS03LocationField` check in FileHandler (line 311)
 - ✅ Modified validation to skip d_19/h_19 (line 325: `&& !isS03LocationField`)
 - ✅ Values now import into global StateManager successfully
 - ❌ **Still no dropdowns updating**
 
 **Attempt 4: Move sync AFTER calculateAll()**
+
 - 🔍 **Discovery**: Old code at lines 407-431 was trying to refresh S03 UI
 - 🔍 **Discovery**: `calculateAll()` runs at line 438, AFTER initial sync attempt
 - **Theory**: `calculateAll()` may reinitialize S03 from localStorage, overwriting sync
@@ -676,6 +720,7 @@ window.TEUI.StateManager.addListener("d_19", function(newValue) {
 ### Current Mystery: Why Isn't Sync Running?
 
 **Expected console logs** (not appearing):
+
 ```
 [FileHandler] 🔧 Syncing S03 TargetState from global StateManager...
 S03 TargetState: Synced d_19 = ON from global StateManager
@@ -684,6 +729,7 @@ S03 TargetState: Synced h_19 = Milton from global StateManager
 ```
 
 **Actual behavior:**
+
 - Import completes successfully
 - Reference data imports (124 fields)
 - calculateAll() runs and completes
@@ -693,6 +739,7 @@ S03 TargetState: Synced h_19 = Milton from global StateManager
 ### Possible Causes
 
 **Theory 1: Module Path Incorrect**
+
 ```javascript
 // Current code tries:
 window.TEUI?.SectionModules?.sect03?.TargetState
@@ -702,30 +749,35 @@ window.TEUI?.sect03?.TargetState  (without SectionModules namespace)
 ```
 
 **Theory 2: Timing/Race Condition**
+
 - Sync code is inside `if (this.calculator.calculateAll)` block
 - calculateAll() might be async and returning before completion
 - Sync runs but S03 hasn't initialized yet
 
 **Theory 3: Code Not Loading**
+
 - Browser cache holding old FileHandler.js
 - Hard refresh not clearing service workers
 - iCloud sync delays causing file version mismatch
 
 **Theory 4: S03 Overwriting State After Sync**
+
 - Even if sync runs, S03 might have a listener or initialization that resets to localStorage
 - Need to check S03 for any code that runs after import/calculateAll
 
 ### Testing Needed Tomorrow
 
 1. **Verify module path in browser console:**
+
    ```javascript
-   console.log(window.TEUI)
-   console.log(window.TEUI.SectionModules)
-   console.log(window.TEUI.SectionModules?.sect03)
-   console.log(window.TEUI.sect03)  // Alternative path
+   console.log(window.TEUI);
+   console.log(window.TEUI.SectionModules);
+   console.log(window.TEUI.SectionModules?.sect03);
+   console.log(window.TEUI.sect03); // Alternative path
    ```
 
 2. **Add debug logging BEFORE the if statement:**
+
    ```javascript
    console.log("[FileHandler] calculateAll finished, checking for sect03...");
    console.log("[FileHandler] window.TEUI:", window.TEUI);
@@ -734,20 +786,27 @@ window.TEUI?.sect03?.TargetState  (without SectionModules namespace)
    ```
 
 3. **Manually test sync in console after import:**
+
    ```javascript
    // After import completes, run this in console:
-   window.TEUI.SectionModules.sect03.TargetState.syncFromGlobalState(['d_19', 'h_19'])
-   window.TEUI.SectionModules.sect03.ModeManager.refreshUI()
+   window.TEUI.SectionModules.sect03.TargetState.syncFromGlobalState([
+     "d_19",
+     "h_19",
+   ]);
+   window.TEUI.SectionModules.sect03.ModeManager.refreshUI();
    ```
 
 4. **Check if S03 is listening to calculateAll completion:**
+
    - Search S03 for listeners on calculation events
    - Check if S03 resets state when Calculator fires events
 
 5. **Alternative: Direct DOM manipulation after import:**
    ```javascript
    // Bypass S03 state entirely, just update DOM
-   const provinceDropdown = document.querySelector('[data-dropdown-id="dd_d_19"]');
+   const provinceDropdown = document.querySelector(
+     '[data-dropdown-id="dd_d_19"]',
+   );
    const cityDropdown = document.querySelector('[data-dropdown-id="dd_h_19"]');
    provinceDropdown.value = "ON";
    cityDropdown.value = "Milton";
@@ -765,6 +824,7 @@ window.TEUI?.sect03?.TargetState  (without SectionModules namespace)
 The most likely issue is **module path** - S03 might not be registered at `window.TEUI.SectionModules.sect03` but somewhere else. The sync code has a conditional check that's failing silently.
 
 **Evidence:**
+
 - No error messages in console
 - No sync logs appearing
 - Code should be running but isn't
@@ -777,6 +837,7 @@ Add extensive logging BEFORE the conditional to see what's actually available in
 If sync approach continues failing, consider **Alternative Architecture**:
 
 **Option: Make d_19/h_19 globally managed, not Pattern A**
+
 - Remove d_19, h_19 from S03's isolated TargetState
 - Read directly from global StateManager with mode prefix
 - Keep only calculated fields in isolated state
@@ -843,6 +904,7 @@ if (currentCity && cities.includes(currentCity)) {
 **Removed the redundant old refresh code** (lines 396-420) that was calling `refreshUI()` before our sync.
 
 **New sequence:**
+
 1. Import → StateManager has "Milton" ✅
 2. **Sync immediately** → DualState gets "Milton" from StateManager ✅
 3. calculateAll() → S03 checks DualState, finds "Milton", keeps it ✅
@@ -851,6 +913,7 @@ if (currentCity && cities.includes(currentCity)) {
 ### Files Modified (Final)
 
 **4011-FileHandler.js:**
+
 - Line 311: Added skip validation for S03 location fields
 - Line 115-125: Added debug logging for import data
 - Lines 396-420: **REMOVED** old refreshUI() call (was overwriting imported values)
@@ -858,6 +921,7 @@ if (currentCity && cities.includes(currentCity)) {
 - Lines 418-421: refreshUI() AFTER calculateAll()
 
 **4012-Section03.js:**
+
 - Lines 79-89: Added `syncFromGlobalState()` method to TargetState
 
 ### Why This Was So Hard to Find
@@ -873,6 +937,7 @@ if (currentCity && cities.includes(currentCity)) {
 With the old refresh code removed, the import should now work:
 
 **Expected behavior:**
+
 1. Import reads "Milton" from Excel ✅
 2. StateManager gets "Milton" ✅
 3. Sync copies "Milton" to DualState ✅
@@ -880,6 +945,7 @@ With the old refresh code removed, the import should now work:
 5. refreshUI() displays "Milton" ✅
 
 **Console logs to verify:**
+
 ```
 [FileHandler] 🎯 TARGET Location from REPORT sheet: Province="ON", City="Milton"
 [FileHandler] 🔧 Syncing S03 TargetState from global StateManager BEFORE calculateAll...
@@ -890,8 +956,10 @@ S03 TargetState: Synced h_19 = Milton from global StateManager  ← Should say M
 ### Additional Note: Reference Mode
 
 Reference mode works because `publishReferenceResults()` has a fallback pattern:
+
 ```javascript
-h_19: window.TEUI.StateManager.getValue("ref_h_19") || ReferenceState.getValue("h_19")
+h_19: window.TEUI.StateManager.getValue("ref_h_19") ||
+  ReferenceState.getValue("h_19");
 ```
 
 It reads StateManager FIRST, so even if Reference import happens with skipRecalculation=true, the fallback catches the imported value.
@@ -909,6 +977,7 @@ Target mode didn't have this fallback, which is why it failed until we added the
 ### IMPORT NOW WORKS! 🎉
 
 **Confirmed working:**
+
 - ✅ Target location imports correctly from REPORT sheet
 - ✅ Reference location imports correctly from REFERENCE sheet
 - ✅ Dropdowns display imported values (Milton shows instead of Alexandria)
@@ -920,12 +989,14 @@ Target mode didn't have this fallback, which is why it failed until we added the
 
 **The Problem:**
 S03's Pattern A architecture (isolated DualState) prevented direct import because:
+
 1. Import updated global StateManager
 2. S03's DualState remained in localStorage with defaults
 3. Validation blocked S03 dropdown values (not in FieldManager)
 4. Old refresh code overwrote imported values before sync
 
 **The Solution:**
+
 1. **Skip validation** for S03 location fields (d_19, h_19) - they're managed by ClimateDataService, not FieldManager
 2. **Add syncFromGlobalState()** method to S03's TargetState to bridge global → isolated state
 3. **Remove old refresh code** that was overwriting StateManager between import and sync
@@ -937,6 +1008,7 @@ S03's Pattern A architecture (isolated DualState) prevented direct import becaus
 This revealed an important pattern for **Pattern A sections** (isolated state):
 
 **Import flow for Pattern A sections:**
+
 ```javascript
 1. Import → StateManager (global)
 2. Sync → DualState (isolated) ← NEW: explicit bridge needed
@@ -972,10 +1044,12 @@ This revealed an important pattern for **Pattern A sections** (isolated state):
 ### Issue 1: Number Formatting After Import
 
 **Problem:** Imported values show raw numbers instead of formatted display values
+
 - Example: `0.5` instead of `50%` for Capacitance slider (i_21)
 - Values are stored correctly but display formatting not applied
 
 **Solution Needed:**
+
 ```javascript
 // After import, format all displayed values
 Object.entries(importedData).forEach(([fieldId, value]) => {
@@ -988,6 +1062,7 @@ Object.entries(importedData).forEach(([fieldId, value]) => {
 ```
 
 **Files to check:**
+
 - `4011-FieldManager.js` - `updateFieldDisplay()` method
 - `4011-FileHandler.js` - Apply formatting after `updateStateFromImportData()`
 
@@ -996,20 +1071,23 @@ Object.entries(importedData).forEach(([fieldId, value]) => {
 **Problem:** Imported values don't show as "user-modified" (blue text per CSS)
 
 **Current behavior:**
+
 - User manually enters value → text turns blue (via CSS class)
 - Import adds value → text stays default color
 
 **Solution Needed:**
+
 ```javascript
 // After import, mark fields as user-modified for styling
 const element = document.querySelector(`[data-field-id="${fieldId}"]`);
 if (element) {
-  element.classList.add('user-modified'); // Or whatever CSS class is used
+  element.classList.add("user-modified"); // Or whatever CSS class is used
   // OR set data attribute: element.dataset.source = 'imported';
 }
 ```
 
 **Files to check:**
+
 - CSS file - find class for user-modified styling
 - `4011-FileHandler.js` - Add styling after import
 - Check what happens in normal user input flow for comparison
@@ -1019,21 +1097,23 @@ if (element) {
 **Problem:** Some sections calculate, others remain stale after import
 
 **Root causes:**
+
 1. `skipRecalculation = true` for Reference import (line 159)
 2. calculateAll() may not trigger all section dependencies
 3. No explicit "imported" event to trigger fresh calculations
 4. Some sections may have listeners disabled during import
 
 **Current flow:**
+
 ```javascript
 // Line 135: Target import
-updateStateFromImportData(importedData) // skipRecalculation = false (default)
+updateStateFromImportData(importedData); // skipRecalculation = false (default)
 
 // Line 138: Reference import
-updateStateFromImportData(referenceData, 0, true) // skipRecalculation = true ← PROBLEM?
+updateStateFromImportData(referenceData, 0, true); // skipRecalculation = true ← PROBLEM?
 
 // Line 421: calculateAll() runs
-this.calculator.calculateAll() // But may not cascade properly
+this.calculator.calculateAll(); // But may not cascade properly
 ```
 
 **Solution Needed - Import Should Behave Like User Input:**
@@ -1044,7 +1124,7 @@ The import should trigger the exact same calculation cascade as if a user entere
 // FileHandler.js - after import completes
 
 // 1. Mark all imported fields as "modified" to trigger listeners
-Object.keys(importedData).forEach(fieldId => {
+Object.keys(importedData).forEach((fieldId) => {
   // StateManager should notify listeners that value changed
   StateManager.setValue(fieldId, value, "imported"); // Already doing this
 });
@@ -1061,15 +1141,18 @@ Object.keys(importedData).forEach(fieldId => {
 ```
 
 **Investigation needed in Calculator.js:**
+
 - Line references to dependency graph execution
 - Check if there's a `calculateInDependencyOrder()` method
 - Verify all sections are included in calculation cascade
 - Look for any `if (source !== "imported")` conditions that skip calculations
 
 **Key insight:**
+
 > "The import should function just like a very fast user adding values in the app, and let the app do its thing and run normally."
 
 This means:
+
 - ✅ Values in StateManager (working)
 - ✅ Listeners should fire (may be blocked?)
 - ✅ Calculations should cascade (partially working)
@@ -1080,16 +1163,19 @@ This means:
 ### Issue 4: Reference Import with skipRecalculation
 
 **Problem:** Line 159 imports Reference with `skipRecalculation = true`
+
 - This prevents Reference sections from calculating after import
 - May leave Reference calculations stale
 
 **Question to investigate:**
+
 - Why was `skipRecalculation = true` used for Reference import?
 - Comment says "main recalculation happens after target data import"
 - But does calculateAll() at line 421 recalculate Reference sections?
 - Or do Reference sections need their own explicit trigger?
 
 **Possible fix:**
+
 ```javascript
 // Option 1: Remove skipRecalculation for Reference
 this.updateStateFromImportData(referenceData, 0, false); // Let it calculate
@@ -1102,23 +1188,27 @@ this.calculator.calculateReferenceModel(); // Reference calculations (if method 
 ### Implementation Plan for IRONING Branch
 
 **Phase 1: Formatting & Styling (Quick wins)**
+
 1. Apply number formatting after import (formatNumber calls)
 2. Add blue text styling for imported fields
 3. Test visual consistency with manual entry
 
 **Phase 2: Calculation Cascade (Core fix)**
+
 1. Audit Calculator.js for proper dependency execution
 2. Remove or fix `skipRecalculation` logic
 3. Ensure all section listeners fire on import
 4. Verify "imported" source triggers same logic as "user-modified"
 
 **Phase 3: Testing & Verification**
+
 1. Import test file with all field types
 2. Verify all sections calculate correctly
 3. Compare imported state vs. manually entered state
 4. Confirm no stale calculations remain
 
 **Phase 4: Cleanup**
+
 1. Remove debug logging
 2. Update documentation
 3. Add comments explaining import flow
@@ -1153,16 +1243,16 @@ Both issues stem from the fact that **import bypasses the normal user interactio
 /* Default values: Grey italic (no .user-modified class) */
 .data-table td[contenteditable="true"].user-input:not(.user-modified),
 .data-table td input[type="number"].user-input:not(.user-modified) {
-  color: #6c757d !important;      /* Muted grey */
-  font-style: italic !important;   /* Italic for defaults */
+  color: #6c757d !important; /* Muted grey */
+  font-style: italic !important; /* Italic for defaults */
 }
 
 /* User-modified values: Blue bold (with .user-modified class) */
 .data-table td[contenteditable="true"].user-input.user-modified,
 .data-table td input[type="number"].user-input.user-modified {
-  color: var(--user-input-color) !important;  /* Blue */
-  font-style: normal !important;              /* Remove italic */
-  font-weight: 600 !important;                /* Bold */
+  color: var(--user-input-color) !important; /* Blue */
+  font-style: normal !important; /* Remove italic */
+  font-weight: 600 !important; /* Bold */
 }
 ```
 
@@ -1176,34 +1266,47 @@ Both issues stem from the fact that **import bypasses the normal user interactio
 
 ```javascript
 // Focus event: Add editing-intent class
-document.addEventListener("focus", function (e) {
-  const field = e.target;
-  if (field.matches('[contenteditable="true"].user-input, input.user-input')) {
-    field.classList.add("editing-intent");           // Temporary while editing
-    field.dataset.originalValue = field.textContent; // Remember original
-  }
-}, true);
+document.addEventListener(
+  "focus",
+  function (e) {
+    const field = e.target;
+    if (
+      field.matches('[contenteditable="true"].user-input, input.user-input')
+    ) {
+      field.classList.add("editing-intent"); // Temporary while editing
+      field.dataset.originalValue = field.textContent; // Remember original
+    }
+  },
+  true,
+);
 
 // Blur event: Add user-modified class (THE KEY TRIGGER)
-document.addEventListener("blur", function (e) {
-  const field = e.target;
-  if (field.matches('[contenteditable="true"].user-input, input.user-input')) {
-    field.classList.remove("editing-intent");
+document.addEventListener(
+  "blur",
+  function (e) {
+    const field = e.target;
+    if (
+      field.matches('[contenteditable="true"].user-input, input.user-input')
+    ) {
+      field.classList.remove("editing-intent");
 
-    const currentValue = field.textContent || field.value || "";
-    const originalValue = field.dataset.originalValue || "";
+      const currentValue = field.textContent || field.value || "";
+      const originalValue = field.dataset.originalValue || "";
 
-    // If value changed, mark as user-modified
-    if (currentValue !== originalValue && currentValue.trim() !== "") {
-      field.classList.add("user-modified");  // ← BLUE STYLING APPLIED HERE
-    } else if (currentValue.trim() === "") {
-      field.classList.remove("user-modified"); // Back to grey/italic
+      // If value changed, mark as user-modified
+      if (currentValue !== originalValue && currentValue.trim() !== "") {
+        field.classList.add("user-modified"); // ← BLUE STYLING APPLIED HERE
+      } else if (currentValue.trim() === "") {
+        field.classList.remove("user-modified"); // Back to grey/italic
+      }
     }
-  }
-}, true);
+  },
+  true,
+);
 ```
 
 **User flow:**
+
 1. Focus field → `.editing-intent` class added
 2. Type value
 3. Blur (tab away) → **`.user-modified` class added** ← Triggers blue/bold CSS
@@ -1242,7 +1345,7 @@ function updateFieldDisplay(fieldId, displayValue, fieldDef) {
   if (element.hasAttribute("contenteditable")) {
     element.textContent = displayValue; // ✅ Value updated
   } else if (element.tagName === "INPUT") {
-    element.value = displayValue;       // ✅ Value updated
+    element.value = displayValue; // ✅ Value updated
   }
 
   // ❌ MISSING: element.classList.add("user-modified");
@@ -1250,12 +1353,14 @@ function updateFieldDisplay(fieldId, displayValue, fieldDef) {
 ```
 
 **Import flow:**
+
 1. Import reads Excel → `StateManager.setValue(fieldId, value, "imported")`
 2. StateManager notifies listeners → `FieldManager.updateFieldDisplay()`
 3. FieldManager updates DOM value → ✅ Value appears
 4. **But classList never updated** → ❌ Field remains grey/italic
 
 **Why it bypasses blur:**
+
 - Blur events only fire when user **interactively focuses and unfocuses** a field
 - Programmatic value updates (via import) **do NOT trigger blur events**
 - The `.user-modified` class is **only added by blur handler**, never by import
@@ -1270,8 +1375,9 @@ function updateFieldDisplay(fieldId, displayValue, fieldDef) {
 
 ```javascript
 function updateFieldDisplay(fieldId, displayValue, fieldDef) {
-  const element = document.getElementById(fieldId) ||
-                  document.querySelector(`[data-field-id='${fieldId}']`);
+  const element =
+    document.getElementById(fieldId) ||
+    document.querySelector(`[data-field-id='${fieldId}']`);
   if (!element) return;
 
   // Update the value (already working)
@@ -1293,10 +1399,11 @@ function updateFieldDisplay(fieldId, displayValue, fieldDef) {
 
 ```javascript
 // In 4011-init.js or 4011-FieldManager.js
-TEUI.StateManager.addGlobalListener(function(fieldId, value, oldValue, state) {
+TEUI.StateManager.addGlobalListener(function (fieldId, value, oldValue, state) {
   if (state === "imported" || state === "user-modified") {
-    const element = document.getElementById(fieldId) ||
-                    document.querySelector(`[data-field-id='${fieldId}']`);
+    const element =
+      document.getElementById(fieldId) ||
+      document.querySelector(`[data-field-id='${fieldId}']`);
     if (element && element.classList.contains("user-input")) {
       element.classList.add("user-modified");
     }
@@ -1311,10 +1418,12 @@ TEUI.StateManager.addGlobalListener(function(fieldId, value, oldValue, state) {
 #### Current State Analysis
 
 **Working sections (S07):**
+
 - Calculations update immediately after import
 - Fresh values displayed
 
 **Stale sections (S04):**
+
 - Values import correctly (visible in fields)
 - Calculations remain at old values
 - Requires manual recalculation trigger
@@ -1339,17 +1448,20 @@ function setValue(fieldId, value, state = "imported") {
 ```
 
 **Question:** Does `markDependentsDirty()` properly cascade for imported values?
+
 - Some sections may have direct Calculator listeners that trigger on "user-modified" but not "imported"
 - Dependency graph may not include all calculation paths
 
 **Theory 2: Dual-State Architecture (⭐ PRIMARY SUSPECT)**
 
 Sections using Pattern A (isolated state) like S03, S04, S08-S15:
+
 - Import updates **global StateManager**
 - But calculations read from **isolated DualState** (localStorage)
 - If sync doesn't happen (or happens too late), calculations use old values
 
 **Evidence from S03 debugging:**
+
 - S03 required explicit `syncFromGlobalState()` call
 - S04 likely needs same treatment if it uses Pattern A
 - Other Pattern A sections: S02, S05, S06, S08, S15
@@ -1367,14 +1479,17 @@ this.updateStateFromImportData(referenceData, 0, true); // skipRecalculation = t
 **IMPORTANT - This is NOT a bug, it's correct dual-engine architecture:**
 
 Per [4012-CHEATSHEET.md](4012-CHEATSHEET.md#L27-28):
+
 > **"Dual-Engine Calculations": `calculateAll()` MUST run both `calculateTargetModel()` and `calculateReferenceModel()` in parallel on every data change.**
 
 **How it works:**
+
 1. Target import → StateManager updated, **skip intermediate calculation**
 2. Reference import → StateManager updated, **skip intermediate calculation**
 3. **Single `calculateAll()` call** → Runs BOTH engines in parallel (lines 481-520 of CHEATSHEET)
 
 **Why this is correct:**
+
 - Prevents running calculations before both states are populated
 - Avoids duplicate calculation work (once for Target, once for Reference)
 - Maintains state isolation via temporary mode switching pattern
@@ -1392,6 +1507,7 @@ this.calculator.calculateAll(); // ← Single calculation pass
 ```
 
 **Questions:**
+
 - Does `calculateAll()` respect dependency order?
 - Are some sections excluded from `calculateAll()`?
 - Do Pattern A sections calculate independently?
@@ -1403,12 +1519,14 @@ this.calculator.calculateAll(); // ← Single calculation pass
 **Files to audit:**
 
 1. **4011-Calculator.js**
+
    - Find `calculateAll()` implementation
    - Check if it iterates through sections in dependency order
    - Look for any sections excluded from the cascade
    - Search for `if (state === "imported")` conditions that might skip calculations
 
 2. **sections/4012-Section04.js** (and other stale sections)
+
    - Check if it uses Pattern A (isolated DualState)
    - Look for StateManager listeners
    - See if it has a `syncFromGlobalState()` method (likely needs one)
@@ -1437,9 +1555,17 @@ Following S03's successful pattern:
 
 ```javascript
 // In FileHandler after Target import
-const patternASections = ['sect02', 'sect03', 'sect04', 'sect05', 'sect06', 'sect08', 'sect15'];
+const patternASections = [
+  "sect02",
+  "sect03",
+  "sect04",
+  "sect05",
+  "sect06",
+  "sect08",
+  "sect15",
+];
 
-patternASections.forEach(sectionId => {
+patternASections.forEach((sectionId) => {
   const section = window.TEUI?.SectionModules?.[sectionId];
   if (section?.TargetState?.syncFromGlobalState) {
     section.TargetState.syncFromGlobalState();
@@ -1470,6 +1596,7 @@ await this.calculator.calculateAll(); // ← Guaranteed to run after sync
 **File:** [4011-FieldManager.js:1251-1290](../4011-FieldManager.js#L1251-1290)
 
 **Change:**
+
 ```javascript
 function updateFieldDisplay(fieldId, displayValue, fieldDef) {
   // ... existing value update code ...
@@ -1485,6 +1612,7 @@ function updateFieldDisplay(fieldId, displayValue, fieldDef) {
 ```
 
 **Expected result:**
+
 - ✅ Imported values styled blue/bold
 - ✅ Visual parity with manually-entered values
 
@@ -1495,18 +1623,28 @@ function updateFieldDisplay(fieldId, displayValue, fieldDef) {
 **File:** [4011-FileHandler.js](../4011-FileHandler.js) after line 134
 
 **Add universal Pattern A sync:**
+
 ```javascript
 // After Target import completes
 this.updateStateFromImportData(importedData);
 
 // Sync all Pattern A sections
-this.syncPatternASections(['sect02', 'sect03', 'sect04', 'sect05', 'sect06', 'sect08', 'sect15']);
+this.syncPatternASections([
+  "sect02",
+  "sect03",
+  "sect04",
+  "sect05",
+  "sect06",
+  "sect08",
+  "sect15",
+]);
 
 // Then calculate
 this.calculator.calculateAll();
 ```
 
 **Add sync method:**
+
 ```javascript
 syncPatternASections(sectionIds) {
   sectionIds.forEach(sectionId => {
@@ -1520,6 +1658,7 @@ syncPatternASections(sectionIds) {
 ```
 
 **Expected result:**
+
 - ✅ S04 and other Pattern A sections sync before calculation
 - ✅ Calculations use fresh imported values
 
@@ -1530,6 +1669,7 @@ syncPatternASections(sectionIds) {
 **File:** [4011-Calculator.js](../4011-Calculator.js)
 
 **Audit checklist:**
+
 - [ ] Does `calculateAll()` iterate through sections in dependency order?
 - [ ] Are Pattern A sections included in calculation cascade?
 - [ ] Does "imported" state trigger same listeners as "user-modified"?
@@ -1558,6 +1698,7 @@ syncPatternASections(sectionIds) {
 **Issue 1: Reference data not syncing to Pattern A ReferenceState (Oct 4, 2025)**
 
 **Symptom:**
+
 - Target imports work correctly (e.g., d_13 syncs to S02 TargetState)
 - Reference imports fail (e.g., ref_d_13 doesn't sync to S02 ReferenceState)
 - Example: S02 d_13 shows "OBC SB10 5.5-6 Z5 (2010)" in Target mode ✅
@@ -1567,6 +1708,7 @@ syncPatternASections(sectionIds) {
 Timing issue in FileHandler import sequence - `syncPatternASections()` called BEFORE Reference import completes
 
 **Current Sequence (BROKEN for Reference):**
+
 ```javascript
 // 4011-FileHandler.js:134-145
 processImportedExcel(workbook) {
@@ -1595,6 +1737,7 @@ processImportedExcelReference(workbook) {
 ```
 
 **Why ReferenceState sync fails:**
+
 1. Target import → global StateManager gets d_13 = "OBC SB10 5.5-6 Z5 (2010)"
 2. syncPatternASections() → S02.TargetState syncs d_13 ✅, tries to sync ref_d_13 but it's undefined ❌
 3. Reference import → global StateManager gets ref_d_13 = "OBC SB10 5.5-6 Z5 (2010)" (too late!)
@@ -1602,6 +1745,7 @@ processImportedExcelReference(workbook) {
 
 **Fix Required:**
 Call `syncPatternASections()` AFTER Reference import as well:
+
 ```javascript
 // In 4011-FileHandler.js:147-170
 processImportedExcelReference(workbook) {
@@ -1616,6 +1760,7 @@ processImportedExcelReference(workbook) {
 ```
 
 **Impact:**
+
 - All Pattern A sections (S02, S03, S04, S05, S06, S08, S15) fail to sync Reference data
 - ReferenceState calculations use defaults instead of imported values
 - Target import works fine, Reference import broken
@@ -1625,16 +1770,19 @@ Tried adding second `syncPatternASections()` after Reference import - this cause
 
 **Testing Revealed Real Issue:**
 The sync logs showed:
+
 ```
 S02 ReferenceState: Synced d_13 = OBC SB10 5.5-6 Z6 (DEFAULT!)
 S02 ReferenceState: Synced h_15 = 1427.20 (DEFAULT!)
 ```
 
 **But Excel file has:**
+
 - ref_d_13 = "OBC SB10 5.5-6 Z5 (2010)" ✅
 - ref_h_15 = 11167 ✅
 
 **ROOT CAUSE - Reference data not importing to global StateManager at all!**
+
 - The "synced" values are DEFAULTS, not imported values
 - This means `mapExcelToReferenceModel()` or `updateStateFromImportData()` is failing
 - Reference sheet data not reaching global StateManager
@@ -1643,17 +1791,20 @@ S02 ReferenceState: Synced h_15 = 1427.20 (DEFAULT!)
 **BREAKTHROUGH ANALYSIS (Oct 4, 2025):**
 
 User discovered the actual root cause by observing logs:
+
 ```
 [S02] Updated h_15 = "11,167.00" (target mode)  ✅ CORRECT
 [S02] Updated h_15 = "1,427.20" (reference mode) ❌ WRONG - this is the DEFAULT!
 ```
 
 **Excel File Structure:**
+
 - REPORT sheet: H15 = 11167 (numeric value) ✅
 - REFERENCE sheet: H15 = `=REPORT!H15` (formula that displays 11,167.00) ✅
 
 **The Problem:**
 REFERENCE sheet cells contain **formulas** (e.g., `=REPORT!H15`), not values
+
 - SheetJS library stores formula cells with:
   - `cell.f` = "=REPORT!H15" (the formula)
   - `cell.v` = calculated value (should be 11167)
@@ -1662,6 +1813,7 @@ REFERENCE sheet cells contain **formulas** (e.g., `=REPORT!H15`), not values
 
 **Why defaults appear:**
 When ExcelMapper reads REFERENCE sheet H15:
+
 1. Cell has formula `=REPORT!H15`
 2. SheetJS may not evaluate cross-sheet formulas
 3. `cell.v` is undefined or contains old cached value
@@ -1674,9 +1826,9 @@ ExcelMapper.mapExcelToReferenceModel() now handles formula cells intelligently (
 
 ```javascript
 // Check if cell contains a formula referencing REPORT sheet
-if (cell.f && cell.f.startsWith('=REPORT!')) {
+if (cell.f && cell.f.startsWith("=REPORT!")) {
   // Extract REPORT cell ref (e.g., "=REPORT!H15" → "H15")
-  const reportCellRef = cell.f.replace(/^=REPORT!/, '');
+  const reportCellRef = cell.f.replace(/^=REPORT!/, "");
 
   // Read from REPORT sheet instead (formulas don't evaluate)
   const reportCell = reportWorksheet?.[reportCellRef];
@@ -1688,6 +1840,7 @@ if (cell.f && cell.f.startsWith('=REPORT!')) {
 ```
 
 **How it works:**
+
 - If REFERENCE!H15 = `=REPORT!H15` (formula) → reads REPORT!H15 value (11167) ✅
 - If REFERENCE!H15 = 5000 (user override) → reads 5000 ✅
 - Respects both formula references AND user overrides
@@ -1697,6 +1850,7 @@ if (cell.f && cell.f.startsWith('=REPORT!')) {
 **Issue 2: S04 calculations remain stale despite syncFromGlobalState() implementation (Oct 4, 2025)**
 
 **Symptom:**
+
 - Imported values d_27=2000299, d_28=355013 appear correctly in blue/bold (Phase 1 working ✅)
 - But calculated fields f_27, f_28, g_27, g_28 show stale default values
 - S04 calculations use f_32=132938 (default) instead of recalculating with imported values
@@ -1705,20 +1859,24 @@ if (cell.f && cell.f.startsWith('=REPORT!')) {
 S04 module doesn't export `TargetState` and `ReferenceState` objects - only exports `ModeManager`
 
 **Evidence:**
+
 ```javascript
 // sections/4012-Section04.js:1337-1352
 return {
   getFields: getFields,
-  getDropdownOptions: function() { return {}; },
+  getDropdownOptions: function () {
+    return {};
+  },
   getLayout: getLayout,
   onSectionRendered: onSectionRendered,
   initializeEventHandlers: initializeEventHandlers,
   calculateAll: calculateAll,
-  ModeManager: ModeManager  // ❌ Missing: TargetState, ReferenceState
+  ModeManager: ModeManager, // ❌ Missing: TargetState, ReferenceState
 };
 ```
 
 **Why sync failed:**
+
 1. FileHandler calls `window.TEUI.SectionModules.sect04.TargetState.syncFromGlobalState()`
 2. But `sect04.TargetState` is undefined (not exported)
 3. Sync silently fails - logs "not yet implemented"
@@ -1726,28 +1884,31 @@ return {
 5. Calculations read stale isolated state instead of fresh imported values
 
 **Comparison with S03 (working):**
+
 ```javascript
 // sections/4012-Section03.js exports
 return {
   // ... other exports ...
-  TargetState: TargetState,      // ✅ Exported
+  TargetState: TargetState, // ✅ Exported
   ReferenceState: ReferenceState, // ✅ Exported
-  ModeManager: ModeManager
+  ModeManager: ModeManager,
 };
 ```
 
 **Fix Required:**
 Add TargetState and ReferenceState to S04's export object (line 1351):
+
 ```javascript
 return {
   // ... existing exports ...
   ModeManager: ModeManager,
-  TargetState: TargetState,      // ADD THIS
-  ReferenceState: ReferenceState  // ADD THIS
+  TargetState: TargetState, // ADD THIS
+  ReferenceState: ReferenceState, // ADD THIS
 };
 ```
 
 **Impact:**
+
 - Phase 2 infrastructure is working correctly ✅
 - syncFromGlobalState() methods implemented correctly ✅
 - Export structure prevents access ❌
@@ -1755,15 +1916,17 @@ return {
 
 **Fix Applied (Oct 4, 2025):**
 Added TargetState and ReferenceState to S04 exports ([4012-Section04.js:1352-1353](../sections/4012-Section04.js#L1352-1353)):
+
 ```javascript
 return {
   ModeManager: ModeManager,
-  TargetState: TargetState,      // ✅ ADDED
-  ReferenceState: ReferenceState  // ✅ ADDED
+  TargetState: TargetState, // ✅ ADDED
+  ReferenceState: ReferenceState, // ✅ ADDED
 };
 ```
 
 **Result:** ✅ **S04 calculations now fresh after import!**
+
 - Sync logs appear in console confirming bridge from global StateManager → isolated DualState
 - Calculations update immediately with imported utility bill values
 - No manual recalculation needed
@@ -1775,16 +1938,19 @@ return {
 ### Expected Outcomes
 
 **Visual Consistency:**
+
 - Imported values: Blue bold text ✅
 - Default values: Grey italic text ✅
 - User-modified values: Blue bold text ✅
 
 **Calculation Integrity:**
+
 - All sections calculate after import ✅
 - No stale calculations in any section ✅
 - Calculations respect dual-state architecture ✅
 
 **User Experience:**
+
 - Import feels like "fast user entry" ✅
 - All downstream effects trigger normally ✅
 - No manual recalculation needed ✅
@@ -1798,24 +1964,28 @@ return {
 The import system is designed to work with the **dual-engine calculation architecture** where both Target and Reference calculations run in parallel on every data change.
 
 **Correct Import Sequence:**
+
 1. Import Target data → StateManager updated
 2. Import Reference data → StateManager updated
 3. **Sync Pattern A sections** → Bridge global StateManager to isolated DualState
 4. **Single `calculateAll()` call** → Both engines run in parallel via temporary mode switching
 
 **Why skipRecalculation=true is Essential:**
+
 - Prevents premature calculation before both states are populated
 - Avoids running calculations twice (wasteful)
 - Preserves dual-engine parallel execution pattern
 - Maintains state isolation via [Pattern 1: Temporary Mode Switching](4012-CHEATSHEET.md#L481-520)
 
 **The Real Import Challenge:**
+
 - Pattern A sections (S03, S04, etc.) use **isolated DualState** for state sovereignty
 - Import populates **global StateManager** but isolated states remain stale
 - Solution: **Explicit sync bridge** (like S03's `syncFromGlobalState()`)
 - NOT changing calculation triggers or dual-engine architecture
 
 **Architectural Compliance:**
+
 - ✅ DO: Add Pattern A sync bridges for isolated state sections
 - ✅ DO: Ensure DOM class management for visual styling
 - ❌ DON'T: Remove `skipRecalculation` flag (breaks dual-engine pattern)
@@ -1837,18 +2007,21 @@ Bug notes: Most header sections are ~45px tall. How can we lock Key Values heade
 After extensive debugging session with formula detection and import sequencing, discovered that **Section 02 (S02) is not being loaded/initialized in the application at all**.
 
 **Evidence:**
+
 1. syncPatternASections() logs show S03, S04, S05, S06, S08, S15 - but NO S02
 2. `window.TEUI.SectionModules.sect02` does not exist
 3. S02 exports TargetState and ReferenceState correctly, but module never loads
 4. All import/sync work for S02 fails silently because the module doesn't exist
 
 **Symptoms Traced to This Root Cause:**
+
 - Reference mode shows h_15 = 1,427.20 (default) instead of 11,167.00 (imported)
 - No S02 sync logs appear despite syncFromGlobalState() being implemented
 - Reference data successfully imported to StateManager but never reaches S02.ReferenceState
 - Blue/bold styling appears (StateManager has data) but wrong value displays (S02 not synced)
 
 **What Actually Works:**
+
 1. ✅ ExcelMapper formula detection (REFERENCE sheet `=REPORT!H15` correctly reads from REPORT)
 2. ✅ FileHandler import sequence (both Target and Reference data reach StateManager)
 3. ✅ S02 syncFromGlobalState() implementation (code is correct)
@@ -1856,6 +2029,7 @@ After extensive debugging session with formula detection and import sequencing, 
 5. ❌ S02 module loading (module never initializes, so sync hits nothing)
 
 **Technical Debt Accumulated This Session:**
+
 - Extensive debug logging in FileHandler.js (lines 169-170, 274-275, 283, 299)
 - Debug logging in ExcelMapper.js for H15/D13 cells
 - Attempted import sequence refactoring (moved syncPatternASections timing)
@@ -1868,23 +2042,28 @@ After extensive debugging session with formula detection and import sequencing, 
 **Revert to:** Last known good state before today's afternoon session (likely commit hash from this morning)
 
 **Why Revert:**
+
 1. **Core assumption was wrong**: We assumed S02 was loaded and focused on import flow
 2. **Debug logging clutter**: Added significant logging that diagnoses wrong problem
 3. **Import refactoring**: Changed timing/sequence when real issue is module loading
 4. **Technical debt**: Clean slate better than debugging on false foundation
 
 **What to Keep from This Session:**
+
 - MAPPER.md analysis and findings (this document)
 - Understanding that REFERENCE formulas reference REPORT sheet (critical insight)
 - Knowledge that S02 module loading is prerequisite for any import work
 
 **Correct Fix Sequence (After Revert):**
+
 1. **First:** Investigate why S02 module isn't loading
+
    - Check 4011-init.js module loading sequence
    - Check if S02 is commented out or conditionally loaded
    - Verify S02 module definition doesn't have syntax errors preventing load
 
 2. **Second:** Once S02 loads, confirm existing import works
+
    - ExcelMapper formula detection should work (code was correct)
    - FileHandler import should populate StateManager
    - syncPatternASections() should reach S02
@@ -1900,6 +2079,7 @@ After extensive debugging session with formula detection and import sequencing, 
 ### ⚠️ CORRECTED FINDINGS (After reviewing latest logs)
 
 **S02 IS loading correctly!** Initial diagnosis was wrong. Logs show:
+
 ```
 S02 ReferenceState: Synced i_17 = XXXX from global StateManager (ref_i_17)
 S02 ReferenceState: Synced l_12 = $0.1300 from global StateManager (ref_l_12)
@@ -1909,6 +2089,7 @@ S02 ReferenceState: Synced l_12 = $0.1300 from global StateManager (ref_l_12)
 **THE REAL ISSUE:** S02 syncs **all fields EXCEPT h_15** (conditioned area)
 
 **Evidence:**
+
 1. ✅ S02 module loads and syncs i_16, i_17, l_12-l_16
 2. ✅ ExcelMapper H15 → ref_h_15 mapping exists
 3. ✅ Formula detection works (reads REPORT!H15 = 11167)
@@ -1918,6 +2099,7 @@ S02 ReferenceState: Synced l_12 = $0.1300 from global StateManager (ref_l_12)
 ref_h_15 is being read from REFERENCE sheet but **not being stored in StateManager** during import. The value gets read correctly (11167) but doesn't make it into StateManager.fields.
 
 **Investigation Needed (Evening Session):**
+
 1. Add console log in FileHandler.updateStateFromImportData to confirm ref_h_15 reaches the function
 2. Check if ref_h_15 fails validation (has FieldManager definition? Type check passes?)
 3. Check if StateManager.setValue('ref_h_15', 11167, 'imported') is actually being called
@@ -1932,12 +2114,14 @@ The debug logging we added should show "Reference field imported: ref_h_15 = 111
 
 **Observation (User Report):**
 After importing values, when a user makes subsequent section-level edits:
+
 1. ✅ The edited section updates its own calculations correctly
 2. ❌ Calculations do NOT flow through to S01 (Summary Dashboard)
 3. ❌ S01 shows stale values based on pre-edit state
 
 **Comparison to Normal Workflow:**
 In a **non-import scenario** (fresh page load, manual user edits):
+
 - Section-level edits trigger calculations
 - Calculations cascade through entire app
 - S01 updates correctly with fresh downstream values
@@ -1946,6 +2130,7 @@ In a **non-import scenario** (fresh page load, manual user edits):
 Something about the import process establishes a **block or stale-value impediment** that prevents calculation cascade to S01.
 
 **Hypotheses:**
+
 1. **Listener/Observer Disconnection:** Import may disable change listeners that trigger cross-section calculation flow
 2. **State Isolation:** Import may lock sections into isolated state mode, preventing StateManager propagation
 3. **CalculateAll Flag:** skipRecalculation=true may leave sections in a "calculation complete" state that blocks re-triggers
@@ -1959,6 +2144,7 @@ Something about the import process establishes a **block or stale-value impedime
 This should be addressed **AFTER** solving Reference state import issue, as it may be a symptom of the same root cause (StateManager not properly updated during import).
 
 **Test Scenario for Evening Session:**
+
 1. Import Excel file
 2. Manually edit a field in S04 (utility bills)
 3. Observe: S04 calculations update ✅
@@ -1966,6 +2152,7 @@ This should be addressed **AFTER** solving Reference state import issue, as it m
 5. Expected: S01 should reflect S04's updated calculations
 
 **Potential Fix Areas:**
+
 - FileHandler.updateStateFromImportData() may need to re-enable listeners after import
 - calculateAll() may need explicit cross-section dependency refresh
 - StateManager may need to broadcast "values changed" event after import completes
@@ -1975,6 +2162,7 @@ This should be addressed **AFTER** solving Reference state import issue, as it m
 ## 🎯 BREAKTHROUGH: ref_h_15 Overwrite Identified (Oct 4, 3:45pm)
 
 **The Smoking Gun (from Logs.md):**
+
 ```
 Line 9282:  [FileHandler] Reference field imported: ref_h_15 = 11167 ✅
 Line 10008: S02 TargetState: Synced h_15 = 11167 from global StateManager ✅
@@ -1982,6 +2170,7 @@ Line 10024: S02 ReferenceState: Synced h_15 = 1427.20 from global StateManager (
 ```
 
 **Timeline Analysis:**
+
 1. ✅ ExcelMapper reads H15 formula `=REPORT!H15` → 11167 (line 8920)
 2. ✅ FileHandler imports ref_h_15 = 11167 to StateManager (line 9282)
 3. ✅ S02 TargetState syncs h_15 = 11167 correctly (line 10008)
@@ -1989,20 +2178,25 @@ Line 10024: S02 ReferenceState: Synced h_15 = 1427.20 from global StateManager (
 5. ❌ S02 ReferenceState syncs the WRONG value 1427.20 (line 10024)
 
 **What Happens Between Target and Reference Sync:**
+
 - Lines 10008-10017: S02.TargetState.syncFromGlobalState() completes
 - Line 10017: FileHandler calls S02.ReferenceState.syncFromGlobalState()
 - **Hypothesis:** TargetState sync triggers S02 calculations/listeners which publish reference defaults
 
 **Debug Strategy Added (Commit a7b3ecc):**
 Added StateManager.setValue() logging for ref_h_15:
+
 ```javascript
 if (fieldId === "ref_h_15") {
-  console.log(`[StateManager DEBUG] ref_h_15 setValue: "${value}" (state: ${state}, prev: ${fields.get(fieldId)?.value})`);
+  console.log(
+    `[StateManager DEBUG] ref_h_15 setValue: "${value}" (state: ${state}, prev: ${fields.get(fieldId)?.value})`,
+  );
   console.trace("[StateManager] ref_h_15 setValue stack trace:");
 }
 ```
 
 **Next Test (Evening/Tomorrow):**
+
 1. Hard refresh browser
 2. Import Excel file
 3. Check logs for ALL ref_h_15 setValue calls with stack traces
@@ -2010,6 +2204,7 @@ if (fieldId === "ref_h_15") {
 5. Fix the overwrite (likely in S01/S02 initialization or calculation publishing)
 
 **Expected Log Output:**
+
 ```
 [StateManager DEBUG] ref_h_15 setValue: "11167" (state: imported, prev: undefined)
 [StateManager] ref_h_15 setValue stack trace:
@@ -2030,6 +2225,7 @@ if (fieldId === "ref_h_15") {
 ## 🎯 ROOT CAUSE CONFIRMED - Listener Chain During Import (Oct 4, 6pm)
 
 **The Full Stack Trace Revealed:**
+
 ```
 [StateManager DEBUG] ref_h_15 setValue: "1427.20" (state: calculated, prev: 11167)
 
@@ -2048,6 +2244,7 @@ processImportedExcelReference @ FileHandler.js:190
 ```
 
 **The Bug Mechanism:**
+
 1. FileHandler imports ref_h_15 = 11167 ✅
 2. StateManager.setValue("ref_h_15", 11167) is called
 3. **StateManager notifies ALL listeners** (this is the problem!)
@@ -2059,6 +2256,7 @@ processImportedExcelReference @ FileHandler.js:190
 7. Overwrites the just-imported 11167! ❌
 
 **Why This Happens:**
+
 - Import triggers listeners on EVERY field imported
 - Each setValue() during import fires notifyListeners()
 - Sections calculate with stale isolated state (not yet synced)
@@ -2085,12 +2283,14 @@ this.calculator.calculateAll();
 ```
 
 **Implementation Requirements:**
+
 1. Add `muteListeners()` / `unmuteListeners()` to StateManager
 2. Modify `setValue()` to skip notifyListeners() when muted
 3. FileHandler imports with listeners muted
 4. After sync complete, unmute and trigger single calculateAll()
 
 **Critical Architecture Principle:**
+
 > Import is not "fast user entry" - it's a **batch state restoration** that must complete atomically before calculations resume.
 
 ---
@@ -2105,6 +2305,7 @@ After implementing import renovation, two critical issues emerged:
 
 **The Core Problem:**
 We have multiple state systems with unclear hierarchy:
+
 - User-Modified state (should be KING)
 - Imported state
 - Calculated state
@@ -2113,6 +2314,7 @@ We have multiple state systems with unclear hierarchy:
 - LocalStorage persistence (complicates everything)
 
 **State Hierarchy (From User Requirements):**
+
 ```
 1. USER-MODIFIED     ← Highest priority, always wins
 2. IMPORTED          ← Batch restoration, one-time
@@ -2122,6 +2324,7 @@ We have multiple state systems with unclear hierarchy:
 ```
 
 **Current Architecture Issues:**
+
 - ✅ Dual-state isolation works in normal operation (months of refinement)
 - ❌ Import triggers listeners → premature calculations → overwrites
 - ❌ Calculation chain blocked after import → S01 stale
@@ -2130,6 +2333,7 @@ We have multiple state systems with unclear hierarchy:
 - ❌ No clear "strength" comparison when multiple states compete
 
 **Questions to Resolve:**
+
 1. Does StateManager enforce state hierarchy (user-modified > imported > calculated > default)?
 2. Does LocalStorage respect state strength or blindly restore defaults?
 3. How do we ensure import doesn't trigger premature calculations?
@@ -2137,6 +2341,7 @@ We have multiple state systems with unclear hierarchy:
 5. Should imported state be permanent or overridable by calculations?
 
 **Investigation Needed:**
+
 - Review README.md state architecture documentation
 - Audit StateManager state comparison logic
 - Check LocalStorage save/restore for state strength
@@ -2144,6 +2349,7 @@ We have multiple state systems with unclear hierarchy:
 - Define import state transition: quarantine → sync → calculate → normal
 
 **Proposed Solution Path:**
+
 1. Implement import quarantine (mute listeners)
 2. Audit state hierarchy enforcement
 3. Document state strength rules
@@ -2158,22 +2364,25 @@ We have multiple state systems with unclear hierarchy:
 **What Documentation Says:**
 
 README.md (line 906):
+
 > State Management System: Central registry handling multiple value states (Default, User-Modified, Saved, Imported and Reference)
 
 VALUE_STATES defined in StateManager.js:
+
 ```javascript
 const VALUE_STATES = {
-    DEFAULT: "default",           // Original default value
-    IMPORTED: "imported",          // Value imported from saved data
-    USER_MODIFIED: "user-modified", // Value changed by user
-    CALCULATED: "calculated",      // Value calculated by the system
-    DERIVED: "derived",            // Value derived from another field
+  DEFAULT: "default", // Original default value
+  IMPORTED: "imported", // Value imported from saved data
+  USER_MODIFIED: "user-modified", // Value changed by user
+  CALCULATED: "calculated", // Value calculated by the system
+  DERIVED: "derived", // Value derived from another field
 };
 ```
 
 **What Implementation Actually Does:**
 
 StateManager.js setValue() (lines 420-421):
+
 ```javascript
 field.value = value;
 field.state = state;
@@ -2182,6 +2391,7 @@ field.state = state;
 **❌ CRITICAL FLAW: NO STATE HIERARCHY ENFORCEMENT!**
 
 The current implementation:
+
 - **Last write wins** - any state can overwrite any other state
 - `calculated` can overwrite `user-modified` ❌
 - `default` can overwrite `imported` ❌
@@ -2189,6 +2399,7 @@ The current implementation:
 - No protection for user intent
 
 **Real-World Failure Example:**
+
 1. User sets h_15 = 11167 (user-modified) ✅
 2. User imports file with h_15 = 5000 (imported)
 3. Import triggers calculations
@@ -2200,6 +2411,7 @@ The current implementation:
 **Key Principle:** States apply ONLY to INPUT FIELDS (number/text/slider/dropdown). Calculated/Derived fields are IMMUTABLE - they never receive state changes.
 
 **Input Field Value States (Non-Hierarchical - Last Write Wins):**
+
 ```
 For USER INPUT FIELDS ONLY (h_15, d_13, ref_f_85, etc):
 
@@ -2228,6 +2440,7 @@ Rules:
 **What This Means:**
 
 **For h_15 (Conditioned Area) - INPUT FIELD:**
+
 - DEFAULT: 1427.20 (app initialization) ← Weakest
 - User types 11167 → USER-MODIFIED (replaces default)
 - User changes d_13 → REFERENCE-OVERRIDE applies (may change h_15 if defined)
@@ -2236,12 +2449,14 @@ Rules:
 - User types 8000 → USER-MODIFIED (replaces import)
 
 **For Calculated Fields (j_32, k_32, etc) - NEVER RECEIVE STATE:**
+
 - Always computed from inputs
 - Never have DEFAULT, USER-MODIFIED, or IMPORTED state
 - Cannot be overwritten by any state system
 - Flow through calculation chain immutably
 
 **The Real Bug in S02:**
+
 ```javascript
 // Section02.js:839 - WRONG APPROACH
 storeReferenceResults() {
@@ -2270,11 +2485,13 @@ storeReferenceResults() {
 ```
 
 **Why S02 Does This (Intent vs Implementation):**
+
 - **Intent:** Store S02's calculated Reference values for downstream sections
 - **Implementation:** Publishes ALL fields including inputs (h_15)
 - **Problem:** Inputs shouldn't be "calculated" - they're user data!
 
 **The Fix:**
+
 ```javascript
 storeReferenceResults() {
   const referenceResults = {
@@ -2308,10 +2525,10 @@ function setValue(fieldId, value, state = VALUE_STATES.USER_MODIFIED) {
   if (state === VALUE_STATES.CALCULATED || state === VALUE_STATES.DERIVED) {
     // Allow for calculated fields (j_32, k_32, etc)
     // But log warning if trying to set on known input fields
-    const inputFields = ['h_15', 'd_13', 'h_12', 'h_13', 'h_14', /* ... */];
-    if (inputFields.includes(fieldId.replace('ref_', ''))) {
+    const inputFields = ["h_15", "d_13", "h_12", "h_13", "h_14" /* ... */];
+    if (inputFields.includes(fieldId.replace("ref_", ""))) {
       console.warn(
-        `[StateManager] WARNING: Attempting to set CALCULATED state on INPUT field ${fieldId}!`
+        `[StateManager] WARNING: Attempting to set CALCULATED state on INPUT field ${fieldId}!`,
       );
       // Still allow it for now (backward compatibility) but log
     }
@@ -2328,7 +2545,7 @@ function setValue(fieldId, value, state = VALUE_STATES.USER_MODIFIED) {
     // User edit exists - only IMPORTED or new USER-MODIFIED can replace
     if (state === VALUE_STATES.DEFAULT || state === VALUE_STATES.CALCULATED) {
       console.log(
-        `[StateManager] Rejected ${state} for ${fieldId} - USER-MODIFIED has priority`
+        `[StateManager] Rejected ${state} for ${fieldId} - USER-MODIFIED has priority`,
       );
       return false;
     }
@@ -2341,7 +2558,7 @@ function setValue(fieldId, value, state = VALUE_STATES.USER_MODIFIED) {
     // Import exists - only USER-MODIFIED or new IMPORTED can replace
     if (state === VALUE_STATES.DEFAULT || state === VALUE_STATES.CALCULATED) {
       console.log(
-        `[StateManager] Rejected ${state} for ${fieldId} - IMPORTED has priority`
+        `[StateManager] Rejected ${state} for ${fieldId} - IMPORTED has priority`,
       );
       return false;
     }
@@ -2364,6 +2581,7 @@ function setValue(fieldId, value, state = VALUE_STATES.USER_MODIFIED) {
 **LocalStorage Concern:**
 
 Current code (line 430-435):
+
 ```javascript
 if (
   state === VALUE_STATES.USER_MODIFIED ||
@@ -2373,12 +2591,14 @@ if (
 ```
 
 **Question:** When page loads, does localStorage restore:
+
 - Last saved value regardless of state? ❌
 - Strongest state from saved session? ✅ (needs verification)
 
 **If defaults persist in localStorage**, they could override imports on page load!
 
 **Testing Required:**
+
 1. Set field to user-modified value
 2. Save to localStorage
 3. Reload page
@@ -2389,6 +2609,7 @@ if (
 **Dual-State Isolation Concern:**
 
 Pattern A sections (S02, S03, S04...) use **isolated DualState**:
+
 - TargetState and ReferenceState are separate from global StateManager
 - Import populates global StateManager
 - Sync bridges global → isolated state
@@ -2397,6 +2618,7 @@ Pattern A sections (S02, S03, S04...) use **isolated DualState**:
 **Critical Gap:** If S02.ReferenceState.setValue() doesn't check state priority, the same overwrite bug exists in isolated state!
 
 **Recommendation:**
+
 1. **Immediate:** Implement import quarantine (mute listeners)
 2. **Short-term:** Add state hierarchy to StateManager.setValue()
 3. **Medium-term:** Audit all setValue() calls (global and isolated)
@@ -2406,6 +2628,7 @@ Pattern A sections (S02, S03, S04...) use **isolated DualState**:
 ---
 
 ## 🏛️ Architecture Consistency Analysis
+
 **Date:** October 4, 2025
 **Purpose:** Verify proposed import fixes align with existing Reference system architecture
 **Reference Documentation:** Master-Reference-Roadmap.md, ReferenceValues.js, ReferenceToggle.js, ReferenceManager.js
@@ -2430,41 +2653,47 @@ The proposed import fixes are **fully compatible** with the existing Reference s
 #### ✅ Value States - Fully Consistent
 
 **StateManager (Current):**
+
 ```javascript
 const VALUE_STATES = {
   DEFAULT: "default",
   IMPORTED: "imported",
   USER_MODIFIED: "user-modified",
   CALCULATED: "calculated",
-  DERIVED: "derived"
+  DERIVED: "derived",
   // Missing: OVER_RIDDEN
 };
 ```
 
 **ReferenceValues.js Usage:**
+
 - Uses **"reference-standard"** state when applying code overlays (ReferenceToggle.js:535)
 - No VALUE_STATES constant defined (file is pure data)
 - ✅ **Compatible:** "reference-standard" = semantic equivalent of "over-ridden"
 
 **ReferenceToggle.js Usage:**
+
 - Line 470: `setValue(fieldId, value, "mirrored")` - Mirror Target copying
 - Line 535: `setValue(fieldId, value, "reference-standard")` - ReferenceValues overlay
 - ✅ **Compatible:** Uses descriptive state names, aligns with VALUE_STATES pattern
 
 **ReferenceManager.js Usage:**
+
 - Lines 104-129: `isCodeDefinedField()` - identifies fields that come from ReferenceValues
 - No direct setValue calls (coordination/query module only)
 - ✅ **Compatible:** Doesn't introduce conflicting state concepts
 
 **Proposed OVER_RIDDEN State:**
+
 ```javascript
 const VALUE_STATES = {
   // ... existing states ...
-  OVER_RIDDEN: "over-ridden"  // NEW: ReferenceValues overlays when d_13 changes
+  OVER_RIDDEN: "over-ridden", // NEW: ReferenceValues overlays when d_13 changes
 };
 ```
 
 **✅ RECOMMENDATION:** Standardize on "over-ridden" state name:
+
 - Change ReferenceToggle.js line 535: `"reference-standard"` → `VALUE_STATES.OVER_RIDDEN`
 - Change ReferenceToggle.js line 470: `"mirrored"` → `VALUE_STATES.IMPORTED` (mirrors are imports from Target)
 - Add OVER_RIDDEN to StateManager VALUE_STATES constant
@@ -2477,17 +2706,22 @@ const VALUE_STATES = {
 #### ✅ ModeManager Facade Pattern - Fully Aligned
 
 **Master-Reference-Roadmap.md Lines 770-800:**
+
 ```javascript
 // ModeManager is a FACADE that manages internal state objects
 const ModeManager = {
   currentMode: "target", // "target" | "reference"
   getValue: (fieldId) => this.getCurrentState().getValue(fieldId),
   setValue: (fieldId, value) => this.getCurrentState().setValue(fieldId, value),
-  switchMode: (mode) => { this.currentMode = mode; this.refreshUI(); }
+  switchMode: (mode) => {
+    this.currentMode = mode;
+    this.refreshUI();
+  },
 };
 ```
 
 **ReferenceToggle.js Lines 454-470 (Mirror Target):**
+
 ```javascript
 // ✅ CORRECT: Uses ModeManager facade
 section.modeManager.switchMode("target");
@@ -2497,6 +2731,7 @@ section.modeManager.setValue(fieldId, value, "mirrored");
 ```
 
 **FileHandler.js Import Flow (Current):**
+
 ```javascript
 // ✅ CORRECT: Populates global StateManager
 this.updateStateFromImportData(importedData, 0, false);
@@ -2516,31 +2751,39 @@ this.calculator.calculateAll();
 #### ✅ StateManager `ref_` Prefix Pattern - Fully Aligned
 
 **Master-Reference-Roadmap.md Lines 781-786:**
+
 ```javascript
 // Reference results stored in StateManager with ref_ prefix for downstream sections
-window.TEUI.StateManager.setValue("ref_i_98", heatloss.toString(), "calculated");
+window.TEUI.StateManager.setValue(
+  "ref_i_98",
+  heatloss.toString(),
+  "calculated",
+);
 ```
 
 **ReferenceToggle.js Line 350:**
+
 ```javascript
 // ✅ CORRECT: Reads Reference values with ref_ prefix
 return window.TEUI.StateManager.getValue(`ref_${fieldId}`);
 ```
 
 **ExcelMapper.js Lines 689-709 (REFERENCE sheet):**
+
 ```javascript
 // ✅ CORRECT: Maps REFERENCE sheet to ref_ prefixed fields
-const fieldId = this.getReferenceFieldId(cellRef);  // Returns "ref_h_15"
+const fieldId = this.getReferenceFieldId(cellRef); // Returns "ref_h_15"
 importedData.push({ fieldId: fieldId, value: extractedValue });
 ```
 
 **S02 storeReferenceResults() Line 839 (THE BUG):**
+
 ```javascript
 // ❌ PROBLEM: Publishes INPUT fields with ref_ prefix AND calculated state
 window.TEUI.StateManager.setValue(
   `ref_h_15`,
   String(value),
-  "calculated"  // ← WRONG! h_15 is INPUT, should be "imported" or "user-modified"
+  "calculated", // ← WRONG! h_15 is INPUT, should be "imported" or "user-modified"
 );
 ```
 
@@ -2551,6 +2794,7 @@ window.TEUI.StateManager.setValue(
 #### ✅ State Isolation Requirements - Fully Aligned
 
 **Master-Reference-Roadmap.md Lines 69-73:**
+
 ```
 **4. Global State Contamination**
 - ❌ PROHIBITED: Any Reference operations that affect Target values
@@ -2559,24 +2803,27 @@ window.TEUI.StateManager.setValue(
 ```
 
 **ReferenceToggle.js Lines 446-476 (Mirror Target):**
+
 ```javascript
 // ✅ CORRECT: Saves and restores original mode
 const originalMode = section.modeManager.currentMode;
-section.modeManager.switchMode("target");  // Read Target
+section.modeManager.switchMode("target"); // Read Target
 // ... copy values ...
-section.modeManager.switchMode("reference");  // Write Reference
+section.modeManager.switchMode("reference"); // Write Reference
 // ... write values ...
-section.modeManager.switchMode(originalMode);  // Restore
+section.modeManager.switchMode(originalMode); // Restore
 ```
 
 **FileHandler.js Import (Current):**
+
 ```javascript
 // ✅ CORRECT: Separate import for Target (REPORT sheet) and Reference (REFERENCE sheet)
-this.updateStateFromImportData(importedData, 0, false);  // Target
-this.processImportedExcelReference(workbook);  // Reference (separate)
+this.updateStateFromImportData(importedData, 0, false); // Target
+this.processImportedExcelReference(workbook); // Reference (separate)
 ```
 
 **S02 Bug Impact on Isolation:**
+
 ```javascript
 // ❌ VIOLATION: S02 listener fires during import, overwrites isolated Reference state
 // Import: StateManager.setValue("ref_h_15", "11167", "imported")  ← Global state
@@ -2594,18 +2841,21 @@ this.processImportedExcelReference(workbook);  // Reference (separate)
 #### ✅ No Duplication - Distinct Responsibilities
 
 **FileHandler.js (Import):**
+
 - **Responsibility:** Load values from external Excel file → StateManager
 - **Scope:** One-time operation (user-triggered file upload)
 - **Target:** Both Target and Reference states (REPORT + REFERENCE sheets)
 - **State Applied:** IMPORTED
 
 **ReferenceValues.js (Code Standards):**
+
 - **Responsibility:** Store building code minimum values (static data)
 - **Scope:** Reference to data only (no state modification logic)
 - **Target:** Reference state only
 - **State Applied:** N/A (data source only)
 
 **ReferenceToggle.js (Display + Setup):**
+
 - **Responsibility 1:** Switch display between Target/Reference (display-only)
 - **Responsibility 2:** Copy Target → Reference (Mirror Target setup)
 - **Responsibility 3:** Apply ReferenceValues overlays (Mirror + Reference setup)
@@ -2614,6 +2864,7 @@ this.processImportedExcelReference(workbook);  // Reference (separate)
 - **State Applied:** "mirrored" (should be IMPORTED), "reference-standard" (should be OVER_RIDDEN)
 
 **ReferenceManager.js (Coordination):**
+
 - **Responsibility:** Coordinate access to ReferenceValues based on d_13 selection
 - **Scope:** Query/helper module (no direct state modification)
 - **Target:** Both states (identifies code-defined fields, manages standard selection)
@@ -2628,12 +2879,14 @@ this.processImportedExcelReference(workbook);  // Reference (separate)
 #### 1. d_13 (Reference Standard) Changes
 
 **Current Flow:**
+
 1. User changes d_13 dropdown → StateManager.setValue("d_13", value, "user-modified")
 2. ReferenceManager listens (line 35) → updates currentStandard
 3. ReferenceToggle.handleStandardChange() (line 262) → notifies sections
 4. Sections with `onReferenceStandardChange` method → apply new ReferenceValues
 
 **Import Impact:**
+
 - Import can load d_13 from Excel → setValue("d_13", value, "imported")
 - Same listener chain fires → ReferenceValues update correctly
 - ✅ **No conflict:** Import integrates seamlessly with existing d_13 change handling
@@ -2643,6 +2896,7 @@ this.processImportedExcelReference(workbook);  // Reference (separate)
 #### 2. Import Quarantine Integration
 
 **Proposed Fix (Import Quarantine):**
+
 ```javascript
 // FileHandler.js
 function importExcelFile(workbook) {
@@ -2665,6 +2919,7 @@ function importExcelFile(workbook) {
 ```
 
 **ReferenceToggle.js Mirror Target (Current):**
+
 ```javascript
 // Lines 421-492: No listener muting
 section.modeManager.switchMode("target");
@@ -2674,6 +2929,7 @@ section.modeManager.setValue(fieldId, value, "mirrored");
 ```
 
 **✅ COMPATIBLE:** Mirror Target doesn't need quarantine because:
+
 - Operates on one section at a time (controlled loop)
 - Reads then writes (no intermediate calculations)
 - Uses isolated state (section.modeManager), not global StateManager listeners
@@ -2684,6 +2940,7 @@ section.modeManager.setValue(fieldId, value, "mirrored");
 #### 3. ReferenceValues Overlay Integration
 
 **Master-Reference-Roadmap.md Lines 210-216 (Mirror + Reference Mode):**
+
 ```
 - Copies all Target user inputs (geometry, climate, energy costs) to Reference state
 - Exception: Reference Standard (d_13) drives ReferenceValues.js overrides
@@ -2691,6 +2948,7 @@ section.modeManager.setValue(fieldId, value, "mirrored");
 ```
 
 **ReferenceToggle.js Lines 498-564 (Current Implementation):**
+
 ```javascript
 function mirrorTargetWithReference() {
   // 1. Mirror Target first (copy all values)
@@ -2704,6 +2962,7 @@ function mirrorTargetWithReference() {
 ```
 
 **Import Scenario:**
+
 ```
 1. User imports Excel with h_15 = 11167 → StateManager.setValue("h_15", "11167", "imported")
 2. User runs "Mirror Target + Reference"
@@ -2713,6 +2972,7 @@ function mirrorTargetWithReference() {
 ```
 
 **✅ COMPATIBLE:** Import + Mirror + Reference work together:
+
 - Import sets IMPORTED state (strongest for user-provided values)
 - Mirror copies values with state metadata (preserves IMPORTED state)
 - ReferenceValues overlay only affects subset of fields (f_85, g_88, etc.)
@@ -2724,13 +2984,13 @@ function mirrorTargetWithReference() {
 
 #### Current State Priorities (Implicit - Not Enforced)
 
-| Current State | Can Be Replaced By | Cannot Be Replaced By |
-|---------------|-------------------|----------------------|
-| DEFAULT | IMPORTED, USER_MODIFIED, OVER_RIDDEN, CALCULATED | (none - weakest) |
-| USER_MODIFIED | IMPORTED, OVER_RIDDEN | DEFAULT, CALCULATED |
-| OVER_RIDDEN | IMPORTED, USER_MODIFIED | DEFAULT, CALCULATED |
-| IMPORTED | USER_MODIFIED, OVER_RIDDEN | DEFAULT, CALCULATED |
-| CALCULATED | (should only be on calculated fields) | (INPUT fields should never have this) |
+| Current State | Can Be Replaced By                               | Cannot Be Replaced By                 |
+| ------------- | ------------------------------------------------ | ------------------------------------- |
+| DEFAULT       | IMPORTED, USER_MODIFIED, OVER_RIDDEN, CALCULATED | (none - weakest)                      |
+| USER_MODIFIED | IMPORTED, OVER_RIDDEN                            | DEFAULT, CALCULATED                   |
+| OVER_RIDDEN   | IMPORTED, USER_MODIFIED                          | DEFAULT, CALCULATED                   |
+| IMPORTED      | USER_MODIFIED, OVER_RIDDEN                       | DEFAULT, CALCULATED                   |
+| CALCULATED    | (should only be on calculated fields)            | (INPUT fields should never have this) |
 
 **❌ CURRENT BUG:** No enforcement in StateManager.setValue() - last write always wins
 
@@ -2748,17 +3008,17 @@ function mirrorTargetWithReference() {
 if (isInputField(fieldId)) {
   if (state === VALUE_STATES.CALCULATED || state === VALUE_STATES.DERIVED) {
     console.error(`Cannot set ${state} on INPUT field ${fieldId}`);
-    return false;  // REJECT
+    return false; // REJECT
   }
 
   if (currentState === VALUE_STATES.DEFAULT) {
     // DEFAULT always gets replaced
-    return true;  // ACCEPT
+    return true; // ACCEPT
   }
 
   // Among IMPORTED/USER_MODIFIED/OVER_RIDDEN: last write wins
   if ([IMPORTED, USER_MODIFIED, OVER_RIDDEN].includes(state)) {
-    return true;  // ACCEPT
+    return true; // ACCEPT
   }
 }
 ```
@@ -2771,10 +3031,12 @@ if (isInputField(fieldId)) {
 
 if (isCalculatedField(fieldId)) {
   if (![VALUE_STATES.CALCULATED, VALUE_STATES.DERIVED].includes(state)) {
-    console.warn(`Calculated field ${fieldId} should only have CALCULATED/DERIVED state`);
+    console.warn(
+      `Calculated field ${fieldId} should only have CALCULATED/DERIVED state`,
+    );
     // Allow for initialization with DEFAULT, but log warning
   }
-  return true;  // ACCEPT
+  return true; // ACCEPT
 }
 ```
 
@@ -2785,6 +3047,7 @@ if (isCalculatedField(fieldId)) {
 #### ReferenceValues.js Overlay Behavior
 
 **Master-Reference-Roadmap.md Lines 249-274 (User Override Behavior):**
+
 ```
 - User Edits Highlighted Field: When user changes a highlighted ReferenceValues field:
   - Field loses reference-input-display-locked class (highlighting disappears)
@@ -2798,6 +3061,7 @@ if (isCalculatedField(fieldId)) {
 ```
 
 **Current Implementation (ReferenceToggle.js Lines 530-539):**
+
 ```javascript
 // Applies ReferenceValues overlay WITHOUT checking existing state
 Object.entries(refValues).forEach(([fieldId, value]) => {
@@ -2809,6 +3073,7 @@ Object.entries(refValues).forEach(([fieldId, value]) => {
 **✅ BEHAVIOR IS INTENTIONAL:** Re-running Mirror + Reference is designed to reset Reference model to code minimums, discarding user customizations. Documentation clearly states "user overrides are lost."
 
 **Import Interaction:**
+
 ```
 Scenario: User imports h_15 = 11167, then runs Mirror + Reference
 - Import: StateManager.setValue("h_15", "11167", "imported")
@@ -2825,14 +3090,15 @@ Scenario: User imports h_15 = 11167, then runs Mirror + Reference
 #### 1. Add OVER_RIDDEN to VALUE_STATES
 
 **StateManager.js:**
+
 ```javascript
 const VALUE_STATES = {
   DEFAULT: "default",
   IMPORTED: "imported",
   USER_MODIFIED: "user-modified",
-  OVER_RIDDEN: "over-ridden",  // NEW: ReferenceValues overlays
+  OVER_RIDDEN: "over-ridden", // NEW: ReferenceValues overlays
   CALCULATED: "calculated",
-  DERIVED: "derived"
+  DERIVED: "derived",
 };
 ```
 
@@ -2841,6 +3107,7 @@ const VALUE_STATES = {
 #### 2. Update ReferenceToggle.js State Names
 
 **Line 470 (Mirror Target):**
+
 ```javascript
 // BEFORE:
 section.modeManager.setValue(fieldId, value, "mirrored");
@@ -2851,6 +3118,7 @@ section.modeManager.setValue(fieldId, value, VALUE_STATES.IMPORTED);
 ```
 
 **Line 535 (Mirror + Reference):**
+
 ```javascript
 // BEFORE:
 section.modeManager.setValue(fieldId, value, "reference-standard");
@@ -2865,6 +3133,7 @@ section.modeManager.setValue(fieldId, value, VALUE_STATES.OVER_RIDDEN);
 #### 3. ReferenceValues.js Documentation
 
 **Add state terminology comment:**
+
 ```javascript
 /**
  * 4011-ReferenceValues.js
@@ -2887,23 +3156,24 @@ section.modeManager.setValue(fieldId, value, VALUE_STATES.OVER_RIDDEN);
 #### Listener Muting Strategy
 
 **StateManager.js (Add new methods):**
+
 ```javascript
-let listenersActive = true;  // New flag
+let listenersActive = true; // New flag
 
 function muteListeners() {
   listenersActive = false;
-  console.log('[StateManager] Listeners MUTED (import quarantine active)');
+  console.log("[StateManager] Listeners MUTED (import quarantine active)");
 }
 
 function unmuteListeners() {
   listenersActive = true;
-  console.log('[StateManager] Listeners UNMUTED (import quarantine ended)');
+  console.log("[StateManager] Listeners UNMUTED (import quarantine ended)");
 }
 
 function notifyListeners(fieldId, value) {
   if (!listenersActive) {
     console.log(`[StateManager] Skipped listener for ${fieldId} (muted)`);
-    return;  // Skip notification during import
+    return; // Skip notification during import
   }
 
   // ... existing notification logic ...
@@ -2911,6 +3181,7 @@ function notifyListeners(fieldId, value) {
 ```
 
 **FileHandler.js Integration:**
+
 ```javascript
 async importExcelFile(workbook) {
   console.log('[FileHandler] 🔒 IMPORT QUARANTINE START - Muting listeners');
@@ -2943,6 +3214,7 @@ async importExcelFile(workbook) {
 ```
 
 **✅ ARCHITECTURE ALIGNMENT:**
+
 - Mirror Target doesn't need quarantine (operates on isolated section state)
 - ReferenceValues overlay doesn't need quarantine (controlled application, no cascading)
 - Import needs quarantine (global StateManager, cascading listeners)
@@ -2971,7 +3243,7 @@ function storeReferenceResults() {
     window.TEUI.StateManager.setValue(
       `ref_${fieldId}`,
       String(value),
-      "calculated"  // ❌ WRONG! INPUT fields should never have "calculated" state
+      "calculated", // ❌ WRONG! INPUT fields should never have "calculated" state
     );
   });
 }
@@ -2998,13 +3270,14 @@ function storeReferenceResults() {
     window.TEUI.StateManager.setValue(
       `ref_${fieldId}`,
       String(value),
-      "calculated"  // ✅ CORRECT: Only calculated fields get "calculated" state
+      "calculated", // ✅ CORRECT: Only calculated fields get "calculated" state
     );
   });
 }
 ```
 
 **✅ ARCHITECTURE ALIGNMENT:**
+
 - Matches ReferenceToggle pattern (only publishes calculated results, not inputs)
 - Matches Master-Reference-Roadmap.md display-only principle (no input modification)
 - Fixes import bug (imported ref_h_15 won't be overwritten by stale default)
@@ -3030,6 +3303,7 @@ function storeReferenceResults() {
 5. ✅ Add state validation to setValue() → Prevents future bugs, doesn't break existing code
 
 **Next Step:** Implement fixes in order:
+
 1. Add OVER_RIDDEN constant
 2. Implement import quarantine (FileHandler + StateManager)
 3. Fix S02 storeReferenceResults()
@@ -3039,6 +3313,7 @@ function storeReferenceResults() {
 ---
 
 ## ✅ Implementation Complete - Import Fix Working
+
 **Date:** October 4, 2025, Evening
 **Status:** SUCCESSFUL - Import bug fixed, no functionality broken
 
@@ -3047,6 +3322,7 @@ function storeReferenceResults() {
 **Total Code Changed:** ~50 lines across 3 files
 
 #### 1. StateManager.js - Added Import Quarantine Infrastructure
+
 ```javascript
 // Added OVER_RIDDEN to VALUE_STATES (line 161)
 OVER_RIDDEN: "over-ridden", // Value overridden by ReferenceValues overlay
@@ -3077,9 +3353,10 @@ function unmuteListeners() {
 ---
 
 #### 2. FileHandler.js - Wrapped Import Sequence with Quarantine
+
 ```javascript
 // Lines 141-168: Import quarantine pattern
-console.log('[FileHandler] 🔒 IMPORT QUARANTINE START - Muting listeners');
+console.log("[FileHandler] 🔒 IMPORT QUARANTINE START - Muting listeners");
 window.TEUI.StateManager.muteListeners();
 
 try {
@@ -3091,15 +3368,16 @@ try {
 
   // Sync Pattern A sections (global → isolated state)
   this.syncPatternASections();
-
 } finally {
   // Always unmute, even if import fails
   window.TEUI.StateManager.unmuteListeners();
-  console.log('[FileHandler] 🔓 IMPORT QUARANTINE END - Unmuting listeners');
+  console.log("[FileHandler] 🔓 IMPORT QUARANTINE END - Unmuting listeners");
 }
 
 // Trigger clean calculation with all imported values loaded
-console.log('[FileHandler] Triggering post-import calculation with fresh values...');
+console.log(
+  "[FileHandler] Triggering post-import calculation with fresh values...",
+);
 this.calculator.calculateAll();
 ```
 
@@ -3108,6 +3386,7 @@ this.calculator.calculateAll();
 ---
 
 #### 3. Section02.js - Removed INPUT Fields from Publishing
+
 ```javascript
 // Lines 825-850: Fixed storeReferenceResults()
 function storeReferenceResults() {
@@ -3120,11 +3399,17 @@ function storeReferenceResults() {
 
   Object.entries(referenceResults).forEach(([fieldId, value]) => {
     if (value !== null && value !== undefined) {
-      window.TEUI.StateManager.setValue(`ref_${fieldId}`, String(value), "calculated");
+      window.TEUI.StateManager.setValue(
+        `ref_${fieldId}`,
+        String(value),
+        "calculated",
+      );
     }
   });
 
-  console.log("[S02] Reference CALCULATED results stored (d_16 only - INPUT fields excluded)");
+  console.log(
+    "[S02] Reference CALCULATED results stored (d_16 only - INPUT fields excluded)",
+  );
 }
 ```
 
@@ -3137,6 +3422,7 @@ function storeReferenceResults() {
 **Test Case:** Import Excel with ref_h_15 = 11167
 
 **Before Fix:**
+
 - Import reads: 11167 ✅
 - StateManager stores: ref_h_15 = "11167" (state: "imported") ✅
 - S02 listener fires during import ❌
@@ -3144,6 +3430,7 @@ function storeReferenceResults() {
 - **Result:** UI shows 1427.20 (WRONG - stale default)
 
 **After Fix:**
+
 - Import reads: 11167 ✅
 - Listeners muted (quarantine active) ✅
 - StateManager stores: ref_h_15 = "11167" (state: "imported") ✅
@@ -3154,6 +3441,7 @@ function storeReferenceResults() {
 - **Result:** UI shows 11167 (CORRECT - imported value preserved)
 
 **User Confirmation:**
+
 > "For the first time now we see 11167 for h_15 in both Target and Reference model h_15 values, and we did not appear to break functionality."
 
 ---
@@ -3161,12 +3449,14 @@ function storeReferenceResults() {
 ### Architecture Validation
 
 **✅ No Breaking Changes Confirmed:**
+
 - Existing functionality preserved
 - State isolation maintained (Target/Reference independence)
 - Calculation cascade still works (post-quarantine)
 - Reference system integration intact (ReferenceToggle, ReferenceValues, ReferenceManager)
 
 **✅ Architectural Alignment:**
+
 - Import quarantine pattern aligns with Master-Reference-Roadmap.md principles
 - S02 fix matches "display-only" Reference system (no INPUT field modification)
 - OVER_RIDDEN state integrates with existing VALUE_STATES terminology
@@ -3177,11 +3467,14 @@ function storeReferenceResults() {
 ### Remaining Work (Deferred to October 5, 2025)
 
 #### 1. Apply Pattern to Other Sections
+
 **Sections to Update:**
+
 - S03, S04, S05, S06, S08, S15 (Pattern A dual-state sections)
 - Each needs storeReferenceResults() audit to remove INPUT fields
 
 **Approach:**
+
 - Audit each section's storeReferenceResults() function
 - Identify INPUT fields vs CALCULATED fields
 - Remove INPUT fields from publishing (only publish CALCULATED outputs)
@@ -3190,11 +3483,14 @@ function storeReferenceResults() {
 ---
 
 #### 2. Update ReferenceToggle State Names (Optional Enhancement)
+
 **Current:**
+
 - Line 470: `setValue(fieldId, value, "mirrored")`
 - Line 535: `setValue(fieldId, value, "reference-standard")`
 
 **Proposed:**
+
 - Line 470: `setValue(fieldId, value, VALUE_STATES.IMPORTED)`
 - Line 535: `setValue(fieldId, value, VALUE_STATES.OVER_RIDDEN)`
 
@@ -3203,15 +3499,19 @@ function storeReferenceResults() {
 ---
 
 #### 3. Add State Validation to setValue() (Future Enhancement)
+
 **Goal:** Prevent CALCULATED state on INPUT fields
 
 **Proposed Logic:**
+
 ```javascript
 // In StateManager.setValue()
-const inputFields = ['h_15', 'd_13', 'h_12', 'h_13', 'h_14', /* ... */];
-if (inputFields.includes(fieldId.replace('ref_', ''))) {
+const inputFields = ["h_15", "d_13", "h_12", "h_13", "h_14" /* ... */];
+if (inputFields.includes(fieldId.replace("ref_", ""))) {
   if (state === VALUE_STATES.CALCULATED || state === VALUE_STATES.DERIVED) {
-    console.error(`[StateManager] Cannot set ${state} on INPUT field ${fieldId}`);
+    console.error(
+      `[StateManager] Cannot set ${state} on INPUT field ${fieldId}`,
+    );
     return false; // REJECT
   }
 }
@@ -3224,23 +3524,27 @@ if (inputFields.includes(fieldId.replace('ref_', ''))) {
 ### Success Metrics
 
 **✅ Primary Goal Achieved:**
+
 - Import of ref_h_15 = 11167 now works correctly
 - Value stays 11167 (not overwritten by stale default)
 - Both Target and Reference h_15 show imported values
 
 **✅ No Regressions:**
+
 - Existing functionality intact
 - Calculations still work post-import
 - State isolation preserved
 - UI updates correctly
 
 **✅ Code Quality:**
+
 - Minimal changes (50 lines total)
 - Clear, documented code with comments explaining WHY
 - Follows established architectural patterns
 - Aligns with existing Reference system
 
 **✅ Maintainability:**
+
 - Architecture consistency analysis documented
 - Implementation pattern can be applied to other sections
 - Clear path forward for remaining work
@@ -3255,6 +3559,7 @@ if (inputFields.includes(fieldId.replace('ref_', ''))) {
 **Total Implementation Time:** ~2 hours (analysis + implementation + testing)
 
 **Lines Changed:**
+
 - StateManager.js: +15 lines
 - FileHandler.js: +20 lines
 - Section02.js: +15 lines (removed ~15 INPUT field lines)

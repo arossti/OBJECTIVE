@@ -710,8 +710,10 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     // Mode-aware ventilation method (critical for free cooling calculations)
     context.ventilationMethod = stateSource.getValue("g_118");
-    
-    console.log(`🔍 [S13-AGGRESSIVE] Creating ${mode} isolated context: g_118="${context.ventilationMethod}"`);
+
+    console.log(
+      `🔍 [S13-AGGRESSIVE] Creating ${mode} isolated context: g_118="${context.ventilationMethod}"`,
+    );
 
     // Initialize calculated values to null - will be computed fresh for this context
     context.A50_temp = null;
@@ -792,20 +794,21 @@ window.TEUI.SectionModules.sect13 = (function () {
     const t_outdoor = coolingContext.A50_temp;
     const outdoorRH = coolingContext.coolingSeasonMeanRH;
     const t_indoor = coolingContext.coolingSetTemp;
-    const indoorRH_percent = window.TEUI.parseNumeric(getFieldValue("d_59")) || 45;
+    const indoorRH_percent =
+      window.TEUI.parseNumeric(getFieldValue("d_59")) || 45;
     const indoorRH = indoorRH_percent / 100;
 
     // Calculate outdoor saturation vapor pressure using A50_temp
     coolingContext.pSatAvg =
       610.94 * Math.exp((17.625 * t_outdoor) / (t_outdoor + 243.04));
-    
+
     // Calculate outdoor partial pressure
     coolingContext.partialPressure = coolingContext.pSatAvg * outdoorRH;
 
     // Calculate indoor saturation vapor pressure
     coolingContext.pSatIndoor =
       610.94 * Math.exp((17.625 * t_indoor) / (t_indoor + 243.04));
-    
+
     // Calculate indoor partial pressure (using indoor RH, not outdoor RH)
     coolingContext.partialPressureIndoor = coolingContext.pSatIndoor * indoorRH;
   }
@@ -818,7 +821,9 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     // Calculate Indoor Humidity Ratio (A61)
     if (atmPressure - pPartialIndoor === 0) {
-      console.warn("Cooling Calc: Division by zero prevented in indoor humidity ratio.");
+      console.warn(
+        "Cooling Calc: Division by zero prevented in indoor humidity ratio.",
+      );
       coolingContext.humidityRatioIndoor = 0;
     } else {
       coolingContext.humidityRatioIndoor =
@@ -831,7 +836,9 @@ window.TEUI.SectionModules.sect13 = (function () {
     const pPartialOutdoor_forA62 = pSatAvgOutdoor * outdoorRH_forA62;
 
     if (atmPressure - pSatAvgOutdoor === 0) {
-      console.warn("Cooling Calc: Division by zero prevented in outdoor humidity ratio.");
+      console.warn(
+        "Cooling Calc: Division by zero prevented in outdoor humidity ratio.",
+      );
       coolingContext.humidityRatioAvg = 0;
     } else {
       // Use the partial pressure based on 70% RH (pPartialOutdoor_forA62)
@@ -896,9 +903,10 @@ window.TEUI.SectionModules.sect13 = (function () {
     let potentialLimit = 0;
     try {
       // ✅ EXCEL COMPLIANT: Follow Excel A31→A32→A33→Annual methodology
-      
+
       // 1. Get ventilation flow rate from h_120 (Excel REPORT!H120)
-      const ventFlowRateM3hr = window.TEUI.parseNumeric(getFieldValue("h_120")) || 0;
+      const ventFlowRateM3hr =
+        window.TEUI.parseNumeric(getFieldValue("h_120")) || 0;
       const ventFlowRateM3s = ventFlowRateM3hr / 3600; // Convert to m³/s
       const massFlowRateKgS = ventFlowRateM3s * coolingContext.airMass; // kg/s (Excel A30)
 
@@ -906,7 +914,8 @@ window.TEUI.SectionModules.sect13 = (function () {
       const Cp = coolingContext.specificHeatCapacity; // J/kg·K (Excel E4)
       const T_indoor = coolingContext.coolingSetTemp; // °C
       const T_outdoor_night = coolingContext.nightTimeTemp; // °C
-      const coolingDays = window.TEUI.parseNumeric(getFieldValue("m_19")) || 120; // Excel REPORT!M19
+      const coolingDays =
+        window.TEUI.parseNumeric(getFieldValue("m_19")) || 120; // Excel REPORT!M19
 
       // 3. Calculate Temperature Difference (Excel A16)
       const tempDiff = T_outdoor_night - T_indoor; // °C or K difference
@@ -934,12 +943,15 @@ window.TEUI.SectionModules.sect13 = (function () {
       // Store this sensible-only potential limit
       coolingContext.calculatedPotentialFreeCooling = potentialLimit;
     } catch (error) {
-      console.error("[S13-AGGRESSIVE Error] Error during calculateFreeCoolingLimit:", error);
+      console.error(
+        "[S13-AGGRESSIVE Error] Error during calculateFreeCoolingLimit:",
+        error,
+      );
       potentialLimit = 0;
     } finally {
       window.TEUI.sect13.calculatingFreeCooling = false;
     }
-    
+
     return Math.max(0, potentialLimit);
   }
 
@@ -1805,7 +1817,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         k: {},
         l: {},
         m: {
-          fieldId: "m_124", 
+          fieldId: "m_124",
           type: "calculated",
           value: "8.21", // ✅ FIXED: Updated to match corrected Excel formula result
           section: "mechanicalLoads",
@@ -2823,7 +2835,9 @@ window.TEUI.SectionModules.sect13 = (function () {
     const m3hr = ratePerPerson * 3.6;
 
     // ✅ ISOLATED CONTEXT: Use ventilation method from isolated context
-    const ventMethod = coolingContext ? coolingContext.ventilationMethod : ModeManager.getValue("g_118");
+    const ventMethod = coolingContext
+      ? coolingContext.ventilationMethod
+      : ModeManager.getValue("g_118");
     const ratePerPerson_d119 =
       window.TEUI.parseNumeric(ModeManager.getValue("d_119")) || 0;
     const volume = getModeAwareGlobalValue("d_105") || 0;
@@ -2884,7 +2898,9 @@ window.TEUI.SectionModules.sect13 = (function () {
     const occupancyFactor =
       totalHours_j63 > 0 ? occupiedHours_i63 / totalHours_j63 : 0;
     // ✅ ISOLATED CONTEXT: Use latent load factor from isolated context
-    const latentLoadFactor_i122 = coolingContext ? coolingContext.latentLoadFactor : 1.0;
+    const latentLoadFactor_i122 = coolingContext
+      ? coolingContext.latentLoadFactor
+      : 1.0;
     const summerBoostRawValue = ModeManager.getValue("l_119");
     const summerBoostFactor =
       summerBoostRawValue === "None" || summerBoostRawValue === ""
@@ -2938,7 +2954,9 @@ window.TEUI.SectionModules.sect13 = (function () {
     let potentialLimit = 0;
     let setbackFactor = 1.0;
     // ✅ ISOLATED CONTEXT: Use ventilation method from isolated context
-    const ventilationMethod = coolingContext ? coolingContext.ventilationMethod : ModeManager.getValue("g_118") || "Constant";
+    const ventilationMethod = coolingContext
+      ? coolingContext.ventilationMethod
+      : ModeManager.getValue("g_118") || "Constant";
     const setbackValueStr = ModeManager.getValue("k_120");
 
     try {
@@ -3033,15 +3051,21 @@ window.TEUI.SectionModules.sect13 = (function () {
     try {
       // ✅ ISOLATED CONTEXT: Create separate cooling context for Reference model
       const referenceCoolingContext = createIsolatedCoolingContext("reference");
-      
+
       runIntegratedCoolingCalculations(referenceCoolingContext);
       const tedValueRef = getModeAwareGlobalValue("d_127") || 0;
       const copResults = calculateCOPValues();
       const heatingResults = calculateHeatingSystem(copResults, tedValueRef);
-      const ventilationRatesResults = calculateVentilationRates(referenceCoolingContext);
+      const ventilationRatesResults = calculateVentilationRates(
+        referenceCoolingContext,
+      );
       const ventilationEnergyResults = calculateVentilationEnergy();
-      const coolingVentilationResults = calculateCoolingVentilation(referenceCoolingContext);
-      const freeCoolingResults = { h_124: calculateFreeCooling(referenceCoolingContext) };
+      const coolingVentilationResults = calculateCoolingVentilation(
+        referenceCoolingContext,
+      );
+      const freeCoolingResults = {
+        h_124: calculateFreeCooling(referenceCoolingContext),
+      };
       const coolingResults = calculateCoolingSystem(referenceCoolingContext);
       const mitigatedResults = calculateMitigatedCED();
 
@@ -3071,15 +3095,19 @@ window.TEUI.SectionModules.sect13 = (function () {
     try {
       // ✅ ISOLATED CONTEXT: Create separate cooling context for Target model
       const targetCoolingContext = createIsolatedCoolingContext("target");
-      
+
       runIntegratedCoolingCalculations(targetCoolingContext);
       const tedValue = getModeAwareGlobalValue("d_127") || 0;
       const copResults = calculateCOPValues();
       const heatingResults = calculateHeatingSystem(copResults, tedValue);
-      const ventilationRatesResults = calculateVentilationRates(targetCoolingContext);
+      const ventilationRatesResults =
+        calculateVentilationRates(targetCoolingContext);
       const ventilationEnergyResults = calculateVentilationEnergy();
-      const coolingVentilationResults = calculateCoolingVentilation(targetCoolingContext);
-      const freeCoolingResults = { h_124: calculateFreeCooling(targetCoolingContext) };
+      const coolingVentilationResults =
+        calculateCoolingVentilation(targetCoolingContext);
+      const freeCoolingResults = {
+        h_124: calculateFreeCooling(targetCoolingContext),
+      };
       const coolingResults = calculateCoolingSystem(targetCoolingContext);
       const mitigatedResults = calculateMitigatedCED();
 
@@ -3309,22 +3337,24 @@ window.TEUI.SectionModules.sect13 = (function () {
   function calculateDaysActiveCooling(currentFreeCoolingLimit) {
     // ✅ EXCEL PARITY: Use exact Excel formula from COOLING-TARGET.csv line 55
     // Excel: =E52/(E54*24) where E52=(E50-E51), E54=REPORT!M19
-    
+
     const d_129 = window.TEUI.parseNumeric(getFieldValue("d_129")) || 0; // E50: Seasonal Cooling Load
     const h_124 = currentFreeCoolingLimit; // E51: Free Cooling Potential
     const m_19 = window.TEUI.parseNumeric(getFieldValue("m_19")) || 120; // E54: Cooling Season Days
-    
+
     // Calculate E52: Unmet Cooling Load = E50 - E51
     const unmetCoolingLoad = d_129 - h_124; // E52 = E50 - E51
-    
+
     // Calculate E55: Days Active Cooling = E52 / (E54 * 24)
     let daysActiveCooling = 0;
     if (m_19 > 0) {
       daysActiveCooling = unmetCoolingLoad / (m_19 * 24);
     }
-    
-    console.log(`[S13-AGG m_124 EXCEL] E50(d_129)=${d_129}, E51(h_124)=${h_124}, E52(unmet)=${unmetCoolingLoad}, E54(m_19)=${m_19}, E55(result)=${daysActiveCooling}`);
-    
+
+    console.log(
+      `[S13-AGG m_124 EXCEL] E50(d_129)=${d_129}, E51(h_124)=${h_124}, E52(unmet)=${unmetCoolingLoad}, E54(m_19)=${m_19}, E55(result)=${daysActiveCooling}`,
+    );
+
     return daysActiveCooling; // Return exact Excel calculation result
   }
 

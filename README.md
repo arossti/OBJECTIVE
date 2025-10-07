@@ -301,7 +301,7 @@ function handleFieldBlur(event) {
 **✅ PATTERN A DUAL-STATE SECTIONS (Production Ready):**
 
 - **S01**: Pattern A dual-state with Reference System integration
-- **S05**: Pattern A dual-state architecture implemented 
+- **S05**: Pattern A dual-state architecture implemented
 - **S08**: Pattern A dual-state architecture implemented
 - **S09**: Pattern A dual-state architecture implemented
 - **S10**: Pattern A dual-state architecture implemented
@@ -905,19 +905,21 @@ The TEUI 4.011 Calculator has been successfully transformed into a modular, main
 - **Section-Based Organization**: Each section implements its own layout, data structures, and calculations
 - **State Management System**: Central registry handling multiple value states (Default, User-Modified, Saved, Imported and Reference)
 
-  **⚠️ IMPORTANT STATE TERMINOLOGY CLARIFICATION** *(Added Oct 4, 2025)*
+  **⚠️ IMPORTANT STATE TERMINOLOGY CLARIFICATION** _(Added Oct 4, 2025)_
 
   The term "state" has **two distinct meanings** in this application:
 
   1. **Value States** (metadata about how a value was set):
 
      **For INPUT/EDITABLE fields (h_15, d_13, ref_f_85, etc):**
+
      - `DEFAULT` - Initial value at app startup (weakest, replaced by any action)
      - `USER-MODIFIED` - User typed/selected value in UI
      - `OVER-RIDDEN` - ReferenceValues overlay applied (typically Reference model fields like ref_f_85 RSI values)
      - `IMPORTED` - Value loaded from Excel file
 
      **For CALCULATED fields (j_32, k_32, ref_j_32, etc) - ONLY:**
+
      - `CALCULATED` - Computed result from input values
      - `DERIVED` - Secondary calculation derived from other calculated values
 
@@ -928,17 +930,20 @@ The TEUI 4.011 Calculator has been successfully transformed into a modular, main
   **Critical Rules:**
 
   - **INPUT fields** (h_15, ref_f_85, etc):
+
     - Can have: DEFAULT → USER-MODIFIED, OVER-RIDDEN, or IMPORTED
     - Last write wins among USER-MODIFIED, OVER-RIDDEN, IMPORTED (non-hierarchical)
     - Example: ref_f_85 can be DEFAULT(0.5) → OVER-RIDDEN(0.7) → USER-MODIFIED(0.9) → IMPORTED(0.6)
     - **NEVER** have CALCULATED or DERIVED states
 
   - **CALCULATED fields** (j_32, ref_j_32, etc):
+
     - **ONLY** have CALCULATED or DERIVED states
     - Cannot be USER-MODIFIED, IMPORTED, or OVER-RIDDEN
     - Immutable computation results that flow through calculation chain
 
   - **Model States are orthogonal**:
+
     - Both Target and Reference can have any value state
     - A Reference calculated value (ref_j_32 with CALCULATED state) can be published to StateManager for other sections
     - Reference OVER-RIDDEN values (ref_f_85) are applied via ReferenceValues.js based on d_13 selection
@@ -957,12 +962,13 @@ The TEUI 4.011 Calculator has been successfully transformed into a modular, main
 ### **Critical Understanding: This is NOT a Traditional SPA**
 
 TEUI 4.011 is a **stateful energy modeling application** that:
+
 - Uses **no bundling/compilation** (runs directly in browser)
-- Manages **complex dual-state calculations** (Target vs Reference building models)  
+- Manages **complex dual-state calculations** (Target vs Reference building models)
 - Coordinates **18 section modules** through centralized state management
 - Uses **Excel-compatible field naming** for regulatory compliance
 
-### **🔄 Application Execution Flow** 
+### **🔄 Application Execution Flow**
 
 The application follows a precise initialization sequence critical for proper operation:
 
@@ -974,7 +980,7 @@ The application follows a precise initialization sequence critical for proper op
    ├── 4011-ReferenceManager.js    ← COORDINATION (state setup functions)
    ├── 4011-ReferenceToggle.js     ← COORDINATION (master display toggle)
    ├── 4011-FieldManager.js        ← DEPENDS ON StateManager
-   ├── 4011-SectionIntegrator.js   ← DEPENDS ON managers  
+   ├── 4011-SectionIntegrator.js   ← DEPENDS ON managers
    ├── 4011-Calculator.js          ← ORCHESTRATOR
    └── 4011-Dependency.js          ← VISUALIZATION
 3. Section modules load (4011-Section01.js through 4011-Section18.js)
@@ -991,13 +997,15 @@ The application follows a precise initialization sequence critical for proper op
 **Purpose**: Prevents calculation storms and race conditions in dual-state system
 
 **Key Components**:
+
 - **StateManager**: Single source of truth for all field values and cross-section communication
-- **Calculator**: Orchestrates calculation sequence using `runAllCalculations()` 
+- **Calculator**: Orchestrates calculation sequence using `runAllCalculations()`
 - **Global Recursion Protection**: `window.sectionCalculationInProgress` flag prevents infinite loops
 - **Section Modules**: Each owns its `TargetState` and `ReferenceState` objects for complete state isolation
 
 **Anti-Patterns Eliminated**:
-- ❌ Multiple sections triggering calculations simultaneously  
+
+- ❌ Multiple sections triggering calculations simultaneously
 - ❌ StateManager wildcard listeners causing infinite loops
 - ❌ Cross-state contamination (Reference showing Target values)
 - ❌ Race conditions requiring timing-based workarounds
@@ -1023,10 +1031,12 @@ function calculateAll() {
   try {
     // 🟢 SAFE ZONE: No other section can interfere during calculations
     calculateReferenceModel(); // Uses Reference standard values
-    calculateTargetModel();    // Uses user's design values
+    calculateTargetModel(); // Uses user's design values
     updateCalculatedDisplayValues(); // Update UI display
-    
-    console.log("[SXX] ✅ Traffic Cop: Calculations complete, releasing coordination");
+
+    console.log(
+      "[SXX] ✅ Traffic Cop: Calculations complete, releasing coordination",
+    );
   } catch (error) {
     console.error("[SXX] Traffic Cop: Calculation error:", error);
   } finally {
@@ -1037,8 +1047,9 @@ function calculateAll() {
 ```
 
 **Critical Implementation Notes**:
+
 1. **Stop/Wait/Start Coordination**: Sections check the flag, wait if busy, claim exclusive access when clear
-2. **Try/Finally Pattern**: Ensures flag is always released even if calculations throw errors  
+2. **Try/Finally Pattern**: Ensures flag is always released even if calculations throw errors
 3. **Atomic Section Completion**: Each section completes entirely before next section starts
 4. **No Nested Traffic Cop**: Don't add Traffic Cop to functions called within `calculateAll()`
 5. **Initialization vs Runtime**: Traffic Cop coordinates runtime calculations, not initialization sequences
@@ -1059,16 +1070,16 @@ refreshUI: function () {
   fieldsToSync.forEach((fieldId) => {
     const stateValue = currentState.getValue(fieldId);
     const element = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
-    
+
     // ✅ CORRECT: Find slider inside table cell (not check if cell IS slider)
     const slider = element.matches('input[type="range"]')
       ? element  // If element IS the slider
       : element.querySelector('input[type="range"]'); // If slider is INSIDE element (TD, etc.)
-    
+
     if (slider) {
       const numericValue = window.TEUI.parseNumeric(stateValue, 0);
       slider.value = numericValue; // ✅ Update slider position from state
-      
+
       // ✅ Update display using slider's nextElementSibling
       const display = slider.nextElementSibling;
       if (display) {
@@ -1092,10 +1103,11 @@ setValue: function (fieldId, value, source = "user") {
 ```
 
 **Key Implementation Notes**:
+
 1. **Element Detection**: Always use `querySelector('input[type="range"]')` to find sliders inside table cells
 2. **Position Update**: Use `slider.value = numericValue`, never `element.value`
 3. **Display Update**: Use `slider.nextElementSibling` for display spans
-4. **State Publication**: Both Target (unprefixed) AND Reference (ref_ prefixed) modes must publish to StateManager
+4. **State Publication**: Both Target (unprefixed) AND Reference (ref\_ prefixed) modes must publish to StateManager
 5. **Performance**: Use `input` events for display, `change` events for calculations to prevent storms
 
 **Sections Successfully Using This Pattern**: S10 (SHGC/shading sliders), S11 (TB% slider), S13 (HSPF slider after breakthrough fix)
@@ -1110,7 +1122,7 @@ setValue: function (fieldId, value, source = "user") {
 ├── FieldManager (DOM generation, section coordination, field definitions)
 └── ReferenceValues (building code minimums, standards database)
 
-🧮 COORDINATION LAYER  
+🧮 COORDINATION LAYER
 ├── Calculator (calculation orchestration, Traffic Cop implementation)
 ├── SectionIntegrator (cross-section data flow, TEUI integration patterns)
 └── Reference System (master dual-state coordination)
@@ -1129,6 +1141,7 @@ setValue: function (fieldId, value, source = "user") {
 **📊 For architectural understanding**: Use the **Dependency Graph** in `4011-Dependency.js` - provides visual framework showing both field dependencies and module relationships to understand execution flow.
 
 **✅ When modifying sections**:
+
 1. Sections are **self-contained modules** in `window.TEUI.SectionModules.sectXX`
 2. All state changes go through **StateManager** (never direct DOM manipulation)
 3. Follow **Pattern A dual-state** architecture (see `DUAL-STATE-CHEATSHEET.md`)
@@ -1136,6 +1149,7 @@ setValue: function (fieldId, value, source = "user") {
 5. Store results with `setCalculatedValue()` helper functions
 
 **❌ Critical Anti-Patterns**:
+
 1. Never bypass Traffic Cop (no direct section-to-section calls)
 2. Never modify calculation sequences without understanding dependency flow
 3. Never hardcode defaults in state objects (use field definitions as single source)
@@ -1150,7 +1164,8 @@ AI agents can programmatically access complete dual-state calculation dependenci
 const targetGraph = window.TEUI.StateManager.exportDependencyGraph("target");
 
 // Access Reference state dependencies (building code compliance)
-const referenceGraph = window.TEUI.StateManager.exportDependencyGraph("reference");
+const referenceGraph =
+  window.TEUI.StateManager.exportDependencyGraph("reference");
 
 // Get comprehensive dual-state analysis with coverage metrics
 const analysis = window.TEUI.StateManager.getDualStateDependencyAnalysis();
@@ -1158,17 +1173,15 @@ console.log(`Coverage: ${analysis.analysis.coverageRatio}`);
 console.log(`Total dependencies: ${analysis.analysis.totalDependencies}`);
 
 // Query specific dependency chains (e.g., climate impact on energy)
-const climateLinks = referenceGraph.links.filter(l => 
-  l.source.includes("ref_d_20") || l.source.includes("ref_h_22")
+const climateLinks = referenceGraph.links.filter(
+  (l) => l.source.includes("ref_d_20") || l.source.includes("ref_h_22"),
 );
 ```
 
-This provides **100% dual-state visibility** for agents to understand calculation flow, dependency chains, and architectural relationships programmatically.
-5. Never throw out working calculation functions from BACKUP files
-6. Never bypass Reference System for dual-state coordination (use ReferenceToggle for master control)
-7. Never modify Reference System without understanding three setup modes (Mirror Target, Mirror+Reference, Independent)
+This provides **100% dual-state visibility** for agents to understand calculation flow, dependency chains, and architectural relationships programmatically. 5. Never throw out working calculation functions from BACKUP files 6. Never bypass Reference System for dual-state coordination (use ReferenceToggle for master control) 7. Never modify Reference System without understanding three setup modes (Mirror Target, Mirror+Reference, Independent)
 
 **🎯 Key Architectural Concepts**:
+
 - **Dual-Engine Architecture**: Every calculation produces both Target and Reference results
 - **StateManager Centrality**: All data flows through StateManager, never direct between sections
 - **Event-Driven Updates**: Cross-section communication via StateManager listeners
@@ -1179,16 +1192,19 @@ This provides **100% dual-state visibility** for agents to understand calculatio
 The Reference System provides master coordination for dual-state operations across all sections:
 
 **🎯 Three Reference Setup Modes**:
+
 1. **Mirror Target**: Copy all Target values to Reference for identical model comparison
 2. **Mirror Target + Reference**: Copy Target inputs + overlay building code standards from ReferenceValues.js
 3. **Independent Models**: Complete freedom for custom Target vs Reference scenarios
 
 **🔧 Reference System Components**:
+
 - **ReferenceToggle**: Master display toggle coordinating all section header toggles
-- **ReferenceManager**: State setup functions and cross-section mode coordination  
+- **ReferenceManager**: State setup functions and cross-section mode coordination
 - **ReferenceValues**: Building code standards database (NBC, OBC, etc.)
 
 **🚦 Reference System Flow**:
+
 ```
 1. User selects setup mode → ReferenceManager applies state changes
 2. User toggles display mode → ReferenceToggle coordinates all sections
@@ -1198,6 +1214,7 @@ The Reference System provides master coordination for dual-state operations acro
 ```
 
 **⚠️ Reference System Critical Rules**:
+
 - **Display-Only System**: Master toggle switches display, never triggers calculations
 - **State Isolation**: Reference operations never contaminate Target values
 - **Global Coordination**: All sections synchronize automatically via master control
@@ -1760,11 +1777,13 @@ Target State View (Current)          Reference State View (Planned)
 **Implementation Strategy** (for future development):
 
 1. **Enhanced StateManager.exportDependencyGraph()**:
+
    - Add `mode` parameter: `exportDependencyGraph(mode = "target")`
-   - **Target mode**: Return current field dependencies (d_20 → h_127)  
-   - **Reference mode**: Return ref_ prefixed dependencies (ref_d_20 → ref_h_127)
+   - **Target mode**: Return current field dependencies (d_20 → h_127)
+   - **Reference mode**: Return ref\_ prefixed dependencies (ref_d_20 → ref_h_127)
 
 2. **UI Toggle Button**:
+
    - Add "Show Reference Dependencies" button to dependency graph controls
    - Toggle between Target and Reference dependency visualization
    - Maintain same graph layout for easy comparison
@@ -1775,12 +1794,14 @@ Target State View (Current)          Reference State View (Planned)
    - Visualize Reference state isolation and regulatory compliance paths
 
 **Benefits for AI Agents**:
+
 - **Complete dual-state understanding**: See both Target (user design) and Reference (code compliance) calculation flows
 - **Regulatory compliance mapping**: Understand how building code requirements flow through calculations
 - **State isolation verification**: Visualize perfect separation between design and compliance calculations
 - **Debug contamination issues**: Quickly identify where Target/Reference states might interact incorrectly
 
 **Current Workaround**: For now, agents should use the dependency graph for architectural overview and consult `DUAL-STATE-CHEATSHEET.md` for Reference state calculation patterns.
+
 - **Event-Driven Calculation Chain (Traffic Cop Model)**: To further enhance calculation stability and address issues like initial display errors from data import race conditions (where values might be read before they are fully calculated and propagated through the dual-engine system), v4.012 should explore a more explicitly event-driven calculation chain. This would involve:
   - Sections emitting events like `referenceModelCalculationComplete` or `targetModelValueAvailable(fieldId)`.
   - Dependent sections (or a central calculation orchestrator) listening for these events from their specific data sources before triggering their own calculations.
@@ -2186,13 +2207,13 @@ function calculateAll() {
     return;
   }
 
-  // 🟡 START: Set flag to coordinate with other sections  
+  // 🟡 START: Set flag to coordinate with other sections
   window.sectionCalculationInProgress = true;
 
   try {
     // 🟢 SAFE: Run both engines independently without interference
     calculateReferenceModel(); // Uses Reference standard values
-    calculateTargetModel();    // Uses user's design values
+    calculateTargetModel(); // Uses user's design values
   } catch (error) {
     console.error("[SXX] Traffic Cop: Calculation error:", error);
   } finally {

@@ -577,7 +577,17 @@ window.TEUI.SectionModules.sect01 = (function () {
       return;
     }
 
-    const fieldsToAnimate = ["e_6", "e_8", "e_10", "h_6", "h_8", "h_10", "k_6", "k_8", "k_10"];
+    const fieldsToAnimate = [
+      "e_6",
+      "e_8",
+      "e_10",
+      "h_6",
+      "h_8",
+      "h_10",
+      "k_6",
+      "k_8",
+      "k_10",
+    ];
 
     if (fieldsToAnimate.includes(fieldId)) {
       const startValue = getCurrentNumericValue(element);

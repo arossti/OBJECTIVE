@@ -218,7 +218,8 @@
             return this.state[fieldId] || null;
           },
           addListener(fieldId, callback) {
-            if (!this.listeners.has(fieldId)) this.listeners.set(fieldId, new Set());
+            if (!this.listeners.has(fieldId))
+              this.listeners.set(fieldId, new Set());
             this.listeners.get(fieldId).add(callback);
           },
           notifyListeners(fieldId, newValue) {
@@ -230,7 +231,8 @@
 
         // --- Mock Dependent Calculations (e.g., TEUI in Section 1) ---
         const calculateMockTEUI = (newAreaValueStr) => {
-          const area = parseFloat(String(newAreaValueStr).replace(/,/g, "")) || 1;
+          const area =
+            parseFloat(String(newAreaValueStr).replace(/,/g, "")) || 1;
           log(`Recalculating TEUI with area: ${area}`);
           // Simplified TEUI Calculation
           const h10_val = (130000 / area).toFixed(1);
@@ -249,7 +251,9 @@
         // Store original value when focusing the editable field
         areaField.addEventListener("focus", function () {
           this.dataset.originalValue = this.textContent.trim();
-          log(`Area field focused. Original value: ${this.dataset.originalValue}`);
+          log(
+            `Area field focused. Original value: ${this.dataset.originalValue}`,
+          );
         });
 
         // Handle direct edits to the area field
@@ -270,7 +274,9 @@
               });
               this.textContent = formattedValue; // Update display
               MockStateManager.setValue("h_15", validValue.toFixed(2));
-              log(`Area field updated via text input to ${validValue.toFixed(2)}`);
+              log(
+                `Area field updated via text input to ${validValue.toFixed(2)}`,
+              );
             } else {
               // Revert if invalid
               this.textContent =
@@ -303,7 +309,9 @@
               MockStateManager.getValue("h_15") ||
               areaField.dataset.originalValue ||
               areaField.textContent.trim();
-            let originalArea = parseFloat(String(originalAreaStr).replace(/,/g, ""));
+            let originalArea = parseFloat(
+              String(originalAreaStr).replace(/,/g, ""),
+            );
             if (isNaN(originalArea)) originalArea = 0;
 
             const adjustment = parseFloat(slider.value);

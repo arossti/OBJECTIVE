@@ -2526,15 +2526,27 @@ window.TEUI.SectionModules.sect04 = (function () {
 
       // ✅ EXTERNAL DEPENDENCIES: Clean Target/Reference pairs for upstream values
       const externalDependencies = [
-        "d_113", "d_51",   // S13/S07 system types
-        "e_51", "h_115", "k_54", "f_115",  // S07/S13 fuel quantities
-        "d_60", "d_63",   // S08 offsets, S09 occupants  
-        "d_43", "i_43"    // S06 renewables
+        "d_113",
+        "d_51", // S13/S07 system types
+        "e_51",
+        "h_115",
+        "k_54",
+        "f_115", // S07/S13 fuel quantities
+        "d_60",
+        "d_63", // S08 offsets, S09 occupants
+        "d_43",
+        "i_43", // S06 renewables
       ];
-      
-      externalDependencies.forEach(fieldId => {
-        window.TEUI.StateManager.addListener(fieldId, () => { calculateAll(); ModeManager.updateCalculatedDisplayValues(); });
-        window.TEUI.StateManager.addListener(`ref_${fieldId}`, () => { calculateAll(); ModeManager.updateCalculatedDisplayValues(); });
+
+      externalDependencies.forEach((fieldId) => {
+        window.TEUI.StateManager.addListener(fieldId, () => {
+          calculateAll();
+          ModeManager.updateCalculatedDisplayValues();
+        });
+        window.TEUI.StateManager.addListener(`ref_${fieldId}`, () => {
+          calculateAll();
+          ModeManager.updateCalculatedDisplayValues();
+        });
       });
 
       // React to conditioned area changes (affects energy intensity)

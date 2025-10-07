@@ -17,18 +17,23 @@
 ## **📊 S12 SECTION OVERVIEW**
 
 ### **Function**: Ventilation & Domestic Hot Water (DHW) calculations
+
 ### **Key Calculations**:
+
 - **Ventilation Heat Recovery**: Based on climate data (HDD/CDD)
 - **DHW Energy**: Hot water heating requirements
 - **Key Outputs**: `g_101`, `d_101`, `i_104` (required by S15)
 
 ### **External Dependencies**:
+
 - **S03 Climate**: `d_20` (HDD), `d_21` (CDD), `d_22` (GF HDD), `h_22` (GF CDD)
 - **S02 Building**: Area and occupancy data
 - **Upstream Flow**: Receives values, provides to S13→S14→S15
 
 ### **Critical S15 Dependencies**:
+
 From logs: S15 reports "Missing critical upstream Reference values: `ref_g_101`, `ref_d_101`, `ref_i_104`"
+
 - **These are S12's PRIMARY outputs to downstream sections**
 
 ---
@@ -36,6 +41,7 @@ From logs: S15 reports "Missing critical upstream Reference values: `ref_g_101`,
 ## **🚨 CRITICAL ISSUE IDENTIFIED (NOW RESOLVED)**
 
 ### **STATE MIXING CONFIRMED & FIXED** (December 30, 2024):
+
 **Test**: Change `d_103` in S12 **Reference mode**  
 **Expected**: Only `e_10` (Reference TEUI) should change  
 **Actual (Fixed)**: **Only `e_10` changes**. `h_10` (Target) remains stable. ✅
@@ -47,14 +53,16 @@ This indicates **perfect state isolation has been achieved**.
 ## **✅ IMPLEMENTATION COMPLETED**
 
 ### **Final Fixes**:
+
 1.  **✅ Explicit Data Flow**: Refactored all calculation functions to accept parameters and return results as objects. This creates an explicit data chain for both `calculateTargetModel()` and `calculateReferenceModel()`, ensuring no intermediate values are read from the global state.
 2.  **✅ Eliminated Ambiguous Reads**: Removed all calls to the problematic `getNumericValue()` for intermediate results within the calculation chains, which was the root cause of the state mixing.
 3.  **✅ Perfect State Isolation**: The Reference calculation pipeline now uses exclusively Reference data from start to finish.
 
 ### **Previously Fixed**:
+
 1. **✅ S14 ModeManager Export**: Added missing `ModeManager: ModeManager,` to return statement
-2. **✅ S15 Double-Prefix Bug**: Fixed listener setup preventing downstream flow 
-3. **✅ S12 Dual-Engine Pattern**: Restored proper `calculateReferenceModel()` + `calculateTargetModel()` 
+2. **✅ S15 Double-Prefix Bug**: Fixed listener setup preventing downstream flow
+3. **✅ S12 Dual-Engine Pattern**: Restored proper `calculateReferenceModel()` + `calculateTargetModel()`
 4. **✅ S12 Reference Persistence**: Added S11-style Reference Value Persistence Pattern
 5. **✅ S12 Mode-Aware setCalculatedValue**: Fixed `isReferenceCalculation` parameter routing
 6. **✅ S12 Circular Dependency**: Fixed `calculateEnvelopeTotals` reading its own outputs prematurely
@@ -62,6 +70,7 @@ This indicates **perfect state isolation has been achieved**.
 8. **✅ S12 getNumericValue Fix**: Made mode-aware for proper user input vs calculated value reads
 
 ### **Architecture Status**:
+
 - **S12**: ✅ Fully Pattern A dual-state compliant and stable.
 - **S14**: ✅ ModeManager exported, ready for full implementation
 - **S15**: ✅ Fixed listeners, no more missing upstream value warnings
@@ -91,6 +100,7 @@ This architectural change guarantees perfect state isolation within Section 12, 
 ## **📋 WHAT WORKS vs WHAT'S BROKEN**
 
 ### **✅ EVERYTHING IS CONFIRMED WORKING**:
+
 1. **S12 Dual-Engine Calculations**: Both `calculateReferenceModel()` and `calculateTargetModel()` execute correctly and in isolation.
 2. **S12→S15 Data Flow**: No more "Missing critical upstream Reference values" warnings.
 3. **S15 Downstream Integration**: S15 correctly receives S12 Reference outputs.
@@ -105,7 +115,8 @@ This architectural change guarantees perfect state isolation within Section 12, 
 ## **📈 COMMIT STATUS**
 
 ### **Git Repository Status**:
-- **Branch**: `CB-retirement`  
+
+- **Branch**: `CB-retirement`
 - **Commit to be made**: Fix for S12 state mixing.
 - **Files Modified**: `sections/4011-Section12.js`, `documentation/S12-TROUBLESHOOTING-GUIDE.md`
 
@@ -114,15 +125,18 @@ This architectural change guarantees perfect state isolation within Section 12, 
 ## **🎯 SUCCESS CRITERIA MET**
 
 ### **Primary Goal**: **ELIMINATE STATE MIXING - ✅ ACHIEVED**
+
 **Test**: Change `d_103` in S12 Reference mode.  
 **Result**: Only `e_10` changes, `h_10` remains stable. ✅
 
 ### **Secondary Goals**:
+
 1. **Root Cause Identification**: ✅ Pinpointed internal state mixing via ambiguous `getNumericValue()` calls.
 2. **S14 Full Implementation**: Ready for next session.
 3. **Comprehensive Isolation**: ✅ Proven perfect state separation within S12.
 
 ### **Success Metrics**:
+
 - ✅ **Perfect State Isolation**: Reference ↔ Target completely independent.
 - ✅ **S12 Reliability**: Matches S10/S11 proven stability.
 - ✅ **Complete Architecture**: S12 is now fully Pattern A compliant.

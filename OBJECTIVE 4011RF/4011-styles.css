@@ -1963,18 +1963,18 @@ body.viewing-reference-inputs .reference-input-display-locked select {
 
 /* =============== GLOBAL PASS/FAIL INDICATORS =============== */
 /* Standard checkmark/warning styles used across all sections */
-.checkmark { 
-  color: #28a745; 
-  font-weight: bold; 
-  font-size: 1.2rem; 
-  margin-right: 5px; 
+.checkmark {
+  color: #28a745;
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin-right: 5px;
   display: inline-block;
 }
-.warning { 
-  color: #dc3545; 
-  font-weight: bold; 
-  font-size: 1.2rem; 
-  margin-right: 5px; 
+.warning {
+  color: #dc3545;
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin-right: 5px;
   display: inline-block;
 }
 

@@ -8,6 +8,8 @@ export default [
   {
     ignores: [
       "node_modules/**", // From the old .eslintignore
+      "ARCHIVE/**", // Ignore all archived code
+      "gh-pages-local/**", // Ignore deployment files
       // Add any other patterns to ignore globally, e.g., "dist/**", "build/**"
       // Specific files that were causing Prettier issues can also be ignored by ESLint if needed,
       // though they are already in .prettierignore for formatting.

@@ -11,11 +11,13 @@ The goal is to eliminate the anti-pattern of hardcoding default values within th
 ## 2. The Problem: Duplicate Defaults and Calculation Instability
 
 Currently, `4011-Section02.js` contains hardcoded default values in three places:
+
 1.  The `sectionRows` definition (the correct single source of truth).
 2.  The `TargetState.setDefaults()` method.
 3.  The `ReferenceState.setDefaults()` method.
 
 This duplication violates architectural principles and, as noted in `DUAL-STATE-CHEATSHEET.md` and from previous attempts, has led to critical bugs when refactoring was attempted:
+
 - **Calculation Instability**: "Wild e_10 value oscillations" in the Section 01 dashboard.
 - **State Mixing**: Incorrect values propagating through the system.
 - **Maintenance Overhead**: Changes to a default value must be made in multiple places, creating a high risk of data drift and corruption.

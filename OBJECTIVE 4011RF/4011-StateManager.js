@@ -546,7 +546,9 @@ TEUI.StateManager = (function () {
   function notifyListeners(fieldId, newValue, oldValue, state) {
     // Check if listeners are muted (import quarantine)
     if (!listenersActive) {
-      console.log(`[StateManager] Skipped listener for ${fieldId} (quarantine active)`);
+      console.log(
+        `[StateManager] Skipped listener for ${fieldId} (quarantine active)`,
+      );
       return;
     }
 
@@ -1816,7 +1818,7 @@ TEUI.StateManager = (function () {
    */
   function muteListeners() {
     listenersActive = false;
-    console.log('[StateManager] 🔒 Listeners MUTED (import quarantine active)');
+    console.log("[StateManager] 🔒 Listeners MUTED (import quarantine active)");
   }
 
   /**
@@ -1825,7 +1827,9 @@ TEUI.StateManager = (function () {
    */
   function unmuteListeners() {
     listenersActive = true;
-    console.log('[StateManager] 🔓 Listeners UNMUTED (import quarantine ended)');
+    console.log(
+      "[StateManager] 🔓 Listeners UNMUTED (import quarantine ended)",
+    );
   }
 
   // Public API
