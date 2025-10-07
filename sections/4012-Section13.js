@@ -59,6 +59,27 @@ window.TEUI.SectionModules.sect13 = (function () {
       // CHEATSHEET PATTERN: Fallback to field definitions (single source of truth)
       return this.state[fieldId] !== undefined ? this.state[fieldId] : getFieldDefault(fieldId);
     },
+    // ✅ PHASE 2: Import sync - bridge global StateManager → TargetState
+    syncFromGlobalState: function (fieldIds = [
+      "d_113",  // Primary Heating System
+      "f_113",  // HSPF
+      "j_115",  // AFUE
+      "d_116",  // Cooling System
+      "j_116",  // COPc (cooling efficiency)
+      "d_118",  // HRV/ERV SRE %
+      "g_118",  // Ventilation Method
+      "l_118",  // ACH
+      "d_119",  // Rate Per Person
+      "l_119",  // Summer Boost
+      "k_120",  // Unoccupied Setback %
+    ]) {
+      fieldIds.forEach((fieldId) => {
+        const globalValue = window.TEUI.StateManager.getValue(fieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue, "imported");
+        }
+      });
+    },
   };
 
   const ReferenceState = {
@@ -164,6 +185,28 @@ window.TEUI.SectionModules.sect13 = (function () {
       // CHEATSHEET PATTERN: Check state first (Reference overrides), then field definitions
       return this.state[fieldId] !== undefined ? this.state[fieldId] : getFieldDefault(fieldId);
     },
+    // ✅ PHASE 2: Import sync - bridge global StateManager → ReferenceState
+    syncFromGlobalState: function (fieldIds = [
+      "d_113",  // Primary Heating System
+      "f_113",  // HSPF
+      "j_115",  // AFUE
+      "d_116",  // Cooling System
+      "j_116",  // COPc (cooling efficiency)
+      "d_118",  // HRV/ERV SRE %
+      "g_118",  // Ventilation Method
+      "l_118",  // ACH
+      "d_119",  // Rate Per Person
+      "l_119",  // Summer Boost
+      "k_120",  // Unoccupied Setback %
+    ]) {
+      fieldIds.forEach((fieldId) => {
+        const refFieldId = `ref_${fieldId}`;
+        const globalValue = window.TEUI.StateManager.getValue(refFieldId);
+        if (globalValue !== null && globalValue !== undefined) {
+          this.setValue(fieldId, globalValue, "imported");
+        }
+      });
+    },
   };
 
   // PATTERN 2: The ModeManager Facade
@@ -200,87 +243,80 @@ window.TEUI.SectionModules.sect13 = (function () {
     updateCalculatedDisplayValues: function () {
       if (!window.TEUI?.StateManager) return;
 
+      // ✅ FIX (Oct 6, 2025): Field-specific format map matching setFieldValue() calls
+      // Mirrors the format types used in calculation functions for consistency
+      const fieldFormats = {
+        // Percentages (0 decimal places)
+        "m_115": "percent-0dp",  // AFUE efficiency
+        "m_116": "percent-0dp",  // Cooling EUI ratio
+        "m_117": "percent-0dp",  // Cooling intensity
+        "i_122": "percent-0dp",  // Latent load factor
+        "d_124": "percent-0dp",  // Free cooling %
 
-      const calculatedFields = [
-    // All calculated fields in S13 for complete DOM updates
-        "h_113",
-        "j_113",
-        "j_114", // COP values
-        "d_114",
-        "l_113", // Heating system demand and sink
-        "d_115",
-        "f_115",
-        "h_115",
-        "l_115",
-        "m_115",
-        "f_114", // Heating fuel impact and emissions
-        "j_116",
-        "l_116",
-        "l_114", // Cooling system COP and sinks
-        "d_117",
-        "f_117",
-        "j_117",
-        "m_116",
-        "m_117", // Cooling system loads and intensity
-        "f_119",
-        "h_119", // Per-person ventilation rates
-        "d_120",
-        "f_120",
-        "h_120", // Volumetric ventilation rates
-        "d_121",
-        "i_121",
-        "m_121", // Heating season ventilation energy
-        "i_122",
-        "d_122",
-        "d_123", // Cooling season ventilation energy
-        "d_124",
-        "h_124",
-        "m_124", // Free cooling capacity and metrics
-      ];
+        // Numbers with comma separators (2 decimal places)
+        "d_114": "number-2dp-comma",  // Heating sink
+        "l_113": "number-2dp-comma",  // Heating demand
+        "d_115": "number-2dp-comma",  // Gas volume
+        "f_115": "number-2dp-comma",  // Oil volume
+        "h_115": "number-2dp-comma",  // Gas volume alt
+        "l_115": "number-2dp-comma",  // Heating sink alt
+        "f_114": "number-2dp-comma",  // Heating fuel impact
+        "l_116": "number-2dp-comma",  // Cooling sink
+        "l_114": "number-2dp-comma",  // Cooling sink alt
+        "d_117": "number-2dp-comma",  // Cooling load
+        "d_120": "number-2dp-comma",  // Vent rate L/s
+        "f_120": "number-2dp-comma",  // Vent rate CFM
+        "h_120": "number-2dp-comma",  // Vent rate m³/hr
+        "d_121": "number-2dp-comma",  // Heating vent energy
+        "i_121": "number-2dp-comma",  // Recovered energy
+        "m_121": "number-2dp-comma",  // Net heat loss
+        "d_122": "number-2dp-comma",  // Cooling vent energy
+        "d_123": "number-2dp-comma",  // Vent energy recovered
+        "h_124": "number-2dp-comma",  // Free cooling limit
+        "m_129": "number-2dp-comma",  // CED mitigated
+        "d_129": "number-2dp-comma",  // CED unmitigated
+
+        // Numbers without commas (2 decimal places) - COPs and smaller values
+        "h_113": "number-2dp",  // COP
+        "j_113": "number-2dp",  // COP
+        "j_114": "number-2dp",  // COP
+        "j_116": "number-2dp",  // COP cooling
+        "f_117": "number-2dp",  // Cooling factor
+        "j_117": "number-2dp",  // Cooling value
+        "f_119": "number-2dp",  // Per-person rate
+        "h_119": "number-2dp",  // Per-person rate
+        "m_124": "number-2dp",  // Active cooling days
+      };
+
+      const calculatedFields = Object.keys(fieldFormats);
 
       calculatedFields.forEach((fieldId) => {
         let valueToDisplay;
 
         if (this.currentMode === "reference") {
-          // STRICT MODE: Reference shows ONLY ref_ values (no Target contamination per CHEATSHEET Phase 6)
+          // STRICT MODE: Reference shows ONLY ref_ values
           valueToDisplay = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
           if (valueToDisplay === null || valueToDisplay === undefined) {
-            valueToDisplay = "0"; // Show 0 if Reference not calculated yet, NEVER Target value
+            valueToDisplay = "0";
           }
         } else {
-          // In Target mode, show regular values
+          // Target mode: show regular values
           valueToDisplay = window.TEUI.StateManager.getValue(fieldId);
         }
 
         if (valueToDisplay !== null && valueToDisplay !== undefined) {
-          const element = document.querySelector(
-            `[data-field-id="${fieldId}"]`,
-          );
+          const element = document.querySelector(`[data-field-id="${fieldId}"]`);
           if (element && !element.hasAttribute("contenteditable")) {
-            // Only update calculated fields, not user-editable ones
             const numericValue = window.TEUI.parseNumeric(valueToDisplay);
             if (!isNaN(numericValue)) {
-              // Use appropriate formatting for different field types
-              let formattedValue;
-              if (fieldId === "m_115") {
-                // Only m_115 (AFUE efficiency) should be percent
-                formattedValue = window.TEUI.formatNumber(
-                  numericValue,
-                  "percent-0dp",
-                );
-              } else {
-                // All other fields should use number-2dp formatting
-                formattedValue = window.TEUI.formatNumber(
-                  numericValue,
-                  "number-2dp",
-                );
-              }
+              // ✅ Use field-specific format from map (S10 pattern)
+              const formatType = fieldFormats[fieldId] || "number-2dp";
+              const formattedValue = window.TEUI.formatNumber(numericValue, formatType);
               element.textContent = formattedValue;
             }
           }
         }
       });
-
     },
     resetState: function () {
 
@@ -2709,18 +2745,31 @@ window.TEUI.SectionModules.sect13 = (function () {
    * Moved from Cooling.js - needs D123 from S13
    */
   function calculateCEDMitigated(isReferenceCalculation = false) {
-    const d129 = window.TEUI.parseNumeric(getFieldValue("d_129")) || 0;
-    const h124 = window.TEUI.parseNumeric(getFieldValue("h_124")) || 0;
-    const d123 = window.TEUI.parseNumeric(getFieldValue("d_123")) || 0;
-    
+    // ✅ FIX (Oct 6, 2025): Mode-aware reads for Reference calculation
+    const d129 = window.TEUI.parseNumeric(
+      isReferenceCalculation
+        ? window.TEUI.StateManager.getValue("ref_d_129")
+        : getFieldValue("d_129")
+    ) || 0;
+
+    const h124 = window.TEUI.parseNumeric(
+      isReferenceCalculation
+        ? window.TEUI.StateManager.getValue("ref_h_124")
+        : getFieldValue("h_124")
+    ) || 0;
+
+    const d123 = window.TEUI.parseNumeric(
+      isReferenceCalculation
+        ? window.TEUI.StateManager.getValue("ref_d_123")
+        : getFieldValue("d_123")
+    ) || 0;
+
     // Excel formula: M129 = MAX(0, D129 - H124 - D123)
     const cedMitigated = Math.max(0, d129 - h124 - d123);
-    
-    // Only update DOM for Target calculations
-    if (!isReferenceCalculation) {
-      setFieldValue("m_129", cedMitigated, "number-2dp-comma");
-    }
-    
+
+    // ✅ Update DOM for both Target and Reference (mode-aware via ModeManager.currentMode)
+    setFieldValue("m_129", cedMitigated, "number-2dp-comma");
+
     return { m_129: cedMitigated };
   }
 
@@ -2742,15 +2791,19 @@ window.TEUI.SectionModules.sect13 = (function () {
     const ventilationMethod =
       getSectionValue("g_118", isReferenceCalculation) || "Constant";
     const setbackValueStr = ModeManager.getValue("k_120");
-    const ventRateM3hr_h120 =
-      window.TEUI.parseNumeric(getFieldValue("h_120")) || 0; // Get h_120 value used in limit calc
 
-    // Logging removed
-    // console.warn(`[S13 Debug FreeCool Inputs] Vent Method(g118): ${ventilationMethod}, Setback Factor(k120 str): ${setbackValueStr}, Vent Rate(h120): ${ventRateM3hr_h120.toFixed(2)}`);
+    // ✅ FIX (Oct 6, 2025): Mode-aware read for h_120
+    const ventRateM3hr_h120 = window.TEUI.parseNumeric(
+      isReferenceCalculation
+        ? window.TEUI.StateManager.getValue("ref_h_120")
+        : getFieldValue("h_120")
+    ) || 0;
 
     try {
-      // Leniently read h_124 from Cooling.js - will be 0 on first pass
-      const h_124_raw = window.TEUI.StateManager.getValue("cooling_h_124");
+      // ✅ FIX (Oct 6, 2025): Mode-aware read for cooling_h_124
+      const h_124_raw = isReferenceCalculation
+        ? window.TEUI.StateManager.getValue("ref_cooling_h_124")
+        : window.TEUI.StateManager.getValue("cooling_h_124");
       potentialLimit = window.TEUI.parseNumeric(h_124_raw) || 0;
 
       if (setbackValueStr) {
@@ -2779,30 +2832,34 @@ window.TEUI.SectionModules.sect13 = (function () {
         finalFreeCoolingLimit = potentialLimit; // Default to full potential if method is unclear
       }
 
-      // Logging removed
-      // console.warn(`[S13 Debug FreeCool Outputs] Potential Limit: ${potentialLimit.toFixed(2)}, Setback Applied: ${setbackFactor.toFixed(2)}, Final Limit(h124): ${finalFreeCoolingLimit.toFixed(2)}`);
+      // ✅ Update values (mode-aware via ModeManager.currentMode)
+      setFieldValue("h_124", finalFreeCoolingLimit, "number-2dp-comma");
 
-      // Only update DOM for Target calculations
-      if (!isReferenceCalculation) {
-        setFieldValue("h_124", finalFreeCoolingLimit, "number-2dp-comma");
+      // Calculate D124 (% Free Cooling Capacity)
+      // ✅ FIX (Oct 6, 2025): Mode-aware read for d_129
+      const coolingLoadUnmitigated = window.TEUI.parseNumeric(
+        isReferenceCalculation
+          ? window.TEUI.StateManager.getValue("ref_d_129")
+          : getFieldValue("d_129")
+      ) || 0;
 
-        // Calculate D124 (% Free Cooling Capacity)
-        const coolingLoadUnmitigated =
-          window.TEUI.parseNumeric(getFieldValue("d_129")) || 0;
-        let percentFreeCooling = 0;
-        if (coolingLoadUnmitigated > 0) {
-          percentFreeCooling = finalFreeCoolingLimit / coolingLoadUnmitigated;
-        }
-        setFieldValue("d_124", percentFreeCooling, "percent-0dp");
-
-        // Read m_124 from Cooling.js via StateManager (STRICT - no fallback)
-        const m_124_raw = window.TEUI.StateManager.getValue("cooling_m_124");
-        if (!m_124_raw && m_124_raw !== 0) {
-          throw new Error("[S13] REQUIRED cooling_m_124 missing from Cooling.js");
-        }
-        const activeCoolingDays = window.TEUI.parseNumeric(m_124_raw);
-        setFieldValue("m_124", activeCoolingDays, "number-2dp");
+      let percentFreeCooling = 0;
+      if (coolingLoadUnmitigated > 0) {
+        percentFreeCooling = finalFreeCoolingLimit / coolingLoadUnmitigated;
       }
+      setFieldValue("d_124", percentFreeCooling, "percent-0dp");
+
+      // Read m_124 from Cooling.js via StateManager (mode-aware)
+      // ✅ FIX (Oct 6, 2025): Mode-aware read for cooling_m_124
+      const m_124_raw = isReferenceCalculation
+        ? window.TEUI.StateManager.getValue("ref_cooling_m_124")
+        : window.TEUI.StateManager.getValue("cooling_m_124");
+
+      if (!m_124_raw && m_124_raw !== 0) {
+        throw new Error("[S13] REQUIRED cooling_m_124 missing from Cooling.js");
+      }
+      const activeCoolingDays = window.TEUI.parseNumeric(m_124_raw);
+      setFieldValue("m_124", activeCoolingDays, "number-2dp");
 
     } catch (error) {
       console.error("[S13 Error] Error during calculateFreeCooling:", error);
@@ -3498,6 +3555,10 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     // Removed getNumericValue from public API
     ModeManager: ModeManager, // ✅ CRITICAL FIX: Enable FieldManager integration
+
+    // ✅ PHASE 3: Expose state objects for import sync
+    TargetState: TargetState,
+    ReferenceState: ReferenceState,
 
     // Expose ghosting functions that are called from within module
     setFieldGhosted: setFieldGhosted,
