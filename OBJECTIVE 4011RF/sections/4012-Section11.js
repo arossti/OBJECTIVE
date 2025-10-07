@@ -13,6 +13,13 @@ window.TEUI.SectionModules.sect11 = (function () {
   // CONFIGURATION
   //==========================================================================
 
+  //==========================================================================
+  // ✅ S10-S11 AREA SYNC: Guard flags and state variables (CRASH PREVENTION)
+  //==========================================================================
+  let isS11Initialized = false; // Prevents sync before initialization completes
+  let isSyncingFromS10 = false; // Prevents recursion in sync function
+  let syncTimeout = null; // For debouncing rapid sync calls
+
   // Baseline values for Reference % calculation (derived from screenshot)
   const baselineValues = {
     85: { type: "rsi", value: 5.3 }, // Roof
@@ -29,7 +36,17 @@ window.TEUI.SectionModules.sect11 = (function () {
     97: { type: "penalty", value: 0.2 }, // TBP (Pass <= 20%)
   };
 
-  // ✅ SURGICAL REMOVAL: areaSourceMap removed - S11 now self-contained
+  //==========================================================================
+  // ✅ S10-S11 AREA SYNC: Field mapping (RESTORED from Sept 2025 removal)
+  //==========================================================================
+  const areaSourceMap = {
+    d_88: "d_73", // S11 Doors → S10 Doors
+    d_89: "d_74", // S11 Window North → S10 Window North
+    d_90: "d_75", // S11 Window East → S10 Window East
+    d_91: "d_76", // S11 Window South → S10 Window South
+    d_92: "d_77", // S11 Window West → S10 Window West
+    d_93: "d_78", // S11 Skylights → S10 Skylights
+  };
 
   // Configuration for each component row to be calculated
   const componentConfig = [
@@ -130,12 +147,7 @@ window.TEUI.SectionModules.sect11 = (function () {
         "f_86",
         "d_87",
         "f_87", // Roof, walls AG, floor exp
-        "d_88",
-        "d_89",
-        "d_90",
-        "d_91",
-        "d_92",
-        "d_93", // Window/door areas (user editable in S11)
+        // d_88-d_93 removed - will be synced via syncAreasFromS10()
         "g_88",
         "g_89",
         "g_90",
@@ -159,6 +171,12 @@ window.TEUI.SectionModules.sect11 = (function () {
           );
         }
       });
+
+      // ✅ S10-S11 AREA SYNC: Sync areas from S10 after all imports complete
+      console.log(
+        "[S11 TargetState] Import sync complete, now syncing areas from S10...",
+      );
+      syncAreasFromS10();
     },
     saveState: function () {
       localStorage.setItem("S11_TARGET_STATE", JSON.stringify(this.state));
@@ -199,17 +217,13 @@ window.TEUI.SectionModules.sect11 = (function () {
         f_86: referenceValues.f_86 || "4.10", // Walls Above Grade
         d_87: "0.00",
         f_87: referenceValues.f_87 || "6.60", // Floor Exposed
-        d_88: "8.50", // Door area (Target 7.50 + 1 for Reference differentiation)
+        // ✅ S10-S11 AREA SYNC: d_88-d_93 areas will sync from S10 (no independent Reference defaults)
+        // d_88, d_89, d_90, d_91, d_92, d_93 removed - will be populated by syncAreasFromS10()
         g_88: referenceValues.g_88 || "1.990", // Doors U-value (from ReferenceValues)
-        d_89: "82.14", // Window North area (Target 81.14 + 1 for Reference differentiation)
         g_89: referenceValues.g_89 || "1.420", // Window North U-value (from ReferenceValues)
-        d_90: "4.83", // Window East area (Target 3.83 + 1 for Reference differentiation)
         g_90: referenceValues.g_90 || "1.420", // Window East U-value (from ReferenceValues)
-        d_91: "160.00", // Window South area (Target 159.00 + 1 for Reference differentiation)
         g_91: referenceValues.g_91 || "1.420", // Window South U-value (from ReferenceValues)
-        d_92: "101.66", // Window West area (Target 100.66 + 1 for Reference differentiation)
         g_92: referenceValues.g_92 || "1.420", // Window West U-value (from ReferenceValues)
-        d_93: "1.00", // Skylights area (Target 0.00 + 1 for Reference differentiation)
         g_93: referenceValues.g_93 || "1.420", // Skylights U-value (from ReferenceValues)
         d_94: "0.00",
         f_94: referenceValues.f_94 || "1.80", // Walls Below Grade
@@ -226,12 +240,7 @@ window.TEUI.SectionModules.sect11 = (function () {
           "d_85",
           "d_86",
           "d_87",
-          "d_88",
-          "d_89",
-          "d_90",
-          "d_91",
-          "d_92",
-          "d_93",
+          // d_88-d_93 removed - will be synced from S10 via syncAreasFromS10()
           "d_94",
           "d_95",
           "d_96",
@@ -319,12 +328,7 @@ window.TEUI.SectionModules.sect11 = (function () {
         "f_86",
         "d_87",
         "f_87", // Roof, walls AG, floor exp
-        "d_88",
-        "d_89",
-        "d_90",
-        "d_91",
-        "d_92",
-        "d_93", // Window/door areas (user editable in S11)
+        // d_88-d_93 removed - will be synced via syncAreasFromS10()
         "g_88",
         "g_89",
         "g_90",
@@ -349,6 +353,12 @@ window.TEUI.SectionModules.sect11 = (function () {
           );
         }
       });
+
+      // ✅ S10-S11 AREA SYNC: Sync areas from S10 after all imports complete
+      console.log(
+        "[S11 ReferenceState] Import sync complete, now syncing areas from S10...",
+      );
+      syncAreasFromS10();
     },
     setValue: function (fieldId, value) {
       this.state[fieldId] = value;
@@ -383,6 +393,10 @@ window.TEUI.SectionModules.sect11 = (function () {
       console.log(`S11: Switched to ${mode.toUpperCase()} mode`);
 
       this.refreshUI();
+
+      // ✅ S10-S11 AREA SYNC: Sync areas after mode switch completes
+      syncAreasFromS10();
+
       calculateAll(); // Recalculate for the new mode
       // Ensure displayed values reflect the selected mode
       if (typeof this.updateCalculatedDisplayValues === "function") {
@@ -721,7 +735,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Doors",
       cells: {
         c: { label: "Doors" },
-        d: { fieldId: "d_88", type: "editable", value: "7.50" },
+        d: { fieldId: "d_88", type: "calculated", value: "" }, // ✅ S10-S11 AREA SYNC: Will sync from S10 d_73
         e: { fieldId: "e_88", type: "calculated", value: "0.00" },
         f: { fieldId: "f_88", type: "calculated", value: "0.00" },
         g: { fieldId: "g_88", type: "editable", value: "1.990" },
@@ -740,7 +754,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Window Area North",
       cells: {
         c: { label: "Window Area North" },
-        d: { fieldId: "d_89", type: "editable", value: "81.14" },
+        d: { fieldId: "d_89", type: "calculated", value: "" }, // ✅ S10-S11 AREA SYNC: Will sync from S10 d_74
         e: { fieldId: "e_89", type: "calculated", value: "0.00" },
         f: { fieldId: "f_89", type: "calculated", value: "0.00" },
         g: { fieldId: "g_89", type: "editable", value: "1.420" },
@@ -759,7 +773,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Window Area East",
       cells: {
         c: { label: "Window Area East" },
-        d: { fieldId: "d_90", type: "editable", value: "3.83" },
+        d: { fieldId: "d_90", type: "calculated", value: "" }, // ✅ S10-S11 AREA SYNC: Will sync from S10 d_75
         e: { fieldId: "e_90", type: "calculated", value: "0.00" },
         f: { fieldId: "f_90", type: "calculated", value: "0.00" },
         g: { fieldId: "g_90", type: "editable", value: "1.420" },
@@ -778,7 +792,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Window Area South",
       cells: {
         c: { label: "Window Area South" },
-        d: { fieldId: "d_91", type: "editable", value: "159.00" },
+        d: { fieldId: "d_91", type: "calculated", value: "" }, // ✅ S10-S11 AREA SYNC: Will sync from S10 d_76
         e: { fieldId: "e_91", type: "calculated", value: "0.00" },
         f: { fieldId: "f_91", type: "calculated", value: "0.00" },
         g: { fieldId: "g_91", type: "editable", value: "1.420" },
@@ -797,7 +811,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Window Area West",
       cells: {
         c: { label: "Window Area West" },
-        d: { fieldId: "d_92", type: "editable", value: "100.66" },
+        d: { fieldId: "d_92", type: "calculated", value: "" }, // ✅ S10-S11 AREA SYNC: Will sync from S10 d_77
         e: { fieldId: "e_92", type: "calculated", value: "0.00" },
         f: { fieldId: "f_92", type: "calculated", value: "0.00" },
         g: { fieldId: "g_92", type: "editable", value: "1.420" },
@@ -816,7 +830,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "Skylights",
       cells: {
         c: { label: "Skylights" },
-        d: { fieldId: "d_93", type: "editable", value: "0.00" },
+        d: { fieldId: "d_93", type: "calculated", value: "" }, // ✅ S10-S11 AREA SYNC: Will sync from S10 d_78
         e: { fieldId: "e_93", type: "calculated", value: "0.00" },
         f: { fieldId: "f_93", type: "calculated", value: "0.00" },
         g: { fieldId: "g_93", type: "editable", value: "1.420" },
@@ -1143,6 +1157,137 @@ window.TEUI.SectionModules.sect11 = (function () {
         element.classList.remove(baseClass);
       }
     }
+  }
+
+  //==========================================================================
+  // ✅ S10-S11 AREA SYNC FUNCTIONS (CRASH-SAFE with all safeguards)
+  //==========================================================================
+
+  /**
+   * Syncs window/door area values from S10 into S11
+   * Respects current calculation mode (Target vs Reference)
+   * CRITICAL: Only reads from S10, never writes back
+   */
+  function syncAreasFromS10() {
+    // GUARD 1: Block if S11 not yet initialized
+    if (!isS11Initialized) {
+      console.warn("[S11 Area Sync] Blocked - S11 not initialized yet");
+      return;
+    }
+
+    // GUARD 2: Prevent recursion
+    if (isSyncingFromS10) {
+      console.warn("[S11 Area Sync] Blocked - sync already in progress");
+      return;
+    }
+
+    isSyncingFromS10 = true;
+
+    try {
+      const currentMode = ModeManager.currentMode; // "target" or "reference"
+      console.log(`[S11 Area Sync] Starting sync in ${currentMode} mode`);
+
+      Object.entries(areaSourceMap).forEach(([s11Field, s10Field]) => {
+        // Determine source field based on mode
+        const sourceFieldId =
+          currentMode === "reference" ? `ref_${s10Field}` : s10Field;
+
+        // Read from S10 via global StateManager
+        const areaValue = window.TEUI.StateManager.getValue(sourceFieldId);
+
+        if (areaValue !== null && areaValue !== undefined) {
+          // Write to appropriate S11 state
+          if (currentMode === "target") {
+            TargetState.setValue(s11Field, areaValue);
+          } else {
+            ReferenceState.setValue(s11Field, areaValue);
+          }
+
+          // Update display element - use setCalculatedValue helper
+          setCalculatedValue(s11Field, areaValue, "number");
+
+          console.log(
+            `[S11 Area Sync] ${s11Field} = ${areaValue} (from ${sourceFieldId})`,
+          );
+        } else {
+          console.warn(
+            `[S11 Area Sync] ${sourceFieldId} is null/undefined, skipping ${s11Field}`,
+          );
+        }
+      });
+
+      // Force UI refresh to show synced values in DOM
+      console.log("[S11 Area Sync] Refreshing UI...");
+      ModeManager.refreshUI();
+
+      // Trigger full recalculation to update dependent fields
+      console.log("[S11 Area Sync] Triggering recalculation...");
+      calculateAll();
+
+      console.log("[S11 Area Sync] Sync completed successfully");
+    } catch (error) {
+      console.error("[S11 Area Sync] ❌ CRITICAL ERROR during sync:");
+      console.error("[S11 Area Sync] Error message:", error.message);
+      console.error("[S11 Area Sync] Error stack:", error.stack);
+      console.error("[S11 Area Sync] Full error object:", error);
+    } finally {
+      isSyncingFromS10 = false;
+    }
+  }
+
+  /**
+   * Debounced version of syncAreasFromS10 to prevent rapid-fire syncs
+   * Waits 50ms after last change before executing sync
+   */
+  function debouncedSyncAreasFromS10() {
+    clearTimeout(syncTimeout);
+    syncTimeout = setTimeout(() => {
+      syncAreasFromS10();
+    }, 50);
+  }
+
+  /**
+   * Setup listeners for S10 area field changes
+   * CRITICAL: All listeners start COMMENTED OUT for incremental testing
+   * GUARD: Only fires if mode matches and S11 is initialized
+   */
+  function setupS10AreaListeners() {
+    const s10AreaFields = ["d_73", "d_74", "d_75", "d_76", "d_77", "d_78"];
+
+    console.log("[S11] Setting up S10 area listeners...");
+
+    // ✅ ENABLED: All listeners active with guards
+    // Listen for Target mode changes
+    s10AreaFields.forEach((fieldId) => {
+      window.TEUI.StateManager.addListener(fieldId, (newValue) => {
+        // GUARD: Only fire if Target mode active
+        if (ModeManager.currentMode !== "target") return;
+        // GUARD: Only fire if S11 initialized
+        if (!isS11Initialized) return;
+
+        console.log(
+          `[S11 Listener] ${fieldId} changed to ${newValue} (Target mode)`,
+        );
+        debouncedSyncAreasFromS10();
+      });
+    });
+
+    // Listen for Reference mode changes
+    s10AreaFields.forEach((fieldId) => {
+      window.TEUI.StateManager.addListener(`ref_${fieldId}`, (newValue) => {
+        // GUARD: Only fire if Reference mode active
+        if (ModeManager.currentMode !== "reference") return;
+        // GUARD: Only fire if S11 initialized
+        if (!isS11Initialized) return;
+
+        console.log(
+          `[S11 Listener] ref_${fieldId} changed to ${newValue} (Reference mode)`,
+        );
+        debouncedSyncAreasFromS10();
+      });
+    });
+
+    console.log("[S11] ✅ S10 area listeners registered for both modes");
   }
 
   //==========================================================================
@@ -2031,6 +2176,9 @@ window.TEUI.SectionModules.sect11 = (function () {
     } else {
       // console.warn("Section 11: StateManager not available to add climate listeners.");
     }
+
+    // ✅ S10-S11 AREA SYNC: Setup listeners for S10 area changes (commented out initially)
+    setupS10AreaListeners();
   }
 
   /**
@@ -2142,6 +2290,15 @@ window.TEUI.SectionModules.sect11 = (function () {
 
     // 5. Perform initial calculations for this section
     calculateAll();
+
+    // ✅ S10-S11 AREA SYNC: Mark S11 as initialized (CRITICAL for crash prevention)
+    isS11Initialized = true;
+    console.log(
+      "[S11 Area Sync] S11 initialization complete - sync functions now enabled",
+    );
+
+    // 6. Perform initial area sync from S10
+    syncAreasFromS10();
   }
 
   //==========================================================================
