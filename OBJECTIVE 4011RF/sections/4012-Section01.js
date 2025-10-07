@@ -172,6 +172,19 @@ window.TEUI.SectionModules.sect01 = (function () {
             display: flex !important;
             align-items: center !important;
         }
+        #keyValues .section-header .section-controls,
+        #keyValues .section-header .excel-loader {
+            display: flex;
+            align-items: center;
+            margin: 0 !important;
+        }
+        #keyValues .section-header #feedback-area {
+            display: flex;
+            align-items: center;
+            line-height: 1;
+            margin: 0;
+            padding: 0;
+        }
         #keyValues .section-header .toggle-icon {
             display: none !important;
         }
