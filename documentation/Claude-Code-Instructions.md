@@ -36,6 +36,7 @@ TEUI 4.0/
 4. **4012-CHEATSHEET.md** - Architectural patterns (if exists)
 
 ### 🔍 Logs.md Workflow
+
 - **Manual Process**: Human copies/pastes console logs from browser into `Logs.md`
 - **Not Automatic**: Agents cannot access browser console directly
 - **Agent Action**: Request logs from human, then analyze `Logs.md` content
@@ -75,11 +76,13 @@ git status
 ## 🚨 Critical Guidelines
 
 ### Do NOT Touch
+
 - Avoid major refactoring (graveyard of failed S13 attempts exists)
 - Preserve working state isolation architecture
 - Don't break h_10 = 93.7 Excel parity
 
 ### Focus Areas
+
 - **Timing/sequencing fixes** over architectural changes
 - **Surgical precision** - minimal code changes
 - **Deep debugging** before any modifications
@@ -119,4 +122,4 @@ git log --oneline -10
 
 ---
 
-*Created: Sept 24, 2025 - For efficient Claude Code sessions on OBJECTIVE TEUI project*
+_Created: Sept 24, 2025 - For efficient Claude Code sessions on OBJECTIVE TEUI project_

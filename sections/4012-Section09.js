@@ -71,7 +71,18 @@ window.TEUI.SectionModules.sect09 = (function () {
      * ✅ PHASE 2: Sync from global StateManager after import
      * Bridges global StateManager → isolated TargetState for imported values
      */
-    syncFromGlobalState: function (fieldIds = ["d_63", "g_63", "d_64", "d_65", "d_66", "d_67", "d_68", "g_67"]) {
+    syncFromGlobalState: function (
+      fieldIds = [
+        "d_63",
+        "g_63",
+        "d_64",
+        "d_65",
+        "d_66",
+        "d_67",
+        "d_68",
+        "g_67",
+      ],
+    ) {
       fieldIds.forEach((fieldId) => {
         const globalValue = window.TEUI.StateManager.getValue(fieldId);
         if (globalValue !== null && globalValue !== undefined) {
@@ -143,7 +154,18 @@ window.TEUI.SectionModules.sect09 = (function () {
      * ✅ PHASE 2: Sync from global StateManager after import
      * Bridges global StateManager → isolated ReferenceState for imported values
      */
-    syncFromGlobalState: function (fieldIds = ["d_63", "g_63", "d_64", "d_65", "d_66", "d_67", "d_68", "g_67"]) {
+    syncFromGlobalState: function (
+      fieldIds = [
+        "d_63",
+        "g_63",
+        "d_64",
+        "d_65",
+        "d_66",
+        "d_67",
+        "d_68",
+        "g_67",
+      ],
+    ) {
       fieldIds.forEach((fieldId) => {
         const refFieldId = `ref_${fieldId}`;
         const globalValue = window.TEUI.StateManager.getValue(refFieldId);

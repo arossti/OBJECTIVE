@@ -5,6 +5,7 @@
 **CURRENT STATUS**: ✅ **S10 FULLY COMPLIANT** | ✅ **S11 Self-Contained Area Fields Working** | 🚨 **S01 State Mixing Remains**
 
 **COMPLETED DECEMBER 29, 2025**:
+
 - ✅ **S10 Bug Fixes**: Percentage formatting (g_80, g_81), Reference mode dropdown responsiveness, orientation state isolation
 - ✅ **S10 4012-CHEATSHEET Compliance**: Passes all 7 phases of QA/QC audit
 - ✅ **S10 Reference Mode**: 100% flexible, dynamic calculations, perfect state separation
@@ -13,19 +14,22 @@
 **ARCHITECTURAL DECISION**: S10→S11 area auto-update **intentionally removed** to achieve 100% state isolation. Users must define window/door areas in both S10 and S11 independently. This temporary UX trade-off ensures perfect dual-state architecture before re-implementing cross-section linkage.
 
 **WHAT WORKS NOW**:
+
 - ✅ **S10**: Fully compliant Pattern A dual-state architecture, 100% flexible Reference mode
 - ✅ **S11 area fields (d_88-d_93)**: Work exactly like row 85 - editable, mode-aware, perfect dual-state isolation
-- ✅ **S11 U-value responsiveness**: Both Target and Reference modes update calculations immediately  
+- ✅ **S11 U-value responsiveness**: Both Target and Reference modes update calculations immediately
 - ✅ **S11→S12 robot fingers**: TB% slider updates downstream sections correctly
 - ✅ **Clean architecture**: Both S10 and S11 follow standard dual-state patterns
 
 **REMAINING ISSUE**: S11 changes cause **both e_10 AND h_10** to update in S01 (state mixing). Should be **only e_10** (Reference total) OR **only h_10** (Target total) depending on S11's current mode.
 
 **NEXT TASK**: Fix S11's **calculation reporting** to StateManager so it publishes mode-aware results:
+
 - Target mode S11 changes → only h_10 updates
 - Reference mode S11 changes → only e_10 updates
 
-**KEY FILES**: 
+**KEY FILES**:
+
 - `OBJECTIVE 4011RF/sections/4011-Section11.js` (recently fixed)
 - Check S11's `calculateTargetModel()` and `calculateReferenceModel()` functions
 - Compare with working sections like S05, S06 for proper dual-state reporting patterns
@@ -39,24 +43,28 @@
 ### **✅ S10 ACHIEVEMENTS - FULLY COMPLIANT PATTERN A ARCHITECTURE**
 
 **Bug Fixes Completed:**
+
 1. **✅ Percentage Formatting**: g_80, g_81 now display as "40.00%" instead of "0.00%" or "4,000.00%"
 2. **✅ Reference Mode Responsiveness**: dd_d_80 dropdown changes trigger immediate calculations and UI updates
 3. **✅ Orientation State Isolation**: e_73-e_78 dropdowns have independent values in Target vs Reference modes
 4. **✅ Dynamic Reference Calculations**: calculateUtilizationFactorsReference() now reads dropdown values dynamically
 
 **Architectural Compliance:**
+
 - ✅ **4012-CHEATSHEET QA/QC**: Passes all 7 phases (Pattern B, Current State, DOM Updates, Excel Preservation, Defaults, Mode Isolation, Direct DOM)
 - ✅ **100% User Flexibility**: Reference model fully customizable (users can set all orientations to "Average" if desired)
 - ✅ **Perfect State Separation**: Target and Reference models completely independent
 - ✅ **Single Source of Truth**: Field definitions drive defaults, only legitimate Reference overrides in state objects
 
 **Reference Model Defaults (100% Flexible):**
+
 - Row 73: Average, Row 74: North, Row 75: East, Row 76: South, Row 77: West, Row 78: Skylight
 - Users can customize any orientation independently in Reference mode
 - All dropdown changes trigger immediate calculations and downstream flow
 
 **Cross-Section Integration:**
-- ✅ **StateManager Publication**: All Reference values (d_73-d_78, e_73-e_78, d_80) published with ref_ prefix
+
+- ✅ **StateManager Publication**: All Reference values (d*73-d_78, e_73-e_78, d_80) published with ref* prefix
 - ✅ **Downstream Flow**: Reference calculations flow to S15 → S04 → S01 (when S11 state mixing is resolved)
 - ✅ **External Dependencies**: Properly reads ref_i_71 from S09, ref_j_19 from S03
 
@@ -67,16 +75,19 @@
 **Decision Made**: S10→S11 automatic area propagation **intentionally removed** (December 29, 2025)
 
 **Rationale:**
+
 - **State Mixing Prevention**: Auto-linkage was causing serious cross-section state contamination
 - **Bombproof Architecture**: Prioritized 100% state isolation over UX convenience
 - **Foundation First**: Establish perfect dual-state architecture before adding complex cross-section features
 
 **Current State:**
-- ❌ **UX Impact**: Users must define window/door areas in both S10 (input) and S11 (calculation) 
+
+- ❌ **UX Impact**: Users must define window/door areas in both S10 (input) and S11 (calculation)
 - ✅ **Architectural Benefit**: Perfect state isolation achieved in both sections
 - ✅ **Future Enhancement**: Clean foundation ready for intelligent area linkage re-implementation
 
 **Future Re-Implementation Plan:**
+
 1. **Complete S11 state mixing resolution** (eliminate e_10/h_10 dual updates)
 2. **Verify both S10 and S11 are bombproof** with perfect isolation
 3. **Re-implement area linkage** as enhancement using proven "robot fingers" pattern (like S11→S12 TB% slider)
@@ -101,8 +112,9 @@
 **Core Issue**: When area values are changed in S10 (doors/windows: d_73-d_78) in **Target mode**, these values contaminate S11's area displays (d_88-d_93) in **both Target AND Reference modes**, causing downstream state mixing in S01 totals.
 
 ### **Specific Behavior**
+
 - **User action**: Change d_73=1000 in S10 Target mode
-- **Expected result**: 
+- **Expected result**:
   - S11 Target mode shows d_88=1000 ✅
   - S11 Reference mode shows d_88=original Reference value (e.g., 5.00) ✅
   - Only h_10 (Target total) changes in S01 ✅
@@ -112,17 +124,21 @@
   - Both e_10 AND h_10 change in S01 ❌ (state mixing)
 
 ### **Root Cause Analysis**
+
 S11's area fields work differently than its internal fields:
+
 - **Internal S11 fields (d_85, f_85, g_88, etc.)**: Properly managed by S11's TargetState/ReferenceState → Show different values in each mode ✅
 - **S10-sourced area fields (d_88-d_93)**: Bypass S11's state management → Show same value in both modes ❌
 
 ### **Technical Details**
+
 - S10 publishes area changes to StateManager (d_73, d_74, etc.)
 - S11 has StateManager listeners that directly update DOM elements for d_88-d_93
 - These DOM updates bypass S11's dual-state architecture
 - When users switch S11 modes, refreshUI() doesn't update these fields because they're not in S11's internal state
 
 ### **Impact**
+
 - State mixing propagates to S04 calculations
 - Both Target (h_10) and Reference (e_10) totals in S01 change when only Target should change
 - Violates dual-state architecture principles
@@ -138,7 +154,8 @@ S11's area fields work differently than its internal fields:
 
 **Root Cause**: **S10 StateManager Bridge Missing** - S10 wasn't publishing `ref_i_80` to StateManager for downstream consumption.
 
-**Fix Applied**: 
+**Fix Applied**:
+
 ```javascript
 // ❌ BEFORE: Only Target values bridged to StateManager
 if (this.currentMode === "target") {
@@ -155,6 +172,7 @@ if (this.currentMode === "target") {
 ```
 
 **Result**: **Complete calculation chain now working**:
+
 - S09 `d_64=Active` → S09 `ref_i_71=higher` → S10 `ref_i_80=higher` → S15 `ref_d_135/d_136=higher` → S04 `ref_j_32=higher` → S01 `e_10=178.6` ✅
 
 ---
@@ -166,16 +184,19 @@ Based on the successful d_64 bug fix, S10 needs a complete DUAL-STATE-CHEATSHEET
 ### **Phase 1: Core Architecture Audit** 🔍
 
 #### **1.1 switchMode Anti-Pattern Check**
+
 - **Issue**: `calculateAll()` in `switchMode()` is an anti-pattern
 - **Check**: Look for calculation triggers in mode switching
 - **DUAL-STATE-CHEATSHEET**: Phase 1 - Core Principle #1
 
 #### **1.2 DOM Update Isolation**
+
 - **Issue**: Target calculations updating DOM in Reference mode
 - **Check**: Verify mode-aware DOM updates in calculation functions
 - **DUAL-STATE-CHEATSHEET**: Phase 1 - Core Principle #5 (Mode-Aware DOM Updates)
 
 #### **1.3 State Contamination Prevention**
+
 - **Issue**: Reference mode operations affecting Target state or display
 - **Check**: Verify perfect state isolation between modes
 - **DUAL-STATE-CHEATSHEET**: Phase 1 - Core Principle #2
@@ -183,12 +204,14 @@ Based on the successful d_64 bug fix, S10 needs a complete DUAL-STATE-CHEATSHEET
 ### **Phase 2: Single Source of Truth Audit** 📋
 
 #### **2.1 Hardcoded Defaults Anti-Pattern**
+
 - **Issue**: Duplicate defaults in state objects vs field definitions
 - **Check**: Remove hardcoded defaults from `TargetState.setDefaults()` and `ReferenceState.setDefaults()`
 - **Fix**: Implement `getFieldDefault()` pattern for single source of truth
 - **DUAL-STATE-CHEATSHEET**: Phase 5 - Anti-Pattern #1
 
 #### **2.2 Field Definition Compliance**
+
 - **Issue**: State objects containing values already defined in field definitions
 - **Check**: Ensure state objects only contain mode-specific overrides
 - **DUAL-STATE-CHEATSHEET**: Phase 5 - Mandatory QA/QC check
@@ -196,39 +219,47 @@ Based on the successful d_64 bug fix, S10 needs a complete DUAL-STATE-CHEATSHEET
 ### **Phase 3: Calculation Engine Audit** 🔧
 
 #### **3.1 Mode-Aware External Dependencies**
+
 - **Status**: ✅ **FIXED** - S10 now reads `ref_i_71` in Reference mode
 - **Verify**: Confirm all external dependencies are mode-aware
 
 #### **3.2 Reference Calculation Completeness**
+
 - **Check**: Verify all calculation functions work correctly in Reference mode
 - **Pattern**: Ensure Excel formula compliance in both modes
 
 #### **3.3 Dual-Engine Architecture**
+
 - **Status**: ✅ **CONFIRMED** - S10 has proper dual-engine pattern
 - **Verify**: Both Target and Reference calculations run in parallel
 
 ### **Phase 4: DOM Update Architecture** 🎨
 
 #### **4.1 updateCalculatedDisplayValues Function**
+
 - **Check**: Verify S10 has proper `updateCalculatedDisplayValues()` implementation
 - **Pattern**: Mode-aware display updates for all calculated fields
 - **DUAL-STATE-CHEATSHEET**: Phase 3 - DOM Updates
 
 #### **4.2 setCalculatedValue Mode Awareness**
+
 - **Check**: Verify DOM updates only occur for current mode
 - **Anti-Pattern**: Prevent DOM overwrites between modes
 
 ### **Phase 5: External Integration Audit** 🔗
 
 #### **5.1 StateManager Bridge Compliance**
+
 - **Status**: ✅ **FIXED** - S10 now publishes `ref_` prefixed values
 - **Verify**: All calculated values properly bridged to StateManager
 
 #### **5.2 External Dependency Listeners**
+
 - **Status**: ✅ **CONFIRMED** - S10 has both Target and Reference listeners
 - **Pattern**: Listen for both `fieldId` and `ref_fieldId` changes
 
 #### **5.3 Downstream Consumption**
+
 - **Check**: Verify downstream sections (S14, S15) properly consume S10's Reference values
 - **Integration**: Complete S10 → S14 → S15 → S01 flow
 
@@ -255,7 +286,7 @@ Based on the successful d_64 bug fix, S10 needs a complete DUAL-STATE-CHEATSHEET
 #### **✅ COMPLIANCE VERIFIED:**
 
 1. **Pattern B Contamination** - No toxic `target_`/`ref_` reading patterns
-2. **Mode-Aware External Dependencies** - Proper `ref_i_71` reading 
+2. **Mode-Aware External Dependencies** - Proper `ref_i_71` reading
 3. **StateManager Bridge** - Proper `ref_` prefix publishing
 4. **Dual-Engine Architecture** - Both Target and Reference calculations
 5. **Current State Anti-Pattern** - `getFieldValue()` is mode-aware via `ModeManager`
@@ -304,6 +335,7 @@ switchMode: function (mode) {
 **DUAL-STATE-CHEATSHEET**: Phase 5 - Anti-Pattern #1
 
 **Evidence**:
+
 - **Field Definition**: `d_73` has `value: "7.50"`
 - **TargetState**: `d_73: "7.50"` (duplicate)
 - **ReferenceState**: `d_73: "5.00"` (different value - corruption risk!)
@@ -321,17 +353,19 @@ switchMode: function (mode) {
 
 ```javascript
 // ❌ RISKY: Fallback to opposite mode (silent failure)
-const value = getGlobalNumericValue("ref_i_71") || getGlobalNumericValue("i_71") || 0;
+const value =
+  getGlobalNumericValue("ref_i_71") || getGlobalNumericValue("i_71") || 0;
 
 // ✅ SAFER: Explicit mode isolation (fail fast)
-const value = isReferenceCalculation 
+const value = isReferenceCalculation
   ? getGlobalNumericValue("ref_i_71") || 0
   : getGlobalNumericValue("i_71") || 0;
 ```
 
-**Required Audit**: 
+**Required Audit**:
+
 - S09: Check all `||` fallback patterns for cross-mode contamination
-- S10: Check all `||` fallback patterns for cross-mode contamination  
+- S10: Check all `||` fallback patterns for cross-mode contamination
 - S01: Investigate why initial state mixing occurs
 
 ## ⚠️ **CRITICAL ANTI-PATTERNS TO CHECK**
@@ -339,6 +373,7 @@ const value = isReferenceCalculation
 Based on DUAL-STATE-CHEATSHEET.md findings:
 
 ### **Anti-Pattern #1: Hardcoded Defaults**
+
 ```javascript
 // ❌ WRONG: Duplicates field definition defaults
 TargetState.setDefaults: function() {
@@ -356,6 +391,7 @@ TargetState.setDefaults: function() {
 ```
 
 ### **Anti-Pattern #2: DOM Overwrite Bug**
+
 ```javascript
 // ❌ WRONG: Always updates DOM regardless of mode
 function calculateTargetModel() {
@@ -377,6 +413,7 @@ function calculateTargetModel() {
 ```
 
 ### **Anti-Pattern #3: calculateAll() in switchMode**
+
 ```javascript
 // ❌ WRONG: Triggers calculations on UI action
 switchMode: function(mode) {
@@ -406,32 +443,38 @@ switchMode: function(mode) {
 ### **✅ FIXES IMPLEMENTED (Sept 2nd):**
 
 #### **1. Area Entry UI Update Fix:**
+
 ```javascript
-// ✅ CRITICAL FIX: Update UI after calculations (like dropdown handler)  
+// ✅ CRITICAL FIX: Update UI after calculations (like dropdown handler)
 handleFieldBlur: calculateAll() + ModeManager.updateCalculatedDisplayValues();
 ```
+
 **Result**: Reference mode area entry now immediately updates row calculations (i_73, k_73)
 
 #### **2. Mode-Aware StateManager Publishing:**
+
 ```javascript
 // ✅ MODE-AWARE DOM ISOLATION: Only publish if calculation matches current UI mode
-const shouldUpdateState = (isReferenceCalculation && ModeManager.currentMode === "reference") ||
-                         (!isReferenceCalculation && ModeManager.currentMode === "target");
+const shouldUpdateState =
+  (isReferenceCalculation && ModeManager.currentMode === "reference") ||
+  (!isReferenceCalculation && ModeManager.currentMode === "target");
 
 if (window.TEUI?.StateManager && shouldUpdateState) {
-    const key = isReferenceCalculation ? `ref_${fieldId}` : fieldId;
-    window.TEUI.StateManager.setValue(key, valueToStore, "calculated");
+  const key = isReferenceCalculation ? `ref_${fieldId}` : fieldId;
+  window.TEUI.StateManager.setValue(key, valueToStore, "calculated");
 }
 ```
 
 ### **🎯 TEST RESULTS:**
 
 #### **✅ REFERENCE MODE: Perfect State Isolation**
+
 - **Area changes**: Only affect e_10 (Reference flow) ✅
-- **UI updates**: Immediate i_73, k_73 updates ✅  
+- **UI updates**: Immediate i_73, k_73 updates ✅
 - **No contamination**: h_10 (Target) stays stable ✅
 
 #### **⚠️ TARGET MODE: Still Has State Mixing**
+
 - **Area changes**: Affect both h_10 AND e_10 ❌
 - **Root cause**: Target calculations still publish to both states
 
@@ -440,6 +483,7 @@ if (window.TEUI?.StateManager && shouldUpdateState) {
 **S10's dual-engine pattern works correctly**, but **StateManager publication needs mode awareness**. The fix prevents **opposite-mode contamination** but **same-mode calculations still run both engines**.
 
 ### **🔄 APPLICABLE TO S11:**
+
 **S11 likely has identical issues** - once S10 is fully resolved, the same fixes can be applied to S11 thermal bridge calculations.
 
 ---
@@ -451,14 +495,16 @@ if (window.TEUI?.StateManager && shouldUpdateState) {
 **Based on systematic analysis of successful vs problematic sections:**
 
 #### **✅ SUCCESSFUL SECTIONS (Perfect State Isolation):**
+
 **S02, S05, S06, S07, S09, S12, S13** - No state mixing observed
 
 **Common Pattern: Single-Engine Calculation Architecture**
+
 ```javascript
 // ✅ WORKING PATTERN: Mode-aware calculation triggers
 function calculateAll() {
   calculateReferenceModel(); // Always runs, but reads ReferenceState
-  calculateTargetModel();    // Always runs, but reads TargetState  
+  calculateTargetModel();    // Always runs, but reads TargetState
 }
 
 // ✅ CRITICAL: Mode-aware StateManager publication in ModeManager.setValue()
@@ -472,13 +518,15 @@ setValue: function (fieldId, value, source = "user") {
 ```
 
 #### **❌ PROBLEMATIC SECTIONS (State Mixing Observed):**
+
 **S03, S10, S11** - Target mode changes affect both Target and Reference states
 
 **Common Pattern: Dual-Engine + Internal State Contamination**
+
 ```javascript
 // ❌ PROBLEMATIC PATTERN: Dual-engine with internal state updates
 function calculateAll() {
-  calculateTargetModel();    // Updates TargetState + publishes to StateManager
+  calculateTargetModel(); // Updates TargetState + publishes to StateManager
   calculateReferenceModel(); // Updates ReferenceState (even when blocked from StateManager)
 }
 
@@ -494,6 +542,7 @@ function calculateAll() {
 **Critical Observation**: TB% slider in S11 and nGains dropdown in S10 "correct" state mixing when adjusted.
 
 **Why This Happens:**
+
 ```javascript
 // When user adjusts dropdown/slider:
 // 1. ModeManager.setValue() is called with current mode
@@ -512,12 +561,14 @@ ModeManager.setValue("d_97", "30", "user-modified"); // Target channel only
 **The issue is with INTERNAL STATE OBJECT contamination** in dual-engine sections.
 
 **Evidence from Logs:**
+
 ```
 ✅ PUBLISHED: i_80=45879.58 (Target calc in target mode)    // StateManager ✅
-❌ BLOCKED: i_79 (Reference calc in target mode)           // StateManager ✅  
+❌ BLOCKED: i_79 (Reference calc in target mode)           // StateManager ✅
 ```
 
 But internally:
+
 ```
 ReferenceState.setValue("i_79", 0);     // ❌ Still happens (contamination)
 TargetState.setValue("i_80", 45879.58); // ✅ Correct
@@ -530,14 +581,15 @@ TargetState.setValue("i_80", 45879.58); // ✅ Correct
 ```javascript
 // ✅ PROPOSED FIX: Complete mode-aware isolation
 function setCalculatedValue(fieldId, rawValue, isReferenceCalculation = false) {
-  const shouldUpdateState = (isReferenceCalculation && ModeManager.currentMode === "reference") ||
-                           (!isReferenceCalculation && ModeManager.currentMode === "target");
-  
+  const shouldUpdateState =
+    (isReferenceCalculation && ModeManager.currentMode === "reference") ||
+    (!isReferenceCalculation && ModeManager.currentMode === "target");
+
   if (shouldUpdateState) {
     // Only update internal state AND StateManager when calculation matches UI mode
     const state = isReferenceCalculation ? ReferenceState : TargetState;
     state.setValue(fieldId, valueToStore);
-    
+
     if (window.TEUI?.StateManager) {
       const key = isReferenceCalculation ? `ref_${fieldId}` : fieldId;
       window.TEUI.StateManager.setValue(key, valueToStore, "calculated");
@@ -550,7 +602,7 @@ function setCalculatedValue(fieldId, rawValue, isReferenceCalculation = false) {
 ### **🎯 WHY THIS THEORY EXPLAINS ALL OBSERVATIONS:**
 
 1. **State Mixing**: Dual-engine sections contaminate internal state even when StateManager is isolated
-2. **User Input "Fixes"**: ModeManager.setValue() overwrites contaminated internal state  
+2. **User Input "Fixes"**: ModeManager.setValue() overwrites contaminated internal state
 3. **Successful Sections**: Don't have dual-engine internal state contamination
 4. **Logs Show**: StateManager isolation working, but internal state still contaminated
 
@@ -561,17 +613,23 @@ function setCalculatedValue(fieldId, rawValue, isReferenceCalculation = false) {
 #### **✅ SUCCESSFUL SECTIONS (S02, S05): Mode-Aware Calculation Pattern**
 
 **S02 uses `setFieldValue()` that respects current UI mode:**
+
 ```javascript
 function setFieldValue(fieldId, value, fieldType = "calculated") {
   // ✅ CRITICAL: Uses current UI mode to determine which state to update
-  const currentState = ModeManager.currentMode === "target" ? TargetState : ReferenceState;
+  const currentState =
+    ModeManager.currentMode === "target" ? TargetState : ReferenceState;
   currentState.setValue(fieldId, value, fieldType);
-  
+
   // ✅ Mode-aware StateManager publication
   if (ModeManager.currentMode === "target") {
     window.TEUI.StateManager.setValue(fieldId, value.toString(), fieldType);
   } else {
-    window.TEUI.StateManager.setValue(`ref_${fieldId}`, value.toString(), fieldType);
+    window.TEUI.StateManager.setValue(
+      `ref_${fieldId}`,
+      value.toString(),
+      fieldType,
+    );
   }
 }
 
@@ -579,7 +637,7 @@ function setFieldValue(fieldId, value, fieldType = "calculated") {
 function calculateReferenceModel() {
   const originalMode = ModeManager.currentMode;
   ModeManager.currentMode = "reference"; // ✅ Temporarily set mode
-  
+
   try {
     // All setFieldValue() calls now route to ReferenceState
     setFieldValue("d_16", calculatedValue, "calculated");
@@ -592,12 +650,13 @@ function calculateReferenceModel() {
 #### **❌ PROBLEMATIC SECTIONS (S10, S11): Mode-Agnostic Calculation Pattern**
 
 **S10 uses `setCalculatedValue()` with explicit `isReferenceCalculation` parameter:**
+
 ```javascript
 function setCalculatedValue(fieldId, rawValue, isReferenceCalculation = false) {
   // ❌ PROBLEM: Always updates internal state regardless of UI mode
   const state = isReferenceCalculation ? ReferenceState : TargetState;
   state.setValue(fieldId, valueToStore); // ❌ Always happens
-  
+
   // ✅ StateManager publication is mode-aware (this part works)
   if (shouldUpdateState) {
     window.TEUI.StateManager.setValue(key, valueToStore, "calculated");
@@ -606,7 +665,7 @@ function setCalculatedValue(fieldId, rawValue, isReferenceCalculation = false) {
 
 // S10's dual-engine pattern ALWAYS runs both engines:
 function calculateAll() {
-  calculateTargetModel();    // Calls setCalculatedValue(fieldId, value, false)
+  calculateTargetModel(); // Calls setCalculatedValue(fieldId, value, false)
   calculateReferenceModel(); // Calls setCalculatedValue(fieldId, value, true)
 }
 // ❌ RESULT: Both internal states always updated, regardless of UI mode
@@ -621,6 +680,7 @@ function calculateAll() {
 ### **💡 THE "USER INPUT FIX" EXPLAINED:**
 
 When users adjust TB% slider or nGains dropdown:
+
 1. `ModeManager.setValue()` is called (mode-aware)
 2. Only the current mode's state object is updated
 3. Contaminated opposite-mode state is left unchanged
@@ -632,18 +692,24 @@ When users adjust TB% slider or nGains dropdown:
 ### **🛠️ SOLUTION STRATEGY: Two Architectural Approaches**
 
 #### **Option A: Adopt S02's Mode-Aware Pattern (Recommended)**
+
 ```javascript
 // ✅ SOLUTION: Replace setCalculatedValue() with S02's setFieldValue() pattern
 function setFieldValue(fieldId, value, fieldType = "calculated") {
   // Use current UI mode to determine state destination
-  const currentState = ModeManager.currentMode === "target" ? TargetState : ReferenceState;
+  const currentState =
+    ModeManager.currentMode === "target" ? TargetState : ReferenceState;
   currentState.setValue(fieldId, value, fieldType);
-  
+
   // Mode-aware StateManager publication
   if (ModeManager.currentMode === "target") {
     window.TEUI.StateManager.setValue(fieldId, value.toString(), fieldType);
   } else {
-    window.TEUI.StateManager.setValue(`ref_${fieldId}`, value.toString(), fieldType);
+    window.TEUI.StateManager.setValue(
+      `ref_${fieldId}`,
+      value.toString(),
+      fieldType,
+    );
   }
 }
 
@@ -651,7 +717,7 @@ function setFieldValue(fieldId, value, fieldType = "calculated") {
 function calculateReferenceModel() {
   const originalMode = ModeManager.currentMode;
   ModeManager.currentMode = "reference";
-  
+
   try {
     // All setFieldValue() calls now route to ReferenceState
     orientationConfig.forEach((rowId) => {
@@ -664,17 +730,19 @@ function calculateReferenceModel() {
 ```
 
 #### **Option B: Fix Current setCalculatedValue() Pattern (Conservative)**
+
 ```javascript
 // ✅ ALTERNATIVE: Make setCalculatedValue() mode-aware for internal state
 function setCalculatedValue(fieldId, rawValue, isReferenceCalculation = false) {
-  const shouldUpdateState = (isReferenceCalculation && ModeManager.currentMode === "reference") ||
-                           (!isReferenceCalculation && ModeManager.currentMode === "target");
-  
+  const shouldUpdateState =
+    (isReferenceCalculation && ModeManager.currentMode === "reference") ||
+    (!isReferenceCalculation && ModeManager.currentMode === "target");
+
   if (shouldUpdateState) {
     // Only update internal state when calculation matches UI mode
     const state = isReferenceCalculation ? ReferenceState : TargetState;
     state.setValue(fieldId, valueToStore);
-    
+
     // StateManager publication (already working)
     if (window.TEUI?.StateManager) {
       const key = isReferenceCalculation ? `ref_${fieldId}` : fieldId;
@@ -689,12 +757,14 @@ function setCalculatedValue(fieldId, rawValue, isReferenceCalculation = false) {
 **CRITICAL PRINCIPLE: Don't invent new methods - use proven patterns**
 
 **S02's approach eliminates confusion by:**
+
 1. **Single storage function** - `setFieldValue()` (clear, simple name)
 2. **Mode-aware by design** - uses `ModeManager.currentMode` (no double negatives)
 3. **Temporary mode switching** - engines set mode, call storage, restore mode
 4. **Proven successful** - working in 7+ sections since May
 
 **This avoids the confusion of:**
+
 - ❌ `isReferenceCalculation=false` (double negative thinking)
 - ❌ Complex conditional logic in storage functions
 - ❌ Dual-engine parameter passing confusion
@@ -716,6 +786,7 @@ function setCalculatedValue(fieldId, rawValue, isReferenceCalculation = false) {
 ### **❌ S02 PATTERN IMPLEMENTATION: NO IMPROVEMENT**
 
 **Test Results After S02 Pattern Implementation:**
+
 ```
 ✅ d_80 dropdown change: Only h_10 updates (no contamination)
 ❌ d_74 area input: Both e_10 AND h_10 update (still contaminated)
@@ -728,10 +799,12 @@ function setCalculatedValue(fieldId, rawValue, isReferenceCalculation = false) {
 **The contamination pattern is INPUT-SPECIFIC, not calculation-specific:**
 
 #### **✅ CLEAN INPUTS (No Contamination):**
+
 - **Dropdowns** (d_80 nGains method): Only Target flow affected
 - **Sliders** (TB% in S11): Only Target flow affected
 
 #### **❌ CONTAMINATED INPUTS (State Mixing):**
+
 - **Area inputs** (d_74, d_73): Both Target AND Reference flows affected
 - **Editable fields**: Numeric inputs that trigger area-based calculations
 
@@ -740,29 +813,40 @@ function setCalculatedValue(fieldId, rawValue, isReferenceCalculation = false) {
 **We need to trace WHY area inputs behave differently than dropdowns:**
 
 #### **Diagnostic Questions:**
+
 1. **Event Handler Differences**: Do area inputs vs dropdowns use different event handlers?
 2. **Calculation Path Differences**: Do area changes trigger different calculation functions?
 3. **StateManager Publication**: Are area inputs publishing to both Target and Reference StateManager keys?
 4. **Cross-Section Listeners**: Do area changes trigger different downstream listeners?
 
 #### **Enhanced Logging Strategy:**
+
 ```javascript
 // Add specific tracing for area inputs vs dropdown inputs
 function setFieldValue(fieldId, value, fieldType = "calculated") {
   // 🔍 ENHANCED DEBUG: Track which input types cause contamination
   if (["d_73", "d_74", "d_75", "d_76", "d_77", "d_78"].includes(fieldId)) {
-    console.log(`[S10 AREA DEBUG] setFieldValue: ${fieldId}=${value} in ${ModeManager.currentMode} mode`);
+    console.log(
+      `[S10 AREA DEBUG] setFieldValue: ${fieldId}=${value} in ${ModeManager.currentMode} mode`,
+    );
   }
   if (fieldId === "d_80") {
-    console.log(`[S10 DROPDOWN DEBUG] setFieldValue: ${fieldId}=${value} in ${ModeManager.currentMode} mode`);
+    console.log(
+      `[S10 DROPDOWN DEBUG] setFieldValue: ${fieldId}=${value} in ${ModeManager.currentMode} mode`,
+    );
   }
-  
+
   // ... existing S02 pattern logic ...
-  
+
   // 🔍 ENHANCED DEBUG: Track StateManager publications
-  if (["d_73", "d_74", "d_75", "d_76", "d_77", "d_78", "d_80"].includes(fieldId)) {
-    const key = ModeManager.currentMode === "target" ? fieldId : `ref_${fieldId}`;
-    console.log(`[S10 PUBLICATION DEBUG] Publishing: ${key}=${value} (${ModeManager.currentMode} mode)`);
+  if (
+    ["d_73", "d_74", "d_75", "d_76", "d_77", "d_78", "d_80"].includes(fieldId)
+  ) {
+    const key =
+      ModeManager.currentMode === "target" ? fieldId : `ref_${fieldId}`;
+    console.log(
+      `[S10 PUBLICATION DEBUG] Publishing: ${key}=${value} (${ModeManager.currentMode} mode)`,
+    );
   }
 }
 ```
@@ -772,6 +856,7 @@ function setFieldValue(fieldId, value, fieldType = "calculated") {
 **New Theory**: The issue is NOT in the calculation storage pattern, but in the **input handling path** that leads to calculations.
 
 **Possible Root Causes:**
+
 1. **FieldManager routing**: Area inputs might bypass ModeManager.setValue()
 2. **Event handler differences**: Area inputs vs dropdowns use different event handling
 3. **Calculation trigger differences**: Area inputs trigger broader calculation chains
@@ -782,6 +867,7 @@ function setFieldValue(fieldId, value, fieldType = "calculated") {
 **From enhanced logging analysis:**
 
 #### **✅ S10 Input Handling is CORRECT (Both Types):**
+
 ```
 ✅ d_73 (area): ModeManager.setValue() → Target StateManager write → calculateAll()
 ✅ d_80 (dropdown): ModeManager.setValue() → Target StateManager write → calculateAll()
@@ -792,11 +878,13 @@ function setFieldValue(fieldId, value, fieldType = "calculated") {
 #### **🎯 THE REAL ISSUE: Downstream Calculation Chain Differences**
 
 **Area inputs (d_73, d_74)** trigger massive calculation cascades:
-- S10 → S11 → S12 → S13 → S14 → S15 → S04 → S01 
+
+- S10 → S11 → S12 → S13 → S14 → S15 → S04 → S01
 - Complex cross-section dependencies
 - Multiple dual-engine sections involved
 
 **Dropdown inputs (d_80)** trigger localized calculations:
+
 - S10 internal utilization factors only
 - No major cross-section cascade
 - Limited dual-engine involvement
@@ -804,6 +892,7 @@ function setFieldValue(fieldId, value, fieldType = "calculated") {
 ### **🏗️ PERFORMANCE ANALYSIS: S02 Pattern vs Current Approach**
 
 #### **Current S10 Approach (Dual-Engine + Explicit Parameters):**
+
 ```javascript
 // PROS:
 + Explicit calculation context (isReferenceCalculation=true/false)
@@ -819,6 +908,7 @@ function setFieldValue(fieldId, value, fieldType = "calculated") {
 ```
 
 #### **S02 Approach (Mode-Aware + Temporary Switching):**
+
 ```javascript
 // PROS:
 + Simpler storage logic (no parameters needed)
@@ -843,6 +933,7 @@ function setFieldValue(fieldId, value, fieldType = "calculated") {
 4. **Proven Efficiency**: Working successfully in 7+ sections without performance issues
 
 **The temporary mode switching is actually FASTER than:**
+
 - Complex parameter passing through 20+ function calls
 - Multiple conditional checks in every `setCalculatedValue()` call
 - Complex boolean logic for state routing decisions
@@ -850,25 +941,29 @@ function setFieldValue(fieldId, value, fieldType = "calculated") {
 ### **🔬 RECOMMENDATION: Test S02 Pattern Performance**
 
 **But first, let's verify the contamination source is truly downstream by:**
+
 1. **Reverting S10 to original state** (since issue may not be in S10)
 2. **Fixing S07 ref_d_63 dependency** (cleaner test case)
 3. **Re-testing contamination patterns** with fixed dependencies
 4. **Then deciding on S10 approach** based on cleaner test results
-2. **Apply Same Fixes to S11** - Thermal bridge calculations have identical architecture
-3. **Return to S13** - With clean upstream dependencies
+5. **Apply Same Fixes to S11** - Thermal bridge calculations have identical architecture
+6. **Return to S13** - With clean upstream dependencies
 
 ### **After Break** (Priority Order):
 
 #### **🚑 CRITICAL DATA INTEGRITY (Must Fix First):**
+
 1. 🚨 **Hardcoded Defaults Removal** - **DATA CORRUPTION RISK** (lines 31-58, 90-117)
 2. 🚑 **Fallback Usage Audit** - **SILENT FAILURE RISK** (S09/S10 joint review)
 3. 🔍 **S01 State Mixing Investigation** - Check fallback contamination patterns
 
 #### **🔧 ARCHITECTURAL CLEANUP (After Critical Fixes):**
+
 4. 🔍 **getFieldDefault() Implementation** - Single source of truth pattern
 5. 📋 **Final DUAL-STATE-CHEATSHEET Compliance** - Complete remaining QA/QC checks
 
 #### **✅ COMPLETED TODAY:**
+
 - ✅ **switchMode Anti-Pattern** - FIXED (removed `calculateAll()` from line 154)
 - ✅ **DOM Update Missing** - FIXED (added `updateCalculatedDisplayValues()` calls)
 - ✅ **d_64 Reference Chain** - FIXED (S09 → S10 → S15 → S04 → S01 working)
@@ -892,7 +987,6 @@ function setFieldValue(fieldId, value, fieldType = "calculated") {
 **End of Comprehensive S10 Troubleshooting Guide**
 
 **🎯 Status**: Ready for comprehensive dual-state architecture audit after break ✅
-
 
 # S11 TRANSMISSION LOSSES - COMPREHENSIVE TROUBLESHOOTING GUIDE
 
@@ -2050,23 +2144,25 @@ ModeManager.updateCalculatedDisplayValues();
 ✅ **Dual-State Compatible**: Works equally in Target and Reference modes  
 ✅ **StateManager Travel**: All data flows through StateManager channels  
 ✅ **Mode Switch Updates**: Displays correct inherited values for current mode  
-✅ **State Isolation**: No cross-mode contamination  
+✅ **State Isolation**: No cross-mode contamination
 
 ### **🔧 Technical Architecture**
 
 #### **Inheritance Mapping**
+
 ```javascript
 const areaInheritanceMap = {
-  "d_73": "d_88", // S10 doors → S11 doors  
-  "d_74": "d_89", // S10 windows North → S11 windows North
-  "d_75": "d_90", // S10 skylights → S11 windows East  
-  "d_76": "d_91", // S10 glazed doors → S11 windows South
-  "d_77": "d_92", // S10 curtain wall → S11 windows West
-  "d_78": "d_93"  // S10 other glazing → S11 skylights
+  d_73: "d_88", // S10 doors → S11 doors
+  d_74: "d_89", // S10 windows North → S11 windows North
+  d_75: "d_90", // S10 skylights → S11 windows East
+  d_76: "d_91", // S10 glazed doors → S11 windows South
+  d_77: "d_92", // S10 curtain wall → S11 windows West
+  d_78: "d_93", // S10 other glazing → S11 skylights
 };
 ```
 
 #### **Dual-State Listener Pattern**
+
 ```javascript
 // S11 subscribes to both Target and Reference channels
 Object.entries(areaInheritanceMap).forEach(([sourceField, targetField]) => {
@@ -2076,8 +2172,8 @@ Object.entries(areaInheritanceMap).forEach(([sourceField, targetField]) => {
       updateInheritedField(targetField, newValue, "target");
     }
   });
-  
-  // Reference inheritance: S10 ref_d_73 → S11 ref_d_88 (Reference only)  
+
+  // Reference inheritance: S10 ref_d_73 → S11 ref_d_88 (Reference only)
   StateManager.addListener(`ref_${sourceField}`, (newValue) => {
     if (isFieldInherited(targetField)) {
       updateInheritedField(targetField, newValue, "reference");
@@ -2087,15 +2183,16 @@ Object.entries(areaInheritanceMap).forEach(([sourceField, targetField]) => {
 ```
 
 #### **Mode-Aware Inheritance Storage**
+
 ```javascript
 function updateInheritedField(fieldId, value, mode) {
   // Store in appropriate state object (perfect isolation)
   if (mode === "target") {
     TargetState.setValue(fieldId, value, "inherited");
   } else {
-    ReferenceState.setValue(fieldId, value, "inherited");  
+    ReferenceState.setValue(fieldId, value, "inherited");
   }
-  
+
   // Update DOM only if current mode matches (prevents cross-mode updates)
   if (ModeManager.currentMode === mode) {
     const element = document.querySelector(`[data-field-id="${fieldId}"]`);
@@ -2104,7 +2201,7 @@ function updateInheritedField(fieldId, value, mode) {
       element.classList.add("inherited-value"); // Visual distinction
     }
   }
-  
+
   // Trigger calculations for current inheritance
   calculateAll();
   ModeManager.updateCalculatedDisplayValues();
@@ -2114,6 +2211,7 @@ function updateInheritedField(fieldId, value, mode) {
 ### **🎨 User Experience Design**
 
 #### **Visual Inheritance Indicators (DRY Principle)**
+
 - **Inherited Fields**: Light blue background, italic text, "📎" icon prefix
 - **Tooltip**: "Inherited from S10 [source field] - Edit in S10 to change"
 - **Read-Only Display**: S11 areas are purely display/calculation - editing only in S10
@@ -2121,6 +2219,7 @@ function updateInheritedField(fieldId, value, mode) {
 ### **🚦 State Isolation Guarantees**
 
 #### **Target Mode Flow:**
+
 ```
 S10 Target d_73="100" → StateManager "d_73" → S11 Target d_88="100"
 ✅ S11 Reference d_88 unchanged (preserves Reference values)
@@ -2128,16 +2227,18 @@ S10 Target d_73="100" → StateManager "d_73" → S11 Target d_88="100"
 ```
 
 #### **Reference Mode Flow:**
-```  
+
+```
 S10 Reference d_73="80" → StateManager "ref_d_73" → S11 Reference d_88="80"
-✅ S11 Target d_88 unchanged (preserves Target values)  
+✅ S11 Target d_88 unchanged (preserves Target values)
 ✅ Perfect state isolation maintained
 ```
 
 #### **Mode Switch Behavior:**
+
 ```
 User toggles S11 Target→Reference:
-1. refreshUI() reads inherited values from ReferenceState  
+1. refreshUI() reads inherited values from ReferenceState
 2. Displays Reference-inherited areas (may differ from Target)
 3. No calculations triggered (display-only switch)
 4. Perfect value preservation for both modes
@@ -2146,20 +2247,24 @@ User toggles S11 Target→Reference:
 ### **🧪 Comprehensive Testing Protocol**
 
 #### **Test 1: Basic Dual-State Inheritance**
+
 - S10 Target mode: Change d_73="100" → Verify S11 Target d_88="100", Reference d_88 unchanged
 - S10 Reference mode: Change d_73="80" → Verify S11 Reference d_88="80", Target d_88 unchanged
 
-#### **Test 2: Mode Switch Preservation**  
+#### **Test 2: Mode Switch Preservation**
+
 - Set S10 Target d_73="100", Reference d_73="80"
 - Toggle S11 Target→Reference → Verify d_88 shows "80" (inherited from Reference)
 - Toggle S11 Reference→Target → Verify d_88 shows "100" (inherited from Target)
 
 #### **Test 3: DRY Principle Validation**
+
 - Verify S11 d_88-d_93 are read-only (no editing capability)
 - Verify S10 changes immediately reflect in S11 inherited fields
 - Verify tooltip guidance directs users to edit in S10
 
 #### **Test 4: Cross-Section Calculation Flow**
+
 - S10 area change → S11 inherited area update → S11 calculations → S12/S15 downstream flow
 - Verify: Only appropriate mode's totals update in S01 (h_10 OR e_10, not both)
 
@@ -2193,8 +2298,9 @@ User toggles S11 Target→Reference:
 ### **🏆 THE WORKING PATTERN: S11 TB% Slider → S12 g_101/g_102**
 
 **What Works Perfectly:**
+
 - ✅ **Initialization**: S11 TB%=50% → S12 shows correct Target AND Reference values immediately
-- ✅ **Target Mode Changes**: S11 TB%=20% → S12 Target values update, Reference preserved  
+- ✅ **Target Mode Changes**: S11 TB%=20% → S12 Target values update, Reference preserved
 - ✅ **Reference Mode Changes**: S11 TB%=75% → S12 Reference values update, Target preserved
 - ✅ **Perfect State Isolation**: No cross-mode contamination
 - ✅ **Immediate UI Refresh**: No lag, no manual mode switching required
@@ -2202,13 +2308,14 @@ User toggles S11 Target→Reference:
 ### **🔍 HOW THE WORKING PATTERN OPERATES**
 
 #### **S11 TB% Slider Architecture (Lines 1822-1825 in working version):**
+
 ```javascript
 // ARCHITECTURAL COMPLIANCE: Final change event relies on StateManager dependency chain
 d97Slider.addEventListener("change", function () {
   const percentageValue = parseFloat(this.value);
   // ✅ DUAL-STATE: Final value goes through ModeManager
   ModeManager.setValue("d_97", percentageValue.toString(), "user-modified");
-  
+
   // ✅ ROBOT FINGERS: Immediate cross-section update
   if (window.TEUI?.SectionModules?.sect12?.calculateAll) {
     window.TEUI.SectionModules.sect12.calculateAll();
@@ -2217,6 +2324,7 @@ d97Slider.addEventListener("change", function () {
 ```
 
 #### **S11 ModeManager.setValue() (Dual-State Publishing):**
+
 ```javascript
 setValue: function (fieldId, value, source = "user") {
   this.getCurrentState().setValue(fieldId, value, source);
@@ -2231,25 +2339,29 @@ setValue: function (fieldId, value, source = "user") {
 ```
 
 #### **S12 Dual-State Listeners (Both Target and Reference):**
+
 ```javascript
 // S12 listens to BOTH Target and Reference TB% changes
-StateManager.addListener("d_97", calculateAndRefresh);     // Target TB%
+StateManager.addListener("d_97", calculateAndRefresh); // Target TB%
 StateManager.addListener("ref_d_97", calculateAndRefresh); // Reference TB%
 ```
 
 ### **🎯 CRITICAL SUCCESS FACTORS**
 
 #### **1. Immediate Cross-Section Triggering**
+
 - **Robot Fingers**: S11 directly calls `sect12.calculateAll()` for immediate response
 - **No dependency lag**: Doesn't wait for StateManager listener propagation
 - **Mode-aware**: Works correctly in both Target and Reference modes
 
 #### **2. Dual-State StateManager Publication**
+
 - **Target mode**: S11 publishes `d_97=20` → S12 Target calculations
 - **Reference mode**: S11 publishes `ref_d_97=75` → S12 Reference calculations
 - **Perfect isolation**: Each mode's changes only affect that mode's downstream flow
 
 #### **3. S12 Dual-Engine Response**
+
 - **S12 `calculateAll()`**: Runs both Target and Reference calculations in parallel
 - **Mode-aware display**: S12 shows correct values for current UI mode
 - **State preservation**: Opposite mode values remain unchanged
@@ -2263,6 +2375,7 @@ StateManager.addListener("ref_d_97", calculateAndRefresh); // Reference TB%
 **The S11→S12 pattern teaches us exactly how to fix S10→S11:**
 
 #### **Current S10→S11 Problem:**
+
 - ❌ **Initialization**: S10 Reference defaults not published to StateManager
 - ❌ **Runtime lag**: S11 area display doesn't refresh immediately on mode switch
 - ❌ **State bleeding**: S11 Reference mode shows Target area values
@@ -2270,11 +2383,12 @@ StateManager.addListener("ref_d_97", calculateAndRefresh); // Reference TB%
 #### **S11→S12 Success Template Applied:**
 
 **1. S10 Must Publish Reference Defaults (Like S11 Does for TB%)**
+
 ```javascript
 // S10 ReferenceState.setDefaults() should publish area defaults:
 ReferenceState.setDefaults = function () {
   // ... set internal state ...
-  
+
   // ✅ CRITICAL: Publish Reference area defaults to StateManager (like S02 pattern)
   if (window.TEUI?.StateManager) {
     Object.entries(this.state).forEach(([fieldId, value]) => {
@@ -2287,39 +2401,41 @@ ReferenceState.setDefaults = function () {
 ```
 
 **2. S11 Mode Switch Must Read From Appropriate StateManager Keys (Like S12 Does)**
+
 ```javascript
 // S11 switchMode() should refresh area fields from StateManager:
 switchMode: function (mode) {
   this.currentMode = mode;
   this.refreshUI();
-  
+
   // ✅ AREA FIELD REFRESH: Read from appropriate StateManager keys
   Object.entries(areaSourceMap).forEach(([targetRow, sourceFieldId]) => {
     const targetFieldId = `d_${targetRow}`;
     const stateKey = mode === "reference" ? `ref_${sourceFieldId}` : sourceFieldId;
     const currentValue = window.TEUI.StateManager.getValue(stateKey);
-    
+
     if (currentValue && element) {
       element.textContent = formatNumber(currentValue, "number");
     }
   });
-  
+
   this.updateCalculatedDisplayValues();
 }
 ```
 
 **3. S11 Area Listeners Should Cache Values (Like S11 TB% Does)**
+
 ```javascript
 // S11 area listeners should cache in internal state for mode preservation:
 StateManager.addListener(sourceFieldId, (newValue) => {
-  TargetState.setValue(targetFieldId, newValue, 'calculated');  // Cache Target
+  TargetState.setValue(targetFieldId, newValue, "calculated"); // Cache Target
   if (ModeManager.currentMode === "target") {
     updateAreaDisplay(targetFieldId, newValue);
   }
 });
 
 StateManager.addListener(`ref_${sourceFieldId}`, (newValue) => {
-  ReferenceState.setValue(targetFieldId, newValue, 'calculated'); // Cache Reference  
+  ReferenceState.setValue(targetFieldId, newValue, "calculated"); // Cache Reference
   if (ModeManager.currentMode === "reference") {
     updateAreaDisplay(targetFieldId, newValue);
   }
@@ -2335,6 +2451,7 @@ StateManager.addListener(`ref_${sourceFieldId}`, (newValue) => {
 **Target**: Fix initialization issue where S11 Reference mode shows Target values
 
 **Implementation**:
+
 1. **Add StateManager publication to S10 ReferenceState.setDefaults()**
 2. **Follow S02 pattern** (lines 1778-1783 in S02)
 3. **Publish `ref_d_73` through `ref_d_78`** with Reference default values
@@ -2346,6 +2463,7 @@ StateManager.addListener(`ref_${sourceFieldId}`, (newValue) => {
 **Target**: Fix runtime lag where mode switching shows stale values
 
 **Implementation**:
+
 1. **Add area field refresh to S11 switchMode()**
 2. **Follow S11 TB% slider pattern** (proven working)
 3. **Read from appropriate StateManager keys** (`d_73` vs `ref_d_73`)
@@ -2357,6 +2475,7 @@ StateManager.addListener(`ref_${sourceFieldId}`, (newValue) => {
 **Target**: Ensure area values are preserved like TB% values
 
 **Implementation**:
+
 1. **Add area caching to S11 listeners** (like TB% slider does)
 2. **Store in S11 TargetState/ReferenceState**
 3. **Mode switch reads from cached state**
@@ -2364,13 +2483,15 @@ StateManager.addListener(`ref_${sourceFieldId}`, (newValue) => {
 **Test**: Perfect value preservation during mode switching
 
 ### **🏆 SUCCESS CRITERIA:**
+
 - ✅ **Initialization**: S11 shows correct Reference defaults immediately
 - ✅ **Runtime**: S11 area values update immediately without lag
-- ✅ **State isolation**: No cross-mode contamination  
+- ✅ **State isolation**: No cross-mode contamination
 - ✅ **Preservation**: S11→S12 robot fingers remain functional
 - ✅ **Architecture**: Follows proven S11→S12 success pattern
 
 ### **📚 DOCUMENTATION UPDATES:**
+
 - **Working S11→S12 pattern**: Document as template for other cross-section dependencies
 - **S10→S11 solution**: Document the three-phase fix approach
 - **Architectural insights**: StateManager initialization order requirements
@@ -2388,8 +2509,9 @@ StateManager.addListener(`ref_${sourceFieldId}`, (newValue) => {
 ### **🚨 ARCHITECTURAL CANCER IDENTIFIED**
 
 **The Problem**: S10→S11 area linkage creates **multiple data paths** and **architectural violations**:
+
 - S11 Reference calculations read `ref_d_73` (doesn't exist) → `area = 0` → all heatloss = 0.00
-- S11 area listeners never fire (S10 doesn't publish Reference values properly)  
+- S11 area listeners never fire (S10 doesn't publish Reference values properly)
 - Complex conditional logic fights dual-state architecture
 - Every fix breaks something else (4-dimensional whackamole)
 
@@ -2400,12 +2522,14 @@ StateManager.addListener(`ref_${sourceFieldId}`, (newValue) => {
 **Target**: Make S11 fully self-contained like other sections (row 85 pattern)
 
 **Implementation**:
+
 1. **Remove all S10 area listeners** from S11 `onSectionRendered()`
-2. **Remove areaSourceMap dependencies** from calculations  
+2. **Remove areaSourceMap dependencies** from calculations
 3. **Add area field defaults** to S11 FieldDefinitions (d_88-d_93)
 4. **Make area fields editable** in S11 (like d_85, d_86, d_87)
 
 **Pattern**: Copy **exactly how row 85 works** for rows 88-93:
+
 ```javascript
 // ✅ SELF-CONTAINED PATTERN (like row 85):
 88: {
@@ -2421,8 +2545,9 @@ StateManager.addListener(`ref_${sourceFieldId}`, (newValue) => {
 **Target**: Confirm S11 works identically to other sections
 
 **Tests**:
+
 1. **Target mode**: Change d_88 → calculations update → row 98 updates → h_10 updates ✅
-2. **Reference mode**: Change d_88 → calculations update → e_10 updates ✅  
+2. **Reference mode**: Change d_88 → calculations update → e_10 updates ✅
 3. **Mode switching**: Perfect value preservation ✅
 4. **No state mixing**: Only appropriate totals change ✅
 
@@ -2430,7 +2555,8 @@ StateManager.addListener(`ref_${sourceFieldId}`, (newValue) => {
 
 **Target**: Add back S10 area linkage as **enhancement**, not **requirement**
 
-**Approach**: 
+**Approach**:
+
 - **Robot fingers pattern**: S10 area changes directly call S11 functions
 - **Mode-aware updates**: Clean, simple, no complex listeners
 - **Enhancement only**: S11 works perfectly without it, better with it
@@ -2438,22 +2564,26 @@ StateManager.addListener(`ref_${sourceFieldId}`, (newValue) => {
 ### **🎯 WHY THIS APPROACH WILL SUCCEED**
 
 #### **1. Follows Proven Patterns**
+
 - **S11 becomes identical to S02, S03, S05** (self-contained dual-state)
 - **No special architecture** for area fields
 - **Standard FieldDefinitions pattern** for defaults
 
 #### **2. Eliminates Architectural Conflicts**
+
 - **No cross-section dependencies** during core functionality
 - **No complex StateManager listener chains**
 - **No timing dependencies** or initialization order issues
 
 #### **3. Incremental Enhancement**
+
 - **Phase 1-2**: Establish rock-solid baseline functionality
 - **Phase 3**: Add S10 linkage as **convenience feature**, not **core dependency**
 
 ### **📋 SURGICAL REMOVAL CHECKLIST**
 
 #### **Files to Modify:**
+
 1. **S11 FieldDefinitions**: Add d_88-d_93 with default values
 2. **S11 sectionRows**: Make d_88-d_93 editable (copy d_85 pattern)
 3. **S11 calculateComponentRow**: Remove areaSourceMap logic
@@ -2461,14 +2591,16 @@ StateManager.addListener(`ref_${sourceFieldId}`, (newValue) => {
 5. **S11 editableFields**: Add d_88-d_93 to editable array
 
 #### **Expected Result:**
+
 - ✅ **S11 row 88**: User enters area → immediate calculation update → perfect isolation
 - ✅ **Identical to row 85**: Same input pattern, same calculation flow, same dual-state behavior
 - ✅ **No S10 dependency**: S11 works perfectly standalone
 - ✅ **Clean architecture**: Standard dual-state section pattern
 
 ### **🏆 SUCCESS CRITERIA:**
+
 - **Perfect dual-state isolation**: Target/Reference calculations independent
-- **Immediate responsiveness**: Area changes → instant calculation updates  
+- **Immediate responsiveness**: Area changes → instant calculation updates
 - **Standard architecture**: S11 behaves like other sections
 - **No calculation storms**: Clean, predictable behavior
 - **Baseline established**: Ready for clean S10 linkage enhancement
@@ -2486,6 +2618,7 @@ StateManager.addListener(`ref_${sourceFieldId}`, (newValue) => {
 ### **✅ SURGICAL REMOVAL PHASE 1 COMPLETED**
 
 #### **What Was Fixed:**
+
 1. **FieldDefinitions**: Changed d_88-d_93 from "calculated" to "editable" with proper defaults
 2. **Target Defaults**: Match S10 values (d_88=7.50, d_89=81.14, d_90=3.83, d_91=159.00, d_92=100.66, d_93=0.00)
 3. **Reference Defaults**: Target +1 for differentiation (d_88=8.50, d_89=82.14, etc.)
@@ -2494,8 +2627,9 @@ StateManager.addListener(`ref_${sourceFieldId}`, (newValue) => {
 6. **S10 Dependencies**: Completely removed areaSourceMap and complex listeners
 
 #### **✅ CONFIRMED WORKING:**
+
 - **Target Mode**: Area fields show Target defaults, user edits persist ✅
-- **Reference Mode**: Area fields show Reference defaults (+1), user edits persist ✅  
+- **Reference Mode**: Area fields show Reference defaults (+1), user edits persist ✅
 - **Mode Switching**: Perfect value preservation like row 85 ✅
 - **Immediate Calculations**: Area changes trigger immediate calculation updates ✅
 - **Clean Architecture**: S11 now standard dual-state section ✅
@@ -2503,30 +2637,36 @@ StateManager.addListener(`ref_${sourceFieldId}`, (newValue) => {
 ### **🚨 NEXT CRITICAL ISSUE: S01 STATE MIXING**
 
 #### **Current Problem:**
+
 S11 area changes in **any mode** are causing **both e_10 AND h_10** to change in S01, indicating **state mixing** in S11's calculation reporting.
 
 #### **Root Cause Hypothesis:**
+
 S11's **calculation engines** may be:
+
 1. **Publishing to wrong StateManager keys** (both Target and Reference)
 2. **Running in wrong mode context** (mode-unaware calculations)
 3. **Missing mode-aware listeners** or **incorrect listener logic**
 4. **`calculateAll()` anti-pattern** still present (triggers both engines inappropriately)
 
 #### **Diagnostic Strategy:**
+
 1. **Check S11's StateManager publication pattern** in calculation engines
 2. **Verify mode-aware calculation triggering** (only appropriate engine should run)
 3. **Audit listener logic** for cross-mode contamination
 4. **Compare with working sections** (S05, S06) for proper dual-state reporting
 
 #### **Success Criteria:**
+
 - ✅ **Target mode S11 changes**: Only h_10 updates (Target total)
-- ✅ **Reference mode S11 changes**: Only e_10 updates (Reference total)  
+- ✅ **Reference mode S11 changes**: Only e_10 updates (Reference total)
 - ✅ **Perfect state isolation**: No cross-mode contamination
 - ✅ **Immediate responsiveness**: Changes flow correctly to S01
 
 ### **🎯 ARCHITECTURAL FOUNDATION ESTABLISHED**
 
 **Critical Achievement**: S11 area fields now work **exactly like row 85**:
+
 - ✅ **Self-contained**: No external dependencies
 - ✅ **Mode-aware**: Different defaults and preserved user values per mode
 - ✅ **Standard architecture**: Follows proven dual-state patterns
@@ -2545,6 +2685,7 @@ Based on the detailed analysis within this guide, the root cause of the S10->S11
 **Core Problem:** The listeners in S11 directly manipulate the DOM, bypassing S11's own internal, mode-aware state management system (`TargetState` and `ReferenceState`).
 
 **Evidence from Guide:**
+
 > "S11 has StateManager listeners that directly update DOM elements for d_88-d_93. These DOM updates bypass S11's dual-state architecture."
 
 This is a direct violation of the "Pattern A" architecture and the principle of State Sovereignty.
@@ -2554,6 +2695,7 @@ This is a direct violation of the "Pattern A" architecture and the principle of 
 The solution is to refactor the listeners in `4011-Section11.js` to be mode-aware, as specified in the project's architectural documentation like `4012-CHEATSHEET.md`.
 
 **The corrected logic should:**
+
 1.  **Eliminate Direct DOM Manipulation:** The listeners must **not** write directly to the DOM.
 2.  **Use S11's State Management:** They must use S11's own `ModeManager.setValue()` (or equivalent) to store the incoming area values into the appropriate internal state (`TargetState` or `ReferenceState`).
 3.  **Listen for Both States:** S11 must have separate listeners for both the Target values (e.g., `d_73`) and the Reference values (e.g., `ref_d_73`) published by S10.
@@ -2564,19 +2706,27 @@ The solution is to refactor the listeners in `4011-Section11.js` to be mode-awar
 // HYPOTHETICAL FIX in 4011-Section11.js
 
 // Listener for TARGET value from S10
-window.TEUI.StateManager.addListener('d_73', function(newValue) {
-    // Use S11's own ModeManager to set the value in its TargetState
-    if (TEUI.SectionModules.sect11.ModeManager.currentMode === 'target') {
-        TEUI.SectionModules.sect11.ModeManager.setValue('d_88', newValue, 'calculated');
-    }
+window.TEUI.StateManager.addListener("d_73", function (newValue) {
+  // Use S11's own ModeManager to set the value in its TargetState
+  if (TEUI.SectionModules.sect11.ModeManager.currentMode === "target") {
+    TEUI.SectionModules.sect11.ModeManager.setValue(
+      "d_88",
+      newValue,
+      "calculated",
+    );
+  }
 });
 
 // Listener for REFERENCE value from S10
-window.TEUI.StateManager.addListener('ref_d_73', function(newValue) {
-    // Use S11's own ModeManager to set the value in its ReferenceState
-     if (TEUI.SectionModules.sect11.ModeManager.currentMode === 'reference') {
-        TEUI.SectionModules.sect11.ModeManager.setValue('d_88', newValue, 'calculated');
-    }
+window.TEUI.StateManager.addListener("ref_d_73", function (newValue) {
+  // Use S11's own ModeManager to set the value in its ReferenceState
+  if (TEUI.SectionModules.sect11.ModeManager.currentMode === "reference") {
+    TEUI.SectionModules.sect11.ModeManager.setValue(
+      "d_88",
+      newValue,
+      "calculated",
+    );
+  }
 });
 ```
 

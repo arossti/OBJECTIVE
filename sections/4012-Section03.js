@@ -47,7 +47,9 @@ window.TEUI.SectionModules.sect03 = (function () {
         // ✅ CALCULATED FIELDS REMOVED: h_23, h_24 are calculated, not defaults
         // Climate data populated by calculation engines from ClimateValues.js
       };
-      console.log("S03: Target defaults set from field definitions - single source of truth");
+      console.log(
+        "S03: Target defaults set from field definitions - single source of truth",
+      );
     },
     saveState: function () {
       try {
@@ -124,7 +126,9 @@ window.TEUI.SectionModules.sect03 = (function () {
         // ✅ CALCULATED FIELDS REMOVED: h_23, h_24 are calculated, not defaults
         // Climate data populated by calculation engines from ClimateValues.js
       };
-      console.log("S03: Reference defaults set from field definitions - single source of truth");
+      console.log(
+        "S03: Reference defaults set from field definitions - single source of truth",
+      );
     },
     saveState: function () {
       try {
@@ -1742,14 +1746,17 @@ window.TEUI.SectionModules.sect03 = (function () {
         if (!window.TEUI.SectionModules.sect12.isInitialized) {
           window.TEUI.SectionModules.sect12.forceInitialization();
         }
-        
+
         // Only force recalculation for user-initiated changes (location changes)
         // Skip during initialization cascades to improve performance
         if (window.TEUI.SectionModules.sect12.calculateTargetModel) {
           window.TEUI.SectionModules.sect12.calculateTargetModel();
-          
+
           // Ensure DOM display values are updated after forced calculation
-          if (window.TEUI.SectionModules.sect12.ModeManager?.updateCalculatedDisplayValues) {
+          if (
+            window.TEUI.SectionModules.sect12.ModeManager
+              ?.updateCalculatedDisplayValues
+          ) {
             window.TEUI.SectionModules.sect12.ModeManager.updateCalculatedDisplayValues();
           }
         }
@@ -1867,11 +1874,7 @@ window.TEUI.SectionModules.sect03 = (function () {
     // Store unprefixed for downstream sections (Target mode)
     Object.entries(targetResults).forEach(([fieldId, value]) => {
       if (value !== null && value !== undefined) {
-        window.TEUI.StateManager.setValue(
-          fieldId,
-          String(value),
-          "calculated",
-        );
+        window.TEUI.StateManager.setValue(fieldId, String(value), "calculated");
       }
     });
 

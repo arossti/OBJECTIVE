@@ -652,7 +652,9 @@ class ExcelMapper {
     const worksheet = workbook.Sheets[sheetName];
     const reportWorksheet = workbook.Sheets[reportSheetName];
 
-    console.log(`[ExcelMapper] mapExcelToReferenceModel called. Sheet '${sheetName}' exists: ${!!worksheet}`);
+    console.log(
+      `[ExcelMapper] mapExcelToReferenceModel called. Sheet '${sheetName}' exists: ${!!worksheet}`,
+    );
 
     if (!worksheet) {
       console.warn(
@@ -663,14 +665,17 @@ class ExcelMapper {
 
     console.log(`[ExcelMapper] Starting REFERENCE sheet processing...`);
     console.log(`[ExcelMapper] REFERENCE worksheet exists:`, !!worksheet);
-    console.log(`[ExcelMapper] Sample cells from REFERENCE:`, Object.keys(worksheet).slice(0, 20));
+    console.log(
+      `[ExcelMapper] Sample cells from REFERENCE:`,
+      Object.keys(worksheet).slice(0, 20),
+    );
 
     Object.entries(this.excelReferenceInputMapping).forEach(
       ([cellRef, fieldId]) => {
         const cell = worksheet[cellRef];
 
         // 🔍 DEBUG: Enhanced logging for H15
-        if (cellRef === 'H15') {
+        if (cellRef === "H15") {
           console.log(`[ExcelMapper H15] Checking cell H15...`);
           console.log(`[ExcelMapper H15] Cell exists:`, cell !== undefined);
           console.log(`[ExcelMapper H15] Cell object:`, cell);
@@ -678,43 +683,53 @@ class ExcelMapper {
         }
 
         // 🔍 DEBUG: Log whether key cells exist
-        if (cellRef === 'H15' || cellRef === 'D13') {
-          console.log(`[ExcelMapper DEBUG] ${cellRef} exists: ${cell !== undefined}, cell:`, cell);
+        if (cellRef === "H15" || cellRef === "D13") {
+          console.log(
+            `[ExcelMapper DEBUG] ${cellRef} exists: ${cell !== undefined}, cell:`,
+            cell,
+          );
         }
 
         if (cell !== undefined) {
           let extractedValue;
 
           // 🔍 DEBUG: Log cell structure to understand what we're working with
-          if (cellRef === 'H15' || cellRef === 'D13') {
+          if (cellRef === "H15" || cellRef === "D13") {
             console.log(`[ExcelMapper DEBUG] ${cellRef} cell:`, {
               value: cell.v,
               formula: cell.f,
               type: cell.t,
               hasFormula: !!cell.f,
-              startsWithREPORT: cell.f?.startsWith('=REPORT!')
+              startsWithREPORT: cell.f?.startsWith("=REPORT!"),
             });
           }
 
           // ✅ Check if cell contains a formula referencing REPORT sheet
           // SheetJS stores formulas WITHOUT the leading = (e.g., "REPORT!H15" not "=REPORT!H15")
-          if (cell.f && (cell.f.startsWith('REPORT!') || cell.f.startsWith('=REPORT!'))) {
+          if (
+            cell.f &&
+            (cell.f.startsWith("REPORT!") || cell.f.startsWith("=REPORT!"))
+          ) {
             // Extract REPORT sheet cell reference (e.g., "REPORT!H15" → "H15")
-            const reportCellRef = cell.f.replace(/^=?REPORT!/, '');
+            const reportCellRef = cell.f.replace(/^=?REPORT!/, "");
 
             // Read from REPORT sheet instead
             const reportCell = reportWorksheet?.[reportCellRef];
             if (reportCell) {
               extractedValue = this.extractCellValue(reportCell);
-              console.log(`[ExcelMapper] ${cellRef} has formula ${cell.f}, using REPORT!${reportCellRef} = ${extractedValue}`);
+              console.log(
+                `[ExcelMapper] ${cellRef} has formula ${cell.f}, using REPORT!${reportCellRef} = ${extractedValue}`,
+              );
             } else {
               extractedValue = this.extractCellValue(cell); // Fallback
             }
           } else {
             // User-entered value (no formula or different formula)
             extractedValue = this.extractCellValue(cell);
-            if (cellRef === 'H15' || cellRef === 'D13') {
-              console.log(`[ExcelMapper DEBUG] ${cellRef} no REPORT formula, using cell value: ${extractedValue}`);
+            if (cellRef === "H15" || cellRef === "D13") {
+              console.log(
+                `[ExcelMapper DEBUG] ${cellRef} no REPORT formula, using cell value: ${extractedValue}`,
+              );
             }
           }
 
@@ -921,7 +936,8 @@ class ExcelMapper {
     // - cell.z (format string like "0%") OR
     // - cell.w (formatted display like "50%")
     if (cell.t === "n") {
-      const hasPercentFormat = (cell.z && cell.z.includes("%")) || (cell.w && cell.w.includes("%"));
+      const hasPercentFormat =
+        (cell.z && cell.z.includes("%")) || (cell.w && cell.w.includes("%"));
       if (hasPercentFormat) {
         // Multiply by 100 to convert decimal to percentage (Excel 0.5 → App 50)
         return cell.v * 100;

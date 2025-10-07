@@ -338,7 +338,10 @@ window.TEUI.SectionModules.sect05 = (function () {
         f: { content: "F", classes: ["section-subheader"] },
         g: { content: "kgCO2e/m2/yr", classes: ["section-subheader"] },
         h: { content: "", classes: ["section-subheader", "spacer"] },
-        i: { content: "kgCO2e/m2*Service Life", classes: ["section-subheader"] },
+        i: {
+          content: "kgCO2e/m2*Service Life",
+          classes: ["section-subheader"],
+        },
         j: { content: "J", classes: ["section-subheader"] },
         k: { content: "K", classes: ["section-subheader"] },
         l: { content: "L", classes: ["section-subheader"] },
@@ -724,7 +727,7 @@ window.TEUI.SectionModules.sect05 = (function () {
       : getGlobalNumericValue("h_15"); // Target reads Target upstream
 
     let emissionsValue, d_38_result;
-    
+
     if (isReferenceCalculation) {
       // Reference mode: D38 = ref_k_32 / 1000 (always Reference target emissions)
       const ref_k_32 = getGlobalNumericValue("ref_k_32") || 0; // From S04 Reference
@@ -735,7 +738,7 @@ window.TEUI.SectionModules.sect05 = (function () {
       const d_14 = getGlobalNumericValue("d_14") || "Targeted Use"; // Reporting mode from S02
       const g_32 = getGlobalNumericValue("g_32") || 0; // Actual emissions from S04
       const k_32 = getGlobalNumericValue("k_32") || 0; // Target emissions from S04
-      
+
       if (d_14 === "Utility Bills") {
         emissionsValue = g_32; // Use actual (utility bills)
       } else {
@@ -837,7 +840,7 @@ window.TEUI.SectionModules.sect05 = (function () {
     if (isReferenceCalculation) {
       // Reference mode: Check if user selected "Modelled Value" exception
       const d_39_typology = ReferenceState.getValue("d_39") || "";
-      
+
       if (d_39_typology === "Modelled Value") {
         // Exception: User can define i_41 in Reference mode
         // D40 = I41 × D106 / 1000
@@ -853,7 +856,7 @@ window.TEUI.SectionModules.sect05 = (function () {
       const i_41_value = getSectionValue("i_41", false);
       carbonValue = window.TEUI.parseNumeric(i_41_value) || 0;
     }
-    
+
     const d_40_result = (carbonValue * d_106_value) / 1000; // Result in MT CO2e
 
     if (isReferenceCalculation) {
@@ -866,7 +869,7 @@ window.TEUI.SectionModules.sect05 = (function () {
   /**
    * Calculate Lifetime Avoided MT CO2e (d_41)
    * Excel D41 = (REFERENCE!D38 - REPORT!D38) × H13
-   * 
+   *
    * NOTE: This is a COMPARISON value (Reference vs Target) - intentionally state-agnostic
    * Both Target and Reference modes show the same value (avoided emissions from Target design)
    */

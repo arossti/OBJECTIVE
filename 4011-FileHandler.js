@@ -113,15 +113,27 @@
 
       // 🔍 DEBUG: Log ALL imported data and specifically check for location fields
       console.log("[FileHandler] 🔍 REPORT sheet imported data:", importedData);
-      console.log("[FileHandler] 🔍 d_19 in importedData?", "d_19" in importedData, "Value:", importedData.d_19);
-      console.log("[FileHandler] 🔍 h_19 in importedData?", "h_19" in importedData, "Value:", importedData.h_19);
+      console.log(
+        "[FileHandler] 🔍 d_19 in importedData?",
+        "d_19" in importedData,
+        "Value:",
+        importedData.d_19,
+      );
+      console.log(
+        "[FileHandler] 🔍 h_19 in importedData?",
+        "h_19" in importedData,
+        "Value:",
+        importedData.h_19,
+      );
 
       if (importedData.d_19 || importedData.h_19) {
         console.log(
           `[FileHandler] 🎯 TARGET Location from REPORT sheet: Province="${importedData.d_19}", City="${importedData.h_19}"`,
         );
       } else {
-        console.warn("[FileHandler] ⚠️ NO location data (d_19/h_19) found in REPORT sheet import!");
+        console.warn(
+          "[FileHandler] ⚠️ NO location data (d_19/h_19) found in REPORT sheet import!",
+        );
       }
 
       if (importedData === null) {
@@ -139,33 +151,51 @@
       }
 
       // 🔒 START IMPORT QUARANTINE - Mute listeners to prevent premature calculations
-      console.log('[FileHandler] 🔒 IMPORT QUARANTINE START - Muting listeners');
+      console.log(
+        "[FileHandler] 🔒 IMPORT QUARANTINE START - Muting listeners",
+      );
       window.TEUI.StateManager.muteListeners();
 
       try {
         // Import Target values (REPORT sheet)
         this.updateStateFromImportData(importedData, 0, false);
-        console.log(`[FileHandler] Imported ${Object.keys(importedData).length} Target values`);
+        console.log(
+          `[FileHandler] Imported ${Object.keys(importedData).length} Target values`,
+        );
 
         // Import REFERENCE data from REFERENCE sheet (optional)
-        console.log("[FileHandler DEBUG] About to call processImportedExcelReference");
+        console.log(
+          "[FileHandler DEBUG] About to call processImportedExcelReference",
+        );
         this.processImportedExcelReference(workbook);
-        console.log("[FileHandler DEBUG] Returned from processImportedExcelReference");
+        console.log(
+          "[FileHandler DEBUG] Returned from processImportedExcelReference",
+        );
 
         // ✅ CRITICAL: Sync Pattern A sections AFTER both Target and Reference imports
-        console.log("[FileHandler] 🔧 Syncing all Pattern A sections after BOTH imports complete...");
+        console.log(
+          "[FileHandler] 🔧 Syncing all Pattern A sections after BOTH imports complete...",
+        );
         this.syncPatternASections();
-        console.log("[FileHandler] ✅ Pattern A sections synced with imported values");
-
+        console.log(
+          "[FileHandler] ✅ Pattern A sections synced with imported values",
+        );
       } finally {
         // 🔓 END IMPORT QUARANTINE - Always unmute, even if import fails
         window.TEUI.StateManager.unmuteListeners();
-        console.log('[FileHandler] 🔓 IMPORT QUARANTINE END - Unmuting listeners');
+        console.log(
+          "[FileHandler] 🔓 IMPORT QUARANTINE END - Unmuting listeners",
+        );
       }
 
       // Trigger clean recalculation with all imported values loaded
-      console.log('[FileHandler] Triggering post-import calculation with fresh values...');
-      if (this.calculator && typeof this.calculator.calculateAll === "function") {
+      console.log(
+        "[FileHandler] Triggering post-import calculation with fresh values...",
+      );
+      if (
+        this.calculator &&
+        typeof this.calculator.calculateAll === "function"
+      ) {
         this.calculator.calculateAll();
 
         // Refresh S03 UI after calculateAll
@@ -177,7 +207,10 @@
     }
 
     processImportedExcelReference(workbook) {
-      console.log("[FileHandler DEBUG] processImportedExcelReference called, excelMapper exists:", !!this.excelMapper);
+      console.log(
+        "[FileHandler DEBUG] processImportedExcelReference called, excelMapper exists:",
+        !!this.excelMapper,
+      );
 
       if (!this.excelMapper) {
         console.warn("Excel Mapper module not available for reference import");
@@ -187,7 +220,10 @@
       console.log("[FileHandler DEBUG] Calling mapExcelToReferenceModel...");
       this.showStatus("Mapping reference data from REFERENCE sheet...", "info");
       const referenceData = this.excelMapper.mapExcelToReferenceModel(workbook);
-      console.log("[FileHandler DEBUG] mapExcelToReferenceModel returned, keys:", Object.keys(referenceData).length);
+      console.log(
+        "[FileHandler DEBUG] mapExcelToReferenceModel returned, keys:",
+        Object.keys(referenceData).length,
+      );
 
       if (Object.keys(referenceData).length === 0) {
         console.log(
@@ -196,14 +232,23 @@
         return;
       }
 
-      console.log("[FileHandler DEBUG] About to call updateStateFromImportData for", Object.keys(referenceData).length, "reference fields");
-      console.log("[FileHandler DEBUG] First 5 reference fields:", Object.keys(referenceData).slice(0, 5));
+      console.log(
+        "[FileHandler DEBUG] About to call updateStateFromImportData for",
+        Object.keys(referenceData).length,
+        "reference fields",
+      );
+      console.log(
+        "[FileHandler DEBUG] First 5 reference fields:",
+        Object.keys(referenceData).slice(0, 5),
+      );
 
       // Import reference data without triggering full recalculation
       // (main recalculation happens after target data import)
       this.updateStateFromImportData(referenceData, 0, true);
 
-      console.log("[FileHandler DEBUG] Returned from updateStateFromImportData");
+      console.log(
+        "[FileHandler DEBUG] Returned from updateStateFromImportData",
+      );
       this.showStatus(
         `Reference import complete. ${Object.keys(referenceData).length} reference fields imported.`,
         "success",
@@ -301,16 +346,33 @@
       csvSkippedCount = 0,
       skipRecalculation = false,
     ) {
-      console.log("[FileHandler DEBUG] updateStateFromImportData CALLED with", Object.keys(importedData).length, "fields, skipRecalculation=", skipRecalculation);
-      console.log("[FileHandler DEBUG] stateManager exists:", !!this.stateManager, "fieldManager exists:", !!this.fieldManager);
+      console.log(
+        "[FileHandler DEBUG] updateStateFromImportData CALLED with",
+        Object.keys(importedData).length,
+        "fields, skipRecalculation=",
+        skipRecalculation,
+      );
+      console.log(
+        "[FileHandler DEBUG] stateManager exists:",
+        !!this.stateManager,
+        "fieldManager exists:",
+        !!this.fieldManager,
+      );
 
       if (!this.stateManager || !this.fieldManager) {
-        console.error("[FileHandler ERROR] StateManager or FieldManager not available! stateManager:", !!this.stateManager, "fieldManager:", !!this.fieldManager);
+        console.error(
+          "[FileHandler ERROR] StateManager or FieldManager not available! stateManager:",
+          !!this.stateManager,
+          "fieldManager:",
+          !!this.fieldManager,
+        );
         this.showStatus("StateManager or FieldManager not available.", "error");
         return;
       }
 
-      console.log("[FileHandler DEBUG] Passed validation checks, starting forEach loop...");
+      console.log(
+        "[FileHandler DEBUG] Passed validation checks, starting forEach loop...",
+      );
       this.showStatus("Updating application state...", "info");
       let updatedCount = 0;
       let skippedValidationCount = 0;
@@ -337,7 +399,9 @@
           if (isReferenceField) {
             this.stateManager.setValue(fieldId, parsedValue, "imported");
             updatedCount++;
-            console.log(`[FileHandler] Reference field imported: ${fieldId} = ${parsedValue}`);
+            console.log(
+              `[FileHandler] Reference field imported: ${fieldId} = ${parsedValue}`,
+            );
             return; // Done with this reference field
           }
 
@@ -495,9 +559,7 @@
         }
       });
 
-      console.log(
-        "[FileHandler] ✅ PHASE 2: Pattern A section sync complete",
-      );
+      console.log("[FileHandler] ✅ PHASE 2: Pattern A section sync complete");
     }
 
     // --- EXPORT LOGIC ---

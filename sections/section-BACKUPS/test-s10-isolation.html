@@ -601,7 +601,10 @@
           },
 
           saveState: function () {
-            localStorage.setItem("S10_TARGET_STATE", JSON.stringify(this.state));
+            localStorage.setItem(
+              "S10_TARGET_STATE",
+              JSON.stringify(this.state),
+            );
           },
 
           setValue: function (fieldId, value, source = "user") {
@@ -652,7 +655,10 @@
           },
 
           saveState: function () {
-            localStorage.setItem("S10_REFERENCE_STATE", JSON.stringify(this.state));
+            localStorage.setItem(
+              "S10_REFERENCE_STATE",
+              JSON.stringify(this.state),
+            );
           },
 
           setValue: function (fieldId, value, source = "user") {
@@ -724,7 +730,11 @@
 
             // BRIDGE: For backward compatibility, sync Target changes to global StateManager
             if (this.currentMode === "target") {
-              window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
+              window.TEUI.StateManager.setValue(
+                fieldId,
+                value,
+                "user-modified",
+              );
             }
           },
 
@@ -1207,7 +1217,9 @@
           // Calculate percentages for each row (using the calculated values from above)
           let totalCoolingGains = 0;
           rows.forEach((rowId) => {
-            const element = document.querySelector(`[data-field-id="k_${rowId}"]`);
+            const element = document.querySelector(
+              `[data-field-id="k_${rowId}"]`,
+            );
             const coolingGain = parseFloat(element?.textContent || "0");
             totalCoolingGains += coolingGain;
           });
@@ -1234,8 +1246,16 @@
 
           // Update cooling subtotal
           updateCalculatedField("k_79", totalCoolingGains, "number");
-          updateCalculatedField("j_79", totalHeatingGains > 0 ? 1 : 0, "percent");
-          updateCalculatedField("l_79", totalCoolingGains > 0 ? 1 : 0, "percent");
+          updateCalculatedField(
+            "j_79",
+            totalHeatingGains > 0 ? 1 : 0,
+            "percent",
+          );
+          updateCalculatedField(
+            "l_79",
+            totalCoolingGains > 0 ? 1 : 0,
+            "percent",
+          );
 
           // Calculate PHPP utilization factors
           const method = getFieldValue("d_80");
@@ -1299,7 +1319,9 @@
         }
 
         function updateCalculatedField(fieldId, value, format = "number") {
-          const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+          const element = document.querySelector(
+            `[data-field-id="${fieldId}"]`,
+          );
           if (!element) return;
 
           let formattedValue;

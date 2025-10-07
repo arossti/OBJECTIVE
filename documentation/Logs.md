@@ -1,948 +1,1429 @@
+[S10DISPLAY] Display (target) i*78 = 0.00
+[S10DISPLAY] Display (target) i_79 = 14,626.70
+[S10DISPLAY] Display (target) k_73 = 0.00
+[S10DISPLAY] Display (target) k_74 = 0.00
+[S10DISPLAY] Display (target) k_75 = 0.00
+[S10DISPLAY] Display (target) k_76 = 0.00
+[S10DISPLAY] Display (target) k_77 = 130.15
+[S10DISPLAY] Display (target) k_78 = 0.00
+[S10DISPLAY] Display (target) k_79 = 130.15
+[S10DISPLAY] Display (target) j_73 = 2.56%
+[S10DISPLAY] Display (target) j_74 = 0.73%
+[S10DISPLAY] Display (target) j_75 = 2.01%
+[S10DISPLAY] Display (target) j_76 = 76.90%
+[S10DISPLAY] Display (target) j_77 = 17.80%
+[S10DISPLAY] Display (target) j_78 = 0.00%
+[S10DISPLAY] Display (target) j_79 = 100.00%
+[S10DISPLAY] Display (target) l_73 = 0.00%
+[S10DISPLAY] Display (target) l_74 = 0.00%
+[S10DISPLAY] Display (target) l_75 = 0.00%
+[S10DISPLAY] Display (target) l_76 = 0.00%
+[S10DISPLAY] Display (target) l_77 = 100.00%
+[S10DISPLAY] Display (target) l_78 = 0.00%
+[S10DISPLAY] Display (target) l_79 = 100.00%
+[S10DISPLAY] Display (target) e_80 = 114,698.95
+[S10DISPLAY] Display (target) e_81 = 114,698.95
+[S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+[S10DISPLAY] Display (target) g_80 = 40.00%
+[S10DISPLAY] Display (target) g_81 = 94.43%
+[S10DISPLAY] Display (target) i_80 = 45,879.58
+[S10DISPLAY] Display (target) i_81 = 108,308.11
+[S10DISPLAY] Display (target) i_82 = 68,819.37
 2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [Cooling] 🚀 Starting cooling calculations (mode=reference)...
- [Cooling] Free cooling calc: massFlow=0.000 kg/s, ΔT=3.6°C → 0.00 kWh/day → 0.00 kWh/yr
- [Cooling A33 PHYSICS] d_120=35550.4625, l_119=None, A28=35550.4625, A29=35.5504625, A30=42.80275685, A16=3.5700000000000003, A31=153569.8711642725, A32=13268436868.593145, A33=3685.6769079425403
- [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=722392.6739567379, E52=-722392.6739567379, E54(m_19)=120, E55(result)=-250.83078956831176
- [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
- [Cooling] 🚀 Starting cooling calculations (mode=target)...
- [Cooling] Free cooling calc: massFlow=42.803 kg/s, ΔT=3.6°C → 3685.68 kWh/day → 442281.23 kWh/yr
- [Cooling A33 PHYSICS] d_120=35550.4625, l_119=None, A28=35550.4625, A29=35.5504625, A30=42.80275685, A16=3.5700000000000003, A31=153569.8711642725, A32=13268436868.593145, A33=3685.6769079425403
- [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=410, E50=0, E51=1511127.5322564414, E52=-1511127.5322564414, E54(m_19)=120, E55(result)=-524.6970598112644
- [Cooling] 📊 Publishing results with prefix="" (mode=target)
- [S11] calculateAll TRIGGERED. isReferenceMode: false
+[S11 REF DEFAULTS] Published ref_d_97=50 to StateManager
+[S11 REF DEFAULTS] Published ref_f_85=5.30 to StateManager
+[S11 REF DEFAULTS] Published ref_f_86=4.10 to StateManager
+[S11 REF DEFAULTS] Published ref_f_87=6.60 to StateManager
+[S11 REF DEFAULTS] Published ref_f_94=1.80 to StateManager
+[S11 REF DEFAULTS] Published ref_f_95=3.50 to StateManager
+[S11 REF DEFAULTS] Published ref_g_88=1.990 to StateManager
+[S11 REF DEFAULTS] Published ref_g_89=1.420 to StateManager
+[S11 REF DEFAULTS] Published ref_g_90=1.420 to StateManager
+[S11 REF DEFAULTS] Published ref_g_91=1.420 to StateManager
+[S11 REF DEFAULTS] Published ref_g_92=1.420 to StateManager
+[S11 REF DEFAULTS] Published ref_g_93=1.420 to StateManager
+S11: Reference defaults loaded from standard: OBC SB10 5.5-6 Z6
+S11: ModeManager exposed globally for cross-section integration.
+[S11] calculateAll TRIGGERED. isReferenceMode: false
 2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=82303.01, ref_k_97=3160.05
- [S11] Writing ref penalty: ref_i_97=82303.01, ref_k_97=3160.05
+[S11] REF TB%=50% → ref_i_97=60034.05, ref_k_97=-926.32
+[S11] Writing ref penalty: ref_i_97=60034.05, ref_k_97=-926.32
 2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] calculateAll TRIGGERED. isReferenceMode: false
-2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=82303.01, ref_k_97=3160.05
- [S11] Writing ref penalty: ref_i_97=82303.01, ref_k_97=3160.05
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [Cooling] 🚀 Starting cooling calculations (mode=reference)...
- [Cooling] Free cooling calc: massFlow=0.000 kg/s, ΔT=3.6°C → 0.00 kWh/day → 0.00 kWh/yr
- [Cooling A33 PHYSICS] d_120=35550.4625, l_119=None, A28=35550.4625, A29=35.5504625, A30=42.80275685, A16=3.5700000000000003, A31=153569.8711642725, A32=13268436868.593145, A33=3685.6769079425403
- [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=722392.6739567379, E52=-722392.6739567379, E54(m_19)=120, E55(result)=-250.83078956831176
- [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
- [Cooling] 🚀 Starting cooling calculations (mode=target)...
- [Cooling] Free cooling calc: massFlow=42.803 kg/s, ΔT=3.6°C → 3685.68 kWh/day → 442281.23 kWh/yr
- [Cooling A33 PHYSICS] d_120=35550.4625, l_119=None, A28=35550.4625, A29=35.5504625, A30=42.80275685, A16=3.5700000000000003, A31=153569.8711642725, A32=13268436868.593145, A33=3685.6769079425403
- [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=410, E50=0, E51=1511127.5322564414, E52=-1511127.5322564414, E54(m_19)=120, E55(result)=-524.6970598112644
- [Cooling] 📊 Publishing results with prefix="" (mode=target)
-3 [S09] Updated calculated display values for target mode
- S09: Reference values updated for standard: OBC SB10 5.5-6 Z6, lighting: 2.0
- [S09] Updated calculated display values for target mode
- S09: Reference values updated for standard: OBC SB10 5.5-6 Z6, lighting: 2.0
- [S09] Updated calculated display values for target mode
- S09: Reference values updated for standard: OBC SB10 5.5-6 Z6, lighting: 2.0
- [S09] Updated calculated display values for target mode
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=8906.846, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=1161288.9172848673, k_32=59225.73478152823 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=8906.846, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=1161288.9172848673, k_32=59225.73478152823 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
+[Cooling] 🚀 Starting cooling calculations (mode=reference)...
+[Cooling] Free cooling calc: massFlow=0.000 kg/s, ΔT=3.6°C → 0.00 kWh/day → 0.00 kWh/yr
+[Cooling A33 PHYSICS] d_120=3333.33, l_119=None, A28=3333.33, A29=3.33333, A30=4.01332932, A16=3.5700000000000003, A31=14399.223600762003, A32=1244092919.105837, A33=345.5813664182881
+[Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67733.94781798447, E52=-67733.94781798447, E54(m_19)=120, E55(result)=-23.51873188124461
+[Cooling] 📊 Publishing results with prefix="ref*" (mode=reference)
+S10: Reference listener triggered by ref*m_121, recalculating all.
+[S10 DEBUG] calculateAll() triggered in target mode - running both engines
+[S10REF] Utilization calc: ref_i_71=113145.3708, ref_i_79=10060.174319999998, totalGains=123205.54512
+[S10REF] Using utilization method: NRC 40%
+[S10REF] Final calc: utilizationFactor=0.4, usableGains=49282.218048
+[S10REF] Complete: g_80=0.4, g_81=0.9472668950184051, i_80=49282.218048, i_81=116708.5341748724
+[S10 DEBUG] Dual-engine calculations complete in target mode
+[S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+[S10DISPLAY] Display (target) m_73 = 50.00
+[S10DISPLAY] Display (target) m_74 = 1.31
+[S10DISPLAY] Display (target) m_75 = 76.94
+[S10DISPLAY] Display (target) m_76 = 70.74
+[S10DISPLAY] Display (target) m_77 = 25.86
+[S10DISPLAY] Display (target) m_78 = 75.00
+[S10DISPLAY] Display (target) i_73 = 375.00
+[S10DISPLAY] Display (target) i_74 = 106.29
+[S10DISPLAY] Display (target) i_75 = 294.68
+[S10DISPLAY] Display (target) i_76 = 11,247.66
+[S10DISPLAY] Display (target) i_77 = 2,603.07
+[S10DISPLAY] Display (target) i_78 = 0.00
+[S10DISPLAY] Display (target) i_79 = 14,626.70
+[S10DISPLAY] Display (target) k_73 = 0.00
+[S10DISPLAY] Display (target) k_74 = 0.00
+[S10DISPLAY] Display (target) k_75 = 0.00
+[S10DISPLAY] Display (target) k_76 = 0.00
+[S10DISPLAY] Display (target) k_77 = 130.15
+[S10DISPLAY] Display (target) k_78 = 0.00
+[S10DISPLAY] Display (target) k_79 = 130.15
+[S10DISPLAY] Display (target) j_73 = 2.56%
+[S10DISPLAY] Display (target) j_74 = 0.73%
+[S10DISPLAY] Display (target) j_75 = 2.01%
+[S10DISPLAY] Display (target) j_76 = 76.90%
+[S10DISPLAY] Display (target) j_77 = 17.80%
+[S10DISPLAY] Display (target) j_78 = 0.00%
+[S10DISPLAY] Display (target) j_79 = 100.00%
+[S10DISPLAY] Display (target) l_73 = 0.00%
+[S10DISPLAY] Display (target) l_74 = 0.00%
+[S10DISPLAY] Display (target) l_75 = 0.00%
+[S10DISPLAY] Display (target) l_76 = 0.00%
+[S10DISPLAY] Display (target) l_77 = 100.00%
+[S10DISPLAY] Display (target) l_78 = 0.00%
+[S10DISPLAY] Display (target) l_79 = 100.00%
+[S10DISPLAY] Display (target) e_80 = 114,698.95
+[S10DISPLAY] Display (target) e_81 = 114,698.95
+[S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+[S10DISPLAY] Display (target) g_80 = 40.00%
+[S10DISPLAY] Display (target) g_81 = 94.43%
+[S10DISPLAY] Display (target) i_80 = 45,879.58
+[S10DISPLAY] Display (target) i_81 = 108,308.11
+[S10DISPLAY] Display (target) i_82 = 68,819.37
+S10: Reference utilization factor dependency ref_m_121 changed.
+[S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+[S10DISPLAY] Display (target) m_73 = 50.00
+[S10DISPLAY] Display (target) m_74 = 1.31
+[S10DISPLAY] Display (target) m_75 = 76.94
+[S10DISPLAY] Display (target) m_76 = 70.74
+[S10DISPLAY] Display (target) m_77 = 25.86
+[S10DISPLAY] Display (target) m_78 = 75.00
+[S10DISPLAY] Display (target) i_73 = 375.00
+[S10DISPLAY] Display (target) i_74 = 106.29
+[S10DISPLAY] Display (target) i_75 = 294.68
+[S10DISPLAY] Display (target) i_76 = 11,247.66
+[S10DISPLAY] Display (target) i_77 = 2,603.07
+[S10DISPLAY] Display (target) i_78 = 0.00
+[S10DISPLAY] Display (target) i_79 = 14,626.70
+[S10DISPLAY] Display (target) k_73 = 0.00
+[S10DISPLAY] Display (target) k_74 = 0.00
+[S10DISPLAY] Display (target) k_75 = 0.00
+[S10DISPLAY] Display (target) k_76 = 0.00
+[S10DISPLAY] Display (target) k_77 = 130.15
+[S10DISPLAY] Display (target) k_78 = 0.00
+[S10DISPLAY] Display (target) k_79 = 130.15
+[S10DISPLAY] Display (target) j_73 = 2.56%
+[S10DISPLAY] Display (target) j_74 = 0.73%
+[S10DISPLAY] Display (target) j_75 = 2.01%
+[S10DISPLAY] Display (target) j_76 = 76.90%
+[S10DISPLAY] Display (target) j_77 = 17.80%
+[S10DISPLAY] Display (target) j_78 = 0.00%
+[S10DISPLAY] Display (target) j_79 = 100.00%
+[S10DISPLAY] Display (target) l_73 = 0.00%
+[S10DISPLAY] Display (target) l_74 = 0.00%
+[S10DISPLAY] Display (target) l_75 = 0.00%
+[S10DISPLAY] Display (target) l_76 = 0.00%
+[S10DISPLAY] Display (target) l_77 = 100.00%
+[S10DISPLAY] Display (target) l_78 = 0.00%
+[S10DISPLAY] Display (target) l_79 = 100.00%
+[S10DISPLAY] Display (target) e_80 = 114,698.95
+[S10DISPLAY] Display (target) e_81 = 114,698.95
+[S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+[S10DISPLAY] Display (target) g_80 = 40.00%
+[S10DISPLAY] Display (target) g_81 = 94.43%
+[S10DISPLAY] Display (target) i_80 = 45,879.58
+[S10DISPLAY] Display (target) i_81 = 108,308.11
+[S10DISPLAY] Display (target) i_82 = 68,819.37
+S10: Target listener triggered by m_121, recalculating all.
+[S10 DEBUG] calculateAll() triggered in target mode - running both engines
+[S10REF] Utilization calc: ref_i_71=113145.3708, ref_i_79=10060.174319999998, totalGains=123205.54512
+[S10REF] Using utilization method: NRC 40%
+[S10REF] Final calc: utilizationFactor=0.4, usableGains=49282.218048
+[S10REF] Complete: g_80=0.4, g_81=0.9472668950184051, i_80=49282.218048, i_81=116708.5341748724
+[S10 DEBUG] Dual-engine calculations complete in target mode
+[S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+[S10DISPLAY] Display (target) m_73 = 50.00
+[S10DISPLAY] Display (target) m_74 = 1.31
+[S10DISPLAY] Display (target) m_75 = 76.94
+[S10DISPLAY] Display (target) m_76 = 70.74
+[S10DISPLAY] Display (target) m_77 = 25.86
+[S10DISPLAY] Display (target) m_78 = 75.00
+[S10DISPLAY] Display (target) i_73 = 375.00
+[S10DISPLAY] Display (target) i_74 = 106.29
+[S10DISPLAY] Display (target) i_75 = 294.68
+[S10DISPLAY] Display (target) i_76 = 11,247.66
+[S10DISPLAY] Display (target) i_77 = 2,603.07
+[S10DISPLAY] Display (target) i_78 = 0.00
+[S10DISPLAY] Display (target) i_79 = 14,626.70
+[S10DISPLAY] Display (target) k_73 = 0.00
+[S10DISPLAY] Display (target) k_74 = 0.00
+[S10DISPLAY] Display (target) k_75 = 0.00
+[S10DISPLAY] Display (target) k_76 = 0.00
+[S10DISPLAY] Display (target) k_77 = 130.15
+[S10DISPLAY] Display (target) k_78 = 0.00
+[S10DISPLAY] Display (target) k_79 = 130.15
+[S10DISPLAY] Display (target) j_73 = 2.56%
+[S10DISPLAY] Display (target) j_74 = 0.73%
+[S10DISPLAY] Display (target) j_75 = 2.01%
+[S10DISPLAY] Display (target) j_76 = 76.90%
+[S10DISPLAY] Display (target) j_77 = 17.80%
+[S10DISPLAY] Display (target) j_78 = 0.00%
+[S10DISPLAY] Display (target) j_79 = 100.00%
+[S10DISPLAY] Display (target) l_73 = 0.00%
+[S10DISPLAY] Display (target) l_74 = 0.00%
+[S10DISPLAY] Display (target) l_75 = 0.00%
+[S10DISPLAY] Display (target) l_76 = 0.00%
+[S10DISPLAY] Display (target) l_77 = 100.00%
+[S10DISPLAY] Display (target) l_78 = 0.00%
+[S10DISPLAY] Display (target) l_79 = 100.00%
+[S10DISPLAY] Display (target) e_80 = 114,698.95
+[S10DISPLAY] Display (target) e_81 = 114,698.95
+[S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+[S10DISPLAY] Display (target) g_80 = 40.00%
+[S10DISPLAY] Display (target) g_81 = 94.43%
+[S10DISPLAY] Display (target) i_80 = 45,879.58
+[S10DISPLAY] Display (target) i_81 = 108,308.11
+[S10DISPLAY] Display (target) i_82 = 68,819.37
+S10: Target utilization factor dependency m_121 changed.
+[S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+[S10DISPLAY] Display (target) m_73 = 50.00
+[S10DISPLAY] Display (target) m_74 = 1.31
+[S10DISPLAY] Display (target) m_75 = 76.94
+[S10DISPLAY] Display (target) m_76 = 70.74
+[S10DISPLAY] Display (target) m_77 = 25.86
+[S10DISPLAY] Display (target) m_78 = 75.00
+[S10DISPLAY] Display (target) i_73 = 375.00
+[S10DISPLAY] Display (target) i_74 = 106.29
+[S10DISPLAY] Display (target) i_75 = 294.68
+[S10DISPLAY] Display (target) i_76 = 11,247.66
+[S10DISPLAY] Display (target) i_77 = 2,603.07
+[S10DISPLAY] Display (target) i_78 = 0.00
+[S10DISPLAY] Display (target) i_79 = 14,626.70
+[S10DISPLAY] Display (target) k_73 = 0.00
+[S10DISPLAY] Display (target) k_74 = 0.00
+[S10DISPLAY] Display (target) k_75 = 0.00
+[S10DISPLAY] Display (target) k_76 = 0.00
+[S10DISPLAY] Display (target) k_77 = 130.15
+[S10DISPLAY] Display (target) k_78 = 0.00
+[S10DISPLAY] Display (target) k_79 = 130.15
+[S10DISPLAY] Display (target) j_73 = 2.56%
+[S10DISPLAY] Display (target) j_74 = 0.73%
+[S10DISPLAY] Display (target) j_75 = 2.01%
+[S10DISPLAY] Display (target) j_76 = 76.90%
+[S10DISPLAY] Display (target) j_77 = 17.80%
+[S10DISPLAY] Display (target) j_78 = 0.00%
+[S10DISPLAY] Display (target) j_79 = 100.00%
+[S10DISPLAY] Display (target) l_73 = 0.00%
+[S10DISPLAY] Display (target) l_74 = 0.00%
+[S10DISPLAY] Display (target) l_75 = 0.00%
+[S10DISPLAY] Display (target) l_76 = 0.00%
+[S10DISPLAY] Display (target) l_77 = 100.00%
+[S10DISPLAY] Display (target) l_78 = 0.00%
+[S10DISPLAY] Display (target) l_79 = 100.00%
+[S10DISPLAY] Display (target) e_80 = 114,698.95
+[S10DISPLAY] Display (target) e_81 = 114,698.95
+[S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+[S10DISPLAY] Display (target) g_80 = 40.00%
+[S10DISPLAY] Display (target) g_81 = 94.43%
+[S10DISPLAY] Display (target) i_80 = 45,879.58
+[S10DISPLAY] Display (target) i_81 = 108,308.11
+[S10DISPLAY] Display (target) i_82 = 68,819.37
+[Cooling] 🚀 Starting cooling calculations (mode=target)...
+[Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+[Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+[Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+[Cooling] 📊 Publishing results with prefix="" (mode=target)
+[Cooling] ⚠️ Already calculating (mode=reference) - skipping to prevent recursion
+[Cooling] ⚠️ Already calculating (mode=target) - skipping to prevent recursion
+[Cooling] ⚠️ Already calculating (mode=reference) - skipping to prevent recursion
+[Cooling] ⚠️ Already calculating (mode=target) - skipping to prevent recursion
+[Cooling] ⚠️ Already calculating (mode=reference) - skipping to prevent recursion
+[Cooling] ⚠️ Already calculating (mode=target) - skipping to prevent recursion
+[Section14] ✅ Added comprehensive listeners for 26 dependencies + 8 climate fields
+S14: Section rendered - initializing Pattern A Dual-State Module.
+S14: Reference defaults loaded from standard: OBC SB10 5.5-6 Z6
+[Section14] ✅ Added comprehensive listeners for 26 dependencies + 8 climate fields
+[Cooling] 🚀 Starting cooling calculations (mode=reference)...
+[Cooling] Free cooling calc: massFlow=0.000 kg/s, ΔT=3.6°C → 0.00 kWh/day → 0.00 kWh/yr
+[Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+[Cooling m_124 COOLING-TARGET] m_129_annual=68081.98667319061, E37_daily=347.3570748632174, E45(d_21)=196, E50=68081.98667319061, E51=67734.01555200001, E52=347.971121190596, E54(m_19)=120, E55(result)=0.12082330596895695
+[Cooling] 📊 Publishing results with prefix="ref*" (mode=reference)
+[Cooling] 🚀 Starting cooling calculations (mode=target)...
+[Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+[Cooling A33 PHYSICS] d*120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+[Cooling m_124 COOLING-TARGET] m_129_annual=11338.666473510437, E37_daily=57.85033915056346, E45(d_21)=196, E50=11338.666473510437, E51=67734.01555200001, E52=-56395.34907848958, E54(m_19)=120, E55(result)=-19.581718430031103
+[Cooling] 📊 Publishing results with prefix="" (mode=target)
+[Cooling] ⚠️ Already calculating (mode=reference) - skipping to prevent recursion
+[Cooling] ⚠️ Already calculating (mode=target) - skipping to prevent recursion
+[Cooling] 🚀 Starting cooling calculations (mode=reference)...
+[Cooling] Free cooling calc: massFlow=0.000 kg/s, ΔT=3.6°C → 0.00 kWh/day → 0.00 kWh/yr
+[Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+[Cooling m_124 COOLING-TARGET] m_129_annual=75162.19876980862, E37_daily=383.4806059684113, E45(d_21)=196, E50=75162.19876980862, E51=67734.01555200001, E52=7428.183217808604, E54(m_19)=120, E55(result)=2.579230283961321
+[Cooling] 📊 Publishing results with prefix="ref*" (mode=reference)
+[Cooling] 🚀 Starting cooling calculations (mode=target)...
+[Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+[Cooling A33 PHYSICS] d*120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+[Cooling m_124 COOLING-TARGET] m_129_annual=11338.666473510437, E37_daily=57.85033915056346, E45(d_21)=196, E50=11338.666473510437, E51=67734.01555200001, E52=-56395.34907848958, E54(m_19)=120, E55(result)=-19.581718430031103
+[Cooling] 📊 Publishing results with prefix="" (mode=target)
+S14: Pattern A initialization complete.
+[S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
 2 🔄 [S05] updateCalculatedDisplayValues: mode=target
-2 [S05→S02] Updated ref_d_16 = 345.82 based on ref_d_15 = Self Reported
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=8906.846, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=1161288.9172848673, k_32=59225.73478152823 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=8906.846, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=1161288.9172848673, k_32=59225.73478152823 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
+[S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
+[S01] j_32 listener: 0 → 134004.53546146475
+[S01] 🕐 j_32 listener timing: StateManager current j_32 = 134004.53546146475
 2 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=8906.846, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
+[S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
+[S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
+[S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
+[S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
+[S18] Notes section rendered
+[S18] Notes & QC Monitor section loaded
+Section03: Province selected: ON
+City dropdown updated for ON - selected: Alexandria
+[S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
+Section03: Province selected: ON
+City dropdown updated for ON - selected: Alexandria
+[S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
+TEUI Calculator 4.011 initialization complete
+[CLOCK] Performance monitoring initialized
+[QCMonitor] QC monitoring disabled. Add ?qc=true to URL to activate.
+[S01DB] upstream snapshot Object
+🔍 [S01DB] updateTEUIDisplay START: e_10=341.2, h_10=93.89331240293214, useType=Utility Bills
+🔍 [S01] T.1 Calculation: e_6=16.3 (ref), h_6=11.7 (target) → reduction should be 28%
+🔍 [S01DB] UPDATING h_10: 93.9 (from j_32=134004.53546146475, area=1427.2)
+🔍 [S01] h_6 explanation: target=11.7, ref=16.3, reduction=0.28220858895705525, percent=28%
+✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10
+[DependencyGraph] Data loaded: 349 nodes, 588 links
+[DependencyGraph] Calculating node sizes...
+[S15] Missing critical upstream Reference values: ref_g_101, ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
+[S15] Missing critical upstream Reference values: ref_g_101, ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
+[S15] Missing critical upstream Reference values: ref_g_101, ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
+[S15] Missing critical upstream Reference values: ref_g_101, ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
+[S15] Missing critical upstream Reference values: ref_g_101, ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
+[S15] Missing critical upstream Reference values: ref_g_101, ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
+[S15] Missing critical upstream Reference values: ref_g_101, ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
+[S15] Missing critical upstream Reference values: ref_g_101, ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
 2 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=478723.7332848673, k_32=24414.91039752823 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=8906.846, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=478723.7332848673, k_32=24414.91039752823 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- S10: Reference listener triggered by ref_i_71, recalculating all.
- [S10 DEBUG] calculateAll() triggered in target mode - running both engines
- [S10REF] Utilization calc: ref_i_71=113145.3708, ref_i_79=10060.174319999998, totalGains=123205.54512
- [S10REF] Using utilization method: NRC 40%
- [S10REF] Final calc: utilizationFactor=0.4, usableGains=49282.218048
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=8906.846, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
+[S12] U-agg REF: TB%=50 → g_101=0.347926, g_102=0.405405
+[S15] Missing critical upstream Reference values: ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
+[S15] Missing critical upstream Reference values: ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
+[S15] Missing critical upstream Reference values: ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
+[S15] Missing critical upstream Reference values: ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
+[S15] Missing critical upstream Reference values: ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
+[S15] Missing critical upstream Reference values: ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
+[S15] Missing critical upstream Reference values: ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
+[S15] Missing critical upstream Reference values: ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
+[S15] Missing critical upstream Reference values: ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
+[S15] Missing critical upstream Reference values: ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
+[S15] Missing critical upstream Reference values: ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
+[S15] Missing critical upstream Reference values: ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
+[S12] 🔵 REF CLIMATE READ: d_20=4600, d_21=196
+S10: Reference listener triggered by ref_i_103, recalculating all.
+[S10 DEBUG] calculateAll() triggered in target mode - running both engines
+[S10REF] Utilization calc: ref_i_71=113145.3708, ref_i_79=10060.174319999998, totalGains=123205.54512
+[S10REF] Using utilization method: NRC 40%
+[S10REF] Final calc: utilizationFactor=0.4, usableGains=49282.218048
+[S10REF] Complete: g_80=0.4, g_81=0.9733965895980725, i_80=49282.218048, i_81=119927.85743937944
+[S10 DEBUG] Dual-engine calculations complete in target mode
+[S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+[S10DISPLAY] Display (target) m_73 = 50.00
+[S10DISPLAY] Display (target) m_74 = 1.31
+[S10DISPLAY] Display (target) m_75 = 76.94
+[S10DISPLAY] Display (target) m_76 = 70.74
+[S10DISPLAY] Display (target) m_77 = 25.86
+[S10DISPLAY] Display (target) m_78 = 75.00
+[S10DISPLAY] Display (target) i_73 = 375.00
+[S10DISPLAY] Display (target) i_74 = 106.29
+[S10DISPLAY] Display (target) i_75 = 294.68
+[S10DISPLAY] Display (target) i_76 = 11,247.66
+[S10DISPLAY] Display (target) i_77 = 2,603.07
+[S10DISPLAY] Display (target) i_78 = 0.00
+[S10DISPLAY] Display (target) i_79 = 14,626.70
+[S10DISPLAY] Display (target) k_73 = 0.00
+[S10DISPLAY] Display (target) k_74 = 0.00
+[S10DISPLAY] Display (target) k_75 = 0.00
+[S10DISPLAY] Display (target) k_76 = 0.00
+[S10DISPLAY] Display (target) k_77 = 130.15
+[S10DISPLAY] Display (target) k_78 = 0.00
+[S10DISPLAY] Display (target) k_79 = 130.15
+[S10DISPLAY] Display (target) j_73 = 2.56%
+[S10DISPLAY] Display (target) j_74 = 0.73%
+[S10DISPLAY] Display (target) j_75 = 2.01%
+[S10DISPLAY] Display (target) j_76 = 76.90%
+[S10DISPLAY] Display (target) j_77 = 17.80%
+[S10DISPLAY] Display (target) j_78 = 0.00%
+[S10DISPLAY] Display (target) j_79 = 100.00%
+[S10DISPLAY] Display (target) l_73 = 0.00%
+[S10DISPLAY] Display (target) l_74 = 0.00%
+[S10DISPLAY] Display (target) l_75 = 0.00%
+[S10DISPLAY] Display (target) l_76 = 0.00%
+[S10DISPLAY] Display (target) l_77 = 100.00%
+[S10DISPLAY] Display (target) l_78 = 0.00%
+[S10DISPLAY] Display (target) l_79 = 100.00%
+[S10DISPLAY] Display (target) e_80 = 114,698.95
+[S10DISPLAY] Display (target) e_81 = 114,698.95
+[S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+[S10DISPLAY] Display (target) g_80 = 40.00%
+[S10DISPLAY] Display (target) g_81 = 94.43%
+[S10DISPLAY] Display (target) i_80 = 45,879.58
+[S10DISPLAY] Display (target) i_81 = 108,308.11
+[S10DISPLAY] Display (target) i_82 = 68,819.37
+S10: Reference utilization factor dependency ref_i_103 changed.
+[S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+[S10DISPLAY] Display (target) m_73 = 50.00
+[S10DISPLAY] Display (target) m_74 = 1.31
+[S10DISPLAY] Display (target) m_75 = 76.94
+[S10DISPLAY] Display (target) m_76 = 70.74
+[S10DISPLAY] Display (target) m_77 = 25.86
+[S10DISPLAY] Display (target) m_78 = 75.00
+[S10DISPLAY] Display (target) i_73 = 375.00
+[S10DISPLAY] Display (target) i_74 = 106.29
+[S10DISPLAY] Display (target) i_75 = 294.68
+[S10DISPLAY] Display (target) i_76 = 11,247.66
+[S10DISPLAY] Display (target) i_77 = 2,603.07
+[S10DISPLAY] Display (target) i_78 = 0.00
+[S10DISPLAY] Display (target) i_79 = 14,626.70
+[S10DISPLAY] Display (target) k_73 = 0.00
+[S10DISPLAY] Display (target) k_74 = 0.00
+[S10DISPLAY] Display (target) k_75 = 0.00
+[S10DISPLAY] Display (target) k_76 = 0.00
+[S10DISPLAY] Display (target) k_77 = 130.15
+[S10DISPLAY] Display (target) k_78 = 0.00
+[S10DISPLAY] Display (target) k_79 = 130.15
+[S10DISPLAY] Display (target) j_73 = 2.56%
+[S10DISPLAY] Display (target) j_74 = 0.73%
+[S10DISPLAY] Display (target) j_75 = 2.01%
+[S10DISPLAY] Display (target) j_76 = 76.90%
+[S10DISPLAY] Display (target) j_77 = 17.80%
+[S10DISPLAY] Display (target) j_78 = 0.00%
+[S10DISPLAY] Display (target) j_79 = 100.00%
+[S10DISPLAY] Display (target) l_73 = 0.00%
+[S10DISPLAY] Display (target) l_74 = 0.00%
+[S10DISPLAY] Display (target) l_75 = 0.00%
+[S10DISPLAY] Display (target) l_76 = 0.00%
+[S10DISPLAY] Display (target) l_77 = 100.00%
+[S10DISPLAY] Display (target) l_78 = 0.00%
+[S10DISPLAY] Display (target) l_79 = 100.00%
+[S10DISPLAY] Display (target) e_80 = 114,698.95
+[S10DISPLAY] Display (target) e_81 = 114,698.95
+[S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+[S10DISPLAY] Display (target) g_80 = 40.00%
+[S10DISPLAY] Display (target) g_81 = 94.43%
+[S10DISPLAY] Display (target) i_80 = 45,879.58
+[S10DISPLAY] Display (target) i_81 = 108,308.11
+[S10DISPLAY] Display (target) i_82 = 68,819.37
+[S12DB] REF CLIMATE: d_20=4600, d_21=196, d_22=1960, h_22=-1680
+[S12DB] REF h_101 calc: (4600*0.34792632830961084*24)/1000 = 38.41106664538104
+[S12DB] REF i_101 result: 38.41106664538104 * 2482.6199999999994 = 95360.08227515586
+[S12DB] REF g_104 calc: (0.34792632830961084*2482.6199999999994 + 0.4054054054054054\*1100.42)/3583.0400009999994 = 0.365579250312205
+[S12DB] REF ROW104: i_101=95360.08227515586, i_102=20985.306810810813, i_103=36440.07984031935 → i_104=152785.46892628603
+[S12DB] REF ROW104: h_21="Capacitance", k_98=-1852.6412868093894 → k_104=-1852.6412868093894
+[S15] Missing critical upstream Reference values: ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
+[S15] Missing critical upstream Reference values: ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
+[S15] Missing critical upstream Reference values: ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
+[S15] Missing critical upstream Reference values: ref_i_104
+calculateReferenceModel @ 4012-Section15.js:1391Understand this warningAI
+[S15] Using fallback values for missing upstream dependencies (initialization timing)
 2 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=661987.8100848673, k_32=33761.378314328234 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=8906.846, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=661987.8100848673, k_32=33761.378314328234 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- [S10REF] Complete: g_80=0.4, g_81=0.9911554707922017, i_80=49282.218048, i_81=122115.85007762344
- [S10 DEBUG] Dual-engine calculations complete in target mode
- [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
- [S10DISPLAY] Display (target) m_73 = 50.00
- [S10DISPLAY] Display (target) m_74 = 1.31
- [S10DISPLAY] Display (target) m_75 = 76.94
- [S10DISPLAY] Display (target) m_76 = 70.74
- [S10DISPLAY] Display (target) m_77 = 25.86
- [S10DISPLAY] Display (target) m_78 = 75.00
- [S10DISPLAY] Display (target) i_73 = 375.00
- [S10DISPLAY] Display (target) i_74 = 106.29
- [S10DISPLAY] Display (target) i_75 = 294.68
- [S10DISPLAY] Display (target) i_76 = 11,247.66
- [S10DISPLAY] Display (target) i_77 = 2,603.07
- [S10DISPLAY] Display (target) i_78 = 0.00
- [S10DISPLAY] Display (target) i_79 = 14,626.70
- [S10DISPLAY] Display (target) k_73 = 0.00
- [S10DISPLAY] Display (target) k_74 = 0.00
- [S10DISPLAY] Display (target) k_75 = 0.00
- [S10DISPLAY] Display (target) k_76 = 0.00
- [S10DISPLAY] Display (target) k_77 = 130.15
- [S10DISPLAY] Display (target) k_78 = 0.00
- [S10DISPLAY] Display (target) k_79 = 130.15
- [S10DISPLAY] Display (target) j_73 = 2.56%
- [S10DISPLAY] Display (target) j_74 = 0.73%
- [S10DISPLAY] Display (target) j_75 = 2.01%
- [S10DISPLAY] Display (target) j_76 = 76.90%
- [S10DISPLAY] Display (target) j_77 = 17.80%
- [S10DISPLAY] Display (target) j_78 = 0.00%
- [S10DISPLAY] Display (target) j_79 = 100.00%
- [S10DISPLAY] Display (target) l_73 = 0.00%
- [S10DISPLAY] Display (target) l_74 = 0.00%
- [S10DISPLAY] Display (target) l_75 = 0.00%
- [S10DISPLAY] Display (target) l_76 = 0.00%
- [S10DISPLAY] Display (target) l_77 = 100.00%
- [S10DISPLAY] Display (target) l_78 = 0.00%
- [S10DISPLAY] Display (target) l_79 = 100.00%
- [S10DISPLAY] Display (target) e_80 = 501,271.61
- [S10DISPLAY] Display (target) e_81 = 501,271.61
- [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
- [S10DISPLAY] Display (target) g_80 = 40.00%
- [S10DISPLAY] Display (target) g_81 = 91.72%
- [S10DISPLAY] Display (target) i_80 = 200,508.64
- [S10DISPLAY] Display (target) i_81 = 459,741.68
- [S10DISPLAY] Display (target) i_82 = 300,762.97
-3 [S09] Updated calculated display values for target mode
- [S02] Reference results stored with ref_ prefix for downstream sections
+[S12DB] STORED for S15: ref_d_101=2482.6199999999994
+[S12DB] STORED for S15: ref_d_102=1100.42
+[S12DB] STORED for S15: ref_g_101=0.34792632830961084
+[S12DB] STORED for S15: ref_g_102=0.4054054054054054
+[S12DB] STORED for S15: ref_g_104=0.365579250312205
+[S12DB] STORED for S15: ref_i_101=95360.08227515586
+[S12DB] STORED for S15: ref_i_102=20985.306810810813
+[S12DB] STORED for S15: ref_i_104=152785.46892628603
+[Section12] Reference results stored with ref* prefix for downstream sections
+[S12] U-agg TGT: TB%=20 → g*101=0.278341, g_102=0.324324
+[S12] 🎯 TGT CLIMATE READ: d_20=4600, d_21=196
+[S12DB] TGT CLIMATE: d_20=4600, d_21=196, d_22=1960, h_22=-1680
+[S12DB] TGT h_101 calc: (4600*0.27834106264768865*24)/1000 = 30.72885331630483
+[S12DB] TGT i_101 result: 30.72885331630483 * 2476.6199999999994 = 76103.69270022685
+[S12DB] TGT g_104 calc: (0.27834106264768865*2476.6199999999994 + 0.3243243243243243\*1100.42)/3577.0400009999994 = 0.29248708855785915
+[S12DB] TGT ROW104: i_101=76103.69270022685, i_102=16788.24544864865, i_103=23178.387012790416 → i_104=116070.32516166591
+[S12DB] TGT ROW104: h_21="Capacitance", k_98=-3293.5693790538335 → k_104=-3293.5693790538335
+[Cooling] 🚀 Starting cooling calculations (mode=reference)...
+[Cooling] Free cooling calc: massFlow=0.000 kg/s, ΔT=3.6°C → 0.00 kWh/day → 0.00 kWh/yr
+[Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+[Cooling m_124 COOLING-TARGET] m_129_annual=75162.19876980862, E37_daily=383.4806059684113, E45(d_21)=196, E50=75162.19876980862, E51=67734.01555200001, E52=7428.183217808604, E54(m_19)=120, E55(result)=2.579230283961321
+[Cooling] 📊 Publishing results with prefix="ref*" (mode=reference)
+S10: Reference listener triggered by ref*m_121, recalculating all.
+[S10 DEBUG] calculateAll() triggered in target mode - running both engines
+[S10REF] Utilization calc: ref_i_71=113145.3708, ref_i_79=10060.174319999998, totalGains=123205.54512
+[S10REF] Using utilization method: NRC 40%
+[S10REF] Final calc: utilizationFactor=0.4, usableGains=49282.218048
+[S10REF] Complete: g_80=0.4, g_81=0.9984451612323058, i_80=49282.218048, i_81=123013.98036205252
+[S10 DEBUG] Dual-engine calculations complete in target mode
+[S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+[S10DISPLAY] Display (target) m_73 = 50.00
+[S10DISPLAY] Display (target) m_74 = 1.31
+[S10DISPLAY] Display (target) m_75 = 76.94
+[S10DISPLAY] Display (target) m_76 = 70.74
+[S10DISPLAY] Display (target) m_77 = 25.86
+[S10DISPLAY] Display (target) m_78 = 75.00
+[S10DISPLAY] Display (target) i_73 = 375.00
+[S10DISPLAY] Display (target) i_74 = 106.29
+[S10DISPLAY] Display (target) i_75 = 294.68
+[S10DISPLAY] Display (target) i_76 = 11,247.66
+[S10DISPLAY] Display (target) i_77 = 2,603.07
+[S10DISPLAY] Display (target) i_78 = 0.00
+[S10DISPLAY] Display (target) i_79 = 14,626.70
+[S10DISPLAY] Display (target) k_73 = 0.00
+[S10DISPLAY] Display (target) k_74 = 0.00
+[S10DISPLAY] Display (target) k_75 = 0.00
+[S10DISPLAY] Display (target) k_76 = 0.00
+[S10DISPLAY] Display (target) k_77 = 130.15
+[S10DISPLAY] Display (target) k_78 = 0.00
+[S10DISPLAY] Display (target) k_79 = 130.15
+[S10DISPLAY] Display (target) j_73 = 2.56%
+[S10DISPLAY] Display (target) j_74 = 0.73%
+[S10DISPLAY] Display (target) j_75 = 2.01%
+[S10DISPLAY] Display (target) j_76 = 76.90%
+[S10DISPLAY] Display (target) j_77 = 17.80%
+[S10DISPLAY] Display (target) j_78 = 0.00%
+[S10DISPLAY] Display (target) j_79 = 100.00%
+[S10DISPLAY] Display (target) l_73 = 0.00%
+[S10DISPLAY] Display (target) l_74 = 0.00%
+[S10DISPLAY] Display (target) l_75 = 0.00%
+[S10DISPLAY] Display (target) l_76 = 0.00%
+[S10DISPLAY] Display (target) l_77 = 100.00%
+[S10DISPLAY] Display (target) l_78 = 0.00%
+[S10DISPLAY] Display (target) l_79 = 100.00%
+[S10DISPLAY] Display (target) e_80 = 114,698.95
+[S10DISPLAY] Display (target) e_81 = 114,698.95
+[S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+[S10DISPLAY] Display (target) g_80 = 40.00%
+[S10DISPLAY] Display (target) g_81 = 94.43%
+[S10DISPLAY] Display (target) i_80 = 45,879.58
+[S10DISPLAY] Display (target) i_81 = 108,308.11
+[S10DISPLAY] Display (target) i_82 = 68,819.37
+S10: Reference utilization factor dependency ref_m_121 changed.
+[S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+[S10DISPLAY] Display (target) m_73 = 50.00
+[S10DISPLAY] Display (target) m_74 = 1.31
+[S10DISPLAY] Display (target) m_75 = 76.94
+[S10DISPLAY] Display (target) m_76 = 70.74
+[S10DISPLAY] Display (target) m_77 = 25.86
+[S10DISPLAY] Display (target) m_78 = 75.00
+[S10DISPLAY] Display (target) i_73 = 375.00
+[S10DISPLAY] Display (target) i_74 = 106.29
+[S10DISPLAY] Display (target) i_75 = 294.68
+[S10DISPLAY] Display (target) i_76 = 11,247.66
+[S10DISPLAY] Display (target) i_77 = 2,603.07
+[S10DISPLAY] Display (target) i_78 = 0.00
+[S10DISPLAY] Display (target) i_79 = 14,626.70
+[S10DISPLAY] Display (target) k_73 = 0.00
+[S10DISPLAY] Display (target) k_74 = 0.00
+[S10DISPLAY] Display (target) k_75 = 0.00
+[S10DISPLAY] Display (target) k_76 = 0.00
+[S10DISPLAY] Display (target) k_77 = 130.15
+[S10DISPLAY] Display (target) k_78 = 0.00
+[S10DISPLAY] Display (target) k_79 = 130.15
+[S10DISPLAY] Display (target) j_73 = 2.56%
+[S10DISPLAY] Display (target) j_74 = 0.73%
+[S10DISPLAY] Display (target) j_75 = 2.01%
+[S10DISPLAY] Display (target) j_76 = 76.90%
+[S10DISPLAY] Display (target) j_77 = 17.80%
+[S10DISPLAY] Display (target) j_78 = 0.00%
+[S10DISPLAY] Display (target) j_79 = 100.00%
+[S10DISPLAY] Display (target) l_73 = 0.00%
+[S10DISPLAY] Display (target) l_74 = 0.00%
+[S10DISPLAY] Display (target) l_75 = 0.00%
+[S10DISPLAY] Display (target) l_76 = 0.00%
+[S10DISPLAY] Display (target) l_77 = 100.00%
+[S10DISPLAY] Display (target) l_78 = 0.00%
+[S10DISPLAY] Display (target) l_79 = 100.00%
+[S10DISPLAY] Display (target) e_80 = 114,698.95
+[S10DISPLAY] Display (target) e_81 = 114,698.95
+[S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+[S10DISPLAY] Display (target) g_80 = 40.00%
+[S10DISPLAY] Display (target) g_81 = 94.43%
+[S10DISPLAY] Display (target) i_80 = 45,879.58
+[S10DISPLAY] Display (target) i_81 = 108,308.11
+[S10DISPLAY] Display (target) i_82 = 68,819.37
 2 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [S02] Reference results stored with ref_ prefix for downstream sections
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=8906.846, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
-2 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=1461987.8100848673, k_32=74561.37831432823 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=8906.846, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=1461987.8100848673, k_32=74561.37831432823 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=8906.846, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=1461987.8100848673, k_32=74561.37831432823 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=8906.846, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=1461987.8100848673, k_32=74561.37831432823 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=8906.846, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=1461987.8100848673, k_32=74561.37831432823 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=8906.846, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=1461987.8100848673, k_32=74561.37831432823 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- [S07] calculateEmissionsAndLosses: systemType="Gas" (TGT)
- [S07] 🔥 Gas calc: demand=814485.3333333333, afue=0.9 → e_51=87589.5223336692, k_54=0 (cleared)
- [S07] calculateEmissionsAndLosses: systemType="Gas" (REF)
- [S07] 🔥 Gas calc: demand=814485.3333333333, afue=0.9 → e_51=87589.5223336692, k_54=0 (cleared)
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=8906.846, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
-2 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=2369512.655755144, k_32=242820.85071730678 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=8906.846, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=2369512.655755144, k_32=242820.85071730678 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- S10: Reference listener triggered by ref_i_71, recalculating all.
- [S10 DEBUG] calculateAll() triggered in target mode - running both engines
- [S10REF] Utilization calc: ref_i_71=159766.0092, ref_i_79=10060.174319999998, totalGains=169826.18352
- [S10REF] Using utilization method: NRC 40%
- [S10REF] Final calc: utilizationFactor=0.4, usableGains=67930.473408
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=8906.846, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
-2 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=2350864.400395144, k_32=241869.78969394678 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=8906.846, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=2350864.400395144, k_32=241869.78969394678 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- [S10REF] Complete: g_80=0.4, g_81=0.9675070665543326, i_80=67930.473408, i_81=164308.03264155294
- [S10 DEBUG] Dual-engine calculations complete in target mode
- [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
- [S10DISPLAY] Display (target) m_73 = 50.00
- [S10DISPLAY] Display (target) m_74 = 1.31
- [S10DISPLAY] Display (target) m_75 = 76.94
- [S10DISPLAY] Display (target) m_76 = 70.74
- [S10DISPLAY] Display (target) m_77 = 25.86
- [S10DISPLAY] Display (target) m_78 = 75.00
- [S10DISPLAY] Display (target) i_73 = 375.00
- [S10DISPLAY] Display (target) i_74 = 106.29
- [S10DISPLAY] Display (target) i_75 = 294.68
- [S10DISPLAY] Display (target) i_76 = 11,247.66
- [S10DISPLAY] Display (target) i_77 = 2,603.07
- [S10DISPLAY] Display (target) i_78 = 0.00
- [S10DISPLAY] Display (target) i_79 = 14,626.70
- [S10DISPLAY] Display (target) k_73 = 0.00
- [S10DISPLAY] Display (target) k_74 = 0.00
- [S10DISPLAY] Display (target) k_75 = 0.00
- [S10DISPLAY] Display (target) k_76 = 0.00
- [S10DISPLAY] Display (target) k_77 = 130.15
- [S10DISPLAY] Display (target) k_78 = 0.00
- [S10DISPLAY] Display (target) k_79 = 130.15
- [S10DISPLAY] Display (target) j_73 = 2.56%
- [S10DISPLAY] Display (target) j_74 = 0.73%
- [S10DISPLAY] Display (target) j_75 = 2.01%
- [S10DISPLAY] Display (target) j_76 = 76.90%
- [S10DISPLAY] Display (target) j_77 = 17.80%
- [S10DISPLAY] Display (target) j_78 = 0.00%
- [S10DISPLAY] Display (target) j_79 = 100.00%
- [S10DISPLAY] Display (target) l_73 = 0.00%
- [S10DISPLAY] Display (target) l_74 = 0.00%
- [S10DISPLAY] Display (target) l_75 = 0.00%
- [S10DISPLAY] Display (target) l_76 = 0.00%
- [S10DISPLAY] Display (target) l_77 = 100.00%
- [S10DISPLAY] Display (target) l_78 = 0.00%
- [S10DISPLAY] Display (target) l_79 = 100.00%
- [S10DISPLAY] Display (target) e_80 = 501,271.61
- [S10DISPLAY] Display (target) e_81 = 501,271.61
- [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
- [S10DISPLAY] Display (target) g_80 = 40.00%
- [S10DISPLAY] Display (target) g_81 = 91.72%
- [S10DISPLAY] Display (target) i_80 = 200,508.64
- [S10DISPLAY] Display (target) i_81 = 459,741.68
- [S10DISPLAY] Display (target) i_82 = 300,762.97
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=8906.846, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=2350864.400395144, k_32=241869.78969394678 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=8906.846, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=2350864.400395144, k_32=241869.78969394678 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- [S07] calculateEmissionsAndLosses: systemType="Gas" (TGT)
- [S07] 🔥 Gas calc: demand=814485.3333333333, afue=0.9 → e_51=87589.5223336692, k_54=0 (cleared)
- [S07] calculateEmissionsAndLosses: systemType="Gas" (REF)
- [S07] 🔥 Gas calc: demand=42760.48, afue=0.9 → e_51=4598.449922517634, k_54=0 (cleared)
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=8906.846, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
-2 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=1490984.6091225569, k_32=82443.93959212459 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=8906.846, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=1490984.6091225569, k_32=82443.93959212459 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- S10: Reference listener triggered by ref_i_71, recalculating all.
- [S10 DEBUG] calculateAll() triggered in target mode - running both engines
- [S10REF] Utilization calc: ref_i_71=113145.3708, ref_i_79=10060.174319999998, totalGains=123205.54512
- [S10REF] Using utilization method: NRC 40%
- [S10REF] Final calc: utilizationFactor=0.4, usableGains=49282.218048
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=8906.846, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
-2 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=1509632.864482557, k_32=83395.0006154846 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=8906.846, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=1509632.864482557, k_32=83395.0006154846 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- [S10REF] Complete: g_80=0.4, g_81=0.9911554707922017, i_80=49282.218048, i_81=122115.85007762344
- [S10 DEBUG] Dual-engine calculations complete in target mode
- [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
- [S10DISPLAY] Display (target) m_73 = 50.00
- [S10DISPLAY] Display (target) m_74 = 1.31
- [S10DISPLAY] Display (target) m_75 = 76.94
- [S10DISPLAY] Display (target) m_76 = 70.74
- [S10DISPLAY] Display (target) m_77 = 25.86
- [S10DISPLAY] Display (target) m_78 = 75.00
- [S10DISPLAY] Display (target) i_73 = 375.00
- [S10DISPLAY] Display (target) i_74 = 106.29
- [S10DISPLAY] Display (target) i_75 = 294.68
- [S10DISPLAY] Display (target) i_76 = 11,247.66
- [S10DISPLAY] Display (target) i_77 = 2,603.07
- [S10DISPLAY] Display (target) i_78 = 0.00
- [S10DISPLAY] Display (target) i_79 = 14,626.70
- [S10DISPLAY] Display (target) k_73 = 0.00
- [S10DISPLAY] Display (target) k_74 = 0.00
- [S10DISPLAY] Display (target) k_75 = 0.00
- [S10DISPLAY] Display (target) k_76 = 0.00
- [S10DISPLAY] Display (target) k_77 = 130.15
- [S10DISPLAY] Display (target) k_78 = 0.00
- [S10DISPLAY] Display (target) k_79 = 130.15
- [S10DISPLAY] Display (target) j_73 = 2.56%
- [S10DISPLAY] Display (target) j_74 = 0.73%
- [S10DISPLAY] Display (target) j_75 = 2.01%
- [S10DISPLAY] Display (target) j_76 = 76.90%
- [S10DISPLAY] Display (target) j_77 = 17.80%
- [S10DISPLAY] Display (target) j_78 = 0.00%
- [S10DISPLAY] Display (target) j_79 = 100.00%
- [S10DISPLAY] Display (target) l_73 = 0.00%
- [S10DISPLAY] Display (target) l_74 = 0.00%
- [S10DISPLAY] Display (target) l_75 = 0.00%
- [S10DISPLAY] Display (target) l_76 = 0.00%
- [S10DISPLAY] Display (target) l_77 = 100.00%
- [S10DISPLAY] Display (target) l_78 = 0.00%
- [S10DISPLAY] Display (target) l_79 = 100.00%
- [S10DISPLAY] Display (target) e_80 = 501,271.61
- [S10DISPLAY] Display (target) e_81 = 501,271.61
- [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
- [S10DISPLAY] Display (target) g_80 = 40.00%
- [S10DISPLAY] Display (target) g_81 = 91.72%
- [S10DISPLAY] Display (target) i_80 = 200,508.64
- [S10DISPLAY] Display (target) i_81 = 459,741.68
- [S10DISPLAY] Display (target) i_82 = 300,762.97
-6 [S09] Updated calculated display values for target mode
- [S11] Listener: ref_d_97 changed → recalculating (src=imported)
- [S11] calculateAll TRIGGERED. isReferenceMode: false
-2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=82303.01, ref_k_97=3160.05
- [S11] Writing ref penalty: ref_i_97=82303.01, ref_k_97=3160.05
- [S11] Listener: ref_d_97 changed → recalculating (src=calculated)
- [S11] calculateAll TRIGGERED. isReferenceMode: false
-2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=82303.01, ref_k_97=3160.05
- [S11] Writing ref penalty: ref_i_97=82303.01, ref_k_97=3160.05
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] Listener: ref_d_97 changed → recalculating (src=calculated)
- [S11] calculateAll TRIGGERED. isReferenceMode: false
-2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=82303.01, ref_k_97=3160.05
- [S11] Writing ref penalty: ref_i_97=82303.01, ref_k_97=3160.05
-4 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] Listener: ref_d_97 changed → recalculating (src=imported)
- [S11] calculateAll TRIGGERED. isReferenceMode: false
-2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=82303.01, ref_k_97=3160.05
- [S11] Writing ref penalty: ref_i_97=82303.01, ref_k_97=3160.05
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=8906.846, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
-2 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=8906.846, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
-2 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=1046877.353317054, k_32=67382.11074751278 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for reference mode
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=8906.846, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=1046877.353317054, k_32=67382.11074751278 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for reference mode
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=1566086.5074019213, k_32=93861.77760584102 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=8906.846, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=1046877.353317054, k_32=67382.11074751278 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- [FileHandler] Reference data import complete. 124 fields updated. Skipping recalculation.
- [S12] U-agg REF: TB%=50 → g_101=0.202063, g_102=0.405403
- [S12] 🔵 REF CLIMATE READ: d_20=4600, d_21=196
- [S12DB] REF CLIMATE: d_20=4600, d_21=196, d_22=1960, h_22=-1680
- [S12DB] REF h_101 calc: (4600*0.20206315210552767*24)/1000 = 22.307771992450252
- [S12DB] REF i_101 result: 22.307771992450252 * 2482.6199999999994 = 55381.720903896836
- [S12DB] REF g_104 calc: (0.20206315210552767*2482.6199999999994 + 0.4054026828583597*1101.42)/3584.0400009999994 = 0.2645519149812859
- [S12DB] REF ROW104: i_101=55381.720903896836, i_102=21004.23602374932, i_103=36440.07984031935 → i_104=112826.0367679655
- [S12DB] REF ROW104: h_21="Capacitance", k_98=6320.096453990612 → k_104=6320.096453990612
- [S12DB] STORED for S15: ref_d_101=2482.6199999999994
- [S12DB] STORED for S15: ref_d_102=1101.42
- [S12DB] STORED for S15: ref_g_101=0.20206315210552767
- [S12DB] STORED for S15: ref_g_102=0.4054026828583597
- [S12DB] STORED for S15: ref_g_104=0.2645519149812859
- [S12DB] STORED for S15: ref_i_101=55381.720903896836
- [S12DB] STORED for S15: ref_i_102=21004.23602374932
- [S12DB] STORED for S15: ref_i_104=112826.0367679655
- [Section12] Reference results stored with ref_ prefix for downstream sections
- [S12] U-agg TGT: TB%=30 → g_101=0.175121, g_102=0.351349
- [S12] 🎯 TGT CLIMATE READ: d_20=3920, d_21=410
- [S12DB] TGT CLIMATE: d_20=3920, d_21=410, d_22=1960, h_22=-1680
- [S12DB] TGT h_101 calc: (3920*0.17512139849145733*24)/1000 = 16.475421170076306
- [S12DB] TGT i_101 result: 16.475421170076306 * 14260.13 = 234941.6476900402
- [S12DB] TGT g_104 calc: (0.17512139849145733*14260.13 + 0.35134899181057844*11168)/25428.130000999998 = 0.25252031700946964
- [S12DB] TGT ROW104: i_101=234941.6476900402, i_102=184578.63502702702, i_103=113730.13491839998 → i_104=533250.4176354673
- [S12DB] TGT ROW104: h_21="Capacitance", k_98=5592.671329651594 → k_104=5592.671329651594
- [S12DB] g_104 DISPLAY (target): 0.25252031701940036
- [Section12] Calculated display values updated for target mode
- [S01DB] upstream snapshot Object
- 🔍 [S01DB] updateTEUIDisplay START: e_10=341.2, h_10=130.76965254768513, useType=Utility Bills
- 🔍 [S01] T.1 Calculation: e_6=60.2 (ref), h_6=35.8 (target) → reduction should be 41%
- 🔍 [S01DB] UPDATING h_10: 212.0 (from j_32=2367829.5556702767, area=11167)
- 🔍 [S01] h_6 explanation: target=35.8, ref=60.2, reduction=0.4053156146179403, percent=41%
- 🕐 [CLOCK] ⚡ CALCULATION COMPLETE: 377ms (subsequent update)
- 🕐 [CLOCK] ⚡ USER INTERACTION COMPLETE: 377ms (interaction → h_10 settlement)
- ✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10
- [S04-RF] User modified d_27: 2000299 → 2000298
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [S04-RF] Starting complete Excel-compliant calculations
-2 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [S04-RF] Row 32 subtotals: f_32=2000298, g_32=134019.966, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=1046877.353317054, k_32=67382.11074751278 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- [S01DB] upstream snapshot Object
- 🔍 [S01DB] updateTEUIDisplay START: e_10=341.2, h_10=130.76965254768513, useType=Utility Bills
- 🔍 [S01] T.1 Calculation: e_6=60.2 (ref), h_6=35.8 (target) → reduction should be 41%
- 🔍 [S01DB] UPDATING h_10: 212.0 (from j_32=2367829.5556702767, area=11167)
- 🔍 [S01] h_6 explanation: target=35.8, ref=60.2, reduction=0.4053156146179403, percent=41%
- 🕐 [CLOCK] ⚡ CALCULATION COMPLETE: 53ms (subsequent update)
- 🕐 [CLOCK] ⚡ USER INTERACTION COMPLETE: 53ms (interaction → h_10 settlement)
- ✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10
- [S04-RF] User modified d_28: 355013 → 355014
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [S04-RF] Starting complete Excel-compliant calculations
-2 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [S04-RF] Row 32 subtotals: f_32=5678637.79426716, g_32=816001.86, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=1046877.353317054, k_32=67382.11074751278 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- [S01DB] upstream snapshot Object
- 🔍 [S01DB] updateTEUIDisplay START: e_10=341.2, h_10=130.76965254768513, useType=Utility Bills
- 🔍 [S01] T.1 Calculation: e_6=60.2 (ref), h_6=35.8 (target) → reduction should be 41%
- 🔍 [S01DB] UPDATING h_10: 212.0 (from j_32=2367829.5556702767, area=11167)
- 🔍 [S01] h_6 explanation: target=35.8, ref=60.2, reduction=0.4053156146179403, percent=41%
- 🕐 [CLOCK] ⚡ CALCULATION COMPLETE: 59ms (subsequent update)
- 🕐 [CLOCK] ⚡ USER INTERACTION COMPLETE: 59ms (interaction → h_10 settlement)
- ✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10
- S04-RF: Switched to REFERENCE mode
- [S04-RF] Refreshing UI for REFERENCE mode
- [S04-RF] 🔄 Updating calculated display values for reference mode
- S04-RF: Switched to TARGET mode
- [S04-RF] Refreshing UI for TARGET mode
- [S04-RF] 🔄 Updating calculated display values for target mode
- S04-RF: Switched to REFERENCE mode
- [S04-RF] Refreshing UI for REFERENCE mode
- [S04-RF] 🔄 Updating calculated display values for reference mode
- S04-RF: Switched to TARGET mode
- [S04-RF] Refreshing UI for TARGET mode
- [S04-RF] 🔄 Updating calculated display values for target mode
- [S04-RF] User modified d_27: 2,000,298.00 → 2000298.00
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=5678637.79426716, g_32=816001.86, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
- [S04-RF] Row 32 subtotals: f_32=132938, g_32=6779.838, j_32=1046877.353317054, k_32=67382.11074751278 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- S04-RF: Switched to REFERENCE mode
- [S04-RF] Refreshing UI for REFERENCE mode
- [S04-RF] 🔄 Updating calculated display values for reference mode
- [S04-RF] User modified d_27: 132,938.00 → 2000298.00
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=5678637.79426716, g_32=816001.86, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
-2 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [S04-RF] Row 32 subtotals: f_32=2000298, g_32=102015.198, j_32=1046877.353317054, k_32=67382.11074751278 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for reference mode
- S04-RF: Switched to TARGET mode
- [S04-RF] Refreshing UI for TARGET mode
- [S04-RF] 🔄 Updating calculated display values for target mode
- [S04-RF] User modified d_28: 355,014.00 → 355014.00
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=5678637.79426716, g_32=816001.86, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
- [S04-RF] Row 32 subtotals: f_32=2000298, g_32=102015.198, j_32=1046877.353317054, k_32=67382.11074751278 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- S04-RF: Switched to REFERENCE mode
- [S04-RF] Refreshing UI for REFERENCE mode
- [S04-RF] 🔄 Updating calculated display values for reference mode
- [S04-RF] User modified d_28: 0.00 → 355014.00
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=5678637.79426716, g_32=816001.86, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
-2 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [S04-RF] Row 32 subtotals: f_32=5678637.79426716, g_32=783997.092, j_32=1046877.353317054, k_32=67382.11074751278 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for reference mode
- S04-RF: Switched to TARGET mode
- [S04-RF] Refreshing UI for TARGET mode
- [S04-RF] 🔄 Updating calculated display values for target mode
- S04-RF: Switched to REFERENCE mode
- [S04-RF] Refreshing UI for REFERENCE mode
- [S04-RF] 🔄 Updating calculated display values for reference mode
- S04-RF: Switched to TARGET mode
- [S04-RF] Refreshing UI for TARGET mode
- [S04-RF] 🔄 Updating calculated display values for target mode
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [Cooling] 🚀 Starting cooling calculations (mode=reference)...
- [Cooling] Free cooling calc: massFlow=0.000 kg/s, ΔT=3.6°C → 0.00 kWh/day → 0.00 kWh/yr
- [Cooling A33 PHYSICS] d_120=35550.4625, l_119=None, A28=35550.4625, A29=35.5504625, A30=42.80275685, A16=3.5700000000000003, A31=153569.8711642725, A32=13268436868.593145, A33=3685.6769079425403
- [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=722392.6739567379, E52=-722392.6739567379, E54(m_19)=120, E55(result)=-250.83078956831176
- [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=5678637.79426716, g_32=816001.86, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
-2 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [S04-RF] Row 32 subtotals: f_32=5678637.79426716, g_32=783997.092, j_32=1250525.9605999321, k_32=105139.5422718371 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=5678637.79426716, g_32=816001.86, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
- [S04-RF] Row 32 subtotals: f_32=5678637.79426716, g_32=783997.092, j_32=1250525.9605999321, k_32=105139.5422718371 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- S10: Reference listener triggered by ref_m_121, recalculating all.
- [S10 DEBUG] calculateAll() triggered in target mode - running both engines
- [S10REF] Utilization calc: ref_i_71=113145.3708, ref_i_79=10060.174319999998, totalGains=123205.54512
- [S10REF] Using utilization method: NRC 40%
- [S10REF] Final calc: utilizationFactor=0.4, usableGains=49282.218048
- [S10REF] Complete: g_80=0.4, g_81=0.9999996538054544, i_80=49282.218048, i_81=123205.5024669123
- [S10 DEBUG] Dual-engine calculations complete in target mode
- [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
- [S10DISPLAY] Display (target) m_73 = 50.00
- [S10DISPLAY] Display (target) m_74 = 1.31
- [S10DISPLAY] Display (target) m_75 = 76.94
- [S10DISPLAY] Display (target) m_76 = 70.74
- [S10DISPLAY] Display (target) m_77 = 25.86
- [S10DISPLAY] Display (target) m_78 = 75.00
- [S10DISPLAY] Display (target) i_73 = 375.00
- [S10DISPLAY] Display (target) i_74 = 106.29
- [S10DISPLAY] Display (target) i_75 = 294.68
- [S10DISPLAY] Display (target) i_76 = 11,247.66
- [S10DISPLAY] Display (target) i_77 = 2,603.07
- [S10DISPLAY] Display (target) i_78 = 0.00
- [S10DISPLAY] Display (target) i_79 = 14,626.70
- [S10DISPLAY] Display (target) k_73 = 0.00
- [S10DISPLAY] Display (target) k_74 = 0.00
- [S10DISPLAY] Display (target) k_75 = 0.00
- [S10DISPLAY] Display (target) k_76 = 0.00
- [S10DISPLAY] Display (target) k_77 = 130.15
- [S10DISPLAY] Display (target) k_78 = 0.00
- [S10DISPLAY] Display (target) k_79 = 130.15
- [S10DISPLAY] Display (target) j_73 = 2.56%
- [S10DISPLAY] Display (target) j_74 = 0.73%
- [S10DISPLAY] Display (target) j_75 = 2.01%
- [S10DISPLAY] Display (target) j_76 = 76.90%
- [S10DISPLAY] Display (target) j_77 = 17.80%
- [S10DISPLAY] Display (target) j_78 = 0.00%
- [S10DISPLAY] Display (target) j_79 = 100.00%
- [S10DISPLAY] Display (target) l_73 = 0.00%
- [S10DISPLAY] Display (target) l_74 = 0.00%
- [S10DISPLAY] Display (target) l_75 = 0.00%
- [S10DISPLAY] Display (target) l_76 = 0.00%
- [S10DISPLAY] Display (target) l_77 = 100.00%
- [S10DISPLAY] Display (target) l_78 = 0.00%
- [S10DISPLAY] Display (target) l_79 = 100.00%
- [S10DISPLAY] Display (target) e_80 = 501,271.61
- [S10DISPLAY] Display (target) e_81 = 501,271.61
- [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
- [S10DISPLAY] Display (target) g_80 = 40.00%
- [S10DISPLAY] Display (target) g_81 = 91.72%
- [S10DISPLAY] Display (target) i_80 = 200,508.64
- [S10DISPLAY] Display (target) i_81 = 459,741.68
- [S10DISPLAY] Display (target) i_82 = 300,762.97
- S10: Reference utilization factor dependency ref_m_121 changed.
- [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
- [S10DISPLAY] Display (target) m_73 = 50.00
- [S10DISPLAY] Display (target) m_74 = 1.31
- [S10DISPLAY] Display (target) m_75 = 76.94
- [S10DISPLAY] Display (target) m_76 = 70.74
- [S10DISPLAY] Display (target) m_77 = 25.86
- [S10DISPLAY] Display (target) m_78 = 75.00
- [S10DISPLAY] Display (target) i_73 = 375.00
- [S10DISPLAY] Display (target) i_74 = 106.29
- [S10DISPLAY] Display (target) i_75 = 294.68
- [S10DISPLAY] Display (target) i_76 = 11,247.66
- [S10DISPLAY] Display (target) i_77 = 2,603.07
- [S10DISPLAY] Display (target) i_78 = 0.00
- [S10DISPLAY] Display (target) i_79 = 14,626.70
- [S10DISPLAY] Display (target) k_73 = 0.00
- [S10DISPLAY] Display (target) k_74 = 0.00
- [S10DISPLAY] Display (target) k_75 = 0.00
- [S10DISPLAY] Display (target) k_76 = 0.00
- [S10DISPLAY] Display (target) k_77 = 130.15
- [S10DISPLAY] Display (target) k_78 = 0.00
- [S10DISPLAY] Display (target) k_79 = 130.15
- [S10DISPLAY] Display (target) j_73 = 2.56%
- [S10DISPLAY] Display (target) j_74 = 0.73%
- [S10DISPLAY] Display (target) j_75 = 2.01%
- [S10DISPLAY] Display (target) j_76 = 76.90%
- [S10DISPLAY] Display (target) j_77 = 17.80%
- [S10DISPLAY] Display (target) j_78 = 0.00%
- [S10DISPLAY] Display (target) j_79 = 100.00%
- [S10DISPLAY] Display (target) l_73 = 0.00%
- [S10DISPLAY] Display (target) l_74 = 0.00%
- [S10DISPLAY] Display (target) l_75 = 0.00%
- [S10DISPLAY] Display (target) l_76 = 0.00%
- [S10DISPLAY] Display (target) l_77 = 100.00%
- [S10DISPLAY] Display (target) l_78 = 0.00%
- [S10DISPLAY] Display (target) l_79 = 100.00%
- [S10DISPLAY] Display (target) e_80 = 501,271.61
- [S10DISPLAY] Display (target) e_81 = 501,271.61
- [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
- [S10DISPLAY] Display (target) g_80 = 40.00%
- [S10DISPLAY] Display (target) g_81 = 91.72%
- [S10DISPLAY] Display (target) i_80 = 200,508.64
- [S10DISPLAY] Display (target) i_81 = 459,741.68
- [S10DISPLAY] Display (target) i_82 = 300,762.97
 2 [S14 LISTENER] 🔥 ref_d_122 changed - triggering calculateAll() + UI update
- [Cooling] 🚀 Starting cooling calculations (mode=target)...
- [Cooling] Free cooling calc: massFlow=42.803 kg/s, ΔT=3.6°C → 3685.68 kWh/day → 442281.23 kWh/yr
- [Cooling A33 PHYSICS] d_120=35550.4625, l_119=None, A28=35550.4625, A29=35.5504625, A30=42.80275685, A16=3.5700000000000003, A31=153569.8711642725, A32=13268436868.593145, A33=3685.6769079425403
- [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=410, E50=0, E51=1511127.5322564414, E52=-1511127.5322564414, E54(m_19)=120, E55(result)=-524.6970598112644
- [Cooling] 📊 Publishing results with prefix="" (mode=target)
-2 [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
- [Cooling] 🚀 Starting cooling calculations (mode=reference)...
- [Cooling] Free cooling calc: massFlow=99.873 kg/s, ΔT=3.6°C → 8599.91 kWh/day → 1031989.53 kWh/yr
- [Cooling A33 PHYSICS] d_120=35550.4625, l_119=None, A28=35550.4625, A29=35.5504625, A30=42.80275685, A16=3.5700000000000003, A31=153569.8711642725, A32=13268436868.593145, A33=3685.6769079425403
- [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=722392.6739567379, E52=-722392.6739567379, E54(m_19)=120, E55(result)=-250.83078956831176
- [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=5678637.79426716, g_32=816001.86, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
+[Cooling] 🚀 Starting cooling calculations (mode=target)...
+[Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+[Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+[Cooling m_124 COOLING-TARGET] m_129_annual=11338.666473510437, E37_daily=57.85033915056346, E45(d_21)=196, E50=11338.666473510437, E51=67734.01555200001, E52=-56395.34907848958, E54(m_19)=120, E55(result)=-19.581718430031103
+[Cooling] 📊 Publishing results with prefix="" (mode=target)
+[Cooling] 🚀 Starting cooling calculations (mode=reference)...
+[Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+[Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+[Cooling m_124 COOLING-TARGET] m_129_annual=58595.58667319061, E37_daily=298.95707486321743, E45(d_21)=196, E50=58595.58667319061, E51=67734.01555200001, E52=-9138.428878809398, E54(m_19)=120, E55(result)=-3.17306558291993
+[Cooling] 📊 Publishing results with prefix="ref*" (mode=reference)
+[Cooling] 🚀 Starting cooling calculations (mode=target)...
+[Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+[Cooling A33 PHYSICS] d*120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+[Cooling m_124 COOLING-TARGET] m_129_annual=11338.666473510437, E37_daily=57.85033915056346, E45(d_21)=196, E50=11338.666473510437, E51=67734.01555200001, E52=-56395.34907848958, E54(m_19)=120, E55(result)=-19.581718430031103
+[Cooling] 📊 Publishing results with prefix="" (mode=target)
+[Cooling] 🚀 Starting cooling calculations (mode=reference)...
+[Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+[Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+[Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+[Cooling] 📊 Publishing results with prefix="ref*" (mode=reference)
+[Cooling] 🚀 Starting cooling calculations (mode=target)...
+[Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+[Cooling A33 PHYSICS] d*120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+[Cooling m_124 COOLING-TARGET] m_129_annual=11338.666473510437, E37_daily=57.85033915056346, E45(d_21)=196, E50=11338.666473510437, E51=67734.01555200001, E52=-56395.34907848958, E54(m_19)=120, E55(result)=-19.581718430031103
+[Cooling] 📊 Publishing results with prefix="" (mode=target)
+[S01] j_32 listener: 134004.53546146475 → 132767.99730990978
+[S01] 🕐 j_32 listener timing: StateManager current j_32 = 132767.99730990978
 2 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [S04-RF] Row 32 subtotals: f_32=5678637.79426716, g_32=783997.092, j_32=3590085.9525477085, k_32=538905.2201795385 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=5678637.79426716, g_32=816001.86, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
- [S04-RF] Row 32 subtotals: f_32=5678637.79426716, g_32=783997.092, j_32=3590085.9525477085, k_32=538905.2201795385 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- [Cooling] 🚀 Starting cooling calculations (mode=target)...
- [Cooling] Free cooling calc: massFlow=42.803 kg/s, ΔT=3.6°C → 3685.68 kWh/day → 442281.23 kWh/yr
- [Cooling A33 PHYSICS] d_120=35550.4625, l_119=None, A28=35550.4625, A29=35.5504625, A30=42.80275685, A16=3.5700000000000003, A31=153569.8711642725, A32=13268436868.593145, A33=3685.6769079425403
- [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=410, E50=0, E51=1511127.5322564414, E52=-1511127.5322564414, E54(m_19)=120, E55(result)=-524.6970598112644
- [Cooling] 📊 Publishing results with prefix="" (mode=target)
- [FieldManager] Routed d_116=No Cooling through sect13 ModeManager
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [Cooling] 🚀 Starting cooling calculations (mode=reference)...
- [Cooling] Free cooling calc: massFlow=99.873 kg/s, ΔT=3.6°C → 8599.91 kWh/day → 1031989.53 kWh/yr
- [Cooling A33 PHYSICS] d_120=35550.4625, l_119=None, A28=35550.4625, A29=35.5504625, A30=42.80275685, A16=3.5700000000000003, A31=153569.8711642725, A32=13268436868.593145, A33=3685.6769079425403
- [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=722392.6739567379, E52=-722392.6739567379, E54(m_19)=120, E55(result)=-250.83078956831176
- [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
- [Cooling] 🚀 Starting cooling calculations (mode=target)...
- [Cooling] Free cooling calc: massFlow=42.803 kg/s, ΔT=3.6°C → 3685.68 kWh/day → 442281.23 kWh/yr
- [Cooling A33 PHYSICS] d_120=35550.4625, l_119=None, A28=35550.4625, A29=35.5504625, A30=42.80275685, A16=3.5700000000000003, A31=153569.8711642725, A32=13268436868.593145, A33=3685.6769079425403
- [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=410, E50=0, E51=1511127.5322564414, E52=-1511127.5322564414, E54(m_19)=120, E55(result)=-524.6970598112644
- [Cooling] 📊 Publishing results with prefix="" (mode=target)
- [S01DB] upstream snapshot Object
- 🔍 [S01DB] updateTEUIDisplay START: e_10=341.2, h_10=130.76965254768513, useType=Utility Bills
- 🔍 [S01] T.1 Calculation: e_6=390.6 (ref), h_6=35.8 (target) → reduction should be 91%
- 🔍 [S01DB] UPDATING h_10: 212.0 (from j_32=2367829.5556702767, area=11167)
- 🔍 [S01] h_6 explanation: target=35.8, ref=390.6, reduction=0.9083461341525858, percent=91%
- 🕐 [CLOCK] ⚡ CALCULATION COMPLETE: 39ms (subsequent update)
- 🕐 [CLOCK] ⚡ USER INTERACTION COMPLETE: 39ms (interaction → h_10 settlement)
- ✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [Cooling] 🚀 Starting cooling calculations (mode=reference)...
- [Cooling] Free cooling calc: massFlow=99.873 kg/s, ΔT=3.6°C → 8599.91 kWh/day → 1031989.53 kWh/yr
- [Cooling A33 PHYSICS] d_120=35550.4625, l_119=None, A28=35550.4625, A29=35.5504625, A30=42.80275685, A16=3.5700000000000003, A31=153569.8711642725, A32=13268436868.593145, A33=3685.6769079425403
- [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=722392.6739567379, E52=-722392.6739567379, E54(m_19)=120, E55(result)=-250.83078956831176
- [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
- [Cooling] 🚀 Starting cooling calculations (mode=target)...
- [Cooling] Free cooling calc: massFlow=42.803 kg/s, ΔT=3.6°C → 3685.68 kWh/day → 442281.23 kWh/yr
- [Cooling A33 PHYSICS] d_120=35550.4625, l_119=None, A28=35550.4625, A29=35.5504625, A30=42.80275685, A16=3.5700000000000003, A31=153569.8711642725, A32=13268436868.593145, A33=3685.6769079425403
- [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=410, E50=0, E51=1511127.5322564414, E52=-1511127.5322564414, E54(m_19)=120, E55(result)=-524.6970598112644
- [Cooling] 📊 Publishing results with prefix="" (mode=target)
-2 [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
- [Cooling] 🚀 Starting cooling calculations (mode=reference)...
- [Cooling] Free cooling calc: massFlow=99.873 kg/s, ΔT=3.6°C → 8599.91 kWh/day → 1031989.53 kWh/yr
- [Cooling A33 PHYSICS] d_120=35550.4625, l_119=None, A28=35550.4625, A29=35.5504625, A30=42.80275685, A16=3.5700000000000003, A31=153569.8711642725, A32=13268436868.593145, A33=3685.6769079425403
- [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=722392.6739567379, E52=-722392.6739567379, E54(m_19)=120, E55(result)=-250.83078956831176
- [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
- [Cooling] 🚀 Starting cooling calculations (mode=target)...
- [Cooling] Free cooling calc: massFlow=42.803 kg/s, ΔT=3.6°C → 3685.68 kWh/day → 442281.23 kWh/yr
- [Cooling A33 PHYSICS] d_120=35550.4625, l_119=None, A28=35550.4625, A29=35.5504625, A30=42.80275685, A16=3.5700000000000003, A31=153569.8711642725, A32=13268436868.593145, A33=3685.6769079425403
- [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=410, E50=0, E51=1511127.5322564414, E52=-1511127.5322564414, E54(m_19)=120, E55(result)=-524.6970598112644
- [Cooling] 📊 Publishing results with prefix="" (mode=target)
- [FieldManager] Routed d_116=Cooling through sect13 ModeManager
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [Cooling] 🚀 Starting cooling calculations (mode=reference)...
- [Cooling] Free cooling calc: massFlow=99.873 kg/s, ΔT=3.6°C → 8599.91 kWh/day → 1031989.53 kWh/yr
- [Cooling A33 PHYSICS] d_120=35550.4625, l_119=None, A28=35550.4625, A29=35.5504625, A30=42.80275685, A16=3.5700000000000003, A31=153569.8711642725, A32=13268436868.593145, A33=3685.6769079425403
- [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=722392.6739567379, E52=-722392.6739567379, E54(m_19)=120, E55(result)=-250.83078956831176
- [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
- [Cooling] 🚀 Starting cooling calculations (mode=target)...
- [Cooling] Free cooling calc: massFlow=42.803 kg/s, ΔT=3.6°C → 3685.68 kWh/day → 442281.23 kWh/yr
- [Cooling A33 PHYSICS] d_120=35550.4625, l_119=None, A28=35550.4625, A29=35.5504625, A30=42.80275685, A16=3.5700000000000003, A31=153569.8711642725, A32=13268436868.593145, A33=3685.6769079425403
- [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=410, E50=0, E51=1511127.5322564414, E52=-1511127.5322564414, E54(m_19)=120, E55(result)=-524.6970598112644
- [Cooling] 📊 Publishing results with prefix="" (mode=target)
- [ReferenceToggle] Found 10 dual-state sections: Array(10)
- [S02] Switched to REFERENCE mode
- [S02] Refreshing UI for REFERENCE mode
- [S02] Updated h_12 (reporting year) slider = "2022" (reference mode)
- [S02] Updated h_13 (service life) slider = "50" (reference mode)
- [S02] Updated h_15 = "1,427.20" (reference mode)
- [S02] Updated i_17 = "8154" (reference mode)
- [S02] Updated l_12 = "$0.1300" (reference mode)
- [S02] Updated l_13 = "$0.5070" (reference mode)
- [S02] Updated l_14 = "$1.6200" (reference mode)
- [S02] Updated l_15 = "$180.00" (reference mode)
- [S02] Updated l_16 = "$1.5000" (reference mode)
- Section03: Province selected: ON
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=5678637.79426716, g_32=816001.86, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
- [S04-RF] Row 32 subtotals: f_32=5678637.79426716, g_32=783997.092, j_32=3590085.9525477085, k_32=538905.2201795385 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- [S04-RF] Starting complete Excel-compliant calculations
- [S04-RF] Row 32 subtotals: f_32=5678637.79426716, g_32=816001.86, j_32=2367829.5556702767, k_32=266099.8879729785 (wood offset: 0 MT/yr)
- [S04-RF] Row 32 subtotals: f_32=5678637.79426716, g_32=783997.092, j_32=3590085.9525477085, k_32=538905.2201795385 (wood offset: 0 MT/yr)
- [S04-RF] ✅ Complete dual-engine calculations finished
- [S04-RF] 🔄 Updating calculated display values for target mode
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- City dropdown updated for ON - selected: Alexandria
- S04-RF: Switched to REFERENCE mode
- [S04-RF] Refreshing UI for REFERENCE mode
-2 [S04-RF] 🔄 Updating calculated display values for reference mode
- S08: Switched to REFERENCE mode.
- [S10 DEBUG] Mode switch: target → REFERENCE
- [S10 DEBUG] Calling updateCalculatedDisplayValues() for reference mode
- [S10DISPLAY] updateCalculatedDisplayValues() called in reference mode
- [S10DISPLAY] Display (reference) m_73 = 50.00
- [S10DISPLAY] Display (reference) m_74 = 1.31
- [S10DISPLAY] Display (reference) m_75 = 76.94
- [S10DISPLAY] Display (reference) m_76 = 70.74
- [S10DISPLAY] Display (reference) m_77 = 25.86
- [S10DISPLAY] Display (reference) m_78 = 75.00
- [S10DISPLAY] Display (reference) i_73 = 175.00
- [S10DISPLAY] Display (reference) i_74 = 55.02
- [S10DISPLAY] Display (reference) i_75 = 134.64
- [S10DISPLAY] Display (reference) i_76 = 7,873.36
- [S10DISPLAY] Display (reference) i_77 = 1,822.15
- [S10DISPLAY] Display (reference) i_78 = 0.00
- [S10DISPLAY] Display (reference) i_79 = 10,060.17
- [S10DISPLAY] Display (reference) k_73 = 87.50
- [S10DISPLAY] Display (reference) k_74 = 27.51
- [S10DISPLAY] Display (reference) k_75 = 67.32
- [S10DISPLAY] Display (reference) k_76 = 3,936.68
- [S10DISPLAY] Display (reference) k_77 = 911.07
- [S10DISPLAY] Display (reference) k_78 = 0.00
- [S10DISPLAY] Display (reference) k_79 = 5,030.09
- [S10DISPLAY] Display (reference) j_73 = 155.00%
- [S10DISPLAY] Display (reference) j_74 = 73.00%
- [S10DISPLAY] Display (reference) j_75 = 204.00%
- [S10DISPLAY] Display (reference) j_76 = 7,769.00%
- [S10DISPLAY] Display (reference) j_77 = 1,798.00%
- [S10DISPLAY] Display (reference) j_78 = 0.00%
- [S10DISPLAY] Display (reference) j_79 = 100.00%
- [S10DISPLAY] Display (reference) l_73 = 0.00%
- [S10DISPLAY] Display (reference) l_74 = 0.00%
- [S10DISPLAY] Display (reference) l_75 = 0.00%
- [S10DISPLAY] Display (reference) l_76 = 0.00%
- [S10DISPLAY] Display (reference) l_77 = 10,000.00%
- [S10DISPLAY] Display (reference) l_78 = 0.00%
- [S10DISPLAY] Display (reference) l_79 = 100.00%
- [S10DISPLAY] Display (reference) e_80 = 123,205.55
- [S10DISPLAY] Display (reference) e_81 = 123,205.55
- [S10DISPLAY] g_80 DEBUG: mode=reference, valueToDisplay=0.4
- [S10DISPLAY] Display (reference) g_80 = 40.00%
- [S10DISPLAY] Display (reference) g_81 = 100.00%
- [S10DISPLAY] Display (reference) i_80 = 49,282.22
- [S10DISPLAY] Display (reference) i_81 = 123,205.50
- [S10DISPLAY] Display (reference) i_82 = 68,819.02
- [S10DISPLAY] updateCalculatedDisplayValues() called in reference mode
- [S10DISPLAY] Display (reference) m_73 = 50.00
- [S10DISPLAY] Display (reference) m_74 = 1.31
- [S10DISPLAY] Display (reference) m_75 = 76.94
- [S10DISPLAY] Display (reference) m_76 = 70.74
- [S10DISPLAY] Display (reference) m_77 = 25.86
- [S10DISPLAY] Display (reference) m_78 = 75.00
- [S10DISPLAY] Display (reference) i_73 = 175.00
- [S10DISPLAY] Display (reference) i_74 = 55.02
- [S10DISPLAY] Display (reference) i_75 = 134.64
- [S10DISPLAY] Display (reference) i_76 = 7,873.36
- [S10DISPLAY] Display (reference) i_77 = 1,822.15
- [S10DISPLAY] Display (reference) i_78 = 0.00
- [S10DISPLAY] Display (reference) i_79 = 10,060.17
- [S10DISPLAY] Display (reference) k_73 = 87.50
- [S10DISPLAY] Display (reference) k_74 = 27.51
- [S10DISPLAY] Display (reference) k_75 = 67.32
- [S10DISPLAY] Display (reference) k_76 = 3,936.68
- [S10DISPLAY] Display (reference) k_77 = 911.07
- [S10DISPLAY] Display (reference) k_78 = 0.00
- [S10DISPLAY] Display (reference) k_79 = 5,030.09
- [S10DISPLAY] Display (reference) j_73 = 155.00%
- [S10DISPLAY] Display (reference) j_74 = 73.00%
- [S10DISPLAY] Display (reference) j_75 = 204.00%
- [S10DISPLAY] Display (reference) j_76 = 7,769.00%
- [S10DISPLAY] Display (reference) j_77 = 1,798.00%
- [S10DISPLAY] Display (reference) j_78 = 0.00%
- [S10DISPLAY] Display (reference) j_79 = 100.00%
- [S10DISPLAY] Display (reference) l_73 = 0.00%
- [S10DISPLAY] Display (reference) l_74 = 0.00%
- [S10DISPLAY] Display (reference) l_75 = 0.00%
- [S10DISPLAY] Display (reference) l_76 = 0.00%
- [S10DISPLAY] Display (reference) l_77 = 10,000.00%
- [S10DISPLAY] Display (reference) l_78 = 0.00%
- [S10DISPLAY] Display (reference) l_79 = 100.00%
- [S10DISPLAY] Display (reference) e_80 = 123,205.55
- [S10DISPLAY] Display (reference) e_81 = 123,205.55
- [S10DISPLAY] g_80 DEBUG: mode=reference, valueToDisplay=0.4
- [S10DISPLAY] Display (reference) g_80 = 40.00%
- [S10DISPLAY] Display (reference) g_81 = 100.00%
- [S10DISPLAY] Display (reference) i_80 = 49,282.22
- [S10DISPLAY] Display (reference) i_81 = 123,205.50
- [S10DISPLAY] Display (reference) i_82 = 68,819.02
- S11: Switched to REFERENCE mode
- [S11] calculateAll TRIGGERED. isReferenceMode: false
+[Cooling] 🚀 Starting cooling calculations (mode=reference)...
+[Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+[Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+[Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+[Cooling] 📊 Publishing results with prefix="ref*" (mode=reference)
+[Cooling] 🚀 Starting cooling calculations (mode=target)...
+[Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+[Cooling A33 PHYSICS] d*120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+[Cooling m_124 COOLING-TARGET] m_129_annual=8045.097094456602, E37_daily=41.04641374722756, E45(d_21)=196, E50=8045.097094456602, E51=67734.01555200001, E52=-59688.91845754341, E54(m_19)=120, E55(result)=-20.72531890886924
+[Cooling] 📊 Publishing results with prefix="" (mode=target)
+[Cooling] ⚠️ Already calculating (mode=reference) - skipping to prevent recursion
+[Cooling] ⚠️ Already calculating (mode=target) - skipping to prevent recursion
+[S12DB] g_104 DISPLAY (target): 0.2924870886396271
+[Section12] Calculated display values updated for target mode
+[CLOCK] Starting initial load timing
+[S11] calculateAll TRIGGERED. isReferenceMode: false
 2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=82303.01, ref_k_97=3160.05
- [S11] Writing ref penalty: ref_i_97=82303.01, ref_k_97=3160.05
+[S11] REF TB%=50% → ref_i_97=60034.05, ref_k_97=-926.32
+[S11] Writing ref penalty: ref_i_97=60034.05, ref_k_97=-926.32
 2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- S12: Switched to REFERENCE mode
- [S12DB] g_104 DISPLAY (reference): 0.2645519149812859
- [Section12] Calculated display values updated for reference mode
- [S12DB] g_104 DISPLAY (reference): 0.2645519149812859
- [Section12] Calculated display values updated for reference mode
- S14: Switched to REFERENCE mode
- 🎨 Master Toggle: Switched 10/10 sections to REFERENCE mode with global styling
- [ReferenceToggle] Found 10 dual-state sections: Array(10)
- [S02] Switched to TARGET mode
- [S02] Refreshing UI for TARGET mode
- [S02] Updated h_12 (reporting year) slider = "2022" (target mode)
- [S02] Updated h_13 (service life) slider = "50" (target mode)
- [S02] Updated h_15 = "1,427.20" (target mode)
- [S02] Updated i_17 = "8154" (target mode)
- [S02] Updated l_12 = "$0.1300" (target mode)
- [S02] Updated l_13 = "$0.5070" (target mode)
- [S02] Updated l_14 = "$1.6200" (target mode)
- [S02] Updated l_15 = "$180.00" (target mode)
- [S02] Updated l_16 = "$1.5000" (target mode)
- Section03: Province selected: ON
-2 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- City dropdown updated for ON - selected: Milton
- S04-RF: Switched to TARGET mode
- [S04-RF] Refreshing UI for TARGET mode
-2 [S04-RF] 🔄 Updating calculated display values for target mode
- S08: Switched to TARGET mode.
- [S10 DEBUG] Mode switch: reference → TARGET
- [S10 DEBUG] Calling updateCalculatedDisplayValues() for target mode
- [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
- [S10DISPLAY] Display (target) m_73 = 50.00
- [S10DISPLAY] Display (target) m_74 = 1.31
- [S10DISPLAY] Display (target) m_75 = 76.94
- [S10DISPLAY] Display (target) m_76 = 70.74
- [S10DISPLAY] Display (target) m_77 = 25.86
- [S10DISPLAY] Display (target) m_78 = 75.00
- [S10DISPLAY] Display (target) i_73 = 375.00
- [S10DISPLAY] Display (target) i_74 = 106.29
- [S10DISPLAY] Display (target) i_75 = 294.68
- [S10DISPLAY] Display (target) i_76 = 11,247.66
- [S10DISPLAY] Display (target) i_77 = 2,603.07
- [S10DISPLAY] Display (target) i_78 = 0.00
- [S10DISPLAY] Display (target) i_79 = 14,626.70
- [S10DISPLAY] Display (target) k_73 = 0.00
- [S10DISPLAY] Display (target) k_74 = 0.00
- [S10DISPLAY] Display (target) k_75 = 0.00
- [S10DISPLAY] Display (target) k_76 = 0.00
- [S10DISPLAY] Display (target) k_77 = 130.15
- [S10DISPLAY] Display (target) k_78 = 0.00
- [S10DISPLAY] Display (target) k_79 = 130.15
- [S10DISPLAY] Display (target) j_73 = 2.56%
- [S10DISPLAY] Display (target) j_74 = 0.73%
- [S10DISPLAY] Display (target) j_75 = 2.01%
- [S10DISPLAY] Display (target) j_76 = 76.90%
- [S10DISPLAY] Display (target) j_77 = 17.80%
- [S10DISPLAY] Display (target) j_78 = 0.00%
- [S10DISPLAY] Display (target) j_79 = 100.00%
- [S10DISPLAY] Display (target) l_73 = 0.00%
- [S10DISPLAY] Display (target) l_74 = 0.00%
- [S10DISPLAY] Display (target) l_75 = 0.00%
- [S10DISPLAY] Display (target) l_76 = 0.00%
- [S10DISPLAY] Display (target) l_77 = 100.00%
- [S10DISPLAY] Display (target) l_78 = 0.00%
- [S10DISPLAY] Display (target) l_79 = 100.00%
- [S10DISPLAY] Display (target) e_80 = 501,271.61
- [S10DISPLAY] Display (target) e_81 = 501,271.61
- [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
- [S10DISPLAY] Display (target) g_80 = 40.00%
- [S10DISPLAY] Display (target) g_81 = 91.72%
- [S10DISPLAY] Display (target) i_80 = 200,508.64
- [S10DISPLAY] Display (target) i_81 = 459,741.68
- [S10DISPLAY] Display (target) i_82 = 300,762.97
- [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
- [S10DISPLAY] Display (target) m_73 = 50.00
- [S10DISPLAY] Display (target) m_74 = 1.31
- [S10DISPLAY] Display (target) m_75 = 76.94
- [S10DISPLAY] Display (target) m_76 = 70.74
- [S10DISPLAY] Display (target) m_77 = 25.86
- [S10DISPLAY] Display (target) m_78 = 75.00
- [S10DISPLAY] Display (target) i_73 = 375.00
- [S10DISPLAY] Display (target) i_74 = 106.29
- [S10DISPLAY] Display (target) i_75 = 294.68
- [S10DISPLAY] Display (target) i_76 = 11,247.66
- [S10DISPLAY] Display (target) i_77 = 2,603.07
- [S10DISPLAY] Display (target) i_78 = 0.00
- [S10DISPLAY] Display (target) i_79 = 14,626.70
- [S10DISPLAY] Display (target) k_73 = 0.00
- [S10DISPLAY] Display (target) k_74 = 0.00
- [S10DISPLAY] Display (target) k_75 = 0.00
- [S10DISPLAY] Display (target) k_76 = 0.00
- [S10DISPLAY] Display (target) k_77 = 130.15
- [S10DISPLAY] Display (target) k_78 = 0.00
- [S10DISPLAY] Display (target) k_79 = 130.15
- [S10DISPLAY] Display (target) j_73 = 2.56%
- [S10DISPLAY] Display (target) j_74 = 0.73%
- [S10DISPLAY] Display (target) j_75 = 2.01%
-4012-Section10.js:448 [S10DISPLAY] Display (target) j_76 = 76.90%
-4012-Section10.js:448 [S10DISPLAY] Display (target) j_77 = 17.80%
-4012-Section10.js:448 [S10DISPLAY] Display (target) j_78 = 0.00%
-4012-Section10.js:448 [S10DISPLAY] Display (target) j_79 = 100.00%
-4012-Section10.js:448 [S10DISPLAY] Display (target) l_73 = 0.00%
-4012-Section10.js:448 [S10DISPLAY] Display (target) l_74 = 0.00%
-4012-Section10.js:448 [S10DISPLAY] Display (target) l_75 = 0.00%
-4012-Section10.js:448 [S10DISPLAY] Display (target) l_76 = 0.00%
-4012-Section10.js:448 [S10DISPLAY] Display (target) l_77 = 100.00%
-4012-Section10.js:448 [S10DISPLAY] Display (target) l_78 = 0.00%
-4012-Section10.js:448 [S10DISPLAY] Display (target) l_79 = 100.00%
-4012-Section10.js:448 [S10DISPLAY] Display (target) e_80 = 501,271.61
-4012-Section10.js:448 [S10DISPLAY] Display (target) e_81 = 501,271.61
-4012-Section10.js:415 [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
-4012-Section10.js:448 [S10DISPLAY] Display (target) g_80 = 40.00%
-4012-Section10.js:448 [S10DISPLAY] Display (target) g_81 = 91.72%
-4012-Section10.js:448 [S10DISPLAY] Display (target) i_80 = 200,508.64
-4012-Section10.js:448 [S10DISPLAY] Display (target) i_81 = 459,741.68
-4012-Section10.js:448 [S10DISPLAY] Display (target) i_82 = 300,762.97
-4012-Section11.js:300 S11: Switched to TARGET mode
-4012-Section11.js:1703 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1184 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1256 [S11] REF TB%=50% → ref_i_97=82303.01, ref_k_97=3160.05
-4012-Section11.js:1439 [S11] Writing ref penalty: ref_i_97=82303.01, ref_k_97=3160.05
-24012-Section11.js:1189 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section12.js:165 S12: Switched to TARGET mode
-4012-Section12.js:266 [S12DB] g_104 DISPLAY (target): 0.25252031701940036
-4012-Section12.js:270 [Section12] Calculated display values updated for target mode
-4012-Section12.js:266 [S12DB] g_104 DISPLAY (target): 0.25252031701940036
-4012-Section12.js:270 [Section12] Calculated display values updated for target mode
-4012-Section14.js:129 S14: Switched to TARGET mode
-4011-ReferenceToggle.js:93 🎨 Master Toggle: Switched 10/10 sections to TARGET mode with global styling
+[S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+[S11] REF TB%=50% → ref_i_97=60034.05, ref_k_97=-926.32
+[S11] Writing ref penalty: ref_i_97=60034.05, ref_k_97=-926.32
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+[S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+[S11] REF TB%=50% → ref_i_97=60034.05, ref_k_97=-926.32
+[S11] Writing ref penalty: ref_i_97=60034.05, ref_k_97=-926.32
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+[S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+[S11] REF TB%=50% → ref_i_97=60034.05, ref_k_97=-926.32
+[S11] Writing ref penalty: ref_i_97=60034.05, ref_k_97=-926.32
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+[S03] Target CALCULATED results stored (setpoints + derived values only - climate data already published)
+[S12] U-agg TGT: TB%=20 → g_101=0.278341, g_102=0.324324
+[S12] 🎯 TGT CLIMATE READ: d_20=4600, d_21=196
+[S12DB] TGT CLIMATE: d_20=4600, d_21=196, d_22=1960, h_22=-1680
+[S12DB] TGT h_101 calc: (4600*0.27834106264768865*24)/1000 = 30.72885331630483
+[S12DB] TGT i_101 result: 30.72885331630483 * 2476.6199999999994 = 76103.69270022685
+[S12DB] TGT g_104 calc: (0.27834106264768865*2476.6199999999994 + 0.3243243243243243\*1100.42)/3577.0400009999994 = 0.29248708855785915
+[S12DB] TGT ROW104: i_101=76103.69270022685, i_102=16788.24544864865, i_103=23178.387012790416 → i_104=116070.32516166591
+[S12DB] TGT ROW104: h_21="Capacitance", k_98=-3293.5693790538335 → k_104=-3293.5693790538335
+[S12DB] g_104 DISPLAY (target): 0.2924870886396271
+[Section12] Calculated display values updated for target mode
+[S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+[S11] REF TB%=50% → ref_i_97=60034.05, ref_k_97=-926.32
+[S11] Writing ref penalty: ref_i_97=60034.05, ref_k_97=-926.32
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+[S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+[S11] REF TB%=50% → ref_i_97=60034.05, ref_k_97=-926.32
+[S11] Writing ref penalty: ref_i_97=60034.05, ref_k_97=-926.32
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+[Cooling] 🚀 Starting cooling calculations (mode=reference)...
+[Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+[Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+[Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+[Cooling] 📊 Publishing results with prefix="ref*" (mode=reference)
+[Cooling] 🚀 Starting cooling calculations (mode=target)...
+[Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+[Cooling A33 PHYSICS] d*120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+[Cooling m_124 COOLING-TARGET] m_129_annual=8045.097094456602, E37_daily=41.04641374722756, E45(d_21)=196, E50=8045.097094456602, E51=67734.01555200001, E52=-59688.91845754341, E54(m_19)=120, E55(result)=-20.72531890886924
+[Cooling] 📊 Publishing results with prefix="" (mode=target)
+[S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+[S11] REF TB%=50% → ref_i_97=60034.05, ref_k_97=-926.32
+[S11] Writing ref penalty: ref_i_97=60034.05, ref_k_97=-926.32
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+[S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+[S11] REF TB%=50% → ref_i_97=60034.05, ref_k_97=-926.32
+[S11] Writing ref penalty: ref_i_97=60034.05, ref_k_97=-926.32
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+[Cooling] 🚀 Starting cooling calculations (mode=reference)...
+[Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+[Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+[Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+[Cooling] 📊 Publishing results with prefix="ref*" (mode=reference)
+[Cooling] 🚀 Starting cooling calculations (mode=target)...
+[Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+[Cooling A33 PHYSICS] d*120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+[Cooling m_124 COOLING-TARGET] m_129_annual=8045.097094456602, E37_daily=41.04641374722756, E45(d_21)=196, E50=8045.097094456602, E51=67734.01555200001, E52=-59688.91845754341, E54(m_19)=120, E55(result)=-20.72531890886924
+[Cooling] 📊 Publishing results with prefix="" (mode=target)
+[S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+[S11] REF TB%=50% → ref_i_97=60034.05, ref_k_97=-926.32
+[S11] Writing ref penalty: ref_i_97=60034.05, ref_k_97=-926.32
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+[S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+[S11] REF TB%=50% → ref_i_97=60034.05, ref_k_97=-926.32
+[S11] Writing ref penalty: ref_i_97=60034.05, ref_k_97=-926.32
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+[Cooling] 🚀 Starting cooling calculations (mode=reference)...
+[Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+[Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+[Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+[Cooling] 📊 Publishing results with prefix="ref*" (mode=reference)
+[Cooling] 🚀 Starting cooling calculations (mode=target)...
+[Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+[Cooling A33 PHYSICS] d*120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+[Cooling m_124 COOLING-TARGET] m_129_annual=8045.097094456602, E37_daily=41.04641374722756, E45(d_21)=196, E50=8045.097094456602, E51=67734.01555200001, E52=-59688.91845754341, E54(m_19)=120, E55(result)=-20.72531890886924
+[Cooling] 📊 Publishing results with prefix="" (mode=target)
+[S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+[S11] REF TB%=50% → ref_i_97=60034.05, ref_k_97=-926.32
+[S11] Writing ref penalty: ref_i_97=60034.05, ref_k_97=-926.32
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+[S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+[S11] REF TB%=50% → ref_i_97=60034.05, ref_k_97=-926.32
+[S11] Writing ref penalty: ref_i_97=60034.05, ref_k_97=-926.32
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+[Cooling] 🚀 Starting cooling calculations (mode=reference)...
+[Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+[Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+[Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+[Cooling] 📊 Publishing results with prefix="ref*" (mode=reference)
+[Cooling] 🚀 Starting cooling calculations (mode=target)...
+[Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+[Cooling A33 PHYSICS] d*120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+[Cooling m_124 COOLING-TARGET] m_129_annual=8045.097094456602, E37_daily=41.04641374722756, E45(d_21)=196, E50=8045.097094456602, E51=67734.01555200001, E52=-59688.91845754341, E54(m_19)=120, E55(result)=-20.72531890886924
+[Cooling] 📊 Publishing results with prefix="" (mode=target)
+[S03] Reference CALCULATED results stored (climate data + setpoints - INPUT fields excluded)
+[S12] U-agg REF: TB%=50 → g_101=0.347926, g_102=0.405405
+[S12] 🔵 REF CLIMATE READ: d_20=4600, d_21=196
+[S12DB] REF CLIMATE: d_20=4600, d_21=196, d_22=1960, h_22=-1680
+[S12DB] REF h_101 calc: (4600*0.34792632830961084*24)/1000 = 38.41106664538104
+[S12DB] REF i_101 result: 38.41106664538104 * 2482.6199999999994 = 95360.08227515586
+[S12DB] REF g_104 calc: (0.34792632830961084*2482.6199999999994 + 0.4054054054054054\*1100.42)/3583.0400009999994 = 0.365579250312205
+[S12DB] REF ROW104: i_101=95360.08227515586, i_102=20985.306810810813, i_103=36440.07984031935 → i_104=152785.46892628603
+[S12DB] REF ROW104: h_21="Capacitance", k_98=-1852.6412868093894 → k_104=-1852.6412868093894
+[S12DB] STORED for S15: ref_d_101=2482.6199999999994
+[S12DB] STORED for S15: ref_d_102=1100.42
+[S12DB] STORED for S15: ref_g_101=0.34792632830961084
+[S12DB] STORED for S15: ref_g_102=0.4054054054054054
+[S12DB] STORED for S15: ref_g_104=0.365579250312205
+[S12DB] STORED for S15: ref_i_101=95360.08227515586
+[S12DB] STORED for S15: ref_i_102=20985.306810810813
+[S12DB] STORED for S15: ref_i_104=152785.46892628603
+[Section12] Reference results stored with ref* prefix for downstream sections
+[S12] U-agg TGT: TB%=20 → g*101=0.278341, g_102=0.324324
+[S12] 🎯 TGT CLIMATE READ: d_20=4600, d_21=196
+[S12DB] TGT CLIMATE: d_20=4600, d_21=196, d_22=1960, h_22=-1680
+[S12DB] TGT h_101 calc: (4600*0.27834106264768865*24)/1000 = 30.72885331630483
+[S12DB] TGT i_101 result: 30.72885331630483 * 2476.6199999999994 = 76103.69270022685
+[S12DB] TGT g_104 calc: (0.27834106264768865*2476.6199999999994 + 0.3243243243243243\*1100.42)/3577.0400009999994 = 0.29248708855785915
+[S12DB] TGT ROW104: i_101=76103.69270022685, i_102=16788.24544864865, i_103=23178.387012790416 → i_104=116070.32516166591
+[S12DB] TGT ROW104: h_21="Capacitance", k_98=-3293.5693790538335 → k_104=-3293.5693790538335
+[S12DB] g_104 DISPLAY (target): 0.2924870886396271
+[Section12] Calculated display values updated for target mode
+[S10 DEBUG] calculateAll() triggered in target mode - running both engines
+[S10REF] Utilization calc: ref_i_71=113145.3708, ref_i_79=10060.174319999998, totalGains=123205.54512
+[S10REF] Using utilization method: NRC 40%
+[S10REF] Final calc: utilizationFactor=0.4, usableGains=49282.218048
+[S10REF] Complete: g_80=0.4, g_81=0.9984451612323058, i_80=49282.218048, i_81=123013.98036205252
+[S10 DEBUG] Dual-engine calculations complete in target mode
+[S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+[S11] REF TB%=50% → ref_i_97=60034.05, ref_k_97=-926.32
+[S11] Writing ref penalty: ref_i_97=60034.05, ref_k_97=-926.32
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+[S07] calculateEmissionsAndLosses: systemType="Heatpump" (TGT)
+[S07] ⚡ Non-fossil fuel: Heatpump → e_51=0, k_54=0 (both cleared)
+[S07] calculateEmissionsAndLosses: systemType="Electric" (REF)
+[S07] ⚡ Non-fossil fuel: Electric → e_51=0, k_54=0 (both cleared)
+[Cooling] 🚀 Starting cooling calculations (mode=reference)...
+[Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+[Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+[Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+[Cooling] 📊 Publishing results with prefix="ref*" (mode=reference)
+[Cooling] 🚀 Starting cooling calculations (mode=target)...
+[Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+[Cooling A33 PHYSICS] d*120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+[Cooling m_124 COOLING-TARGET] m_129_annual=8045.097094456602, E37_daily=41.04641374722756, E45(d_21)=196, E50=8045.097094456602, E51=67734.01555200001, E52=-59688.91845754341, E54(m_19)=120, E55(result)=-20.72531890886924
+[Cooling] 📊 Publishing results with prefix="" (mode=target)
+🟢 [S06-TAR] Storing d_43 = 0 (from d_44=0, d_45=0, d_46=0)
+🔵 [S06-REF] Storing ref_d_43 = 0 (from d_44=0, d_45=0, d_46=0)
+[DependencyGraph] Data loaded: 349 nodes, 588 links
+[DependencyGraph] Calculating node sizes...
+[S01DB] upstream snapshot Object
+🔍 [S01DB] updateTEUIDisplay START: e_10=341.2, h_10=93.02690394472378, useType=Utility Bills
+🔍 [S01] T.1 Calculation: e_6=29 (ref), h_6=11.6 (target) → reduction should be 60%
+🔍 [S01DB] UPDATING h_10: 93.0 (from j_32=132767.99730990978, area=1427.2)
+🔍 [S01] h_6 explanation: target=11.6, ref=29, reduction=0.6000000000000001, percent=60%
+🕐 [CLOCK] ⭐ INITIALIZATION COMPLETE: 548ms (all calculations finalized)
+✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10
+[CLOCK] 🎯 User interaction started - timing to h_10 settlement
+[FieldManager] Routed g_118=Occupant Constant through sect13 ModeManager
+[CLOCK] 🎯 User interaction started - timing to h_10 settlement
+[Cooling] 🚀 Starting cooling calculations (mode=reference)...
+[Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+[Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+[Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+[Cooling] 📊 Publishing results with prefix="ref*" (mode=reference)
+S10: Target listener triggered by m*121, recalculating all.
+[S10 DEBUG] calculateAll() triggered in target mode - running both engines
+[S10REF] Utilization calc: ref_i_71=113145.3708, ref_i_79=10060.174319999998, totalGains=123205.54512
+[S10REF] Using utilization method: NRC 40%
+[S10REF] Final calc: utilizationFactor=0.4, usableGains=49282.218048
+[S10REF] Complete: g_80=0.4, g_81=0.9984451612323058, i_80=49282.218048, i_81=123013.98036205252
+[S10 DEBUG] Dual-engine calculations complete in target mode
+[S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+[S10DISPLAY] Display (target) m_73 = 50.00
+[S10DISPLAY] Display (target) m_74 = 1.31
+[S10DISPLAY] Display (target) m_75 = 76.94
+[S10DISPLAY] Display (target) m_76 = 70.74
+[S10DISPLAY] Display (target) m_77 = 25.86
+[S10DISPLAY] Display (target) m_78 = 75.00
+[S10DISPLAY] Display (target) i_73 = 375.00
+[S10DISPLAY] Display (target) i_74 = 106.29
+[S10DISPLAY] Display (target) i_75 = 294.68
+[S10DISPLAY] Display (target) i_76 = 11,247.66
+[S10DISPLAY] Display (target) i_77 = 2,603.07
+[S10DISPLAY] Display (target) i_78 = 0.00
+[S10DISPLAY] Display (target) i_79 = 14,626.70
+[S10DISPLAY] Display (target) k_73 = 0.00
+[S10DISPLAY] Display (target) k_74 = 0.00
+[S10DISPLAY] Display (target) k_75 = 0.00
+[S10DISPLAY] Display (target) k_76 = 0.00
+[S10DISPLAY] Display (target) k_77 = 130.15
+[S10DISPLAY] Display (target) k_78 = 0.00
+[S10DISPLAY] Display (target) k_79 = 130.15
+[S10DISPLAY] Display (target) j_73 = 2.56%
+[S10DISPLAY] Display (target) j_74 = 0.73%
+[S10DISPLAY] Display (target) j_75 = 2.01%
+[S10DISPLAY] Display (target) j_76 = 76.90%
+[S10DISPLAY] Display (target) j_77 = 17.80%
+[S10DISPLAY] Display (target) j_78 = 0.00%
+[S10DISPLAY] Display (target) j_79 = 100.00%
+[S10DISPLAY] Display (target) l_73 = 0.00%
+[S10DISPLAY] Display (target) l_74 = 0.00%
+[S10DISPLAY] Display (target) l_75 = 0.00%
+[S10DISPLAY] Display (target) l_76 = 0.00%
+[S10DISPLAY] Display (target) l_77 = 100.00%
+[S10DISPLAY] Display (target) l_78 = 0.00%
+[S10DISPLAY] Display (target) l_79 = 100.00%
+[S10DISPLAY] Display (target) e_80 = 114,698.95
+[S10DISPLAY] Display (target) e_81 = 114,698.95
+[S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+[S10DISPLAY] Display (target) g_80 = 40.00%
+[S10DISPLAY] Display (target) g_81 = 90.85%
+[S10DISPLAY] Display (target) i_80 = 45,879.58
+[S10DISPLAY] Display (target) i_81 = 104,198.85
+[S10DISPLAY] Display (target) i_82 = 68,819.37
+S10: Target utilization factor dependency m_121 changed.
+[S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+[S10DISPLAY] Display (target) m_73 = 50.00
+[S10DISPLAY] Display (target) m_74 = 1.31
+[S10DISPLAY] Display (target) m_75 = 76.94
+[S10DISPLAY] Display (target) m_76 = 70.74
+[S10DISPLAY] Display (target) m_77 = 25.86
+[S10DISPLAY] Display (target) m_78 = 75.00
+[S10DISPLAY] Display (target) i_73 = 375.00
+[S10DISPLAY] Display (target) i_74 = 106.29
+[S10DISPLAY] Display (target) i_75 = 294.68
+[S10DISPLAY] Display (target) i_76 = 11,247.66
+[S10DISPLAY] Display (target) i_77 = 2,603.07
+[S10DISPLAY] Display (target) i_78 = 0.00
+[S10DISPLAY] Display (target) i_79 = 14,626.70
+[S10DISPLAY] Display (target) k_73 = 0.00
+[S10DISPLAY] Display (target) k_74 = 0.00
+[S10DISPLAY] Display (target) k_75 = 0.00
+[S10DISPLAY] Display (target) k_76 = 0.00
+[S10DISPLAY] Display (target) k_77 = 130.15
+[S10DISPLAY] Display (target) k_78 = 0.00
+[S10DISPLAY] Display (target) k_79 = 130.15
+[S10DISPLAY] Display (target) j_73 = 2.56%
+[S10DISPLAY] Display (target) j_74 = 0.73%
+[S10DISPLAY] Display (target) j_75 = 2.01%
+[S10DISPLAY] Display (target) j_76 = 76.90%
+[S10DISPLAY] Display (target) j_77 = 17.80%
+[S10DISPLAY] Display (target) j_78 = 0.00%
+[S10DISPLAY] Display (target) j_79 = 100.00%
+[S10DISPLAY] Display (target) l_73 = 0.00%
+[S10DISPLAY] Display (target) l_74 = 0.00%
+[S10DISPLAY] Display (target) l_75 = 0.00%
+[S10DISPLAY] Display (target) l_76 = 0.00%
+[S10DISPLAY] Display (target) l_77 = 100.00%
+[S10DISPLAY] Display (target) l_78 = 0.00%
+[S10DISPLAY] Display (target) l_79 = 100.00%
+[S10DISPLAY] Display (target) e_80 = 114,698.95
+[S10DISPLAY] Display (target) e_81 = 114,698.95
+[S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+[S10DISPLAY] Display (target) g_80 = 40.00%
+[S10DISPLAY] Display (target) g_81 = 90.85%
+[S10DISPLAY] Display (target) i_80 = 45,879.58
+[S10DISPLAY] Display (target) i_81 = 104,198.85
+[S10DISPLAY] Display (target) i_82 = 68,819.37
+[Cooling] 🚀 Starting cooling calculations (mode=target)...
+[Cooling] Free cooling calc: massFlow=2.124 kg/s, ΔT=3.6°C → 182.88 kWh/day → 21945.82 kWh/yr
+[Cooling A33 PHYSICS] d_120=1764, l_119=None, A28=1764, A29=1.764, A30=2.123856, A16=3.5700000000000003, A31=7620.076749600001, A32=658374631.1654401, A33=182.88184199040003
+[Cooling m_124 COOLING-TARGET] m_129_annual=8045.097094456602, E37_daily=41.04641374722756, E45(d_21)=196, E50=8045.097094456602, E51=35844.841030118405, E52=-27799.743935661805, E54(m_19)=120, E55(result)=-9.652688866549237
+[Cooling] 📊 Publishing results with prefix="" (mode=target)
+[Cooling] ⚠️ Already calculating (mode=reference) - skipping to prevent recursion
+[Cooling] ⚠️ Already calculating (mode=target) - skipping to prevent recursion
+[S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
+[Cooling] ⚠️ Already calculating (mode=reference) - skipping to prevent recursion
+[Cooling] ⚠️ Already calculating (mode=target) - skipping to prevent recursion
+[S01] j_32 listener: 132767.99730990978 → 131754.6979944383
+[S01] 🕐 j_32 listener timing: StateManager current j_32 = 131754.6979944383
+2 🔄 [S05] updateCalculatedDisplayValues: mode=target
+[S01] j_32 listener: 131754.6979944383 → 125460.19654614388
+[S01] 🕐 j_32 listener timing: StateManager current j_32 = 125460.19654614388
+2 🔄 [S05] updateCalculatedDisplayValues: mode=target
+[Cooling] ⚠️ Already calculating (mode=reference) - skipping to prevent recursion
+[Cooling] ⚠️ Already calculating (mode=target) - skipping to prevent recursion
+[S01] j_32 listener: 125460.19654614388 → 124594.44339228241
+[S01] 🕐 j_32 listener timing: StateManager current j_32 = 124594.44339228241
+2 🔄 [S05] updateCalculatedDisplayValues: mode=target
+[S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
+[S01] j_32 listener: 124594.44339228241 → 130888.94484057682
+[S01] 🕐 j_32 listener timing: StateManager current j_32 = 130888.94484057682
+2 🔄 [S05] updateCalculatedDisplayValues: mode=target
+[Cooling] ⚠️ Already calculating (mode=reference) - skipping to prevent recursion
+4012-Cooling.js:427 [Cooling] ⚠️ Already calculating (mode=target) - skipping to prevent recursion
+4012-Section01.js:1261 [S01] j_32 listener: 130888.94484057682 → 139084.78544786375
+4012-Section01.js:1262 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 139084.78544786375
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Section01.js:1261 [S01] j_32 listener: 139084.78544786375 → 132790.28399956936
+4012-Section01.js:1262 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 132790.28399956936
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Section01.js:1261 [S01] j_32 listener: 132790.28399956936 → 131924.53084570786
+4012-Section01.js:1262 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 131924.53084570786
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Section01.js:1261 [S01] j_32 listener: 131924.53084570786 → 138219.03229400227
+4012-Section01.js:1262 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 138219.03229400227
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Section01.js:1164 [S01DB] upstream snapshot Object
+4012-Section01.js:715 🔍 [S01DB] updateTEUIDisplay START: e_10=341.2, h_10=96.84629504904868, useType=Utility Bills
+4012-Section01.js:785 🔍 [S01] T.1 Calculation: e_6=29 (ref), h_6=11.8 (target) → reduction should be 59%
+4012-Section01.js:877 🔍 [S01DB] UPDATING h_10: 96.8 (from j_32=138219.03229400227, area=1427.2)
+4012-Section01.js:489 🔍 [S01] h_6 explanation: target=11.8, ref=29, reduction=0.593103448275862, percent=59%
+4011-Clock.js:65 🕐 [CLOCK] ⚡ CALCULATION COMPLETE: 179ms (subsequent update)
+4011-Clock.js:161 🕐 [CLOCK] ⚡ USER INTERACTION COMPLETE: 179ms (interaction → h_10 settlement)
+4012-Section01.js:1182 ✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-FieldManager.js:208 [FieldManager] Routed g_118=Occupant by Schedule through sect13 ModeManager
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4012-Cooling.js:432 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+4012-Cooling.js:282 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+4012-Cooling.js:383 [Cooling A33 PHYSICS] d_120=1764, l_119=None, A28=1764, A29=1.764, A30=2.123856, A16=3.5700000000000003, A31=7620.076749600001, A32=658374631.1654401, A33=182.88184199040003
+4012-Cooling.js:342 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=35844.841030118405, E52=-35844.841030118405, E54(m_19)=120, E55(result)=-12.446125357680001
+4012-Cooling.js:502 [Cooling] 📊 Publishing results with prefix="ref*" (mode=reference)
+S10: Target listener triggered by m*121, recalculating all.
+[S10 DEBUG] calculateAll() triggered in target mode - running both engines
+[S10REF] Utilization calc: ref_i_71=113145.3708, ref_i_79=10060.174319999998, totalGains=123205.54512
+[S10REF] Using utilization method: NRC 40%
+[S10REF] Final calc: utilizationFactor=0.4, usableGains=49282.218048
+[S10REF] Complete: g_80=0.4, g_81=0.9984451612323058, i_80=49282.218048, i_81=123013.98036205252
+[S10 DEBUG] Dual-engine calculations complete in target mode
+[S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+[S10DISPLAY] Display (target) m_73 = 50.00
+[S10DISPLAY] Display (target) m_74 = 1.31
+[S10DISPLAY] Display (target) m_75 = 76.94
+[S10DISPLAY] Display (target) m_76 = 70.74
+[S10DISPLAY] Display (target) m_77 = 25.86
+4012-Section10.js:476 [S10DISPLAY] Display (target) m_78 = 75.00
+4012-Section10.js:476 [S10DISPLAY] Display (target) i_73 = 375.00
+4012-Section10.js:476 [S10DISPLAY] Display (target) i_74 = 106.29
+4012-Section10.js:476 [S10DISPLAY] Display (target) i_75 = 294.68
+4012-Section10.js:476 [S10DISPLAY] Display (target) i_76 = 11,247.66
+4012-Section10.js:476 [S10DISPLAY] Display (target) i_77 = 2,603.07
+4012-Section10.js:476 [S10DISPLAY] Display (target) i_78 = 0.00
+4012-Section10.js:476 [S10DISPLAY] Display (target) i_79 = 14,626.70
+4012-Section10.js:476 [S10DISPLAY] Display (target) k_73 = 0.00
+4012-Section10.js:476 [S10DISPLAY] Display (target) k_74 = 0.00
+4012-Section10.js:476 [S10DISPLAY] Display (target) k_75 = 0.00
+4012-Section10.js:476 [S10DISPLAY] Display (target) k_76 = 0.00
+4012-Section10.js:476 [S10DISPLAY] Display (target) k_77 = 130.15
+4012-Section10.js:476 [S10DISPLAY] Display (target) k_78 = 0.00
+4012-Section10.js:476 [S10DISPLAY] Display (target) k_79 = 130.15
+4012-Section10.js:476 [S10DISPLAY] Display (target) j_73 = 2.56%
+4012-Section10.js:476 [S10DISPLAY] Display (target) j_74 = 0.73%
+4012-Section10.js:476 [S10DISPLAY] Display (target) j_75 = 2.01%
+4012-Section10.js:476 [S10DISPLAY] Display (target) j_76 = 76.90%
+4012-Section10.js:476 [S10DISPLAY] Display (target) j_77 = 17.80%
+4012-Section10.js:476 [S10DISPLAY] Display (target) j_78 = 0.00%
+[S10DISPLAY] Display (target) j_79 = 100.00%
+[S10DISPLAY] Display (target) l_73 = 0.00%
+[S10DISPLAY] Display (target) l_74 = 0.00%
+[S10DISPLAY] Display (target) l_75 = 0.00%
+[S10DISPLAY] Display (target) l_76 = 0.00%
+[S10DISPLAY] Display (target) l_77 = 100.00%
+[S10DISPLAY] Display (target) l_78 = 0.00%
+[S10DISPLAY] Display (target) l_79 = 100.00%
+[S10DISPLAY] Display (target) e_80 = 114,698.95
+[S10DISPLAY] Display (target) e_81 = 114,698.95
+[S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+[S10DISPLAY] Display (target) g_80 = 40.00%
+[S10DISPLAY] Display (target) g_81 = 87.83%
+[S10DISPLAY] Display (target) i_80 = 45,879.58
+[S10DISPLAY] Display (target) i_81 = 100,740.66
+[S10DISPLAY] Display (target) i_82 = 68,819.37
+S10: Target utilization factor dependency m_121 changed.
+[S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+[S10DISPLAY] Display (target) m_73 = 50.00
+[S10DISPLAY] Display (target) m_74 = 1.31
+[S10DISPLAY] Display (target) m_75 = 76.94
+[S10DISPLAY] Display (target) m_76 = 70.74
+[S10DISPLAY] Display (target) m_77 = 25.86
+[S10DISPLAY] Display (target) m_78 = 75.00
+[S10DISPLAY] Display (target) i_73 = 375.00
+[S10DISPLAY] Display (target) i_74 = 106.29
+[S10DISPLAY] Display (target) i_75 = 294.68
+[S10DISPLAY] Display (target) i_76 = 11,247.66
+[S10DISPLAY] Display (target) i_77 = 2,603.07
+[S10DISPLAY] Display (target) i_78 = 0.00
+[S10DISPLAY] Display (target) i_79 = 14,626.70
+[S10DISPLAY] Display (target) k_73 = 0.00
+[S10DISPLAY] Display (target) k_74 = 0.00
+[S10DISPLAY] Display (target) k_75 = 0.00
+[S10DISPLAY] Display (target) k_76 = 0.00
+[S10DISPLAY] Display (target) k_77 = 130.15
+[S10DISPLAY] Display (target) k_78 = 0.00
+[S10DISPLAY] Display (target) k_79 = 130.15
+[S10DISPLAY] Display (target) j_73 = 2.56%
+[S10DISPLAY] Display (target) j_74 = 0.73%
+[S10DISPLAY] Display (target) j_75 = 2.01%
+[S10DISPLAY] Display (target) j_76 = 76.90%
+[S10DISPLAY] Display (target) j_77 = 17.80%
+[S10DISPLAY] Display (target) j_78 = 0.00%
+[S10DISPLAY] Display (target) j_79 = 100.00%
+[S10DISPLAY] Display (target) l_73 = 0.00%
+[S10DISPLAY] Display (target) l_74 = 0.00%
+[S10DISPLAY] Display (target) l_75 = 0.00%
+[S10DISPLAY] Display (target) l_76 = 0.00%
+[S10DISPLAY] Display (target) l_77 = 100.00%
+[S10DISPLAY] Display (target) l_78 = 0.00%
+[S10DISPLAY] Display (target) l_79 = 100.00%
+[S10DISPLAY] Display (target) e_80 = 114,698.95
+[S10DISPLAY] Display (target) e_81 = 114,698.95
+[S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+4012-Section10.js:476 [S10DISPLAY] Display (target) g_80 = 40.00%
+4012-Section10.js:476 [S10DISPLAY] Display (target) g_81 = 87.83%
+4012-Section10.js:476 [S10DISPLAY] Display (target) i_80 = 45,879.58
+4012-Section10.js:476 [S10DISPLAY] Display (target) i_81 = 100,740.66
+4012-Section10.js:476 [S10DISPLAY] Display (target) i_82 = 68,819.37
+4012-Cooling.js:432 [Cooling] 🚀 Starting cooling calculations (mode=target)...
+4012-Cooling.js:282 [Cooling] Free cooling calc: massFlow=1.062 kg/s, ΔT=3.6°C → 91.44 kWh/day → 10972.91 kWh/yr
+4012-Cooling.js:383 [Cooling A33 PHYSICS] d_120=882, l_119=None, A28=882, A29=0.882, A30=1.061928, A16=3.5700000000000003, A31=3810.0383748000004, A32=329187315.58272004, A33=91.44092099520002
+4012-Cooling.js:342 [Cooling m_124 COOLING-TARGET] m_129_annual=22564.149244348948, E37_daily=115.12321043035178, E45(d_21)=196, E50=22564.149244348948, E51=17922.420515059202, E52=4641.728729289745, E54(m_19)=120, E55(result)=1.6117113643367171
+4012-Cooling.js:502 [Cooling] 📊 Publishing results with prefix="" (mode=target)
+4012-Cooling.js:427 [Cooling] ⚠️ Already calculating (mode=reference) - skipping to prevent recursion
+4012-Cooling.js:427 [Cooling] ⚠️ Already calculating (mode=target) - skipping to prevent recursion
+4012-Section14.js:1414 [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
+4012-Cooling.js:427 [Cooling] ⚠️ Already calculating (mode=reference) - skipping to prevent recursion
+4012-Cooling.js:427 [Cooling] ⚠️ Already calculating (mode=target) - skipping to prevent recursion
+4012-Section01.js:1261 [S01] j_32 listener: 138219.03229400227 → 139727.68700210983
+4012-Section01.js:1262 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 139727.68700210983
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Section01.js:1261 [S01] j_32 listener: 139727.68700210983 → 129895.53669396265
+4012-Section01.js:1262 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 129895.53669396265
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Cooling.js:427 [Cooling] ⚠️ Already calculating (mode=reference) - skipping to prevent recursion
+4012-Cooling.js:427 [Cooling] ⚠️ Already calculating (mode=target) - skipping to prevent recursion
+4012-Section01.js:1261 [S01] j_32 listener: 129895.53669396265 → 129029.78354010118
+4012-Section01.js:1262 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 129029.78354010118
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Section14.js:1414 [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
+4012-Section01.js:1261 [S01] j_32 listener: 129029.78354010118 → 132567.43239995398
+4012-Section01.js:1262 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 132567.43239995398
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Cooling.js:427 [Cooling] ⚠️ Already calculating (mode=reference) - skipping to prevent recursion
+4012-Cooling.js:427 [Cooling] ⚠️ Already calculating (mode=target) - skipping to prevent recursion
+4012-Section01.js:1261 [S01] j_32 listener: 132567.43239995398 → 137140.88951761904
+4012-Section01.js:1262 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 137140.88951761904
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Section01.js:1261 [S01] j_32 listener: 137140.88951761904 → 133603.24065776626
+4012-Section01.js:1262 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 133603.24065776626
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Section01.js:1261 [S01] j_32 listener: 133603.24065776626 → 132737.4875039048
+4012-Section01.js:1262 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 132737.4875039048
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Section01.js:1261 [S01] j_32 listener: 132737.4875039048 → 136275.1363637576
+4012-Section01.js:1262 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 136275.1363637576
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Section01.js:1164 [S01DB] upstream snapshot {ref_j_32: '448624.56021161925', ref_k_32: '22879.85257079258', j_32: '136275.1363637576', k_32: '6950.031954551637', ref_h_15: '1427.20', …}
+4012-Section01.js:715 🔍 [S01DB] updateTEUIDisplay START: e_10=341.2, h_10=95.4842603445611, useType=Utility Bills
+4012-Section01.js:785 🔍 [S01] T.1 Calculation: e_6=29 (ref), h_6=11.8 (target) → reduction should be 59%
+4012-Section01.js:877 🔍 [S01DB] UPDATING h_10: 95.5 (from j_32=136275.1363637576, area=1427.2)
+4012-Section01.js:489 🔍 [S01] h_6 explanation: target=11.8, ref=29, reduction=0.593103448275862, percent=59%
+4011-Clock.js:65 🕐 [CLOCK] ⚡ CALCULATION COMPLETE: 185ms (subsequent update)
+4011-Clock.js:161 🕐 [CLOCK] ⚡ USER INTERACTION COMPLETE: 185ms (interaction → h_10 settlement)
+4012-Section01.js:1182 ✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-FieldManager.js:208 [FieldManager] Routed g_118=Volume by Schedule through sect13 ModeManager
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4012-Cooling.js:432 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+4012-Cooling.js:282 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+4012-Cooling.js:383 [Cooling A33 PHYSICS] d_120=882, l_119=None, A28=882, A29=0.882, A30=1.061928, A16=3.5700000000000003, A31=3810.0383748000004, A32=329187315.58272004, A33=91.44092099520002
+4012-Cooling.js:342 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=17922.420515059202, E52=-17922.420515059202, E54(m_19)=120, E55(result)=-6.223062678840001
+4012-Cooling.js:502 [Cooling] 📊 Publishing results with prefix="ref*" (mode=reference)
+4012-Section10.js:2695 S10: Target listener triggered by m*121, recalculating all.
+4012-Section10.js:1847 [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+[S10REF] Utilization calc: ref_i_71=113145.3708, ref_i_79=10060.174319999998, totalGains=123205.54512
+[S10REF] Using utilization method: NRC 40%
+[S10REF] Final calc: utilizationFactor=0.4, usableGains=49282.218048
+[S10REF] Complete: g_80=0.4, g_81=0.9984451612323058, i_80=49282.218048, i_81=123013.98036205252
+[S10 DEBUG] Dual-engine calculations complete in target mode
+[S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+[S10DISPLAY] Display (target) m_73 = 50.00
+[S10DISPLAY] Display (target) m_74 = 1.31
+[S10DISPLAY] Display (target) m_75 = 76.94
+[S10DISPLAY] Display (target) m_76 = 70.74
+[S10DISPLAY] Display (target) m_77 = 25.86
+[S10DISPLAY] Display (target) m_78 = 75.00
+[S10DISPLAY] Display (target) i_73 = 375.00
+[S10DISPLAY] Display (target) i_74 = 106.29
+[S10DISPLAY] Display (target) i_75 = 294.68
+[S10DISPLAY] Display (target) i_76 = 11,247.66
+[S10DISPLAY] Display (target) i_77 = 2,603.07
+[S10DISPLAY] Display (target) i_78 = 0.00
+[S10DISPLAY] Display (target) i_79 = 14,626.70
+4012-Section10.js:476 [S10DISPLAY] Display (target) k_73 = 0.00
+4012-Section10.js:476 [S10DISPLAY] Display (target) k_74 = 0.00
+4012-Section10.js:476 [S10DISPLAY] Display (target) k_75 = 0.00
+4012-Section10.js:476 [S10DISPLAY] Display (target) k_76 = 0.00
+4012-Section10.js:476 [S10DISPLAY] Display (target) k_77 = 130.15
+4012-Section10.js:476 [S10DISPLAY] Display (target) k_78 = 0.00
+4012-Section10.js:476 [S10DISPLAY] Display (target) k_79 = 130.15
+4012-Section10.js:476 [S10DISPLAY] Display (target) j_73 = 2.56%
+4012-Section10.js:476 [S10DISPLAY] Display (target) j_74 = 0.73%
+4012-Section10.js:476 [S10DISPLAY] Display (target) j_75 = 2.01%
+4012-Section10.js:476 [S10DISPLAY] Display (target) j_76 = 76.90%
+4012-Section10.js:476 [S10DISPLAY] Display (target) j_77 = 17.80%
+4012-Section10.js:476 [S10DISPLAY] Display (target) j_78 = 0.00%
+4012-Section10.js:476 [S10DISPLAY] Display (target) j_79 = 100.00%
+4012-Section10.js:476 [S10DISPLAY] Display (target) l_73 = 0.00%
+4012-Section10.js:476 [S10DISPLAY] Display (target) l_74 = 0.00%
+4012-Section10.js:476 [S10DISPLAY] Display (target) l_75 = 0.00%
+4012-Section10.js:476 [S10DISPLAY] Display (target) l_76 = 0.00%
+4012-Section10.js:476 [S10DISPLAY] Display (target) l_77 = 100.00%
+4012-Section10.js:476 [S10DISPLAY] Display (target) l_78 = 0.00%
+4012-Section10.js:476 [S10DISPLAY] Display (target) l_79 = 100.00%
+[S10DISPLAY] Display (target) e_80 = 114,698.95
+[S10DISPLAY] Display (target) e_81 = 114,698.95
+[S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+[S10DISPLAY] Display (target) g_80 = 40.00%
+[S10DISPLAY] Display (target) g_81 = 94.43%
+[S10DISPLAY] Display (target) i_80 = 45,879.58
+[S10DISPLAY] Display (target) i_81 = 108,308.11
+[S10DISPLAY] Display (target) i_82 = 68,819.37
+S10: Target utilization factor dependency m_121 changed.
+[S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+[S10DISPLAY] Display (target) m_73 = 50.00
+[S10DISPLAY] Display (target) m_74 = 1.31
+[S10DISPLAY] Display (target) m_75 = 76.94
+[S10DISPLAY] Display (target) m_76 = 70.74
+[S10DISPLAY] Display (target) m_77 = 25.86
+[S10DISPLAY] Display (target) m_78 = 75.00
+[S10DISPLAY] Display (target) i_73 = 375.00
+[S10DISPLAY] Display (target) i_74 = 106.29
+[S10DISPLAY] Display (target) i_75 = 294.68
+[S10DISPLAY] Display (target) i_76 = 11,247.66
+[S10DISPLAY] Display (target) i_77 = 2,603.07
+[S10DISPLAY] Display (target) i_78 = 0.00
+[S10DISPLAY] Display (target) i_79 = 14,626.70
+[S10DISPLAY] Display (target) k_73 = 0.00
+[S10DISPLAY] Display (target) k_74 = 0.00
+[S10DISPLAY] Display (target) k_75 = 0.00
+[S10DISPLAY] Display (target) k_76 = 0.00
+[S10DISPLAY] Display (target) k_77 = 130.15
+[S10DISPLAY] Display (target) k_78 = 0.00
+[S10DISPLAY] Display (target) k_79 = 130.15
+[S10DISPLAY] Display (target) j_73 = 2.56%
+[S10DISPLAY] Display (target) j_74 = 0.73%
+[S10DISPLAY] Display (target) j_75 = 2.01%
+[S10DISPLAY] Display (target) j_76 = 76.90%
+[S10DISPLAY] Display (target) j_77 = 17.80%
+[S10DISPLAY] Display (target) j_78 = 0.00%
+[S10DISPLAY] Display (target) j_79 = 100.00%
+[S10DISPLAY] Display (target) l_73 = 0.00%
+[S10DISPLAY] Display (target) l_74 = 0.00%
+[S10DISPLAY] Display (target) l_75 = 0.00%
+[S10DISPLAY] Display (target) l_76 = 0.00%
+[S10DISPLAY] Display (target) l_77 = 100.00%
+[S10DISPLAY] Display (target) l_78 = 0.00%
+[S10DISPLAY] Display (target) l_79 = 100.00%
+[S10DISPLAY] Display (target) e_80 = 114,698.95
+[S10DISPLAY] Display (target) e_81 = 114,698.95
+[S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+[S10DISPLAY] Display (target) g_80 = 40.00%
+[S10DISPLAY] Display (target) g_81 = 94.43%
+[S10DISPLAY] Display (target) i_80 = 45,879.58
+[S10DISPLAY] Display (target) i_81 = 108,308.11
+4012-Section10.js:476 [S10DISPLAY] Display (target) i_82 = 68,819.37
+4012-Cooling.js:432 [Cooling] 🚀 Starting cooling calculations (mode=target)...
+4012-Cooling.js:282 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+4012-Cooling.js:383 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:342 [Cooling m_124 COOLING-TARGET] m_129_annual=34152.16300403118, E37_daily=174.24572961240398, E45(d_21)=196, E50=34152.16300403118, E51=67734.01555200001, E52=-33581.85254796883, E54(m_19)=120, E55(result)=-11.660365468044734
+4012-Cooling.js:502 [Cooling] 📊 Publishing results with prefix="" (mode=target)
+4012-Cooling.js:427 [Cooling] ⚠️ Already calculating (mode=reference) - skipping to prevent recursion
+4012-Cooling.js:427 [Cooling] ⚠️ Already calculating (mode=target) - skipping to prevent recursion
+4012-Section14.js:1414 [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
+4012-Cooling.js:427 [Cooling] ⚠️ Already calculating (mode=reference) - skipping to prevent recursion
+4012-Cooling.js:427 [Cooling] ⚠️ Already calculating (mode=target) - skipping to prevent recursion
+4012-Section01.js:1261 [S01] j_32 listener: 136275.1363637576 → 136778.2785335019
+4012-Section01.js:1262 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 136778.2785335019
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Section01.js:1261 [S01] j_32 listener: 136778.2785335019 → 143072.77998179628
+4012-Section01.js:1262 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 143072.77998179628
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Cooling.js:427 [Cooling] ⚠️ Already calculating (mode=reference) - skipping to prevent recursion
+4012-Cooling.js:427 [Cooling] ⚠️ Already calculating (mode=target) - skipping to prevent recursion
+4012-Section14.js:1414 [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
+4012-Section01.js:1261 [S01] j_32 listener: 143072.77998179628 → 133240.6296736491
+4012-Section01.js:1262 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 133240.6296736491
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Cooling.js:427 [Cooling] ⚠️ Already calculating (mode=reference) - skipping to prevent recursion
+4012-Cooling.js:427 [Cooling] ⚠️ Already calculating (mode=target) - skipping to prevent recursion
+4012-Section01.js:1261 [S01] j_32 listener: 133240.6296736491 → 123801.60015562405
+4012-Section01.js:1262 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 123801.60015562405
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Section01.js:1261 [S01] j_32 listener: 123801.60015562405 → 133633.75046377123
+4012-Section01.js:1262 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 133633.75046377123
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Section01.js:1261 [S01] j_32 listener: 133633.75046377123 → 132767.99730990978
+4012-Section01.js:1262 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 132767.99730990978
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Section01.js:1261 [S01] j_32 listener: 132767.99730990978 → 122935.84700176258
+4012-Section01.js:1262 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 122935.84700176258
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Section01.js:1164 [S01DB] upstream snapshot {ref_j_32: '448624.56021161925', ref_k_32: '22879.85257079258', j_32: '122935.84700176258', k_32: '6269.728197089892', ref_h_15: '1427.20', …}
+4012-Section01.js:715 🔍 [S01DB] updateTEUIDisplay START: e_10=341.2, h_10=86.13778517500181, useType=Utility Bills
+4012-Section01.js:785 🔍 [S01] T.1 Calculation: e_6=29 (ref), h_6=11.3 (target) → reduction should be 61%
+4012-Section01.js:877 🔍 [S01DB] UPDATING h_10: 86.1 (from j_32=122935.84700176258, area=1427.2)
+4012-Section01.js:489 🔍 [S01] h_6 explanation: target=11.3, ref=29, reduction=0.6103448275862069, percent=61%
+4011-Clock.js:65 🕐 [CLOCK] ⚡ CALCULATION COMPLETE: 168ms (subsequent update)
+4011-Clock.js:161 🕐 [CLOCK] ⚡ USER INTERACTION COMPLETE: 168ms (interaction → h_10 settlement)
+4012-Section01.js:1182 ✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-FieldManager.js:208 [FieldManager] Routed g_118=Volume Constant through sect13 ModeManager
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4012-Cooling.js:432 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+4012-Cooling.js:282 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+4012-Cooling.js:383 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:342 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+4012-Cooling.js:502 [Cooling] 📊 Publishing results with prefix="ref*" (mode=reference)
+4012-Section10.js:2695 S10: Target listener triggered by m_121, recalculating all.
+[S10 DEBUG] calculateAll() triggered in target mode - running both engines
+[S10REF] Utilization calc: ref_i_71=113145.3708, ref_i_79=10060.174319999998, totalGains=123205.54512
+[S10REF] Using utilization method: NRC 40%
+[S10REF] Final calc: utilizationFactor=0.4, usableGains=49282.218048
+[S10REF] Complete: g_80=0.4, g_81=0.9984451612323058, i_80=49282.218048, i_81=123013.98036205252
+[S10 DEBUG] Dual-engine calculations complete in target mode
+[S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+[S10DISPLAY] Display (target) m_73 = 50.00
+[S10DISPLAY] Display (target) m_74 = 1.31
+[S10DISPLAY] Display (target) m_75 = 76.94
+[S10DISPLAY] Display (target) m_76 = 70.74
+[S10DISPLAY] Display (target) m_77 = 25.86
+[S10DISPLAY] Display (target) m_78 = 75.00
+[S10DISPLAY] Display (target) i_73 = 375.00
+[S10DISPLAY] Display (target) i_74 = 106.29
+[S10DISPLAY] Display (target) i_75 = 294.68
+[S10DISPLAY] Display (target) i_76 = 11,247.66
+[S10DISPLAY] Display (target) i_77 = 2,603.07
+[S10DISPLAY] Display (target) i_78 = 0.00
+4012-Section10.js:476 [S10DISPLAY] Display (target) i_79 = 14,626.70
+4012-Section10.js:476 [S10DISPLAY] Display (target) k_73 = 0.00
+4012-Section10.js:476 [S10DISPLAY] Display (target) k_74 = 0.00
+4012-Section10.js:476 [S10DISPLAY] Display (target) k_75 = 0.00
+4012-Section10.js:476 [S10DISPLAY] Display (target) k_76 = 0.00
+4012-Section10.js:476 [S10DISPLAY] Display (target) k_77 = 130.15
+4012-Section10.js:476 [S10DISPLAY] Display (target) k_78 = 0.00
+4012-Section10.js:476 [S10DISPLAY] Display (target) k_79 = 130.15
+4012-Section10.js:476 [S10DISPLAY] Display (target) j_73 = 2.56%
+4012-Section10.js:476 [S10DISPLAY] Display (target) j_74 = 0.73%
+4012-Section10.js:476 [S10DISPLAY] Display (target) j_75 = 2.01%
+4012-Section10.js:476 [S10DISPLAY] Display (target) j_76 = 76.90%
+4012-Section10.js:476 [S10DISPLAY] Display (target) j_77 = 17.80%
+4012-Section10.js:476 [S10DISPLAY] Display (target) j_78 = 0.00%
+4012-Section10.js:476 [S10DISPLAY] Display (target) j_79 = 100.00%
+4012-Section10.js:476 [S10DISPLAY] Display (target) l_73 = 0.00%
+4012-Section10.js:476 [S10DISPLAY] Display (target) l_74 = 0.00%
+4012-Section10.js:476 [S10DISPLAY] Display (target) l_75 = 0.00%
+4012-Section10.js:476 [S10DISPLAY] Display (target) l_76 = 0.00%
+4012-Section10.js:476 [S10DISPLAY] Display (target) l_77 = 100.00%
+4012-Section10.js:476 [S10DISPLAY] Display (target) l_78 = 0.00%
+[S10DISPLAY] Display (target) l_79 = 100.00%
+[S10DISPLAY] Display (target) e_80 = 114,698.95
+[S10DISPLAY] Display (target) e_81 = 114,698.95
+[S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+[S10DISPLAY] Display (target) g_80 = 40.00%
+[S10DISPLAY] Display (target) g_81 = 97.90%
+[S10DISPLAY] Display (target) i_80 = 45,879.58
+[S10DISPLAY] Display (target) i_81 = 112,289.11
+[S10DISPLAY] Display (target) i_82 = 68,819.37
+S10: Target utilization factor dependency m_121 changed.
+[S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+[S10DISPLAY] Display (target) m_73 = 50.00
+[S10DISPLAY] Display (target) m_74 = 1.31
+[S10DISPLAY] Display (target) m_75 = 76.94
+[S10DISPLAY] Display (target) m_76 = 70.74
+[S10DISPLAY] Display (target) m_77 = 25.86
+[S10DISPLAY] Display (target) m_78 = 75.00
+[S10DISPLAY] Display (target) i_73 = 375.00
+[S10DISPLAY] Display (target) i_74 = 106.29
+[S10DISPLAY] Display (target) i_75 = 294.68
+[S10DISPLAY] Display (target) i_76 = 11,247.66
+[S10DISPLAY] Display (target) i_77 = 2,603.07
+[S10DISPLAY] Display (target) i_78 = 0.00
+[S10DISPLAY] Display (target) i_79 = 14,626.70
+[S10DISPLAY] Display (target) k_73 = 0.00
+[S10DISPLAY] Display (target) k_74 = 0.00
+[S10DISPLAY] Display (target) k_75 = 0.00
+[S10DISPLAY] Display (target) k_76 = 0.00
+[S10DISPLAY] Display (target) k_77 = 130.15
+[S10DISPLAY] Display (target) k_78 = 0.00
+[S10DISPLAY] Display (target) k_79 = 130.15
+[S10DISPLAY] Display (target) j_73 = 2.56%
+[S10DISPLAY] Display (target) j_74 = 0.73%
+[S10DISPLAY] Display (target) j_75 = 2.01%
+[S10DISPLAY] Display (target) j_76 = 76.90%
+[S10DISPLAY] Display (target) j_77 = 17.80%
+[S10DISPLAY] Display (target) j_78 = 0.00%
+[S10DISPLAY] Display (target) j_79 = 100.00%
+[S10DISPLAY] Display (target) l_73 = 0.00%
+[S10DISPLAY] Display (target) l_74 = 0.00%
+[S10DISPLAY] Display (target) l_75 = 0.00%
+[S10DISPLAY] Display (target) l_76 = 0.00%
+[S10DISPLAY] Display (target) l_77 = 100.00%
+[S10DISPLAY] Display (target) l_78 = 0.00%
+[S10DISPLAY] Display (target) l_79 = 100.00%
+[S10DISPLAY] Display (target) e_80 = 114,698.95
+[S10DISPLAY] Display (target) e_81 = 114,698.95
+[S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+[S10DISPLAY] Display (target) g_80 = 40.00%
+[S10DISPLAY] Display (target) g_81 = 97.90%
+[S10DISPLAY] Display (target) i_80 = 45,879.58
+4012-Section10.js:476 [S10DISPLAY] Display (target) i_81 = 112,289.11
+4012-Section10.js:476 [S10DISPLAY] Display (target) i_82 = 68,819.37
+4012-Cooling.js:432 [Cooling] 🚀 Starting cooling calculations (mode=target)...
+4012-Cooling.js:282 [Cooling] Free cooling calc: massFlow=8.027 kg/s, ΔT=3.6°C → 691.16 kWh/day → 82939.61 kWh/yr
+4012-Cooling.js:383 [Cooling A33 PHYSICS] d_120=6666.666666666666, l_119=None, A28=6666.666666666666, A29=6.666666666666666, A30=8.026666666666666, A16=3.5700000000000003, A31=28798.476, A32=2488188326.4, A33=691.1634240000001
+4012-Cooling.js:342 [Cooling m_124 COOLING-TARGET] m_129_annual=8045.097094456602, E37_daily=41.04641374722756, E45(d_21)=196, E50=8045.097094456602, E51=135468.03110400002, E52=-127422.93400954342, E54(m_19)=120, E55(result)=-44.244074308869244
+4012-Cooling.js:502 [Cooling] 📊 Publishing results with prefix="" (mode=target)
+4012-Cooling.js:427 [Cooling] ⚠️ Already calculating (mode=reference) - skipping to prevent recursion
+4012-Cooling.js:427 [Cooling] ⚠️ Already calculating (mode=target) - skipping to prevent recursion
+4012-Section14.js:1414 [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
+4012-Cooling.js:427 [Cooling] ⚠️ Already calculating (mode=reference) - skipping to prevent recursion
+4012-Cooling.js:427 [Cooling] ⚠️ Already calculating (mode=target) - skipping to prevent recursion
+4012-Section01.js:1261 [S01] j_32 listener: 122935.84700176258 → 122928.83202577972
+4012-Section01.js:1262 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 122928.83202577972
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Section01.js:1261 [S01] j_32 listener: 122928.83202577972 → 146130.7815019269
+4012-Section01.js:1262 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 146130.7815019269
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Cooling.js:427 [Cooling] ⚠️ Already calculating (mode=reference) - skipping to prevent recursion
+4012-Cooling.js:427 [Cooling] ⚠️ Already calculating (mode=target) - skipping to prevent recursion
+4012-Section01.js:1261 [S01] j_32 listener: 146130.7815019269 → 145265.02834806542
+4012-Section01.js:1262 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 145265.02834806542
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Section14.js:1414 [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
+4012-Section01.js:1261 [S01] j_32 listener: 145265.02834806542 → 131895.22918006545
+4012-Section01.js:1262 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 131895.22918006545
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Cooling.js:427 [Cooling] ⚠️ Already calculating (mode=reference) - skipping to prevent recursion
+4012-Cooling.js:427 [Cooling] ⚠️ Already calculating (mode=target) - skipping to prevent recursion
+4012-Section01.js:1261 [S01] j_32 listener: 131895.22918006545 → 129747.54492365471
+4012-Section01.js:1262 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 129747.54492365471
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Section01.js:1261 [S01] j_32 listener: 129747.54492365471 → 143117.3440916547
+4012-Section01.js:1262 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 143117.3440916547
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Section01.js:1261 [S01] j_32 listener: 143117.3440916547 → 129747.54492365471
+4012-Section01.js:1262 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 129747.54492365471
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Section01.js:1164 [S01DB] upstream snapshot {ref_j_32: '448624.56021161925', ref_k_32: '22879.85257079258', j_32: '129747.54492365471', k_32: '6617.124791106391', ref_h_15: '1427.20', …}
+4012-Section01.js:715 🔍 [S01DB] updateTEUIDisplay START: e_10=341.2, h_10=90.91055557991501, useType=Utility Bills
+4012-Section01.js:785 🔍 [S01] T.1 Calculation: e_6=29 (ref), h_6=11.5 (target) → reduction should be 60%
+4012-Section01.js:877 🔍 [S01DB] UPDATING h_10: 90.9 (from j_32=129747.54492365471, area=1427.2)
+4012-Section01.js:489 🔍 [S01] h_6 explanation: target=11.5, ref=29, reduction=0.603448275862069, percent=60%
+4011-Clock.js:65 🕐 [CLOCK] ⚡ CALCULATION COMPLETE: 175ms (subsequent update)
+4011-Clock.js:161 🕐 [CLOCK] ⚡ USER INTERACTION COMPLETE: 175ms (interaction → h_10 settlement)
+4012-Section01.js:1182 ✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10

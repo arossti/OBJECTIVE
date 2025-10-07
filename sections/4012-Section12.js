@@ -40,12 +40,16 @@ window.TEUI.SectionModules.sect12 = (function () {
     /**
      * ✅ PHASE 2: Sync from global StateManager after import
      */
-    syncFromGlobalState: function (fieldIds = ["d_103", "g_103", "d_105", "d_108", "g_109"]) {
+    syncFromGlobalState: function (
+      fieldIds = ["d_103", "g_103", "d_105", "d_108", "g_109"],
+    ) {
       fieldIds.forEach((fieldId) => {
         const globalValue = window.TEUI.StateManager.getValue(fieldId);
         if (globalValue !== null && globalValue !== undefined) {
           this.setValue(fieldId, globalValue, "imported");
-          console.log(`S12 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`);
+          console.log(
+            `S12 TargetState: Synced ${fieldId} = ${globalValue} from global StateManager`,
+          );
         }
       });
     },
@@ -141,13 +145,17 @@ window.TEUI.SectionModules.sect12 = (function () {
     /**
      * ✅ PHASE 2: Sync from global StateManager after import
      */
-    syncFromGlobalState: function (fieldIds = ["d_103", "g_103", "d_105", "d_108", "g_109"]) {
+    syncFromGlobalState: function (
+      fieldIds = ["d_103", "g_103", "d_105", "d_108", "g_109"],
+    ) {
       fieldIds.forEach((fieldId) => {
         const refFieldId = `ref_${fieldId}`;
         const globalValue = window.TEUI.StateManager.getValue(refFieldId);
         if (globalValue !== null && globalValue !== undefined) {
           this.setValue(fieldId, globalValue, "imported");
-          console.log(`S12 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (${refFieldId})`);
+          console.log(
+            `S12 ReferenceState: Synced ${fieldId} = ${globalValue} from global StateManager (${refFieldId})`,
+          );
         }
       });
     },
@@ -1543,7 +1551,6 @@ window.TEUI.SectionModules.sect12 = (function () {
     const g93 = getUValueFromS11("93", useRef);
     const g94 = getUValueFromS11("94", useRef);
     const g95 = getUValueFromS11("95", useRef);
-    
 
     const d85 = parseFloat(getGlobalNumericValue("d_85"));
     const d86 = parseFloat(getGlobalNumericValue("d_86"));
@@ -2364,9 +2371,9 @@ window.TEUI.SectionModules.sect12 = (function () {
       }
     });
 
-      console.log(
-        "[Section12] Reference results stored with ref_ prefix for downstream sections",
-      );
+    console.log(
+      "[Section12] Reference results stored with ref_ prefix for downstream sections",
+    );
   }
 
   /**
@@ -2626,7 +2633,9 @@ window.TEUI.SectionModules.sect12 = (function () {
   function addStateManagerListeners() {
     if (!window.TEUI?.StateManager) return;
     if (s12ListenersAdded) {
-      console.log("[S12] ⚠️ Listeners already added, skipping duplicate registration");
+      console.log(
+        "[S12] ⚠️ Listeners already added, skipping duplicate registration",
+      );
       return;
     }
     console.log("[S12] 🚀 INITIALIZING CLIMATE LISTENERS");
@@ -2888,7 +2897,9 @@ window.TEUI.SectionModules.sect12 = (function () {
     TargetState: TargetState,
     ReferenceState: ReferenceState,
     // ✅ BACKUP: Expose initialization state and force method for S03 integration
-    get isInitialized() { return isInitialized; },
-    forceInitialization: onSectionRendered
+    get isInitialized() {
+      return isInitialized;
+    },
+    forceInitialization: onSectionRendered,
   };
 })();

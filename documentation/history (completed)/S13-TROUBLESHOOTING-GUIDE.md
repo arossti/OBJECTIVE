@@ -16,19 +16,23 @@
 ## **📊 S13 SECTION OVERVIEW**
 
 ### **Function**: Space Heating & Cooling Energy Calculations
+
 ### **Key Calculations**:
+
 - **Heating Energy**: Based on building loads and system efficiency
-- **Cooling Energy**: Climate-dependent cooling requirements  
+- **Cooling Energy**: Climate-dependent cooling requirements
 - **System Efficiency**: Heat pump COP, equipment performance
 - **Key Outputs**: Multiple calculated fields feeding S14→S15→S04
 
 ### **External Dependencies**:
+
 - **S03 Climate**: `d_20` (HDD), `d_21` (CDD), `d_22` (GF HDD), `h_22` (GF CDD)
 - **S11 Transmission**: Building envelope losses and gains
 - **S12 Ventilation**: Ventilation energy requirements
 - **Upstream Flow**: Major consumer of S11/S12 values, provides to S14→S15
 
 ### **System Complexity**:
+
 - **Most Complex Section**: S13 has the most sophisticated HVAC calculations
 - **Multiple Calculation Engines**: Heating, cooling, heat pump, auxiliary systems
 - **High Climate Sensitivity**: Heavily dependent on HDD/CDD climate data
@@ -42,6 +46,7 @@
 A detailed analysis of the fresh logs confirms the precise source of state contamination. The issue is a classic **"Current State Anti-Pattern"** as defined in the `DUAL-STATE-CHEATSHEET.md`.
 
 **The Contamination Mechanism:**
+
 1.  The `calculateReferenceModel()` function in S13 calls helper functions.
 2.  Inside these helpers, critical input values (like `j_115` for AFUE) are read using the ambiguous helper `getFieldValue('j_115')`.
 3.  `getFieldValue()` does not differentiate between modes; it reads whatever value is currently in the global `StateManager` or the DOM, which, during a Target mode operation, is the **Target value**.
@@ -61,20 +66,21 @@ The previous attempts failed because they did not address the root cause within 
 ### **🔧 The Workplan**
 
 1.  **Refactor Calculation Functions**: All calculation helpers (`calculateHeatingSystem`, `calculateCoolingSystem`, `calculateCOPValues`, etc.) must be refactored to be pure and mode-aware.
-    -   They must **not** use `getFieldValue()` or `getNumericValue()` for any section-specific inputs.
-    -   All inputs must be read explicitly from the correct state object (`TargetState` or `ReferenceState`) using the `getSectionValue(fieldId, isReferenceCalculation)` helper.
-    -   The functions must `return` their results as objects, not call `setCalculatedValue` directly (no side effects).
+    - They must **not** use `getFieldValue()` or `getNumericValue()` for any section-specific inputs.
+    - All inputs must be read explicitly from the correct state object (`TargetState` or `ReferenceState`) using the `getSectionValue(fieldId, isReferenceCalculation)` helper.
+    - The functions must `return` their results as objects, not call `setCalculatedValue` directly (no side effects).
 2.  **Create Explicit Data Flow**: The orchestrator functions (`calculateTargetModel` and `calculateReferenceModel`) must be updated to chain the pure functions together, passing the returned result objects as parameters to the next function in the sequence.
 3.  **Handle DOM Updates Separately**: A dedicated function (`updateTargetModelDOMValues`) will be responsible for taking the final results from the `calculateTargetModel` chain and updating the UI. Reference values do not need a dedicated DOM update function as they are only written to the `StateManager`.
 
 ### **⚠️ CRITICAL CONSTRAINTS**
+
 1. **NO AMBIGUOUS HELPERS**: `getFieldValue` and `getNumericValue` must be eliminated from the core calculation logic for section-specific values.
 2. **MAINTAIN S12 PATTERN**: Adhere strictly to the explicit data flow pattern.
 3. **START FRESH**: Begin with the clean, reverted `4011-Section13.js` file.
 
 ---
 
-## **💾 RESET POINT** 
+## **💾 RESET POINT**
 
 **Backup created**: `S13-RF.js` contains all attempted fixes from the previous session and has been removed from the load sequence.
 **Clean state**: `S13.js` has been restored to its pre-debug state.
@@ -89,7 +95,7 @@ The previous attempts failed because they did not address the root cause within 
 **Date**: Aug 26, 2025  
 **Duration**: Full working session  
 **Approach**: S12 Explicit Data Flow Pattern implementation  
-**Result**: **FAILED - Made contamination worse**  
+**Result**: **FAILED - Made contamination worse**
 
 ### **🔍 What We Attempted**
 
@@ -103,7 +109,7 @@ The previous attempts failed because they did not address the root cause within 
 **The contamination is DEEPER than calculation-level fixes can address:**
 
 1. **Reference State Persistence Issue**: ReferenceState.getValue("d_113") ALWAYS returns "Gas" regardless of Reference mode changes
-2. **State Object Corruption**: The dual-state objects themselves are not properly isolated 
+2. **State Object Corruption**: The dual-state objects themselves are not properly isolated
 3. **Excel Calculation Mismatch**: h_10 TEUI values no longer match Excel after our changes
 4. **Complex Interdependencies**: S13 has too many moving parts to fix atomically
 
@@ -123,11 +129,13 @@ Line 5025: [S13] TGT HEATING: Oil, HSPF=12.5 (Target working)
 **NEW STRATEGY: Ultra-focused incremental fixes**
 
 1. **Step 1**: Fix ONLY Target mode `d_113` → `f_115`/`h_115` propagation to S04
+
    - Ignore Reference mode completely for now
    - Focus solely on Excel compliance for Target calculations
    - Ensure h_10 TEUI matches Excel baseline
 
 2. **Step 2**: Once Target mode is rock-solid, investigate Reference state persistence in isolation
+
    - Don't touch Target calculation logic
    - Focus only on why ReferenceState.getValue() returns stale data
 
@@ -152,24 +160,30 @@ Line 5025: [S13] TGT HEATING: Oil, HSPF=12.5 (Target working)
 ## **🔍 DUAL-STATE-CHEATSHEET 6-PHASE AUDIT (December 2024)**
 
 ### **PHASE 1: Pattern B Contamination - ✅ CLEAN**
+
 - No `target_` prefixes found ✅
 - Proper `ref_` prefix usage for listeners ✅
 
-### **PHASE 2: ComponentBridge Contamination - ✅ CLEAN**  
+### **PHASE 2: ComponentBridge Contamination - ✅ CLEAN**
+
 - No ComponentBridge usage found ✅
 
 ### **PHASE 3: DOM Update Pattern - ⚠️ NEEDS REVIEW**
+
 - `calculateAll()` calls may be missing `updateCalculatedDisplayValues()` ⚠️
 
 ### **PHASE 4: switchMode Anti-pattern - ✅ CLEAN**
+
 - `switchMode()` function exists and appears display-only ✅
 
 ### **PHASE 5: Duplicate Defaults - ❌ VIOLATIONS FOUND**
+
 - **TargetState.setDefaults()**: Hardcoded defaults in state object ❌
 - **ReferenceState.setDefaults()**: Hardcoded defaults in state object ❌
 - **CRITICAL**: Field definitions should be single source of truth ❌
 
 ### **PHASE 6: Mode-Aware State Reading - 🚨 MASSIVE VIOLATIONS**
+
 - **41+ instances of `getFieldValue()` contamination** 🚨
 - **Lines 2464-2471**: `getFieldValue("d_127")`, `getFieldValue("j_115")` ❌
 - **Lines 2627-2710**: Multiple `getFieldValue()` calls in calculations ❌
@@ -178,8 +192,9 @@ Line 5025: [S13] TGT HEATING: Oil, HSPF=12.5 (Target working)
 ## **🚨 ROOT CAUSE CONFIRMED: S13 IS THE CONTAMINATION SOURCE**
 
 **Evidence**: S13 uses `getFieldValue()` extensively in both Target and Reference calculations, causing:
+
 1. **Reference calculations read Target values** when Target was last updated
-2. **Target calculations read Reference values** when Reference was last updated  
+2. **Target calculations read Reference values** when Reference was last updated
 3. **No state isolation** between calculation engines
 4. **Direct StateManager contamination** through shared helper functions
 
@@ -188,15 +203,18 @@ Line 5025: [S13] TGT HEATING: Oil, HSPF=12.5 (Target working)
 **Next agent should apply DUAL-STATE-CHEATSHEET Phase 6 fixes:**
 
 ### **Priority 1: Eliminate getFieldValue() Contamination**
+
 - Replace `getFieldValue("j_115")` with mode-aware reading
 - Replace `getFieldValue("d_113")` with proper state object access
 - Replace `getFieldValue("d_127")` with explicit Target/Reference reading
 
 ### **Priority 2: Add calculateTargetModel() Mode Isolation**
+
 - Apply same pattern as S04/S15: set mode to "target" before calculations
 - Ensure Target calculations only read Target values
 
-### **Priority 3: Fix Duplicate Defaults**  
+### **Priority 3: Fix Duplicate Defaults**
+
 - Move hardcoded defaults to field definitions
 - Use `getFieldDefault()` pattern from compliant sections
 

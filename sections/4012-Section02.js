@@ -1438,7 +1438,9 @@ window.TEUI.SectionModules.sect02 = (function () {
       // ✅ RACE CONDITION FIX: Let StateManager listeners handle the calculation cascade
       // S04 and S09 have h_15/ref_h_15 listeners that will trigger their calculateAll()
       // S02 doesn't need to call calculateAll() - it just publishes the area change
-      console.log(`[S02] Area updated to ${areaValue} - letting downstream sections handle calculations`);
+      console.log(
+        `[S02] Area updated to ${areaValue} - letting downstream sections handle calculations`,
+      );
     }
   }
 
@@ -1659,7 +1661,25 @@ window.TEUI.SectionModules.sect02 = (function () {
      * ✅ PHASE 2: Sync from global StateManager after import
      * Bridges global StateManager → isolated TargetState for imported values
      */
-    syncFromGlobalState: function (fieldIds = ["d_12", "d_13", "d_14", "d_15", "h_12", "h_13", "h_14", "h_15", "i_16", "i_17", "l_12", "l_13", "l_14", "l_15", "l_16"]) {
+    syncFromGlobalState: function (
+      fieldIds = [
+        "d_12",
+        "d_13",
+        "d_14",
+        "d_15",
+        "h_12",
+        "h_13",
+        "h_14",
+        "h_15",
+        "i_16",
+        "i_17",
+        "l_12",
+        "l_13",
+        "l_14",
+        "l_15",
+        "l_16",
+      ],
+    ) {
       fieldIds.forEach((fieldId) => {
         const globalValue = window.TEUI.StateManager.getValue(fieldId);
         if (globalValue !== null && globalValue !== undefined) {
@@ -1750,7 +1770,25 @@ window.TEUI.SectionModules.sect02 = (function () {
      * ✅ PHASE 2: Sync from global StateManager after import
      * Bridges global StateManager → isolated ReferenceState for imported values
      */
-    syncFromGlobalState: function (fieldIds = ["d_12", "d_13", "d_14", "d_15", "h_12", "h_13", "h_14", "h_15", "i_16", "i_17", "l_12", "l_13", "l_14", "l_15", "l_16"]) {
+    syncFromGlobalState: function (
+      fieldIds = [
+        "d_12",
+        "d_13",
+        "d_14",
+        "d_15",
+        "h_12",
+        "h_13",
+        "h_14",
+        "h_15",
+        "i_16",
+        "i_17",
+        "l_12",
+        "l_13",
+        "l_14",
+        "l_15",
+        "l_16",
+      ],
+    ) {
       fieldIds.forEach((fieldId) => {
         const refFieldId = `ref_${fieldId}`;
         const globalValue = window.TEUI.StateManager.getValue(refFieldId);
@@ -1948,7 +1986,7 @@ window.TEUI.SectionModules.sect02 = (function () {
                 stateValue;
             }
           }
-          
+
           // ✅ CRITICAL FIX: Format h_15 area field consistently
           if (fieldId === "h_15") {
             const numericValue = window.TEUI?.parseNumeric?.(stateValue, 0);

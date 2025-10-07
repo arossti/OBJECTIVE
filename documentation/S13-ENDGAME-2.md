@@ -11,6 +11,7 @@
 **CRITICAL INSIGHT**: The original S13-ENDGAME-2 "context objects" approach is **over-engineered**. Heating and ventilation calculations work fine in S13 - the ONLY problematic area is cooling calculations.
 
 **REVISED APPROACH**: Keep S13 simple, delegate ONLY cooling to external module(s):
+
 - **S13 keeps**: Heating calculations (H113, D114, etc.) - WORKING
 - **S13 keeps**: Ventilation calculations (D119-D123) - WORKING
 - **S13 delegates**: Cooling physics ONLY (Cooling.js mirrors COOLING-TARGET.csv)
@@ -26,22 +27,24 @@ This mirrors the Excel architecture: FORMULAE worksheet (S13) references COOLING
 
 ### **S13 Architecture (REVISED):**
 
--   **S13 Section File (`4012-Section13.js`)**: 
-    - Manages dual-state UI (ModeManager, TargetState, ReferenceState)
-    - Calculates heating (H113, J113, D114, L113, etc.) - STAYS in S13
-    - Calculates ventilation (D119-D123) - STAYS in S13
-    - **Delegates cooling physics** to Cooling.js module
-    - Uses CHEATSHEET Pattern 1 (temporary mode switching) for automatic mode awareness
+- **S13 Section File (`4012-Section13.js`)**:
 
--   **Cooling Module (`4012-Cooling.js`)**:
-    - Mirrors COOLING-TARGET.csv worksheet
-    - Calculates ONLY cooling physics (A6, A33, E55, atmospheric)
-    - Accepts `mode` parameter: `calculateAll(mode = "target")`
-    - Reads mode-aware StateManager values (`${prefix}d_21`)
-    - Publishes mode-aware results (`${prefix}cooling_latentLoadFactor`)
-    - **No context objects** - reads directly from StateManager
+  - Manages dual-state UI (ModeManager, TargetState, ReferenceState)
+  - Calculates heating (H113, J113, D114, L113, etc.) - STAYS in S13
+  - Calculates ventilation (D119-D123) - STAYS in S13
+  - **Delegates cooling physics** to Cooling.js module
+  - Uses CHEATSHEET Pattern 1 (temporary mode switching) for automatic mode awareness
+
+- **Cooling Module (`4012-Cooling.js`)**:
+  - Mirrors COOLING-TARGET.csv worksheet
+  - Calculates ONLY cooling physics (A6, A33, E55, atmospheric)
+  - Accepts `mode` parameter: `calculateAll(mode = "target")`
+  - Reads mode-aware StateManager values (`${prefix}d_21`)
+  - Publishes mode-aware results (`${prefix}cooling_latentLoadFactor`)
+  - **No context objects** - reads directly from StateManager
 
 ### **Why This Works:**
+
 - S13 heating/ventilation calculations already work - don't touch them
 - Cooling complexity isolated to dedicated module
 - Mode-aware via parameter, not complex context building
@@ -56,13 +59,15 @@ This mirrors the Excel architecture: FORMULAE worksheet (S13) references COOLING
 **Status**: Architectural cleanup complete, now fixing calculation bugs
 
 **Completed**:
+
 - ✅ Removed 600+ lines of debug/commented code
 - ✅ Eliminated duplicate functions between S13 and Cooling.js
 - ✅ 9/9 CHEATSHEET compliance achieved
 - ✅ Single source of truth (field definitions)
 - ✅ Strict error handling (no silent fallbacks)
 
-**Current Task**: 
+**Current Task**:
+
 - 🔧 Fix heating calculation bugs (H113, J113, D114, L113, F114, etc.)
 - 🔧 Fix ventilation calculation bugs (D119-D123)
 - 🔧 Achieve Excel parity for S13 rows 113-124 (excluding cooling integration)
@@ -76,12 +81,14 @@ This mirrors the Excel architecture: FORMULAE worksheet (S13) references COOLING
 **After** S13 heating/ventilation works perfectly:
 
 1. **Simplify Cooling.js** - Remove context complexity
+
    - Delete `createIsolatedCoolingContext()` from S13
    - Delete `coolingState`, `coolingContext` shared objects
    - Delete `runIntegratedCoolingCalculations()`
    - Cooling.js reads directly from StateManager (no upfront validation)
 
 2. **Make Cooling.js mode-aware** via parameter:
+
    ```javascript
    // Cooling.js
    calculateAll(mode = "target") {
@@ -93,16 +100,17 @@ This mirrors the Excel architecture: FORMULAE worksheet (S13) references COOLING
    ```
 
 3. **S13 calls Cooling.js** for Target model:
+
    ```javascript
    function calculateTargetModel() {
      // S13 calculations (heating, ventilation)
      calculateCOPValues();
      calculateHeatingSystem();
      calculateVentilationRates();
-     
+
      // Delegate to Cooling.js for Target
      window.TEUI.Cooling.calculateAll("target");
-     
+
      // Use cooling results
      const i_122 = StateManager.getValue("cooling_latentLoadFactor");
      calculateCoolingVentilation(i_122); // S13 owns D122/D123
@@ -123,6 +131,7 @@ This mirrors the Excel architecture: FORMULAE worksheet (S13) references COOLING
 **After** Target model works perfectly:
 
 1. **Option A (Preferred)**: Single file with mode parameter
+
    - Cooling.js already mode-aware from Phase 2
    - S13 Reference model calls: `Cooling.calculateAll("reference")`
    - Test Reference cooling calculations
@@ -142,6 +151,7 @@ This mirrors the Excel architecture: FORMULAE worksheet (S13) references COOLING
 **After** both models work perfectly:
 
 Consider migrating S13 to CHEATSHEET Pattern 1 (temporary mode switching):
+
 - Replace `isReferenceCalculation` parameters
 - Use automatic mode awareness
 - Simplify calculation functions
@@ -153,9 +163,10 @@ Consider migrating S13 to CHEATSHEET Pattern 1 (temporary mode switching):
 ### **Phase 5: Final Cleanup**
 
 1. **Remove obsolete code**:
+
    - Delete `createIsolatedCoolingContext()`
    - Delete `coolingState` object
-   - Delete `updateCoolingInputs()` 
+   - Delete `updateCoolingInputs()`
    - Delete `runIntegratedCoolingCalculations()`
 
 2. **Confirm state isolation**: Target/Reference modes fully independent
@@ -166,19 +177,20 @@ Consider migrating S13 to CHEATSHEET Pattern 1 (temporary mode switching):
 
 The refactor is complete when:
 
--   ✅ `4012-Section13.js` is maintainable (achieved: 3,666 lines, down from 4,259)
--   ✅ S13 heating/ventilation calculations match FORMULAE-3039.csv (rows 113-123)
--   ✅ Cooling.js calculations match COOLING-TARGET.csv (A6, A33, E55)
--   ✅ Target model: All calculations achieve Excel parity
--   ✅ Reference model: All calculations achieve Excel parity
--   ✅ State isolation: Target/Reference modes fully independent
--   ✅ Clock.js works: No initialization errors
--   ✅ 9/9 CHEATSHEET compliance maintained
+- ✅ `4012-Section13.js` is maintainable (achieved: 3,666 lines, down from 4,259)
+- ✅ S13 heating/ventilation calculations match FORMULAE-3039.csv (rows 113-123)
+- ✅ Cooling.js calculations match COOLING-TARGET.csv (A6, A33, E55)
+- ✅ Target model: All calculations achieve Excel parity
+- ✅ Reference model: All calculations achieve Excel parity
+- ✅ State isolation: Target/Reference modes fully independent
+- ✅ Clock.js works: No initialization errors
+- ✅ 9/9 CHEATSHEET compliance maintained
 
 **NOT REQUIRED** (over-engineering):
--   ❌ Extract heating to separate module (works fine in S13)
--   ❌ Extract ventilation to separate module (works fine in S13)
--   ❌ Context objects (timing errors, unnecessary complexity)
+
+- ❌ Extract heating to separate module (works fine in S13)
+- ❌ Extract ventilation to separate module (works fine in S13)
+- ❌ Context objects (timing errors, unnecessary complexity)
 
 ---
 
@@ -187,6 +199,7 @@ The refactor is complete when:
 ### **✅ COMPLETED: Architectural Foundation**
 
 **Commits 1-14** (see 4012-COOLING.md for details):
+
 - File size reduction: 4,259 → 3,666 lines (-13.9%)
 - Debug logging removed: 218 statements
 - Duplicate functions eliminated: S13 vs Cooling.js delineated
@@ -196,11 +209,13 @@ The refactor is complete when:
 ### **🔧 CURRENT PHASE: S13 Heating/Ventilation Bug Fixes**
 
 **Known Issues**:
+
 - Clock.js not displaying (caused by strict l_128 errors in createIsolatedCoolingContext)
 - Heating calculations may have bugs (need Excel row-by-row comparison)
 - Ventilation calculations may have bugs (need Excel row-by-row comparison)
 
 **Approach**:
+
 1. Fix heating calculations first (rows 113-115)
 2. Fix ventilation calculations (rows 118-121)
 3. Test against Excel for each row
@@ -211,11 +226,13 @@ The refactor is complete when:
 **After** S13 heating/ventilation achieves Excel parity:
 
 1. Remove context complexity from S13:
+
    - Delete `createIsolatedCoolingContext()`
    - Delete `coolingState`, `updateCoolingInputs()`
    - Delete `runIntegratedCoolingCalculations()`
 
 2. Refactor Cooling.js to mode-aware pattern:
+
    ```javascript
    calculateAll(mode = "target") {
      const prefix = mode === "reference" ? "ref_" : "";
@@ -227,13 +244,14 @@ The refactor is complete when:
    ```
 
 3. S13 orchestrates:
+
    ```javascript
    calculateTargetModel() {
      // ... S13 heating/ventilation ...
      Cooling.calculateAll("target");
      // Use cooling_latentLoadFactor, cooling_m_124, etc.
    }
-   
+
    calculateReferenceModel() {
      // ... S13 heating/ventilation ...
      Cooling.calculateAll("reference");
@@ -250,12 +268,14 @@ The refactor is complete when:
 ## 6. Key Architectural Decisions (REVISED)
 
 ### **✅ KEEP in S13.js:**
+
 - Heating system calculations (rows 113-115) - WORKING BEFORE CLEANUP
 - Ventilation calculations (rows 118-123) - WORKING BEFORE CLEANUP
 - Cooling system integration (D117, L114) - S13 owns per FORMULAE
 - Free cooling orchestration (H124) - S13 applies setback to Cooling.js A33
 
 ### **✅ DELEGATE to Cooling.js:**
+
 - Latent load factor (COOLING-TARGET A6)
 - Daily free cooling physics (COOLING-TARGET A28-A33)
 - Days active cooling (COOLING-TARGET E55)
@@ -264,6 +284,7 @@ The refactor is complete when:
 - CED calculations D129/M129 (timing exception - stays in Cooling.js)
 
 ### **❌ DO NOT extract:**
+
 - Heating calculations (no benefit, adds complexity)
 - Ventilation calculations (no benefit, adds complexity)
 
@@ -272,11 +293,13 @@ The refactor is complete when:
 ## 7. Lessons Learned
 
 ### **What Didn't Work:**
+
 - ❌ Context objects (`createIsolatedCoolingContext`) - timing errors, over-complexity
 - ❌ Upfront validation - causes initialization failures
 - ❌ Extracting working code - heating/ventilation work fine in S13
 
 ### **What Works:**
+
 - ✅ Excel worksheet pattern - each JS file = one Excel worksheet
 - ✅ StateManager as cross-worksheet reference mechanism
 - ✅ Mode parameter for dual-state awareness
@@ -299,6 +322,7 @@ The refactor is complete when:
 ### **🎉 MAJOR VICTORIES ACHIEVED:**
 
 #### **Architectural Cleanup:**
+
 - ✅ File size: 4,259 → 3,447 lines (-812 lines, -19%)
 - ✅ Function count: 89 → 38 (-57% reduction)
 - ✅ Cooling.js: 842 → 666 lines (-21% reduction)
@@ -306,10 +330,11 @@ The refactor is complete when:
 - ✅ Commented code: 210+ lines removed
 - ✅ 9/9 CHEATSHEET compliance achieved
 - ✅ Single source of truth: Empty state defaults
-- ✅ Reference mode contamination: Fixed with ref_ prefix
+- ✅ Reference mode contamination: Fixed with ref\_ prefix
 - ✅ Clock.js: RESTORED ⏱️
 
 #### **Cooling Context Complexity Eliminated:**
+
 - ✅ Removed `createIsolatedCoolingContext()` (139 lines)
 - ✅ Removed `coolingState` object (25 lines)
 - ✅ Removed `updateCoolingInputs()` (26 lines)
@@ -318,24 +343,28 @@ The refactor is complete when:
 - ✅ Result: Heating calculations UNBLOCKED
 
 #### **Excel Formula Compliance:**
+
 - ✅ **h_124 = 37,322.82 kWh/yr** - EXACT EXCEL MATCH! 🎯
 - ✅ Temperature diff corrected: Excel A16 = (A8 - A3)
 - ✅ D117 Excel formula: IF(D116="No Cooling", 0, IF(D113="Heatpump", M129/J113, IF(D116="Cooling", M129/J116)))
-- ✅ L114 Excel formula: IF(D113="Heatpump", IF(D116="Cooling", ((D117*J113)-D117), 0), 0)
+- ✅ L114 Excel formula: IF(D113="Heatpump", IF(D116="Cooling", ((D117\*J113)-D117), 0), 0)
 - ✅ M129 clamping: MAX(0, D129 - H124 - D123)
 
 #### **Circular Dependency Resolution:**
+
 - ✅ Moved D129/M129 from Cooling.js → S13 (after D122 calculation)
 - ✅ Proper calculation order: D122 → D129 → H124 → M129 → D117
 - ✅ Cooling.js reads fresh StateManager values every calculation
 - ✅ S13 listeners for Cooling.js results added
 
 #### **Dashboard Integration:**
+
 - ✅ h_10 (Target TEUI) = 93.4 kWh/m²/yr (expected 93.7 - very close!)
 - ✅ e_10 (Reference TEUI) = 211.6 kWh/m²/yr (within expected range)
 - ✅ Free cooling impact visible in results
 
 #### **State Isolation Verified:**
+
 - ✅ k_120 slider changes affect Target mode ONLY (perfect isolation!)
 - ✅ No Target contamination when changing Reference values
 - ✅ Dual-engine calculations working
@@ -345,33 +374,38 @@ The refactor is complete when:
 ### **🚨 CRITICAL REMAINING ISSUES (Final Session - Sept 30):**
 
 #### **Issue #1: d_116 (Cooling Toggle) Has No Effect** ⚠️
+
 **Severity**: Medium  
 **Description**: Switching d_116 between "Cooling" and "No Cooling" doesn't trigger recalculation  
 **Expected**: Should recalculate D117, L114, L116, D122, D123  
 **Current**: Values don't update  
-**Impact**: User can't test cooling vs no-cooling scenarios  
+**Impact**: User can't test cooling vs no-cooling scenarios
 
 #### **Issue #2: g_118 (Ventilation Method) Has No Effect** 🚨 **CRITICAL**
+
 **Severity**: CRITICAL - Historical failure point  
 **Description**: Changing g_118 doesn't update D120 (volumetric ventilation rate)  
-**Expected**: 
-- "Volume Constant" → D120 = (L118 * D105) / 3.6
-- "Volume by Schedule" → D120 = ((L118 * D105) / 3.6) * (I63/J63)
-- "Occupant Constant" → D120 = D63 * D119
-- "Occupant by Schedule" → D120 = (D63 * D119) * (I63/J63)
+**Expected**:
+
+- "Volume Constant" → D120 = (L118 \* D105) / 3.6
+- "Volume by Schedule" → D120 = ((L118 _ D105) / 3.6) _ (I63/J63)
+- "Occupant Constant" → D120 = D63 \* D119
+- "Occupant by Schedule" → D120 = (D63 _ D119) _ (I63/J63)
 
 **Current**: D120 stays at same value regardless of g_118 selection  
 **Impact**: Cascading failures - D120 → H120 → D121 → M121 → all downstream  
-**History**: **EVERY PREVIOUS S13 REFACTOR FAILED HERE** - this is the graveyard  
+**History**: **EVERY PREVIOUS S13 REFACTOR FAILED HERE** - this is the graveyard
 
 #### **Issue #3: l_119 (Summer Boost) Has No Effect** ⚠️
+
 **Severity**: Medium  
 **Description**: Changing l_119 doesn't update D122 (cooling season ventilation)  
 **Expected**: D122 should multiply by boost factor (1.10x, 1.20x, etc.)  
 **Current**: D122 doesn't change  
-**Impact**: Can't test ventilation boost scenarios  
+**Impact**: Can't test ventilation boost scenarios
 
 #### **Issue #4: Minor Calculation Discrepancies**
+
 - d_124 = 67% (expected 61%) - likely M19 or setback calculation
 - h_10 = 93.4 (expected 93.7) - likely default values vs Excel
 - Both are close enough for now, refinements later
@@ -381,6 +415,7 @@ The refactor is complete when:
 ### **📋 FINAL SESSION PRIORITIES (Sept 30 Evening):**
 
 **Priority 1: Fix g_118 (CRITICAL - THE GRAVEYARD)** 🚨
+
 - Add dropdown change listener for g_118
 - Ensure it triggers calculateVentilationRates() → D120 recalculation
 - Verify D120 uses correct formula per g_118 selection
@@ -388,15 +423,18 @@ The refactor is complete when:
 - **This is the make-or-break fix**
 
 **Priority 2: Fix d_116 (Cooling Toggle)**
+
 - Ensure dropdown listener triggers cooling system recalculation
 - Verify D117, L114, L116 respond to d_116 changes
 - Test Cooling vs No Cooling scenarios
 
 **Priority 3: Fix l_119 (Summer Boost)**
+
 - Ensure dropdown listener triggers D122 recalculation
 - Verify boost factor applies correctly to D122 formula
 
 **Priority 4: Remove Strict Errors (Cleanup)**
+
 - Change strict `throw new Error()` to lenient fallbacks in S13 calculateFreeCooling
 - Prevents error spam during initialization
 - Allows graceful degradation if Cooling.js slow to initialize
@@ -406,16 +444,19 @@ The refactor is complete when:
 ### **🎯 SUCCESS CRITERIA FOR COMPLETION:**
 
 **All 4 ventilation methods work:**
+
 1. Volume Constant - D120 responds correctly ✅
 2. Volume by Schedule - D120 responds correctly ✅
 3. Occupant Constant - D120 responds correctly ✅
 4. Occupant by Schedule - D120 responds correctly ✅
 
 **Cooling toggle works:**
+
 - d_116 "Cooling" → calculations update ✅
 - d_116 "No Cooling" → D117, L114, L116 = 0 ✅
 
 **Summer boost works:**
+
 - l_119 changes → D122 updates ✅
 
 **No errors in Logs.md** ✅
@@ -427,23 +468,25 @@ The refactor is complete when:
 **Why g_118 is Critical:**
 
 This single dropdown has caused **complete refactor failures** in:
+
 - March 2025 attempt: Context objects introduced to fix g_118 → state mixing
 - June 2025 attempt: Cooling integration to fix g_118 → calculation storms
 - August 2025 attempt: Pattern 2 migration to fix g_118 → reference contamination
 - September 2025 attempt: CHUNK pattern to fix g_118 → timing errors
 
 **Root Cause Pattern:**
+
 - g_118 changes → D120 should recalculate → H120 updates → D121/M121 update → downstream cascade
 - **Listener missing or contaminated** → D120 never recalculates → entire section freezes
 
 **Current Status (Sept 30):**
+
 - Architecture: ✅ Clean (9/9 CHEATSHEET)
 - Heating: ✅ Working (rows 113-115)
 - Cooling integration: ✅ Working (h_124 exact match)
 - **g_118**: 🚨 Still broken - but now we have clean architecture to fix it
 
 **This is the final boss.** 🎯
-
 
 ---
 
@@ -452,6 +495,7 @@ This single dropdown has caused **complete refactor failures** in:
 ### **🎉 MAJOR ACCOMPLISHMENTS COMPLETED:**
 
 #### **Architectural Cleanup:**
+
 - ✅ **Context complexity eliminated**: 253 lines removed (createIsolatedCoolingContext, coolingState, etc.)
 - ✅ **Circular dependency resolved**: D129/M129 moved from Cooling.js to S13
 - ✅ **Calculation order fixed**: S13 now calls Cooling.js directly (guaranteed timing)
@@ -460,14 +504,16 @@ This single dropdown has caused **complete refactor failures** in:
 - ✅ **File size**: 4,259 → 3,478 lines (-18.3%)
 
 #### **Excel Formula Compliance:**
+
 - 🎯 **h_124 = 37,322.82 kWh/yr** - EXACT EXCEL MATCH!
 - ✅ **D117 formula**: IF(D116="No Cooling", 0, IF(D113="Heatpump", M129/J113, IF(D116="Cooling", M129/J116)))
-- ✅ **L114 formula**: IF(D113="Heatpump", IF(D116="Cooling", ((D117*J113)-D117), 0), 0)
+- ✅ **L114 formula**: IF(D113="Heatpump", IF(D116="Cooling", ((D117\*J113)-D117), 0), 0)
 - ✅ **M129 clamping**: MAX(0, D129 - H124 - D123)
 - ✅ **Temperature diff**: Excel A16 = A8 - A3 (indoor - outdoor)
 - ✅ **All 2dp formatting**: j_113, j_114, j_116 consistent precision
 
 #### **UI/UX Fixes:**
+
 - ✅ **j_116 ghosting**: Ghosts when No Cooling OR Heatpump (Excel-compliant)
 - ✅ **j_116 display**: Shows j_113 when Heatpump, user value when dedicated, 0 when No Cooling
 - ✅ **Clock.js restored**: Timing display working (603ms initialization)
@@ -476,12 +522,14 @@ This single dropdown has caused **complete refactor failures** in:
 - ✅ **k_120 slider**: Works perfectly with Target mode isolation
 
 #### **Error Resolution:**
+
 - ✅ **calculateAndRefresh undefined**: Fixed by moving definition to registerWithStateManager()
 - ✅ **Cooling.js timing errors**: Fixed by direct call from S13 (no race conditions)
 - ✅ **i_59 strict errors**: Made lenient with 45% default
 - ✅ **Logs.md clean**: No errors after initialization
 
 #### **Dashboard Results:**
+
 - ✅ **h_10 = 92.8** kWh/m²/yr (close to expected 93.7, 99.0% accurate)
 - ✅ **Free cooling impact visible**: Load reduction from 132,486 → 129,747 kWh/yr
 - ✅ **State isolation**: k_120 changes affect Target only (perfect!)
@@ -493,6 +541,7 @@ This single dropdown has caused **complete refactor failures** in:
 #### **Bug #1: Number Format Timing Issue (MEDIUM PRIORITY)**
 
 **Symptom**: After a few user interactions, number formatting degrades:
+
 - Thousands separators disappear: "37,322.82" becomes "37322.82"
 - Percentages lose format: "70%" becomes "0.70"
 - Doesn't break calculations, but indicates timing/refresh issue
@@ -510,6 +559,7 @@ This single dropdown has caused **complete refactor failures** in:
 **Status**: REVISED UNDERSTANDING - Not a simple timing bug, appears to be calculation convergence issue
 
 **Symptom**:
+
 - **At initialization**: h_10 = 92.8 kWh/m²/yr (after Cooling.js fixes: 93.0)
 - **Expected**: h_10 = 93.7 kWh/m²/yr
 - **After slow-drag DOWN then UP to 89%**: h_10 = 93.7 kWh/m²/yr ✅ CORRECT!
@@ -517,21 +567,24 @@ This single dropdown has caused **complete refactor failures** in:
 - **Directional asymmetry**: Results depend on drag direction
 
 **Critical Discovery (Oct 1, 2025)**:
+
 - **ATTEMPTED FIX**: Changed d_118 to calculate only on thumb release (like f_113 slider)
 - **CATASTROPHIC RESULT**: h_10 = 126.2 (should be 93.7) - 35% error!
 - **REVERT REQUIRED**: d_118 MUST calculate during drag (commit 897974c)
 - **Hypothesis**: Multiple calculation cycles during drag act as **iterative solver** helping values converge
 
 **Observed Behavior**:
+
 - Slow drag down → slowly up to 89% → values converge to correct answer ✅
 - Drag up → back down to 89% → values do NOT converge ❌
 - Waiting a few seconds before releasing thumb → locks correct value ✅
 - The "calculation storm" during drag appears to be **required** for accuracy
 
-**Root Cause Hypothesis**: 
+**Root Cause Hypothesis**:
 Some calculation in the chain has **path dependency** or **state accumulation** that differs based on sequence of intermediate values. The d_118 drag acts as a forcing function that helps calculations settle.
 
 **Investigation Script** (Console test - no code changes):
+
 ```javascript
 // Test d_118 at different values with delays to observe convergence
 async function testD118Convergence() {
@@ -541,37 +594,41 @@ async function testD118Convergence() {
     { value: 50, label: "Down Low" },
     { value: 89, label: "Return to Baseline" },
     { value: 75, label: "Mid-range" },
-    { value: 89, label: "Final Baseline" }
+    { value: 89, label: "Final Baseline" },
   ];
-  
+
   console.log("═══════════════════════════════════════════");
   console.log("D118 CONVERGENCE TEST - Starting...");
   console.log("═══════════════════════════════════════════");
-  
+
   for (const test of testSequence) {
     // Set d_118 value
-    window.TEUI.ModeManager.setValue("d_118", test.value.toString(), "user-modified");
-    
+    window.TEUI.ModeManager.setValue(
+      "d_118",
+      test.value.toString(),
+      "user-modified",
+    );
+
     // Trigger calculations
     window.TEUI.SectionModules.sect13.calculateAll();
     window.TEUI.ModeManager.updateCalculatedDisplayValues();
-    
+
     // Wait 2000ms for settling
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
     // Read results
     const h_10 = window.TEUI.StateManager.getValue("h_10");
     const d_122 = window.TEUI.StateManager.getValue("d_122");
     const d_129 = window.TEUI.StateManager.getValue("d_129");
     const m_129 = window.TEUI.StateManager.getValue("m_129");
-    
+
     console.log(`\n[TEST ${test.label}] d_118 = ${test.value}%:`);
     console.log(`  h_10: ${h_10} (Excel expects 93.7)`);
     console.log(`  d_122: ${d_122} (Excel expects 15,128.68)`);
     console.log(`  d_129: ${d_129} (Excel expects 61,496.35)`);
     console.log(`  m_129: ${m_129} (Excel expects 10,709.00)`);
   }
-  
+
   console.log("\n═══════════════════════════════════════════");
   console.log("D118 CONVERGENCE TEST - Complete");
   console.log("═══════════════════════════════════════════");
@@ -609,6 +666,7 @@ async function testD118Convergence() {
 **Symptom**: Changing location at S03 (e.g., h_13 City dropdown) triggered recalculation of BOTH Target AND Reference states with the new location's weather data, instead of only the active mode.
 
 **Expected Behavior**:
+
 - In Target mode: Location change updates Target weather data (unprefixed: d_20, d_21, etc.) ONLY ✅
 - In Reference mode: Location change updates Reference weather data (ref_d_20, ref_d_21, etc.) ONLY ✅
 - Opposite mode should remain unchanged ✅
@@ -616,6 +674,7 @@ async function testD118Convergence() {
 **Resolution**: TWO fixes required (the bug had multiple contamination points):
 
 1. **S13 HDD Reading Fix** (Oct 1, Commit `6f5087f`):
+
    - Fixed `calculateVentilationEnergy()` to read mode-aware HDD
    - Changed from always reading `d_20` to `isReferenceCalculation ? ref_d_20 : d_20`
 
@@ -628,18 +687,21 @@ async function testD118Convergence() {
 **Probable Root Causes**:
 
 1. **S03 Publishing Pattern Contamination**:
+
    - S03 may be publishing weather data without mode awareness
    - Possible dual-publishing: writes both `d_20` AND `ref_d_20` on every location change
    - Or: Always publishes unprefixed values regardless of current mode
    - Check: Does S03 respect ModeManager.currentMode when publishing climate data?
 
 2. **Downstream Consumer Contamination**:
+
    - S10, S11, S12, S13, S15 consume weather data from S03
    - These sections may have getRefValue() fallback contamination
    - Pattern B antipattern: Reading `ref_d_20` when mode is Target
    - Check: Do downstream getValue() calls use correct prefix per mode?
 
 3. **StateManager Wildcard Listener Issue** (Known from Memory):
+
    - StateManager.setValue() with "calculated" state doesn't trigger wildcard listeners
    - S03 publishes climate data correctly but listeners never fire
    - Downstream sections read stale cached values
@@ -651,13 +713,14 @@ async function testD118Convergence() {
    - Check: Are S03 dual-state objects properly separated?
 
 **Direct Weather Data Consumers**:
+
 - S10: Unknown dependencies (need to verify)
 - S11: Climate data for envelope calculations
 - S12: Climate data for system sizing
 - S13: HDD (d_20), CDD (d_21) for heating/cooling
 - S15: Climate data for aggregation
 
-**Historical Context**: 
+**Historical Context**:
 From Memory ID 8850660: "S03 publishes climate data perfectly (verified: d_20=7100 stored correctly), but downstream sections read stale cached values because listeners never fire."
 
 **Impact**: CRITICAL - undermines entire dual-state architecture, prevents independent Target/Reference modeling
@@ -665,6 +728,7 @@ From Memory ID 8850660: "S03 publishes climate data perfectly (verified: d_20=71
 **Priority**: CRITICAL (must fix before g_118)
 
 **Investigation Required**:
+
 1. Add logging to S03 location change handler - which keys are published? With what prefixes?
 2. Add logging to S10/S11/S12/S13/S15 climate data consumers - which keys are read? From which mode?
 3. Check S03 ModeManager.currentMode usage - is it respected?
@@ -682,8 +746,9 @@ From Memory ID 8850660: "S03 publishes climate data perfectly (verified: d_20=71
 **Historical Context - THE GRAVEYARD**:
 
 This single dropdown **killed every S13 refactor attempt** for 12 months:
+
 - **March 2025**: Context objects introduced to fix g_118 → state mixing
-- **June 2025**: Cooling integration to fix g_118 → calculation storms  
+- **June 2025**: Cooling integration to fix g_118 → calculation storms
 - **August 2025**: Pattern 2 migration to fix g_118 → reference contamination
 - **September 2025**: CHUNK pattern to fix g_118 → timing errors
 - **October 2, 2025**: **VICTORY** - Systematic root cause analysis + tactical fix = success! 🎉
@@ -695,21 +760,31 @@ This single dropdown **killed every S13 refactor attempt** for 12 months:
 Three contaminated functions were reading **Target external dependencies** even when calculating Reference values:
 
 **1. `calculateVentilationRates()` (Lines 2491-2497)**
+
 ```javascript
 // ❌ BEFORE: Read Target values for Reference calculations
-const volume = window.TEUI.parseNumeric(getFieldValue("d_105")) || 0;         // Target d_105
-const occupiedHours = window.TEUI.parseNumeric(getFieldValue("i_63")) || 0;   // Target i_63
-const totalHours = window.TEUI.parseNumeric(getFieldValue("j_63")) || 8760;   // Target j_63
-const occupants_d63 = window.TEUI.parseNumeric(getFieldValue("d_63")) || 0;   // Target d_63
+const volume = window.TEUI.parseNumeric(getFieldValue("d_105")) || 0; // Target d_105
+const occupiedHours = window.TEUI.parseNumeric(getFieldValue("i_63")) || 0; // Target i_63
+const totalHours = window.TEUI.parseNumeric(getFieldValue("j_63")) || 8760; // Target j_63
+const occupants_d63 = window.TEUI.parseNumeric(getFieldValue("d_63")) || 0; // Target d_63
 
 // ✅ AFTER: Read mode-aware values (ref_ prefix for Reference)
-const volume = window.TEUI.parseNumeric(getExternalValue("d_105", isReferenceCalculation)) || 0;
-const occupiedHours = window.TEUI.parseNumeric(getExternalValue("i_63", isReferenceCalculation)) || 0;
-const totalHours = window.TEUI.parseNumeric(getExternalValue("j_63", isReferenceCalculation)) || 8760;
-const occupants_d63 = window.TEUI.parseNumeric(getExternalValue("d_63", isReferenceCalculation)) || 0;
+const volume =
+  window.TEUI.parseNumeric(getExternalValue("d_105", isReferenceCalculation)) ||
+  0;
+const occupiedHours =
+  window.TEUI.parseNumeric(getExternalValue("i_63", isReferenceCalculation)) ||
+  0;
+const totalHours =
+  window.TEUI.parseNumeric(getExternalValue("j_63", isReferenceCalculation)) ||
+  8760;
+const occupants_d63 =
+  window.TEUI.parseNumeric(getExternalValue("d_63", isReferenceCalculation)) ||
+  0;
 ```
 
 **2. `calculateVentilationEnergy()` (Lines 2552-2561)**
+
 ```javascript
 // ❌ BEFORE: Always read Target d_120
 const ventRate = window.TEUI.parseNumeric(getFieldValue("d_120")) || 0;
@@ -719,23 +794,36 @@ let ventRate = 0;
 if (ventRateD120 !== null) {
   ventRate = window.TEUI.parseNumeric(ventRateD120) || 0;
 } else {
-  ventRate = window.TEUI.parseNumeric(getExternalValue("d_120", isReferenceCalculation)) || 0;
+  ventRate =
+    window.TEUI.parseNumeric(
+      getExternalValue("d_120", isReferenceCalculation),
+    ) || 0;
 }
 ```
 
 **3. `calculateCoolingVentilation()` (Lines 2594-2610)**
+
 ```javascript
 // ❌ BEFORE: Read Target values for Reference calculations
-const ventilationRateLs_d120 = window.TEUI.parseNumeric(getFieldValue("d_120")) || 0;  // Target
-const cdd_d21 = window.TEUI.parseNumeric(getFieldValue("d_21")) || 0;                  // Target
-const occupiedHours_i63 = window.TEUI.parseNumeric(getFieldValue("i_63")) || 0;        // Target
-const totalHours_j63 = window.TEUI.parseNumeric(getFieldValue("j_63")) || 8760;        // Target
+const ventilationRateLs_d120 =
+  window.TEUI.parseNumeric(getFieldValue("d_120")) || 0; // Target
+const cdd_d21 = window.TEUI.parseNumeric(getFieldValue("d_21")) || 0; // Target
+const occupiedHours_i63 = window.TEUI.parseNumeric(getFieldValue("i_63")) || 0; // Target
+const totalHours_j63 = window.TEUI.parseNumeric(getFieldValue("j_63")) || 8760; // Target
 
 // ✅ AFTER: Read mode-aware values
-const ventilationRateLs_d120 = window.TEUI.parseNumeric(getExternalValue("d_120", isReferenceCalculation)) || 0;
-const cdd_d21 = window.TEUI.parseNumeric(getExternalValue("d_21", isReferenceCalculation)) || 0;
-const occupiedHours_i63 = window.TEUI.parseNumeric(getExternalValue("i_63", isReferenceCalculation)) || 0;
-const totalHours_j63 = window.TEUI.parseNumeric(getExternalValue("j_63", isReferenceCalculation)) || 8760;
+const ventilationRateLs_d120 =
+  window.TEUI.parseNumeric(getExternalValue("d_120", isReferenceCalculation)) ||
+  0;
+const cdd_d21 =
+  window.TEUI.parseNumeric(getExternalValue("d_21", isReferenceCalculation)) ||
+  0;
+const occupiedHours_i63 =
+  window.TEUI.parseNumeric(getExternalValue("i_63", isReferenceCalculation)) ||
+  0;
+const totalHours_j63 =
+  window.TEUI.parseNumeric(getExternalValue("j_63", isReferenceCalculation)) ||
+  8760;
 ```
 
 ---
@@ -743,6 +831,7 @@ const totalHours_j63 = window.TEUI.parseNumeric(getExternalValue("j_63", isRefer
 **The Solution Pattern**:
 
 Created `getExternalValue(fieldId, isReferenceCalculation)` helper function (Lines 524-541):
+
 ```javascript
 function getExternalValue(fieldId, isReferenceCalculation = false) {
   if (isReferenceCalculation) {
@@ -765,7 +854,8 @@ This mirrors the **Bug #4 fix pattern** (line 2537-2539) that successfully fixed
 Previous attempts failed because they tried to solve it with **architectural changes** (context objects, new patterns, orchestrators) when the actual bug was **tactical** - specific functions not checking their `isReferenceCalculation` parameter before reading external values from other sections.
 
 **Key Insight**: g_118 determines **which formula** to use for D120 ventilation calculation:
-- "Volume Constant": `D120 = (l_118 × d_105) / 3.6` 
+
+- "Volume Constant": `D120 = (l_118 × d_105) / 3.6`
 - "Volume by Schedule": `D120 = ((l_118 × d_105) / 3.6) × (i_63/j_63)`
 - "Occupant Constant": `D120 = d_63 × d_119`
 - "Occupant by Schedule": `D120 = (d_63 × d_119) × (i_63/j_63)`
@@ -775,6 +865,7 @@ When Reference used Target's d_105, i_63, j_63, d_63 values, changing g_118 in T
 ---
 
 **Contamination Cascade (Now Eliminated)**:
+
 ```
 ❌ BEFORE:
 g_118 changes in Target mode
@@ -782,7 +873,7 @@ g_118 changes in Target mode
 calculateReferenceModel() runs
   ↓
 calculateVentilationRates(true) reads Target d_105, i_63, j_63, d_63 ❌
-  ↓ 
+  ↓
 Reference D120 contaminated with Target data
   ↓
 Reference M121 → ref_d_127 → ref_d_136 → ref_j_32 → e_10 all contaminated ❌
@@ -813,13 +904,14 @@ e_10 stays constant (perfect state isolation) ✅
 
 ---
 
-#### **Bug #10: S11 Column K (Cooling Transmission Gains) - Target Shows Zero** ✅ **FIXED!** 
+#### **Bug #10: S11 Column K (Cooling Transmission Gains) - Target Shows Zero** ✅ **FIXED!**
 
 **Status**: ✅ RESOLVED (Oct 2, 2025 - Commit `2f26b23`)
 
 **Symptom**: S11 Column K (Heatgain kWh/Cool Season) rows 85-95 showed **0.00** in Target mode, but **calculated correctly** in Reference mode (reverse state mixing).
 
 **Expected Values (from Excel)**:
+
 - k_85 (Roof): 710.14 kWh/Cool Season
 - k_86 (Walls AG): 501.32 kWh/Cool Season
 - k_95 (Floor Slab): -5,995.80 kWh/Cool Season (negative = ground cooling)
@@ -827,6 +919,7 @@ e_10 stays constant (perfect state isolation) ✅
 **Root Cause**: Missing **Pattern 1 temporary mode switching** in S11's dual-engine functions.
 
 **The Bug Pattern**:
+
 ```
 User in Reference mode → changes S11 value
   ↓
@@ -849,7 +942,7 @@ Target k_85 never written to unprefixed key → displays 0
 function calculateReferenceModel() {
   const originalMode = ModeManager.currentMode;
   ModeManager.currentMode = "reference"; // ✅ Ensure Reference publishing
-  
+
   try {
     // ... calculations ...
   } finally {
@@ -860,7 +953,7 @@ function calculateReferenceModel() {
 function calculateTargetModel() {
   const originalMode = ModeManager.currentMode;
   ModeManager.currentMode = "target"; // ✅ Ensure Target publishing
-  
+
   try {
     // ... calculations ...
   } finally {
@@ -869,7 +962,8 @@ function calculateTargetModel() {
 }
 ```
 
-**Result**: 
+**Result**:
+
 - ✅ Target Column K values now display correctly (Excel parity achieved!)
 - ✅ Reference Column K values continue to work perfectly
 - ✅ **BONUS**: This also fixed Bug #6 (h_21 capacitance toggle now works in Reference mode)!
@@ -882,6 +976,7 @@ function calculateTargetModel() {
 ### **📋 NEXT SESSION PRIORITIES (UPDATED Oct 2, 2025):**
 
 **🎉 MAJOR VICTORIES ACHIEVED:**
+
 - ✅ **Bug #4 FIXED** (S03 location change state mixing) - Commits `6f5087f`, `2f26b23`
 - ✅ **Bug #5 FIXED** (g_118 ventilation method - THE FINAL BOSS) - Commit `8b1bb24`
 - ✅ **Bug #6 FIXED** (h_21 capacitance toggle) - Fixed by Commit `2f26b23` (S11 mode switching)
@@ -893,6 +988,7 @@ function calculateTargetModel() {
 **REMAINING BUGS (For Future Investigation):**
 
 **HIGH PRIORITY:**
+
 1. **Bug #11** (h_10 convergence issue - DEFERRED) 🔬 🐉
    - **Symptom**: h_10 doesn't fully converge on initialization or quick slider release
    - At initialization: h_10 = 93.0 (expected 93.7) - 0.7 kWh/m²/yr short (99.3% accurate)
@@ -911,13 +1007,14 @@ function calculateTargetModel() {
    - **Priority**: DEFERRED - 99.3% accuracy is acceptable, workaround exists, fix risks breaking working code
    - **Wisdom**: "Don't poke the convergence dragon" 🐉 - leave working code alone!
 
-**MEDIUM PRIORITY:**
-2. **Bug #9** (d_12 occupancy state mixing) - ⚠️ PARTIALLY FIXED
-   - Reference model now protected from Target changes ✅
-   - Target still affected by Reference changes ❌
-   - Lower priority now that critical state isolation achieved
-   
+**MEDIUM PRIORITY:** 2. **Bug #9** (d_12 occupancy state mixing) - ⚠️ PARTIALLY FIXED
+
+- Reference model now protected from Target changes ✅
+- Target still affected by Reference changes ❌
+- Lower priority now that critical state isolation achieved
+
 3. **Bug #7** (k_120 setback slider - Reference mode only)
+
    - Works perfectly in Target mode ✅
    - Has no effect in Reference mode ❌
    - Likely not dual-state or missing Reference listener
@@ -927,9 +1024,7 @@ function calculateTargetModel() {
    - Drag up→down does NOT converge ❌
    - May share root cause with Bug #11
 
-**LOW PRIORITY:**
-5. **Bug #1** (number format timing) - Visual inconsistency only
-6. **Bug #3** (l_118 formatting) - Minor display issue
+**LOW PRIORITY:** 5. **Bug #1** (number format timing) - Visual inconsistency only 6. **Bug #3** (l_118 formatting) - Minor display issue
 
 **Status**: 🏆 **MAJOR MILESTONE ACHIEVED!** The two "impossible" state mixing bugs (Bug #4 and Bug #5) that killed 12 months of refactor attempts are now FIXED! Clean architecture + perfect state isolation + 99.3% Excel parity achieved (h_10 = 93.0 vs 93.7, within 0.7 kWh/m²/yr).
 
@@ -954,21 +1049,25 @@ function calculateTargetModel() {
 #### **Cooling.js Formula Bugs Fixed (3 bugs):**
 
 **Bug 1: Wrong A6 (Latent Load Factor) Formula** (Commit `6f48c91`)
+
 - **OLD**: `A6 = 1 + (coolingSeasonMeanRH / nightTimeTemp)` = 1.0273 ❌
 - **NEW**: `A6 = 1 + A64/A55` (psychrometric formula using humidity ratios) ✅
 - **Result**: I122 improved from 102.7% → 175% (Excel: 159%, still 10% off but much closer)
 
 **Bug 2: Wrong Calculation Order** (Commit `12b9eb8`)
+
 - **ISSUE**: calculateLatentLoadFactor() called BEFORE calculateHumidityRatios()
 - **RESULT**: A63 (humidityRatioDifference) was undefined/0 when A6 calculated
 - **FIX**: Reordered to calculate humidity ratios FIRST
 
 **Bug 3: Wrong Temperature for pSatAvg** (Commit `14a5e7b`)
+
 - **ISSUE**: Used dry bulb temp (A3 = 20.43°C) instead of wet bulb temp (A50 = E64)
 - **Excel A56**: `610.94 * EXP(17.625 * A50 / (A50 + 243.04))` where A50 = wet bulb
 - **FIX**: Changed to use `state.wetBulbTemperature` for pSatAvg calculation
 
 **Bug 4: Wrong RH Value for Partial Pressure** (Commit `166fdd9`)
+
 - **ISSUE**: Used A4 (coolingSeasonMeanRH = 0.5585) for partial pressure
 - **Excel A58**: `A56 * A57` where A57 = 0.7 (outdoor seasonal RH, different from A4)
 - **FIX**: Use hardcoded 0.7 for outdoor seasonal RH in partial pressure calc
@@ -977,16 +1076,16 @@ function calculateTargetModel() {
 
 #### **Calculation Results - MAJOR IMPROVEMENTS:**
 
-| Value | Before | After | Excel Target | Status |
-|-------|--------|-------|--------------|--------|
-| **d_124 (Free Cooling %)** | 70% | **61%** | **61%** | ✅ **EXACT MATCH!** |
-| **h_10 (TEUI Target)** | 92.8 | **93.0** | 93.7 | 🟢 99.3% accurate |
-| **i_122 (Latent Factor)** | 102.7% | **175%** | 159% | 🟡 Within 10% |
-| **d_129 (CED Unmit)** | 53,291 | **62,418** | 61,496 | 🟢 101.5% (very close!) |
-| **m_129 (CED Mitg)** | 7,295 | **8,045** | 10,709 | 🟡 75% (better than before) |
-| **d_122 (Cool Vent)** | 9,746 | **~14,000** | 15,129 | 🟢 Much closer |
-| **d_123 (Vent Recov)** | 8,674 | **~12,000** | 13,465 | 🟢 Much closer |
-| **L114 (CEER)** | 4,556 | **5,025** | 6,688 | 🟡 75% (better) |
+| Value                      | Before | After       | Excel Target | Status                      |
+| -------------------------- | ------ | ----------- | ------------ | --------------------------- |
+| **d_124 (Free Cooling %)** | 70%    | **61%**     | **61%**      | ✅ **EXACT MATCH!**         |
+| **h_10 (TEUI Target)**     | 92.8   | **93.0**    | 93.7         | 🟢 99.3% accurate           |
+| **i_122 (Latent Factor)**  | 102.7% | **175%**    | 159%         | 🟡 Within 10%               |
+| **d_129 (CED Unmit)**      | 53,291 | **62,418**  | 61,496       | 🟢 101.5% (very close!)     |
+| **m_129 (CED Mitg)**       | 7,295  | **8,045**   | 10,709       | 🟡 75% (better than before) |
+| **d_122 (Cool Vent)**      | 9,746  | **~14,000** | 15,129       | 🟢 Much closer              |
+| **d_123 (Vent Recov)**     | 8,674  | **~12,000** | 13,465       | 🟢 Much closer              |
+| **L114 (CEER)**            | 4,556  | **5,025**   | 6,688        | 🟡 75% (better)             |
 
 **ONE VALUE EXACT MATCH** + **Multiple values now within 1-10% of Excel** = Major success! 🎯
 
@@ -995,6 +1094,7 @@ function calculateTargetModel() {
 #### **Documentation Enhanced:**
 
 **COOLING-TARGET-VARIABLES.json** (Commit `6f48c91`)
+
 - Added `LATENT_LOAD_FACTOR_CHAIN` section
 - Documented 12 missing Excel cells: A6, A64, A55, A63, A62, A61, A54, A53, H25, H26, H27, A49
 - Traced complete psychrometric formula chain for future reference
@@ -1005,6 +1105,7 @@ function calculateTargetModel() {
 ### **🔬 CRITICAL DISCOVERIES:**
 
 #### **Discovery 1: d_118 Slider is NOT a Bug** ⚠️
+
 - **Initial hypothesis**: Calculation storms during drag = inefficiency to fix
 - **Testing revealed**: Removing "input" event calculations causes **catastrophic drift** (h_10: 93→126.2)
 - **Actual behavior**: Multiple calculation cycles during drag act as **iterative solver**
@@ -1012,12 +1113,14 @@ function calculateTargetModel() {
 - **Conclusion**: d_118 must calculate during drag - this is REQUIRED behavior, not a bug
 
 #### **Discovery 2: Bug #4 Root Cause Located**
+
 - **S11 reads correctly**: Uses ref_d_20 in Reference mode, d_20 in Target mode ✅
 - **Actual bug**: S03 publishes same climate value to BOTH d_20 AND ref_d_20
 - **Evidence from logs**: Both Target and Reference read d_20=4600 (same value)
 - **Conclusion**: Bug is in S03 publishing, not S11 consumption
 
 #### **Discovery 3: k_120 Slider Fix Works** ✅
+
 - Changed to calculate on thumb release only (like f_113)
 - No calculation drift observed
 - Smoother user experience
@@ -1027,13 +1130,16 @@ function calculateTargetModel() {
 ### **📋 COMMITS TODAY (Oct 1, 2025):**
 
 **Morning - File Housekeeping:**
+
 - `73a45d0`: Rename section files from 4011 to 4012 prefix, organize backups
 - `a7e8790`: Document Bug #4 (S03 state mixing) and Bug #5 (g_118 final boss)
 
 **Investigation Phase:**
+
 - `18e4e9d`: Add diagnostic logging for D122/D129/M129 calculations
 
 **Cooling.js Formula Fixes:**
+
 - `6f48c91`: Fix Cooling.js A6 latent load factor formula to match Excel
 - `12b9eb8`: Fix Cooling.js calculation order - humidity ratios before latent load factor
 - `14a5e7b`: Fix pSatAvg to use wet bulb temp (A50) not dry bulb (A3)
@@ -1042,6 +1148,7 @@ function calculateTargetModel() {
 - `ea59a07`: Remove diagnostic logging after Cooling.js fixes verified ✅ **SAFE RESTORE POINT**
 
 **Slider Timing Investigation:**
+
 - `897974c`: Revert d_118 to calculate during drag, keep k_120 thumb-release-only fix
 
 ---
@@ -1049,6 +1156,7 @@ function calculateTargetModel() {
 ### **📊 NEXT SESSION PRIORITIES (UPDATED Oct 1):**
 
 **Phase 1: Bug #4 Investigation (S03 State Mixing)** 🚨 **CRITICAL**
+
 1. Add logging to S03 location change handler
 2. Map which keys S03 publishes (d_20? ref_d_20? both?)
 3. Check if S03 respects ModeManager.currentMode
@@ -1056,6 +1164,7 @@ function calculateTargetModel() {
 5. Document findings before attempting fix
 
 **Phase 2: Bug #5 Investigation (g_118 Final Boss)** 💀
+
 1. Map g_118 dropdown change handler
 2. Trace D120 calculation chain (all inputs and outputs)
 3. Verify dual-state coverage for L118, D105, I63, D63, D119
@@ -1063,6 +1172,7 @@ function calculateTargetModel() {
 5. Document findings before attempting fix
 
 **Phase 3: Fine-Tuning (After Bug #4 & #5)** 🔧
+
 1. Investigate i_122 remaining 10% error (175% vs 159%)
 2. Review A7-TARGET-CORRECT for cooling parity reference if needed
 3. Investigate d_118 convergence asymmetry with console test script
@@ -1091,17 +1201,19 @@ function calculateTargetModel() {
 #### **The 12-Month Bug is FIXED!** 🏆
 
 **Root Cause Found**: S13 `calculateVentilationEnergy()` function (line 2534)
+
 ```javascript
 // BEFORE (BUG):
 const hdd = getGlobalNumericValue("d_20"); // Always reads Target HDD!
 
 // AFTER (FIXED):
 const hdd = isReferenceCalculation
-  ? getGlobalNumericValue("ref_d_20")  // Reference reads independent location
-  : getGlobalNumericValue("d_20");      // Target reads independent location
+  ? getGlobalNumericValue("ref_d_20") // Reference reads independent location
+  : getGlobalNumericValue("d_20"); // Target reads independent location
 ```
 
 **Contamination Chain Traced:**
+
 ```
 S03: Publishes d_20=7100 (Attawapiskat) and ref_d_20=4600 (Alexandria) ✅
   ↓
@@ -1121,6 +1233,7 @@ S01: Displayed e_10=243.8 (should be 211.6) ❌
 ```
 
 **After Fix:**
+
 ```
 S03: Publishes d_20=7100 and ref_d_20=4600 ✅
   ↓
@@ -1138,18 +1251,21 @@ S01: e_10=211.6 ✅✅✅
 ```
 
 **Verification Test:**
+
 - **Before fix**: Change Target Alexandria→Attawapiskat: e_10 changes 211.6→243.8 ❌
 - **After fix**: Change Target Alexandria→Attawapiskat: e_10 stays 211.6 ✅
 
 **Impact**: CRITICAL bug eliminated - **perfect dual-state architecture now achieved**! Target and Reference models are fully independent.
 
 **Investigation Tools Used:**
+
 - S03 location logging (Target vs Reference)
 - S04 upstream value logging (ref_d_136 trace)
 - S15 Reference calculation logging (upstream inputs)
 - Systematic binary search through calculation chain
 
 **Commits**:
+
 - Investigation: `6f5087f` (logging cleanup)
 - **THE FIX**: Next commit (S13 mode-aware HDD read)
 
@@ -1164,6 +1280,7 @@ S01: e_10=211.6 ✅✅✅
 **Purpose**: QCMonitor provides automated detection of architectural antipatterns and potential bugs that may not surface during normal testing.
 
 **How to Generate QC Reports**:
+
 1. Enable QC Monitor: Add `?qc=true` to URL
 2. Navigate to Section 18 (bottom of app)
 3. Click "Generate QC Report" button
@@ -1178,6 +1295,7 @@ S01: e_10=211.6 ✅✅✅
 **Per 4012-CHEATSHEET.md**: Fallback reads are antipatterns that mask missing dependencies
 
 **Current Fallback Violations**:
+
 - **S09**: `j_63` (hardcoded 8760 instead of reading from state)
 - **S09**: `ref_d_66`, `ref_d_60` (Reference lighting/wood values)
 - **S06**: `ref_m_43` (Reference renewable energy)
@@ -1188,24 +1306,28 @@ S01: e_10=211.6 ✅✅✅
 - **S11**: `i_96`, `g_96`, `f_96` (Envelope component values)
 
 **Recommended Action**:
+
 - Review fallback reads quarterly
 - Evaluate if each fallback is legitimate (initialization timing) or antipattern (missing state)
 - Convert antipattern fallbacks to strict reads with proper error handling
 - Document legitimate fallbacks with clear comments explaining why they exist
 
 **Example Legitimate Fallback**:
+
 ```javascript
 // Legitimate: j_63 is always 8760 (hours in year), not state-dependent
 const j_63 = 8760; // Fixed constant, not a fallback read
 ```
 
 **Example Antipattern Fallback**:
+
 ```javascript
 // Antipattern: Should error if ref_d_113 missing, not silently use default
 const ref_d_113 = getValue("ref_d_113") || "Electricity"; // ❌ Masks missing state
 ```
 
 **Integration with Development Workflow**:
+
 - Generate QC report before major refactors (baseline)
 - Generate QC report after fixes (regression check)
 - Track violation count trends over time
@@ -1222,20 +1344,24 @@ const ref_d_113 = getValue("ref_d_113") || "Electricity"; // ❌ Masks missing s
 **Symptom**: Changing S03 h_21 (Capacitance: Static/Capacitance) in Reference mode does not affect Reference calculations in S11/S12.
 
 **Expected Behavior**:
+
 - In Reference mode: h_21 change → recalculates S11 ref_k_95, ref_k_94 (ground-facing calculations)
 - Ground-facing CDD uses capacitance factor (i_21 slider)
 - Static vs Capacitance should produce different results
 
-**Current Behavior**: 
+**Current Behavior**:
+
 - Reference h_21 toggle has no effect on S11/S12 Reference calculations
 - S11 ref_k_95, ref_k_94 values don't update
 
 **Probable Root Causes**:
+
 1. **S03 Publishing**: May not be publishing ref_h_21 or ref_i_21 for downstream consumption
 2. **S11/S12 Listeners Missing**: Reference engines may not have listeners for ref_h_21 changes
 3. **S11/S12 Reading**: May be reading unprefixed h_21 instead of ref_h_21 in Reference mode
 
 **Investigation Required**:
+
 - Check S03 publishes ref_h_21 with "user-modified" state (triggers listeners)
 - Check S11/S12 have listeners for ref_h_21 changes
 - Verify S11/S12 Reference engines read ref_h_21, ref_i_21 correctly
@@ -1249,20 +1375,24 @@ const ref_d_113 = getValue("ref_d_113") || "Electricity"; // ❌ Masks missing s
 **Symptom**: Changing k_120 (Unoccupied Setback %) in Reference mode does not affect Reference calculations.
 
 **Expected Behavior**:
+
 - k_120 slider works identically in both modes
 - Reference mode: k_120 change → recalculates ref_h_120, ref_d_120, ref_m_121
 - Target mode: k_120 change → recalculates h_120, d_120, m_121 (currently works ✅)
 
-**Current Behavior**: 
+**Current Behavior**:
+
 - Target mode: k_120 works perfectly ✅
 - Reference mode: k_120 has no effect on calculations ❌
 
 **Probable Root Causes**:
+
 1. **k_120 Not Dual-State**: May only be stored as unprefixed value (no ref_k_120)
 2. **S13 Reference Engine**: May not be reading k_120 value in Reference calculations
 3. **Listener Missing**: S13 may not have listener for ref_k_120 changes
 
 **Investigation Required**:
+
 - Check if k_120 is dual-state (both k_120 and ref_k_120 stored)
 - Verify S13 Reference calculations read k_120 (or ref_k_120)
 - Check S13 has listener for k_120/ref_k_120 changes
@@ -1276,25 +1406,30 @@ const ref_d_113 = getValue("ref_d_113") || "Electricity"; // ❌ Masks missing s
 **Symptom**: Hot Water system type (d_51) carries over between Target and Reference modes instead of maintaining independent values.
 
 **Expected Behavior**:
+
 - Target mode d_51 = "Heatpump" (independent setting)
 - Reference mode d_51 = "Electric" (independent setting)
 - Switching modes shows respective setting for each model
 
-**Current Behavior**: 
+**Current Behavior**:
+
 - Set d_51 = "Heatpump" in Target mode → switch to Reference → shows "Heatpump" ❌
 - Set d_51 = "Electric" in Reference mode → switch to Target → shows "Electric" ❌
 - **System type carries over** instead of staying independent
 
 **Related Calculation Mixing**:
+
 - Calculation changes flow to S01 (affects both e_10 and h_10)
 - Hot water energy calculations contaminate across modes
 
 **Probable Root Causes**:
+
 1. **S07 Not Dual-State**: d_51 may only be stored as single value (no ref_d_51)
 2. **S07 Missing TargetState/ReferenceState**: S07 may not have dual-state architecture
 3. **Shared Field Definition**: d_51 field definition may not support dual-state
 
 **Investigation Required**:
+
 - Check if S07 has TargetState/ReferenceState objects
 - Verify d_51 is stored as both d_51 and ref_d_51
 - Review S07 dropdown handler - does it respect ModeManager.currentMode?
@@ -1308,21 +1443,25 @@ const ref_d_113 = getValue("ref_d_113") || "Electricity"; // ❌ Masks missing s
 **Symptom**: Changing Reference mode d_12 (Occupancy Type) causes calculation updates visible at BOTH e_10 (Reference) AND h_10 (Target).
 
 **Expected Behavior**:
+
 - Reference mode d_12 change → e_10 updates (Reference TEUI) ✅
 - Reference mode d_12 change → h_10 stays same (Target TEUI) ✅
 
-**Current Behavior**: 
+**Current Behavior**:
+
 - Reference mode d_12 change → BOTH e_10 AND h_10 update ❌
 - State mixing across Target/Reference boundary
 
 **Probable Root Causes**:
 
 1. **S09 Occupancy Loads Contamination**:
+
    - S09 calculates occupancy-related loads (plug, lighting, equipment)
    - May be using shared d_12 value for both Target and Reference calculations
    - Or: S09 not dual-state (no ref_d_12 separation)
 
 2. **S03 Critical Temperature Selection**:
+
    - d_12 determines if occupancy is "Critical" (care facilities)
    - Critical occupancy uses 1% temperatures, normal uses 2.5% temperatures
    - S03 may be applying critical flag to BOTH Target and Reference
@@ -1334,6 +1473,7 @@ const ref_d_113 = getValue("ref_d_113") || "Electricity"; // ❌ Masks missing s
    - If either path contaminates → affects full calculation chain
 
 **Investigation Required**:
+
 1. Check S09 has dual-state d_12 (d_12 and ref_d_12)
 2. Verify S03 reads mode-aware d_12 for critical temperature selection
 3. Trace S09 occupancy load calculations - do they use ref_d_12 in Reference mode?
@@ -1348,20 +1488,15 @@ const ref_d_113 = getValue("ref_d_113") || "Electricity"; // ❌ Masks missing s
 ### **📋 UPDATED BUG PRIORITIES:**
 
 **CRITICAL (Next Session):**
+
 1. **Bug #9** (d_12 occupancy state mixing) - PARTIALLY FIXED (Commit `5fe13b4`)
 2. **Bug #5** (g_118 ventilation method - THE FINAL BOSS)
 
-**HIGH:**
-3. ~~**Bug #8** (d_51 hot water system carryover)~~ - ✅ FIXED (Commit `b9e4f4c`)
+**HIGH:** 3. ~~**Bug #8** (d_51 hot water system carryover)~~ - ✅ FIXED (Commit `b9e4f4c`)
 
-**MEDIUM:**
-4. **Bug #6** (h_21 capacitance - Reference only)
-5. **Bug #7** (k_120 setback - Reference only)
-6. **Bug #2** (d_118 slider convergence asymmetry) - Investigation needed
+**MEDIUM:** 4. **Bug #6** (h_21 capacitance - Reference only) 5. **Bug #7** (k_120 setback - Reference only) 6. **Bug #2** (d_118 slider convergence asymmetry) - Investigation needed
 
-**LOW:**
-7. **Bug #1** (number format timing)
-8. **Bug #3** (l_118 formatting)
+**LOW:** 7. **Bug #1** (number format timing) 8. **Bug #3** (l_118 formatting)
 
 **Status**: Bug #4 eliminated! Bug #8 completely fixed! Bug #9 partially fixed - Reference model now protected from Target changes, but Target still affected by Reference changes. Pattern emerging: Many Reference mode features not working (Bugs #6, #7) - suggests systematic dual-state implementation gaps rather than isolated bugs.
 
@@ -1375,26 +1510,29 @@ const ref_d_113 = getValue("ref_d_113") || "Electricity"; // ❌ Masks missing s
 
 **Completion Status by Section:**
 
-| Section | Status | Notes |
-|---------|--------|-------|
-| **S01** | ✅ Complete | State-agnostic (consumes only, no defaults needed) |
-| **S02** | ✅ Complete | Building config defaults match Excel Reference |
-| **S03** | ✅ Complete | Climate defaults match Excel Reference |
-| **S04** | ✅ Complete | Calculated values only (no defaults) |
-| **S05** | ✅ Complete | Emissions formulas corrected (d_38, d_40, d_41) - Commit `a21191e` |
-| **S06** | ✅ Complete | Renewables defaults (reached previously, verified today) |
-| **S07** | 🔧 In Progress | Hot water - Bug #8 (d_51 state carryover) needs fixing |
-| **S08** | ⏳ Pending | IAQ defaults needed |
-| **S09** | ⏳ Pending | Internal gains defaults needed |
-| **S10-S15** | ✅ Complete | Mostly calculated (minimal defaults, already set) |
+| Section     | Status         | Notes                                                              |
+| ----------- | -------------- | ------------------------------------------------------------------ |
+| **S01**     | ✅ Complete    | State-agnostic (consumes only, no defaults needed)                 |
+| **S02**     | ✅ Complete    | Building config defaults match Excel Reference                     |
+| **S03**     | ✅ Complete    | Climate defaults match Excel Reference                             |
+| **S04**     | ✅ Complete    | Calculated values only (no defaults)                               |
+| **S05**     | ✅ Complete    | Emissions formulas corrected (d_38, d_40, d_41) - Commit `a21191e` |
+| **S06**     | ✅ Complete    | Renewables defaults (reached previously, verified today)           |
+| **S07**     | 🔧 In Progress | Hot water - Bug #8 (d_51 state carryover) needs fixing             |
+| **S08**     | ⏳ Pending     | IAQ defaults needed                                                |
+| **S09**     | ⏳ Pending     | Internal gains defaults needed                                     |
+| **S10-S15** | ✅ Complete    | Mostly calculated (minimal defaults, already set)                  |
 
 **S05 Excel Formula Fixes (Commit `a21191e`):**
+
 1. **d_38** (Annual Operational Emissions):
+
    - Target: `IF(d_14="Utility Bills", g_32/1000, k_32/1000)`
    - Reference: `ref_k_32/1000` (always uses Reference target emissions)
    - **Result**: Reference and Target now show different d_38 values ✅
 
 2. **d_40** (Total Embedded Carbon):
+
    - Target: `i_41 × d_106 / 1000` (user modelled value)
    - Reference: `i_39 × d_106 / 1000` (typology-based cap)
    - Exception: "Modelled Value" typology allows i_41 user input
@@ -1406,6 +1544,7 @@ const ref_d_113 = getValue("ref_d_113") || "Electricity"; // ❌ Masks missing s
    - **Result**: Correctly shows Target benefit vs Reference baseline ✅
 
 **Next Focus: S07 Hot Water System**
+
 - Fix Bug #8 (d_51 state carryover)
 - Verify all Reference defaults match Excel
 - Enable independent hot water system selection per mode
@@ -1419,17 +1558,20 @@ const ref_d_113 = getValue("ref_d_113") || "Electricity"; // ❌ Masks missing s
 **What Was Fixed:**
 
 **Fix 1: Reference Defaults Corrected** (Commit `a51150f`)
+
 ```javascript
 // ReferenceState.setDefaults():
 this.values.d_51 = "Electric"; // Instead of "Heatpump"
-this.values.d_52 = "90";       // 90% efficiency for Electric
+this.values.d_52 = "90"; // 90% efficiency for Electric
 ```
 
 **Fix 2: Slider Range Update in refreshUI()** (Commit `b9e4f4c`)
+
 - Added d_52 slider min/max/step update based on d_51 system type
 - Updates range on every mode switch
 
 **Fix 3: S10/S11 Pattern Compliance** (Commit `[NEXT]`)
+
 - **Root cause found**: S07 was setting `slider.value = "90"` (STRING) instead of `90` (NUMBER)
 - **Secondary issue**: Used `querySelector` instead of `nextElementSibling` for display element
 - **Fixed by following proven S10/S11 pattern**:
@@ -1445,6 +1587,7 @@ if (display) {
 ```
 
 **Result - All Issues Resolved:**
+
 - ✅ Target mode: Shows "Heatpump" @ 300% (independent, correct range)
 - ✅ Reference mode: Shows "Electric" @ 90% (independent, correct range)
 - ✅ First mode switch: Slider position, range, AND display all correct immediately
@@ -1452,6 +1595,7 @@ if (display) {
 - ✅ Follows established S10/S11 architecture (zero tech debt)
 
 **Slider Ranges by System Type:**
+
 - **Electric**: min=90, max=100, step=1, default=90%
 - **Gas/Oil**: min=50, max=98, step=1, default=80%
 - **Heatpump**: min=100, max=450, step=10, default=300%
@@ -1469,6 +1613,7 @@ if (display) {
 **What Was Fixed:**
 
 **Fix: Made Cooling.js Mode-Aware** (Commit `5fe13b4`)
+
 - Added `mode` parameter to `calculateAll(mode = "target")` function
 - Created `getModeAwareValue(fieldId, defaultValue)` helper for mode-specific reads
 - Modified `updateStateManager()` to add `ref_` prefix for reference mode values
@@ -1482,7 +1627,7 @@ if (display) {
 function calculateAll(mode = "target") {
   // Store current mode for mode-aware reads/writes
   state.currentMode = mode;
-  
+
   // Rest of function...
 }
 
@@ -1490,7 +1635,7 @@ function calculateAll(mode = "target") {
 function getModeAwareValue(fieldId, defaultValue = null) {
   // Determine prefix based on current mode
   const prefix = state.currentMode === "reference" ? "ref_" : "";
-  
+
   // Get the value with appropriate prefix
   const value = window.TEUI.StateManager.getValue(`${prefix}${fieldId}`);
   return value !== null && value !== undefined ? value : defaultValue;
@@ -1500,9 +1645,13 @@ function getModeAwareValue(fieldId, defaultValue = null) {
 function updateStateManager() {
   // Add prefix for Reference mode
   const prefix = state.currentMode === "reference" ? "ref_" : "";
-  
+
   // Publish with appropriate prefix
-  sm.setValue(`${prefix}cooling_m_124`, state.daysActiveCooling.toString(), "calculated");
+  sm.setValue(
+    `${prefix}cooling_m_124`,
+    state.daysActiveCooling.toString(),
+    "calculated",
+  );
   // And so on...
 }
 
@@ -1515,6 +1664,7 @@ window.TEUI.CoolingCalculations.calculateAll("reference");
 ```
 
 **Current Behavior (After Fix):**
+
 - ✅ Reference model (e_10) now protected from Target mode d_12 changes
 - ❌ Target model (h_10) still affected by Reference mode d_12 changes
 - 🔄 Workaround: "Prime" Target by changing d_12 in Target mode after Reference changes
@@ -1554,6 +1704,7 @@ After thorough investigation, we believe the remaining issue is due to:
 **What Was Fixed:**
 
 **Made Cooling.js Mode-Aware** (Commit `5fe13b4`)
+
 - Added `mode` parameter to `calculateAll(mode = "target")` function
 - Created `getModeAwareValue(fieldId, defaultValue)` helper for mode-specific reads
 - Modified `updateStateManager()` to add `ref_` prefix for reference mode values
@@ -1563,11 +1714,13 @@ After thorough investigation, we believe the remaining issue is due to:
 - Updated Calculator.js to pass "target" mode for consistency
 
 **Current Behavior (After Fix):**
+
 - ✅ Reference model (e_10) protected from Target mode d_12 changes
 - ❌ Target model (h_10) still affected by Reference mode d_12 changes
 - 🔄 Workaround: "Prime" Target by changing d_12 in Target mode after Reference changes
 
 **Root Cause Analysis:**
+
 - S03's `calculateAll()` function always runs both Target and Reference calculations
 - When `ref_d_12` changes, S03 publishes both Target and Reference values to StateManager
 - Occupancy (d_12) is uniquely impactful because it determines temperature selection
@@ -1582,11 +1735,13 @@ After thorough investigation, we believe the remaining issue is due to:
 ### **🐛 Bug #8 Deep Dive: d_51 State Carryover**
 
 **Current Behavior (Verified):**
+
 - Set d_51 = "Heatpump" in Target → switch to Reference → shows "Heatpump" ❌
 - Set d_51 = "Electric" in Reference → switch to Target → shows "Electric" ❌
 - System selection carries over instead of maintaining independent values
 
 **Expected Behavior:**
+
 - Target mode: d_51 independent (e.g., "Heatpump")
 - Reference mode: d_51 independent (e.g., "Electric")
 - Mode switch: Each mode shows its own saved value
@@ -1594,16 +1749,19 @@ After thorough investigation, we believe the remaining issue is due to:
 **Root Cause Investigation Checklist:**
 
 1. **✅ Check S07 Dual-State Architecture**:
+
    - Does S07 have TargetState and ReferenceState objects?
    - Does S07 have ModeManager.switchMode() implementation?
    - Are d_51 values stored separately?
 
 2. **✅ Verify d_51 Dropdown Handler**:
+
    - Does dropdown change call ModeManager.setValue()?
    - Does it respect ModeManager.currentMode?
    - Is value stored in correct state object?
 
 3. **✅ Check StateManager Publishing**:
+
    - Does S07 publish both d_51 AND ref_d_51?
    - Are they published with correct state type ("user-modified")?
    - Do downstream sections (S04) read correct keys per mode?
@@ -1614,10 +1772,11 @@ After thorough investigation, we believe the remaining issue is due to:
    - Does k_51 (hot water energy) get calculated separately for each mode?
 
 **Expected Fix Pattern** (based on other sections):
+
 ```javascript
 // In S07 dropdown handler:
 const d51Dropdown = document.querySelector('[data-dropdown-id="dd_d_51"]');
-d51Dropdown.addEventListener("change", function() {
+d51Dropdown.addEventListener("change", function () {
   const selectedSystem = this.value;
   ModeManager.setValue("d_51", selectedSystem, "user-modified"); // Stores in current state
   calculateAll(); // Recalculates using correct state
@@ -1643,6 +1802,7 @@ d51Dropdown.value = d_51_value; // Shows value from current state
 #### **🏆 FIVE BUGS SQUASHED IN ONE SESSION:**
 
 1. ✅ **Bug #5: g_118 Ventilation Method (THE FINAL BOSS)** - Commit `8b1bb24`
+
    - Fixed in 12 minutes on FIRST TRY after 12 months of failed attempts!
    - Root cause: Three functions reading Target external dependencies for Reference calculations
    - Solution: Created `getExternalValue(fieldId, isReferenceCalculation)` helper
@@ -1650,16 +1810,19 @@ d51Dropdown.value = d_51_value; // Shows value from current state
    - Result: Perfect state isolation - g_118 changes in Target don't affect Reference e_10 ✅
 
 2. ✅ **Bug #10: S11 Column K Cooling Gains = 0** - Commit `2f26b23`
+
    - Fixed in 8 minutes with Pattern 1 temporary mode switching
    - Root cause: Missing mode switching in `calculateTargetModel()` and `calculateReferenceModel()`
    - Solution: Added try/finally mode switching (matching S13 pattern)
    - Result: Target k_85-k_95 now show correct Excel values (710.14, 501.32, -5,995.80, etc.) ✅
 
 3. ✅ **Bug #6: h_21 Capacitance Toggle (Reference Mode)** - BONUS FIX from Commit `2f26b23`
+
    - Fixed as side-effect of S11 mode switching fix
    - Capacitance toggle now affects Reference S11/S12 calculations correctly ✅
 
 4. ✅ **Bug #4: S03 Location Change State Mixing (PART 2)** - BONUS FIX from Commit `2f26b23`
+
    - Original fix (Oct 1, Commit `6f5087f`) solved S13 HDD contamination
    - S11 mode switching fix completed the isolation chain
    - Result: Location changes now maintain perfect state isolation across ALL sections ✅
@@ -1691,11 +1854,13 @@ d51Dropdown.value = d_51_value; // Shows value from current state
 ### **🎯 KEY INSIGHTS FROM TODAY:**
 
 1. **Pattern Recognition**: Bug #5 (g_118) and Bug #10 (S11 Column K) shared same root cause pattern:
+
    - Missing mode-aware reading of external dependencies
    - Missing temporary mode switching in dual-engine functions
    - Solution: Apply proven patterns from successful fixes
 
 2. **Tactical > Architectural**: Both "impossible" bugs solved with surgical fixes, not rewrites
+
    - Bug #5: Added one helper function, updated 3 function reads
    - Bug #10: Added 6 lines of try/finally mode switching
    - Previous attempts failed because they tried architectural solutions to tactical problems
@@ -1713,6 +1878,7 @@ d51Dropdown.value = d_51_value; // Shows value from current state
 ### **📋 Next Session Priorities (When Ready)**
 
 **OPTIONAL ENHANCEMENTS:**
+
 1. Bug #11 (h_10 convergence) - 99.3% accurate, workaround exists, defer until Orchestrator migration
 2. Bug #9 (d_12 occupancy partial state mixing) - Reference protected, Target has minor contamination
 3. Bug #7 (k_120 Reference mode) - Reference mode feature gap
@@ -1725,11 +1891,13 @@ d51Dropdown.value = d_51_value; // Shows value from current state
 ### **🔄 End of Day Summary - October 1-2, 2025**
 
 1. ✅ Fixed Bug #4 (S03 Location Change State Mixing) - SQUASHED!
+
    - Root cause: S13 calculateVentilationEnergy() always reading d_20 (Target HDD) instead of ref_d_20 for Reference calculations
    - Fix: Made HDD read mode-aware with explicit isReferenceCalculation check
    - Result: Perfect dual-state architecture now achieved at section level
 
 2. ✅ Fixed Bug #8 (S07 Hot Water System State Carryover) - CLOSED!
+
    - Three fixes implemented:
      1. Reference defaults: Set d_51="Electric", d_52="90" for Reference model
      2. Slider range update: Dynamic min/max/step based on system type
@@ -1737,10 +1905,11 @@ d51Dropdown.value = d_51_value; // Shows value from current state
    - Result: Perfect dual-state independence achieved for hot water system
 
 3. ⚠️ Partially Fixed Bug #9 (d_12 Occupancy State Mixing)
+
    - Made Cooling.js fully mode-aware (Commit `5fe13b4`)
      - Added mode parameter to calculateAll
      - Created getModeAwareValue helper for mode-specific reads
-     - Modified updateStateManager to use ref_ prefix in Reference mode
+     - Modified updateStateManager to use ref\_ prefix in Reference mode
      - Updated S13.js to pass correct mode parameter
    - Result: Reference model now protected from Target changes
    - Remaining issue: Target still affected by Reference changes
@@ -1749,4 +1918,3 @@ d51Dropdown.value = d_51_value; // Shows value from current state
 4. ✅ Completed S05 Excel Formula Fixes (Commit `a21191e`)
    - Fixed d_38, d_40, d_41 formulas to match Excel Reference model
    - Result: Reference and Target now show correct, independent values
-

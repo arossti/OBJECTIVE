@@ -1272,7 +1272,10 @@ TEUI.FieldManager = (function () {
       // we infer from whether the field has a value and add the class for non-defaults
       if (fieldData !== null && fieldData !== undefined) {
         // Add .user-modified class to contenteditable and input elements
-        if (element.hasAttribute("contenteditable") || element.tagName === "INPUT") {
+        if (
+          element.hasAttribute("contenteditable") ||
+          element.tagName === "INPUT"
+        ) {
           if (element.classList.contains("user-input")) {
             element.classList.add("user-modified");
           }

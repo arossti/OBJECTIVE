@@ -31,9 +31,10 @@ TEUI 4.0/
 
 1. **README.md** (166KB) - Complete project history & architecture
 2. **Logs.md** - Console logs for forensic analysis (manually updated by human)
-3. **4012-CHEATSHEET.md** - Architectural patterns 
+3. **4012-CHEATSHEET.md** - Architectural patterns
 
 ### 🔍 Logs.md Workflow
+
 - **Manual Process**: Human copies/pastes console logs from browser into `Logs.md`
 - **Not Automatic**: Agents cannot access browser console directly
 - **Agent Action**: Request logs from human, then analyze `Logs.md` content
@@ -73,6 +74,7 @@ git status
 ## 🚨 Critical Guidelines
 
 ### Focus Areas
+
 - **Timing/sequencing fixes** over architectural changes
 - **Surgical precision** - minimal code changes
 - **Deep debugging** before any modifications
@@ -92,18 +94,19 @@ head -50 "OBJECTIVE 4011RF/documentation/Master-Reference-Roadmap.md"
 # Check recent commits
 git log --oneline -10
 ```
-# Git Note
-When running terminal commands, especially git commands, if they fail, check if you are prepending the command with cd to the project's absolute root directory. This must be done for every command in a sequence, as the shell's working directory may not persist between commands.
 
+# Git Note
+
+When running terminal commands, especially git commands, if they fail, check if you are prepending the command with cd to the project's absolute root directory. This must be done for every command in a sequence, as the shell's working directory may not persist between commands.
 
 ## 🎯 Session Workflow
 
 1. **Start**: Review Master-Reference-Roadmap.md workplan
 2. **Analyze**: Read current ReferenceToggle/ReferenceValues/ReferenceManager files (are they working harmoniously or at cross purposes?)
 3. **Debug**: Issue 1: After import of excel file values, inputs appear as if they are defaults, not user-modified (blue styling) making it difficult to determine if values were correctly imported. Issue 2: After valus import, calculations are stale, consider how re-calculation of all sections after import cycle can be best triggered to capture all changed/imported values in the correct sequence (Calculator.js)
-4. **Fix**: Commit working code before mods to establish safe restore point. 
+4. **Fix**: Commit working code before mods to establish safe restore point.
 5. **Test**: Verify Excel import parity, state isolation, correct calcilations (excel calculation parity) all maintained
-6. **Commit**: Document changes with uppdated documentation (.md files) and git message referring to document. 
+6. **Commit**: Document changes with uppdated documentation (.md files) and git message referring to document.
 
 ## 💡 Pro Tips
 
@@ -115,4 +118,4 @@ When running terminal commands, especially git commands, if they fail, check if 
 
 ---
 
-*Updated: Oct 4, 2025 - For efficient Claude Code sessions on OBJECTIVE TEUI project*
+_Updated: Oct 4, 2025 - For efficient Claude Code sessions on OBJECTIVE TEUI project_
