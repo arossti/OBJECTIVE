@@ -20,7 +20,7 @@
     "d_13": {
       "cell": "D13",
       "title": "Reference Standards",
-      "message": "Select a Building Code Prescriptive Path option, or NECB Base Tier, or any other noted or 'Use Your Own' baseline scenario. References values in the 'CODE VALUES' tab."
+      "message": "Select a Building Code Prescriptive Path option, or NECB Base Tier, or any other noted or 'Use Your Own' baseline scenario. References values in the 'ReferenceValues.js' file."
     },
     "d_14": {
       "cell": "D14",
@@ -208,7 +208,6 @@
     constructor() {
       this.tooltips = VALIDATION_TOOLTIPS;
       this.initialized = true;
-      console.log(`✅ [TooltipManager] Loaded ${Object.keys(this.tooltips).length} validation tooltips`);
     }
 
     /**

@@ -77,10 +77,17 @@ CELL_TO_FIELD_MAPPING = {
 }
 
 
-def extract_validation_tooltips(excel_path):
-    """Extract data validation input messages from REPORT sheet"""
+def extract_validation_tooltips(excel_path, scan_mode='mapped'):
+    """Extract data validation input messages from REPORT sheet
+
+    Args:
+        excel_path: Path to Excel file
+        scan_mode: 'mapped' (use predefined mapping) or 'comprehensive' (scan rows 12-145)
+    """
 
     try:
+        from openpyxl.utils import get_column_letter
+
         # Load workbook with data_only=False to preserve validation
         wb = load_workbook(excel_path, data_only=False)
 
@@ -93,23 +100,53 @@ def extract_validation_tooltips(excel_path):
         tooltips = {}
         validation_count = 0
 
-        # Iterate through our mapped cells
-        for cell_ref, field_id in CELL_TO_FIELD_MAPPING.items():
-            cell = ws[cell_ref]
+        if scan_mode == 'comprehensive':
+            # Comprehensive scan: rows 12-145, columns A-P (1-16)
+            print(f"🔍 Scanning rows 12-145, columns A-P comprehensively...", file=sys.stderr)
 
-            # Check if cell has data validation
-            if hasattr(ws, 'data_validations'):
-                for dv in ws.data_validations.dataValidation:
-                    # Check if this validation applies to our cell
-                    if cell.coordinate in dv.cells:
-                        if dv.promptTitle or dv.prompt:
-                            tooltips[field_id] = {
-                                'cell': cell_ref,
-                                'title': dv.promptTitle or '',
-                                'message': dv.prompt or '',
-                            }
-                            validation_count += 1
-                            break
+            # Reverse mapping: cell_ref -> field_id
+            cell_to_field = {v: k for k, v in CELL_TO_FIELD_MAPPING.items()}
+
+            for row in range(12, 146):  # Rows 12-145 inclusive
+                for col in range(1, 17):  # Columns A-P (1-16)
+                    cell_ref = f"{get_column_letter(col)}{row}"
+                    cell = ws[cell_ref]
+
+                    # Check if cell has data validation
+                    if hasattr(ws, 'data_validations'):
+                        for dv in ws.data_validations.dataValidation:
+                            if cell.coordinate in dv.cells:
+                                if dv.promptTitle or dv.prompt:
+                                    # Try to find field_id from mapping, otherwise use cell_ref
+                                    field_id = cell_to_field.get(cell_ref, cell_ref)
+
+                                    tooltips[field_id] = {
+                                        'cell': cell_ref,
+                                        'title': dv.promptTitle or '',
+                                        'message': dv.prompt or '',
+                                    }
+                                    validation_count += 1
+                                    break
+        else:
+            # Mapped mode: use predefined cell mapping
+            print(f"🔍 Scanning predefined mapped cells...", file=sys.stderr)
+
+            for cell_ref, field_id in CELL_TO_FIELD_MAPPING.items():
+                cell = ws[cell_ref]
+
+                # Check if cell has data validation
+                if hasattr(ws, 'data_validations'):
+                    for dv in ws.data_validations.dataValidation:
+                        # Check if this validation applies to our cell
+                        if cell.coordinate in dv.cells:
+                            if dv.promptTitle or dv.prompt:
+                                tooltips[field_id] = {
+                                    'cell': cell_ref,
+                                    'title': dv.promptTitle or '',
+                                    'message': dv.prompt or '',
+                                }
+                                validation_count += 1
+                                break
 
         print(f"✅ Extracted {validation_count} validation tooltips from REPORT sheet", file=sys.stderr)
         return tooltips
@@ -120,14 +157,20 @@ def extract_validation_tooltips(excel_path):
 
 
 def main():
-    if len(sys.argv) != 2:
-        print("Usage: python3 extract-validation.py <path-to-excel-file>")
-        print("\nExample:")
+    if len(sys.argv) < 2:
+        print("Usage: python3 extract-validation.py <path-to-excel-file> [--comprehensive]")
+        print("\nModes:")
+        print("  Default: Extract only predefined mapped cells")
+        print("  --comprehensive: Scan all cells in rows 12-145, columns A-P")
+        print("\nExamples:")
         print('  python3 extract-validation.py "OBJECTIVE 4011RF/TEUI-4011RF.xlsx"')
+        print('  python3 extract-validation.py "OBJECTIVE 4011RF/TEUI-4011RF.xlsx" --comprehensive')
         sys.exit(1)
 
     excel_path = sys.argv[1]
-    tooltips = extract_validation_tooltips(excel_path)
+    scan_mode = 'comprehensive' if '--comprehensive' in sys.argv else 'mapped'
+
+    tooltips = extract_validation_tooltips(excel_path, scan_mode=scan_mode)
 
     if tooltips is not None:
         # Output JSON to stdout
