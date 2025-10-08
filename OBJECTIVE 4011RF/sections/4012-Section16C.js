@@ -132,6 +132,12 @@ window.TEUI.CoolingSankey = (function () {
         id: "WallsAeGain",
       }, // B.5 Walls Ae
       {
+        source: 2,
+        target: 0,
+        value: getStateValue("k_87"),
+        id: "FloorAeGain",
+      }, // B.6 Floor Ae (added - was missing!)
+      {
         source: 3,
         target: 0,
         value: getStateValue("k_88"),
@@ -197,6 +203,12 @@ window.TEUI.CoolingSankey = (function () {
         value: getStateValue("k_77"),
         id: "WinWSolarGain",
       }, // G.8.4 Windows W
+      {
+        source: 8,
+        target: 0,
+        value: getStateValue("k_78"),
+        id: "SkylightsSolarGain",
+      }, // G.8.5 Skylights Solar (added - was missing!)
       {
         source: 16,
         target: 0,
@@ -328,18 +340,63 @@ window.TEUI.CoolingSankey = (function () {
       });
     }
 
-    // Combine all links and filter out zero/tiny values
-    const allLinks = [...energyGainedLinks, ...energyRemovedLinks].filter(
-      (link) => link.value > MIN_VALUE,
-    );
+    // Combine all links (DO NOT FILTER - show all values including zeros)
+    const allLinks = [...energyGainedLinks, ...energyRemovedLinks];
 
     sankeyData.links = allLinks;
 
-    console.log(
-      "CoolingSankey: Generated data with",
-      allLinks.length,
-      "links",
-    );
+    // DEBUG: Compare with Excel values
+    console.group("🔵 COOLING SANKEY DEBUG");
+
+    console.log("ENERGY GAINED (Left Side):");
+    console.log("k_85 (Roof):", getStateValue("k_85"), "| Excel: 710.14");
+    console.log("k_86 (Walls Ae):", getStateValue("k_86"), "| Excel: 501.32");
+    console.log("k_87 (Floor Ae):", getStateValue("k_87"), "| Excel: 0");
+    console.log("k_88 (Doors):", getStateValue("k_88"), "| Excel: 31.75");
+    console.log("k_89 (Win North):", getStateValue("k_89"), "| Excel: 343.51");
+    console.log("k_90 (Win East):", getStateValue("k_90"), "| Excel: 16.21");
+    console.log("k_91 (Win South):", getStateValue("k_91"), "| Excel: 673.14");
+    console.log("k_92 (Win West):", getStateValue("k_92"), "| Excel: 426.15");
+    console.log("k_93 (Skylights):", getStateValue("k_93"), "| Excel: 0");
+    console.log("k_94 (Walls BG):", getRawStateValue("k_94"), "| Excel: 0");
+    console.log("k_95 (Floor Slab):", getRawStateValue("k_95"), "| Excel: 0");
+    console.log("k_73 (G.7 Doors):", getStateValue("k_73"), "| Excel: 187.5");
+    console.log("k_74 (G.8.1 Win N):", getStateValue("k_74"), "| Excel: 0");
+    console.log("k_75 (G.8.2 Win E):", getStateValue("k_75"), "| Excel: 0");
+    console.log("k_76 (G.8.3 Win S):", getStateValue("k_76"), "| Excel: 0");
+    console.log("k_77 (G.8.4 Win W):", getStateValue("k_77"), "| Excel: 130.15");
+    console.log("k_78 (Skylights):", getStateValue("k_78"), "| Excel: 0");
+    console.log("k_103 (Air Leakage):", getStateValue("k_103"), "| Excel: 987.6");
+    console.log("d_122 (Incoming Vent):", getStateValue("d_122"), "| Excel: 15,128.68");
+    console.log("k_97 (TB Penalty):", getRawStateValue("k_97"), "| Excel: 0");
+    console.log("k_64 (Occupant Gains):", getStateValue("k_64"), "| Excel: 21,269.93");
+    console.log("k_70 (Plug/Light/Eqpt):", getStateValue("k_70"), "| Excel: 27,744.77");
+    console.log("k_69 (DHW Losses):", getStateValue("k_69"), "| Excel: 0");
+
+    const gainedSum = energyGainedLinks.reduce((sum, link) => sum + link.value, 0);
+    console.log("✅ ENERGY GAINED SUM:", gainedSum.toFixed(2), "| Excel: 68,150.87");
+
+    console.log("\nENERGY REMOVED (Right Side):");
+    console.log("m_129 (CED):", getStateValue("m_129"), "| Excel: 10,709.00");
+    console.log("k_94 (Walls BG removal):", getRawStateValue("k_94"), "| Excel: 0");
+    console.log("k_95 (Floor Slab removal):", getRawStateValue("k_95"), "| Excel: 5,995.80");
+    console.log("h_124 (Free Cooling):", getRawStateValue("h_124"), "| Excel: 37,322.82");
+    console.log("c_124 (Free Cooling alt):", getRawStateValue("c_124"));
+    console.log("d_123 (Vent Exhaust):", getStateValue("d_123"), "| Excel: 13,464.53");
+    console.log("k_97 (TB Penalty removal):", getRawStateValue("k_97"), "| Excel: 658.71");
+
+    const removedSum = energyRemovedLinks.reduce((sum, link) => sum + link.value, 0);
+    console.log("✅ ENERGY REMOVED SUM:", removedSum.toFixed(2), "| Excel: 68,150.87");
+
+    console.log("\n⚖️ BALANCE CHECK:");
+    console.log("Gained:", gainedSum.toFixed(2));
+    console.log("Removed:", removedSum.toFixed(2));
+    console.log("Difference:", (gainedSum - removedSum).toFixed(2));
+    console.log("Balanced?", Math.abs(gainedSum - removedSum) < 1 ? "✅ YES" : "❌ NO");
+
+    console.log("\n📊 Links generated:", allLinks.length);
+    console.groupEnd();
+
     return sankeyData;
   }
 
