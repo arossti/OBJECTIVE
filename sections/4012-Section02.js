@@ -59,6 +59,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           dropdownId: "dd_d_12",
           value: "A-Assembly",
           section: "buildingInfo",
+          tooltip: true, // Major Occupancy
           options: [
             { value: "A-Assembly", name: "A-Assembly" },
             { value: "B1-Detention", name: "B1-Detention" },
@@ -93,6 +94,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           max: 2041,
           step: 1,
           section: "buildingInfo",
+          tooltip: true, // Year Data Entered
           span: 2,
         },
         i: { content: "" }, // Empty but needed for alignment
@@ -103,6 +105,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           type: "editable",
           value: "$0.1300",
           section: "buildingInfo",
+          tooltip: true, // Assume $0.13/kwh
         },
         m: { content: "/kWh", classes: ["text-start"] },
         n: { content: "" }, // Empty but needed for alignment
@@ -122,6 +125,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           dropdownId: "dd_d_13",
           value: "OBC SB10 5.5-6 Z6",
           section: "buildingInfo",
+          tooltip: true, // Reference Standards
           options: [
             { value: "OBC SB12 3.1.1.2.C4", name: "OBC SB12 3.1.1.2.C4" },
             { value: "OBC SB12 3.1.1.2.C1", name: "OBC SB12 3.1.1.2.C1" },
@@ -159,6 +163,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           max: 100,
           step: 10,
           section: "buildingInfo",
+          tooltip: true, // Select a period in Years
           span: 2,
         },
         i: { content: "" }, // Empty but needed for alignment
@@ -169,6 +174,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           type: "editable",
           value: "$0.5070",
           section: "buildingInfo",
+          tooltip: true, // Assume $0.507 (Ontario)
         },
         m: { content: "/m³", classes: ["text-start"] },
         n: { content: "" }, // Empty but needed for alignment
@@ -188,6 +194,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           dropdownId: "dd_d_14",
           value: "Utility Bills",
           section: "buildingInfo",
+          tooltip: true, // Select a Method
           options: [
             { value: "Targeted Use", name: "Targeted Use" },
             { value: "Utility Bills", name: "Utility Bills" },
@@ -208,6 +215,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           value: "Three Feathers Terrace",
           classes: ["wide-text", "no-wrap"],
           section: "buildingInfo",
+          tooltip: true, // Project Name
           span: 2,
         },
         i: { content: "" }, // Empty but needed for alignment
@@ -218,6 +226,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           type: "editable",
           value: "$1.6200",
           section: "buildingInfo",
+          tooltip: true, // Assume $1.62 (Ontario)
         },
         m: { content: "/kg", classes: ["text-start"] },
         n: { content: "" }, // Empty but needed for alignment
@@ -237,6 +246,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           dropdownId: "dd_d_15",
           value: "Self Reported",
           section: "buildingInfo",
+          tooltip: true, // Carbon Benchmark
           options: [
             { value: "BR18 (Denmark)", name: "BR18 (Denmark)" },
             { value: "IPCC AR6 EPC", name: "IPCC AR6 EPC" },
@@ -263,6 +273,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           value: "1427.20", // ✅ FIXED: Raw value without comma for calculation stability
           classes: ["user-input", "editable"],
           section: "buildingInfo",
+          tooltip: true, // Net Conditioned Area
         },
         i: {
           fieldId: "i_15_slider",
@@ -282,6 +293,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           type: "editable",
           value: "$180.00",
           section: "buildingInfo",
+          tooltip: true, // Assume $180/m3 (Ontario)
         }, // Restored: Field l_15 back in L
         m: { content: "/m³", classes: ["text-start"] }, // Restored: Unit back in M
         n: { content: "" }, // Restored: N is empty
@@ -300,6 +312,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           type: "derived",
           value: "345.82",
           section: "buildingInfo",
+          tooltip: true, // S4. Targets
         },
         e: { content: "" }, // Empty but needed for alignment
         f: {
@@ -315,6 +328,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           type: "editable",
           value: "Thomson Architecture, Inc.",
           section: "buildingInfo",
+          tooltip: true, // Certifier
           span: 2,
         },
         i: { content: "" }, // Empty but needed for alignment
@@ -325,6 +339,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           type: "editable",
           value: "$1.5000",
           section: "buildingInfo",
+          tooltip: true, // Assume $1.50 (Ontario)
         },
         m: { content: "/litre", classes: ["text-start"] },
         n: { content: "" }, // Empty but needed for alignment
@@ -353,6 +368,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           type: "editable",
           value: "8154",
           section: "buildingInfo",
+          tooltip: true, // License or Authorization
           span: 2,
         },
         i: { content: "" }, // Empty but needed for alignment
@@ -1289,6 +1305,14 @@ window.TEUI.SectionModules.sect02 = (function () {
 
     // Initialize critical occupancy flag
     updateCriticalOccupancyFlag();
+
+    // Apply validation tooltips to fields
+    if (window.TEUI.TooltipManager && window.TEUI.TooltipManager.initialized) {
+      // Wait a short moment for DOM to fully settle, then apply tooltips
+      setTimeout(() => {
+        window.TEUI.TooltipManager.applyTooltipsToSection(sectionRows);
+      }, 300);
+    }
   }
 
   /**

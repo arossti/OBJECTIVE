@@ -668,6 +668,7 @@ window.TEUI.SectionModules.sect03 = (function () {
           dropdownId: "dd_d_19",
           value: "ON",
           section: "climateCalculations",
+          tooltip: true, // Select a Province
           options: [{ value: "", name: "Select Province" }],
           getOptions: function () {
             const provinces = ClimateDataService.getProvinces();
@@ -685,6 +686,7 @@ window.TEUI.SectionModules.sect03 = (function () {
           dropdownId: "dd_h_19",
           value: "Alexandria",
           section: "climateCalculations",
+          tooltip: true, // Municpality
           dependencies: ["d_19"],
           options: [{ value: "", name: "Select City" }],
           getOptions: function (provinceValue) {
@@ -717,6 +719,7 @@ window.TEUI.SectionModules.sect03 = (function () {
           type: "editable",
           value: "120",
           section: "climateCalculations",
+          tooltip: true, // Cooling Days are Increasing
           classes: ["user-input", "editable"],
         },
       },
@@ -744,6 +747,7 @@ window.TEUI.SectionModules.sect03 = (function () {
           dropdownId: "dd_h_20",
           value: "Present",
           section: "climateCalculations",
+          tooltip: true, // Weather Data Range
           options: [
             { value: "Present", name: "Present (1991-2020)" },
             { value: "Future", name: "Future (2021-2050)" },
@@ -782,6 +786,7 @@ window.TEUI.SectionModules.sect03 = (function () {
           dropdownId: "dd_h_21",
           value: "Capacitance",
           section: "climateCalculations",
+          tooltip: true, // Select Calculation Method
           options: [
             { value: "Static", name: "Static" },
             { value: "Capacitance", name: "Capacitance" },
@@ -795,6 +800,7 @@ window.TEUI.SectionModules.sect03 = (function () {
           max: 100,
           step: 5,
           section: "climateCalculations",
+          tooltip: true, // Capacitance Factor
           defaultValue: "50",
         },
         j: {
@@ -2448,6 +2454,13 @@ window.TEUI.SectionModules.sect03 = (function () {
 
       // 5. Perform initial calculations for this section
       calculateAll();
+
+      // 6. Apply validation tooltips to fields
+      if (window.TEUI.TooltipManager && window.TEUI.TooltipManager.initialized) {
+        setTimeout(() => {
+          window.TEUI.TooltipManager.applyTooltipsToSection(sectionRows);
+        }, 300);
+      }
 
       console.log("S03: Self-Contained State Module initialization complete");
     });
