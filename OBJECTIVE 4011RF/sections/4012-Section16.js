@@ -1306,10 +1306,11 @@ window.TEUI.SectionModules.sect16 = (function () {
             {},
             {},
             {
-              content: "",
+              content: "", // Reserved for future stats/financial reporting
               colspan: 12,
             },
           ],
+          hidden: true, // Hide placeholder row text for now
         },
       ],
     };
