@@ -14,7 +14,7 @@ window.TEUI.sect16 = {
   showEmissions: false,
   initialized: false, // Flag for idempotent initialization
   isActive: false,
-  currentMode: null, // Added for current mode tracking
+  currentMode: "heating", // Current season mode: "heating" or "cooling"
   MODES: {
     SANKEY: "sankey",
     ENERGY_BALANCE: "energy-balance",
@@ -1382,6 +1382,18 @@ window.TEUI.SectionModules.sect16 = (function () {
     );
     controlsContainer.appendChild(activateBtn);
 
+    // Create mode toggle button (heating/cooling) - initially hidden
+    const modeToggleBtn = createStyledButton(
+      "s16ModeToggleBtn",
+      "bi bi-snow",
+      "Cooling",
+      "none",
+    );
+    // Set initial blue background for cooling option
+    modeToggleBtn.style.backgroundColor = "#4A96BA";
+    modeToggleBtn.style.color = "#ffffff";
+    controlsContainer.appendChild(modeToggleBtn);
+
     // Create emissions toggle button (initially hidden)
     const emissionsBtn = createStyledButton(
       "s16ToggleEmissionsBtn",
@@ -1568,6 +1580,45 @@ window.TEUI.SectionModules.sect16 = (function () {
       });
     } else {
       // console.warn("S16 LOG: Activate button NOT FOUND when trying to attach listener in initializeEventHandlers.");
+    }
+
+    // Mode toggle button handler (heating/cooling)
+    const modeToggleBtn = document.getElementById("s16ModeToggleBtn");
+    if (modeToggleBtn) {
+      modeToggleBtn.addEventListener("click", function () {
+        // Toggle mode
+        window.TEUI.sect16.currentMode =
+          window.TEUI.sect16.currentMode === "heating" ? "cooling" : "heating";
+
+        const isHeating = window.TEUI.sect16.currentMode === "heating";
+
+        // Update button text and icon
+        const icon = this.querySelector("i");
+        const textSpan = this.querySelector("span");
+
+        if (icon) {
+          icon.className = isHeating ? "bi bi-snow" : "bi bi-fire";
+        }
+
+        if (textSpan) {
+          textSpan.textContent = isHeating ? "Cooling" : "Heating";
+        }
+
+        // Update button color
+        if (isHeating) {
+          // In heating mode, show blue "Cooling" button
+          this.style.backgroundColor = "#4A96BA";
+          this.style.color = "#ffffff";
+        } else {
+          // In cooling mode, show red "Heating" button
+          this.style.backgroundColor = "#BE343D";
+          this.style.color = "#ffffff";
+        }
+
+        // TODO: Re-render Sankey with new mode data
+        // This will be implemented when cooling data function is ready
+        console.log("Mode toggled to:", window.TEUI.sect16.currentMode);
+      });
     }
 
     if (emissionsBtn) {
@@ -1838,6 +1889,7 @@ window.TEUI.SectionModules.sect16 = (function () {
 
     // Show other controls
     const controls = [
+      "s16ModeToggleBtn",
       "s16ToggleEmissionsBtn",
       "s16ToggleSpacingBtn",
       "s16WidthToggleContainer",
@@ -2215,6 +2267,7 @@ window.TEUI.SectionModules.sect16 = (function () {
       }
       window.TEUI.sect16.isActive = true;
       const activateBtn = document.getElementById("s16ActivateBtn");
+      const modeToggleBtn = document.getElementById("s16ModeToggleBtn");
       const emissionsBtn = document.getElementById("s16ToggleEmissionsBtn");
       const spacingBtn = document.getElementById("s16ToggleSpacingBtn");
       const widthToggleContainer = document.getElementById(
@@ -2224,6 +2277,7 @@ window.TEUI.SectionModules.sect16 = (function () {
         "s16LoadingPlaceholder",
       );
       if (loadingPlaceholder) loadingPlaceholder.style.display = "none";
+      if (modeToggleBtn) modeToggleBtn.style.display = "inline-flex";
       if (emissionsBtn) emissionsBtn.style.display = "inline-flex";
       if (spacingBtn) spacingBtn.style.display = "inline-flex";
       if (widthToggleContainer)
