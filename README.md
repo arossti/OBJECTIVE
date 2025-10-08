@@ -2757,4 +2757,73 @@ When creating sections for the 4012 framework, follow these principles:
 - **Simplicity**: No complex table structures
 - **Maintainability**: Clear separation of data and presentation
 
+---
+
+## Known Bugs & Calculation Discrepancies
+
+### Ventilation/Cooling Calculation Parity Issues
+
+**Status:** Under Investigation
+**Discovered:** Oct 2025 via Cooling Sankey energy balance validation
+**Affects:** Section 13 (Ventilation), Section 14 (Cooling), Section 16 (Sankey)
+
+#### Symptoms
+
+1. **h_10 (TEDI) Discrepancy**
+   - Expected (Excel): `93.7 kWh/m²/yr`
+   - Actual (App): `93.0 kWh/m²/yr`
+   - Difference: `-0.7 kWh/m²/yr` (0.75% lower)
+
+2. **m_129 (Cooling Energy Demand) Discrepancy**
+   - Expected (Excel): `10,709.00 kWh`
+   - Actual (App): `8,045.10 kWh`
+   - Difference: `-2,663.90 kWh` (24.9% lower) ⚠️
+
+3. **Cooling Sankey Energy Balance Gap**
+   - Energy Gained: Closely matches Excel
+   - Energy Removed: Significantly lower due to m_129 discrepancy
+   - Visual: Small gap on right side of Building node
+
+#### Root Cause Hypothesis
+
+Both discrepancies likely stem from **ventilation calculation issues in Section 13**:
+- Ventilation heat recovery calculations may have timing/sequencing issues
+- Free cooling capacity calculation (h_124, c_124) may not be capturing full Excel logic
+- Cooling energy demand (m_129) calculation in S14 depends on S13 ventilation outputs
+
+The h_10 drift from 93.7 to 93.0 occurred around Sept 23, 2025, correlating with ventilation calculation refactoring.
+
+#### Detailed Value Comparison (Default Model)
+
+**Occupant Gains:**
+- k_64 Excel: `21,269.93 kWh`
+- k_64 App: Minor difference (rounding)
+
+**Ventilation/Cooling:**
+- d_122 (Incoming Vent): Matches Excel `15,128.68 kWh`
+- d_123 (Vent Exhaust): Matches Excel `13,464.53 kWh`
+- h_124 (Free Cooling): Matches Excel `37,322.82 kWh`
+- **m_129 (CED):** **MISMATCH** - See above
+
+#### Investigation Steps
+
+1. Audit S13 ventilation calculations against PHPP/Excel formulas
+2. Check calculation sequencing - ensure S13 runs before S14
+3. Verify free cooling capacity logic matches Excel conditional formulas
+4. Review m_129 calculation in S14 - compare dependencies with Excel
+5. Check for stale StateManager values during cooling calculations
+
+#### Workaround
+
+Cooling Sankey energy balance gap is acceptable for visualization purposes. The gap accurately represents the current calculation state and serves as a diagnostic tool for identifying the underlying ventilation/cooling calculation issues.
+
+#### Related Files
+
+- [OBJECTIVE 4011RF/sections/4012-Section13.js](OBJECTIVE%204011RF/sections/4012-Section13.js) - Ventilation calculations
+- [OBJECTIVE 4011RF/sections/4012-Section14.js](OBJECTIVE%204011RF/sections/4012-Section14.js) - Cooling demand (m_129)
+- [OBJECTIVE 4011RF/sections/4012-Section16C.js](OBJECTIVE%204011RF/sections/4012-Section16C.js) - Cooling Sankey validation
+- [OBJECTIVE 4011RF/documentation/COOLING-SANKEY.md](OBJECTIVE%204011RF/documentation/COOLING-SANKEY.md) - Energy balance documentation
+
+---
+
 ## Contributing
