@@ -348,7 +348,8 @@ window.TEUI.CoolingSankey = (function () {
 
     sankeyData.links = allLinks;
 
-    // DEBUG: Compare with Excel values
+    // DEBUG: Compare with Excel values (commented out for production)
+    /*
     console.group("🔵 COOLING SANKEY DEBUG");
 
     console.log("ENERGY GAINED (Left Side):");
@@ -399,6 +400,7 @@ window.TEUI.CoolingSankey = (function () {
 
     console.log("\n📊 Links generated:", allLinks.length);
     console.groupEnd();
+    */
 
     return sankeyData;
   }
