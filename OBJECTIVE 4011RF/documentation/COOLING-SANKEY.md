@@ -276,13 +276,35 @@ function getCoolingSankeyData() {
 3. **Calculation Timing:** StateManager may not have latest values when Sankey renders
 4. **Fallback Values:** Some fields returning fallback zeros instead of calculated values
 
-**Investigation Needed:**
-- Verify all cooling calculation sections publish values to StateManager
-- Check if cooling calculations run before Sankey data fetch
-- Confirm all BALANCE.csv energy removal columns (F46-F68) are mapped
-- Check for rounding/precision issues in energy balance calculations
+**Investigation Results (Oct 2025):**
 
-**Workaround:** Gap is currently acceptable for visualization purposes, represents energy balance discrepancy in underlying calculations
+**Test 1: Ventilator Efficiency Slider (d_118)**
+- Hypothesis: Slider may be sending intermediate values causing calculation errors
+- Test: Force-set d_118 to exactly 89.00 via console script
+- Result: ❌ **No change** - m_129 remained at 8,045.10
+- Conclusion: **d_118 slider is NOT the issue**
+
+**Root Cause Analysis:**
+Looking at S14 cooling calculation logs:
+```
+[Cooling m_124 COOLING-TARGET] m_129_annual=8045.097094456602
+E37_daily=41.04641374722756
+E50=8045.097094456602
+E52=-59688.91845754341
+```
+
+The issue is in the **S14 cooling calculation logic itself**, specifically:
+- `m_129_annual` is being calculated as 8,045.10 kWh (not just a display issue)
+- Free cooling calc appears correct: `345.58 kWh/day → 41,469.81 kWh/yr`
+- Energy balance formula (E52) shows large negative value: `-59,688.92`
+
+**Further Investigation Needed:**
+- Review S14 cooling demand calculation formula (m_129_annual)
+- Compare S14 logic with Excel BALANCE.csv formulas row 46 (m_129)
+- Check E50, E51, E52 intermediate calculations in S14
+- Verify cooling setpoint temperatures and degree-day calculations
+
+**Workaround:** Gap is currently acceptable for visualization purposes, represents energy balance discrepancy in underlying calculations. The cooling Sankey accurately visualizes the current calculation state and serves as a diagnostic tool.
 
 ---
 
