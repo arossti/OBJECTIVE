@@ -556,6 +556,7 @@ window.TEUI.SectionModules.sect08 = (function () {
           max: 100,
           step: 1,
           classes: ["user-input"],
+          tooltip: true, // RH% Annual Average
         },
         e: { content: "% RH" },
         f: { content: "A.5.2" },
@@ -569,6 +570,7 @@ window.TEUI.SectionModules.sect08 = (function () {
           max: 100,
           step: 1,
           classes: ["user-input"],
+          tooltip: true, // RH% Annual Average
         },
         j: { content: "% RH" },
         k: { fieldId: "k_59", type: "calculated", value: "30-60" },
@@ -587,7 +589,7 @@ window.TEUI.SectionModules.sect08 = (function () {
       label: "Wood Emissions Offset (Calculated)",
       cells: {
         c: { label: "Wood Emissions Offset (Calculated from Target Wood Use)" },
-        d: { fieldId: "d_60", type: "calculated", value: "0.00" },
+        d: { fieldId: "d_60", type: "calculated", value: "0.00", tooltip: true },
         e: { content: "MT/yr CO2e" },
       },
     },
@@ -665,6 +667,13 @@ window.TEUI.SectionModules.sect08 = (function () {
     setTimeout(() => {
       calculateWoodOffset();
     }, 500);
+
+    // Apply validation tooltips to fields
+    if (window.TEUI.TooltipManager && window.TEUI.TooltipManager.initialized) {
+      setTimeout(() => {
+        window.TEUI.TooltipManager.applyTooltipsToSection(sectionRows);
+      }, 300);
+    }
   }
 
   /**

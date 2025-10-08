@@ -838,6 +838,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "126",
           section: "occupantInternalGains",
           classes: ["user-input"],
+          tooltip: true, // Occupants
         },
         e: { content: "G.1.3", classes: ["label-prefix"] },
         f: { content: "Occupied Hrs/Day", classes: ["label-main"] },
@@ -847,6 +848,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           dropdownId: "dd_g_63",
           value: "12",
           section: "occupantInternalGains",
+          tooltip: true, // Occupied Hours
           options: [
             { value: "0", name: "0" },
             { value: "8", name: "8" },
@@ -881,6 +883,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           dropdownId: "dd_d_64",
           value: "Normal",
           section: "occupantInternalGains",
+          tooltip: true, // Average Daily Metabolic Rate
           options: [
             { value: "Relaxed", name: "Relaxed" },
             { value: "Normal", name: "Normal" },
@@ -947,6 +950,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           type: "calculated",
           value: "7",
           section: "occupantInternalGains",
+          tooltip: true, // Default determined by Occupancy
         },
         h: {
           fieldId: "h_65",
@@ -1012,6 +1016,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           value: "1.5",
           section: "occupantInternalGains",
           classes: ["user-input"],
+          tooltip: true, // Default is 1.5
         },
         h: {
           fieldId: "h_66",
@@ -1076,6 +1081,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           type: "calculated",
           value: "5.00",
           section: "occupantInternalGains",
+          tooltip: true, // Default Determined by Occupancy
         },
         e: { content: "P.3.3", classes: ["label-prefix"] },
         f: { content: "Equipment Spec", classes: ["label-main"] },
@@ -1085,6 +1091,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           dropdownId: "dd_g_67",
           value: "Efficient",
           section: "occupantInternalGains",
+          tooltip: true, // Efficient or Regular Energy Spec
           options: [
             { value: "Regular", name: "Regular" },
             { value: "Efficient", name: "Efficient" },
@@ -1154,6 +1161,7 @@ window.TEUI.SectionModules.sect09 = (function () {
           dropdownId: "dd_d_68",
           value: "No Elevators",
           section: "occupantInternalGains",
+          tooltip: true, // Include Elevator Load
           options: [
             { value: "Elevators", name: "Elevators" },
             { value: "No Elevators", name: "No Elevators" },
@@ -2557,6 +2565,13 @@ window.TEUI.SectionModules.sect09 = (function () {
     // Run initial full calculation (will re-run parts if defaults were set)
     calculateAll();
     ModeManager.updateCalculatedDisplayValues();
+
+    // Apply tooltips after DOM is fully rendered
+    if (window.TEUI.TooltipManager && window.TEUI.TooltipManager.initialized) {
+      setTimeout(() => {
+        window.TEUI.TooltipManager.applyTooltipsToSection(sectionRows);
+      }, 300);
+    }
   }
 
   /**

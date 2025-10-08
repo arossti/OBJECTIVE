@@ -887,7 +887,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       label: "B.11 Interior Floors (incl. garages)",
       cells: {
         c: { label: "B.11 Interior Floors (incl. garages)" },
-        d: { fieldId: "d_96", type: "editable", value: "29.70" },
+        d: { fieldId: "d_96", type: "editable", value: "29.70", tooltip: true },
         e: { content: "-" },
         f: { content: "-" },
         g: { content: "-" },
@@ -914,6 +914,7 @@ window.TEUI.SectionModules.sect11 = (function () {
           max: 100, // Max 100%
           step: 5, // Step 5%
           section: "envelope",
+          tooltip: true, // TB Penalty
         },
         e: { fieldId: "e_97", type: "calculated", value: "0.200" }, // Placeholder for decimal equivalent
         f: { content: "0.00", classes: ["label-prefix"] },
@@ -937,9 +938,9 @@ window.TEUI.SectionModules.sect11 = (function () {
         g: {},
         h: { fieldId: "h_98", type: "calculated", value: "100%" },
         i: { fieldId: "i_98", type: "calculated", value: "0.00" },
-        j: { fieldId: "j_98", type: "calculated", value: "100%" },
+        j: { fieldId: "j_98", type: "calculated", value: "100%", tooltip: true },
         k: { fieldId: "k_98", type: "calculated", value: "0.00" },
-        l: { fieldId: "l_98", type: "calculated", value: "100%" },
+        l: { fieldId: "l_98", type: "calculated", value: "100%", tooltip: true },
         m: {},
         n: { fieldId: "n_98", type: "calculated", value: "✓" },
       },
@@ -2296,6 +2297,13 @@ window.TEUI.SectionModules.sect11 = (function () {
     console.log(
       "[S11 Area Sync] S11 initialization complete - sync functions now enabled",
     );
+
+    // 6. Apply validation tooltips to fields
+    if (window.TEUI.TooltipManager && window.TEUI.TooltipManager.initialized) {
+      setTimeout(() => {
+        window.TEUI.TooltipManager.applyTooltipsToSection(sectionRows);
+      }, 300);
+    }
 
     // 6. Perform initial area sync from S10
     syncAreasFromS10();
