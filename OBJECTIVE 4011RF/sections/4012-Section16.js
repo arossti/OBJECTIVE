@@ -1301,7 +1301,7 @@ window.TEUI.SectionModules.sect16 = (function () {
     return {
       rows: [
         {
-          id: "S16-PlaceholderRow",
+          id: "", // Placeholder row for future use - blank name
           cells: [
             {},
             {},
@@ -1616,9 +1616,9 @@ window.TEUI.SectionModules.sect16 = (function () {
           this.style.color = "#ffffff";
         }
 
-        // TODO: Re-render Sankey with new mode data
-        // This will be implemented when cooling data function is ready
+        // Re-render Sankey with new mode data
         console.log("Mode toggled to:", window.TEUI.sect16.currentMode);
+        fetchDataAndRenderSankey(false); // false = not initial load, use refresh animation
       });
     }
 
@@ -2177,8 +2177,22 @@ window.TEUI.SectionModules.sect16 = (function () {
       return;
     }
 
-    // Get data from StateManager
-    const sankeyData = buildSankeyDataFromStateManager();
+    // Get data based on current mode (heating or cooling)
+    let sankeyData;
+    if (window.TEUI.sect16.currentMode === "cooling") {
+      // Use cooling module data
+      if (window.TEUI.CoolingSankey) {
+        sankeyData = window.TEUI.CoolingSankey.getCoolingSankeyData();
+      } else {
+        console.error(
+          "Section 16: Cooling module not loaded. Falling back to heating.",
+        );
+        sankeyData = buildSankeyDataFromStateManager();
+      }
+    } else {
+      // Use heating data (default)
+      sankeyData = buildSankeyDataFromStateManager();
+    }
 
     // Update emissions if enabled
     if (window.TEUI.sect16.showEmissions) {
