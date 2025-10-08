@@ -18,20 +18,22 @@ This guide explains how to add Excel validation tooltips to any section of the T
 **Use the extraction script** to get validation messages from the REPORT sheet:
 
 ```bash
+# Default mode - extract only predefined mapped cells
 python3 extract-validation.py "/path/to/TEUIv3042.xlsx"
+
+# Comprehensive mode - scan ALL cells in rows 12-145
+python3 extract-validation.py "/path/to/TEUIv3042.xlsx" --comprehensive
 ```
 
-This generates `data/validation-tooltips.json` with all 35+ tooltips.
+This generates `data/validation-tooltips.json` with all tooltips.
 
-**Already Extracted Sections:**
-- ✅ Section 02 - Building Information (11 tooltips)
-- ✅ Section 03 - Climate (6 tooltips)
-- ✅ Section 04 - Actual vs Target Energy (6 tooltips)
-- ✅ Section 05 - Emissions (2 tooltips)
-- ✅ Section 06 - Renewable Energy (1 tooltip)
-- ✅ Section 07 - Water Use (7 tooltips)
+**Comprehensive extraction completed** (Oct 8, 2025):
+- ✅ Scanned rows 12-145, columns A-P
+- ✅ Found 107 total tooltips from Excel
+- ✅ Mapped 104 tooltips to field_ids
+- ✅ Includes all sections: S02-S07 plus Building Envelope fields
 
-**Total Available:** 35 tooltips in `4011-TooltipManager.js`
+**Total Available:** 104 tooltips in `4011-TooltipManager.js`
 
 ---
 
@@ -371,17 +373,28 @@ Then manually add any new tooltips to `4011-TooltipManager.js`.
 
 ## Coverage Status
 
-| Section | Fields with Tooltips | Total Fields | Coverage |
-|---------|---------------------|--------------|----------|
-| S02 - Building Info | 11 | 11 | 100% ✅ |
-| S03 - Climate | 0 | 6 | 0% ⏳ |
-| S04 - Energy | 0 | 6 | 0% ⏳ |
-| S05 - Emissions | 0 | 2 | 0% ⏳ |
-| S06 - Renewable | 0 | 1 | 0% ⏳ |
-| S07 - Water | 0 | 7 | 0% ⏳ |
-| S08+ | 0 | ? | 0% ⏳ |
+| Section | Fields with Tooltips | Total Fields | Status | Notes |
+|---------|---------------------|--------------|--------|-------|
+| S02 - Building Info | 13 | 13 | ✅ 100% | Complete - deployed |
+| S03 - Climate | 6 | 6 | ✅ 100% | Complete - deployed |
+| S04 - Energy | 0 | ~10 | ⏳ Available | Tooltips in manager, need flags |
+| S05 - Emissions | 0 | ~3 | ⏳ Available | Tooltips in manager, need flags |
+| S06 - Renewable | 0 | ~2 | ⏳ Available | Tooltips in manager, need flags |
+| S07 - Water | 0 | ~8 | ⏳ Available | Tooltips in manager, need flags |
+| S08+ Envelope | 0 | ~30 | ⏳ Available | Tooltips in manager, need flags |
 
-**Next Priority:** Section 03 (Climate) - 6 tooltips already in TooltipManager
+**Completed Sections:**
+- ✅ **S02** - 13 fields (d_12-16, h_12-17, l_12-16, i_16-17)
+- ✅ **S03** - 6 fields (d_19, h_19-21, i_21, m_19)
+
+**Ready for Implementation** (tooltips already extracted):
+- ⏳ **S04** - Energy fields (d_27-32, h_35, l_27-33)
+- ⏳ **S05** - Emissions (d_39, i_41)
+- ⏳ **S06** - Renewable (m_43)
+- ⏳ **S07** - Water (d_49-54, e_49-50-54, f_49-50, g_54, h_49-54, l_54)
+- ⏳ **S08+** - Envelope (d_63-68, d_80-81, d_96-97, d_103-119, e_73-78, f_73-78-113, g_63-67-80-109-110-118, h_24-109, i_59, j_98-104-110, k_120, l_98-104-118-119, m_72-124-141, o_84)
+
+**Next Priority:** Section 04 (Energy) or Section 07 (Water) - most fields with tooltips available
 
 ---
 
@@ -401,5 +414,6 @@ To add tooltips to a new section:
 ---
 
 **Last Updated:** Oct 8, 2025
-**Current Total:** 35 tooltips available, 11 applied (S02)
-**Extraction Source:** TEUIv3042.xlsx
+**Current Status:** 104 tooltips extracted, 19 applied (S02: 13, S03: 6)
+**Extraction Source:** TEUIv3042.xlsx (comprehensive scan rows 12-145)
+**Deployment:** Live at https://arossti.github.io/OBJECTIVE/
