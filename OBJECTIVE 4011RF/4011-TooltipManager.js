@@ -188,11 +188,6 @@
       "title": "A Note on Methods:",
       "message": "NRC: 0% = Intermittent Occupancies_x000a_NRC: 40% = Light-Wood Framed Buildings_x000a_NRC: 50% = Light-Wood Buildings + Transfer Strategies_x000a_NRC: 60% = Massive Buildings + Transfer Strategies_x000a_PH Method: Approximation of PHPP"
     },
-    "d_81": {
-      "cell": "D81",
-      "title": "Cooling Guidance",
-      "message": "ASHRAE may permit 26°C, where NBC 2025 may require 24°C. Residents will often set lower. Use 24°C as Default for design. "
-    },
     "d_96": {
       "cell": "D96",
       "title": "B.11 Interior Floors",

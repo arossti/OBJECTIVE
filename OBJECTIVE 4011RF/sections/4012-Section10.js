@@ -866,6 +866,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           dropdownId: "dd_e_73",
           value: "Average",
           section: "envelopeRadiantGains",
+          tooltip: true, // Select an Orientation
           options: [
             { value: "North", name: "North" },
             { value: "NorthEast", name: "NorthEast" },
@@ -887,6 +888,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           min: 0.2,
           max: 0.6,
           step: 0.05,
+          tooltip: true, // Solar Heat Gain Coefficient
           section: "envelopeRadiantGains",
           classes: ["col-small", "slider-container"],
         },
@@ -974,6 +976,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           dropdownId: "dd_e_74",
           value: "North",
           section: "envelopeRadiantGains",
+          tooltip: true, // Select an Orientation
           options: [
             { value: "North", name: "North" },
             { value: "NorthEast", name: "NorthEast" },
@@ -995,6 +998,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           min: 0.2,
           max: 0.6,
           step: 0.05,
+          tooltip: true, // Solar Heat Gain Coefficient
           section: "envelopeRadiantGains",
           classes: ["col-small", "slider-container"],
         },
@@ -1082,6 +1086,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           dropdownId: "dd_e_75",
           value: "East",
           section: "envelopeRadiantGains",
+          tooltip: true, // Select an Orientation
           options: [
             { value: "North", name: "North" },
             { value: "NorthEast", name: "NorthEast" },
@@ -1102,6 +1107,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           min: 0.2,
           max: 0.6,
           step: 0.05,
+          tooltip: true, // Solar Heat Gain Coefficient
           section: "envelopeRadiantGains",
           classes: ["col-small", "slider-container"],
         },
@@ -1187,6 +1193,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           dropdownId: "dd_e_76",
           value: "South",
           section: "envelopeRadiantGains",
+          tooltip: true, // Select an Orientation
           options: [
             { value: "North", name: "North" },
             { value: "NorthEast", name: "NorthEast" },
@@ -1207,6 +1214,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           min: 0.2,
           max: 0.6,
           step: 0.05,
+          tooltip: true, // Solar Heat Gain Coefficient
           section: "envelopeRadiantGains",
           classes: ["col-small", "slider-container"],
         },
@@ -1292,6 +1300,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           dropdownId: "dd_e_77",
           value: "West",
           section: "envelopeRadiantGains",
+          tooltip: true, // Select an Orientation
           options: [
             { value: "North", name: "North" },
             { value: "NorthEast", name: "NorthEast" },
@@ -1312,6 +1321,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           min: 0.2,
           max: 0.6,
           step: 0.05,
+          tooltip: true, // Solar Heat Gain Coefficient
           section: "envelopeRadiantGains",
           classes: ["col-small", "slider-container"],
         },
@@ -1397,6 +1407,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           dropdownId: "dd_e_78",
           value: "Skylight",
           section: "envelopeRadiantGains",
+          tooltip: true, // Select an Orientation
           options: [
             { value: "North", name: "North" },
             { value: "NorthEast", name: "NorthEast" },
@@ -1417,6 +1428,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           min: 0.2,
           max: 0.6,
           step: 0.05,
+          tooltip: true, // Solar Heat Gain Coefficient
           section: "envelopeRadiantGains",
           classes: ["col-small", "slider-container"],
         },
@@ -1550,6 +1562,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           dropdownId: "dd_d_80",
           value: "NRC 40%",
           section: "radiantGains",
+          tooltip: true, // A Note on Methods
           options: [
             { value: "NRC 0%", name: "NRC 0%" },
             { value: "NRC 40%", name: "NRC 40%" },
@@ -1571,6 +1584,7 @@ window.TEUI.SectionModules.sect10 = (function () {
           type: "calculated",
           value: "40.00%",
           section: "radiantGains",
+          tooltip: true, // A Note on Methods
           dependencies: ["d_80"],
         },
         h: { content: "" }, // Empty cell
@@ -2840,6 +2854,13 @@ window.TEUI.SectionModules.sect10 = (function () {
 
     // 5. Perform initial calculations for this section
     calculateAll();
+
+    // 6. Apply validation tooltips to fields
+    if (window.TEUI.TooltipManager && window.TEUI.TooltipManager.initialized) {
+      setTimeout(() => {
+        window.TEUI.TooltipManager.applyTooltipsToSection(sectionRows);
+      }, 300);
+    }
   }
 
   /**
