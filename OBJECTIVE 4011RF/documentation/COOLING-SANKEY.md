@@ -264,6 +264,26 @@ function getCoolingSankeyData() {
 - **Animation Timing:** Match existing heating Sankey exactly
 - **Data Structure:** Deep copy patterns to prevent D3 mutation issues
 
+## Known Issues
+
+### Energy Balance Gap (Energy In ≠ Energy Out)
+
+**Observation:** Small gap visible on right side of Building node where outgoing links don't sum to incoming links.
+
+**Potential Causes:**
+1. **Stale StateManager Values:** Cooling calculations may be receiving cached/stale values
+2. **Missing Energy Removal Component:** A cooling removal pathway may not be mapped
+3. **Calculation Timing:** StateManager may not have latest values when Sankey renders
+4. **Fallback Values:** Some fields returning fallback zeros instead of calculated values
+
+**Investigation Needed:**
+- Verify all cooling calculation sections publish values to StateManager
+- Check if cooling calculations run before Sankey data fetch
+- Confirm all BALANCE.csv energy removal columns (F46-F68) are mapped
+- Check for rounding/precision issues in energy balance calculations
+
+**Workaround:** Gap is currently acceptable for visualization purposes, represents energy balance discrepancy in underlying calculations
+
 ---
 
 ## Future Enhancements

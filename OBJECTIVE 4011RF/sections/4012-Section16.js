@@ -1556,8 +1556,11 @@ window.TEUI.SectionModules.sect16 = (function () {
       // Get all buttons
       const buttons = document.querySelectorAll(".sankey-control-button");
 
-      // Add hover effect
+      // Add hover effect (but exclude mode toggle button which has custom colors)
       buttons.forEach((button) => {
+        // Skip mode toggle button - it has custom blue/red colors
+        if (button.id === "s16ModeToggleBtn") return;
+
         button.addEventListener("mouseenter", () => {
           button.style.backgroundColor = "#e5e5e5";
         });
@@ -1586,6 +1589,29 @@ window.TEUI.SectionModules.sect16 = (function () {
     // Mode toggle button handler (heating/cooling)
     const modeToggleBtn = document.getElementById("s16ModeToggleBtn");
     if (modeToggleBtn) {
+      // Custom hover effects that preserve blue/red colors
+      modeToggleBtn.addEventListener("mouseenter", function () {
+        const isHeating = window.TEUI.sect16.currentMode === "heating";
+        if (isHeating) {
+          // Lighter blue on hover
+          this.style.backgroundColor = "#6BB0D0";
+        } else {
+          // Lighter red on hover
+          this.style.backgroundColor = "#D85662";
+        }
+      });
+
+      modeToggleBtn.addEventListener("mouseleave", function () {
+        const isHeating = window.TEUI.sect16.currentMode === "heating";
+        if (isHeating) {
+          // Return to blue
+          this.style.backgroundColor = "#4A96BA";
+        } else {
+          // Return to red
+          this.style.backgroundColor = "#BE343D";
+        }
+      });
+
       modeToggleBtn.addEventListener("click", function () {
         // Toggle mode
         window.TEUI.sect16.currentMode =
