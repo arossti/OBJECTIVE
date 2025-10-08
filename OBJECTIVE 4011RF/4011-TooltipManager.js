@@ -253,13 +253,13 @@
       "title": "HSPF Dictates COP, CEER",
       "message": "Enter Value Required by Reference Standard. _x000a_Typ. range is 7-14. Only applies when 'Heatpump' Option is Selected from the dropdown to the left. _x000a__x000a_This has an outsized influence on TEUI - Choose Well!"
     },
-    "f_49": {
-      "cell": "F49",
+    "e_49": {
+      "cell": "E49",
       "title": "Litres/Per-Person/Day",
       "message": "Enter a value for Total Water Per Day. If you are trying to match values from a water meter, divide the meter value by 365 and then again by #Occupants. "
     },
-    "f_50": {
-      "cell": "F50",
+    "e_50": {
+      "cell": "E50",
       "title": "Litres/Per-Person/Day",
       "message": "Enter a value for Total Water Per Day. If you are trying to match values from a water meter, divide the meter value by 365 and then again by #Occupants. "
     },
@@ -427,6 +427,11 @@
       "cell": "J98",
       "title": "Total Excludes B.12 TB Penalty",
       "message": ""
+    },
+    "k_52": {
+      "cell": "K52",
+      "title": "AFUE",
+      "message": "Enter AFUE Efficiency for Gas or Oil fired equipment here."
     },
     "k_120": {
       "cell": "K120",
