@@ -79,22 +79,11 @@ window.TEUI.CoolingSankey = (function () {
   };
 
   /**
-   * Get cooling Sankey data from Calculator state
-   * Maps values from BALANCE.csv rows 44-69 to existing Calculator state variables
+   * Get cooling Sankey data from StateManager
+   * Maps values from BALANCE.csv rows 44-69 to StateManager fields
+   * Uses same pattern as heating Sankey for proper D3 numeric handling
    */
   function getCoolingSankeyData() {
-    const state = window.TEUI.Calculator.state;
-
-    if (!state) {
-      console.error("CoolingSankey: Calculator state not available");
-      return {
-        nodes: JSON.parse(
-          JSON.stringify(COOLING_SANKEY_STRUCTURE_TEMPLATE.nodes),
-        ),
-        links: [],
-      };
-    }
-
     // Deep copy the template
     const sankeyData = {
       nodes: JSON.parse(
@@ -103,10 +92,23 @@ window.TEUI.CoolingSankey = (function () {
       links: [],
     };
 
-    // Helper function to safely get state value
+    // Get StateManager instance (same pattern as heating Sankey)
+    const teuiState = window.TEUI.StateManager;
+    if (!teuiState || typeof teuiState.getValue !== "function") {
+      console.warn(
+        "CoolingSankey: TEUI.StateManager not available. Using template defaults.",
+      );
+      return sankeyData;
+    }
+
+    // Helper function to safely get state value and convert to number
+    // Critical: Must return valid number for D3, never NaN
     const getStateValue = (key) => {
-      const value = state[key];
-      return typeof value === "number" && !isNaN(value) ? value : 0;
+      const rawValue = teuiState.getValue(key);
+      const numValue = parseFloat(rawValue);
+      return typeof numValue === "number" && !isNaN(numValue) && numValue > 0
+        ? numValue
+        : 0;
     };
 
     // Minimum threshold for link visibility (same as heating Sankey)
@@ -229,9 +231,16 @@ window.TEUI.CoolingSankey = (function () {
 
     // Handle conditional nodes: B.9 Walls BG, B.10 Floor Slab, B.12 TB Penalty
     // These can be either gains (positive) or removals (negative)
-    const k_94 = getStateValue("k_94"); // B.9 Walls BG
-    const k_95 = getStateValue("k_95"); // B.10 Floor Slab
-    const k_97 = getStateValue("k_97"); // B.12 TB Penalty
+    // Need to get RAW values (not filtered for > 0) to check sign
+    const getRawStateValue = (key) => {
+      const rawValue = teuiState.getValue(key);
+      const numValue = parseFloat(rawValue);
+      return typeof numValue === "number" && !isNaN(numValue) ? numValue : 0;
+    };
+
+    const k_94 = getRawStateValue("k_94"); // B.9 Walls BG
+    const k_95 = getRawStateValue("k_95"); // B.10 Floor Slab
+    const k_97 = getRawStateValue("k_97"); // B.12 TB Penalty
 
     // If positive, add to gained side; if negative, add to removed side
     if (k_94 > MIN_VALUE) {
@@ -307,8 +316,8 @@ window.TEUI.CoolingSankey = (function () {
 
     // Ventilation Free Cooling (c_124 or h_124)
     const freeCooling = Math.max(
-      getStateValue("c_124"),
-      getStateValue("h_124"),
+      getRawStateValue("c_124"),
+      getRawStateValue("h_124"),
     );
     if (freeCooling > MIN_VALUE) {
       energyRemovedLinks.push({
