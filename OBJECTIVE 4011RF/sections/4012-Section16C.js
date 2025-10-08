@@ -242,8 +242,10 @@ window.TEUI.CoolingSankey = (function () {
     ];
 
     // Handle conditional nodes: B.9 Walls BG, B.10 Floor Slab, B.12 TB Penalty
-    // These can be either gains (positive) or removals (negative)
-    // Need to get RAW values (not filtered for > 0) to check sign
+    // These flip sides based on capacitance/thermal mass effects
+    // Logic from BALANCE.csv:
+    //   - If K value > 0: Energy GAINED (ground warmer than building)
+    //   - If K value ≤ 0: Energy REMOVED (ground absorbs heat from building)
     const getRawStateValue = (key) => {
       const rawValue = teuiState.getValue(key);
       const numValue = parseFloat(rawValue);
@@ -254,8 +256,8 @@ window.TEUI.CoolingSankey = (function () {
     const k_95 = getRawStateValue("k_95"); // B.10 Floor Slab
     const k_97 = getRawStateValue("k_97"); // B.12 TB Penalty
 
-    // If positive, add to gained side; if negative, add to removed side
-    if (k_94 > MIN_VALUE) {
+    // GAINED side: Only if > 0 (Excel: IF(K94>0, K94, 0))
+    if (k_94 > 0) {
       energyGainedLinks.push({
         source: 9,
         target: 0,
@@ -264,7 +266,7 @@ window.TEUI.CoolingSankey = (function () {
       });
     }
 
-    if (k_95 > MIN_VALUE) {
+    if (k_95 > 0) {
       energyGainedLinks.push({
         source: 10,
         target: 0,
@@ -273,7 +275,7 @@ window.TEUI.CoolingSankey = (function () {
       });
     }
 
-    if (k_97 > MIN_VALUE) {
+    if (k_97 > 0) {
       energyGainedLinks.push({
         source: 18,
         target: 0,
@@ -298,8 +300,9 @@ window.TEUI.CoolingSankey = (function () {
       }, // V.3.3 Ventilation Exhaust
     ];
 
-    // Handle negative values for conditional nodes (cooling benefits)
-    if (k_94 < -MIN_VALUE) {
+    // REMOVED side: If ≤ 0, use ABS value (Excel: IF(K94<=0, ABS(K94), 0))
+    // This includes capacitance/thermal mass absorption
+    if (k_94 <= 0 && k_94 !== 0) {
       energyRemovedLinks.push({
         source: 0,
         target: 23,
@@ -308,7 +311,7 @@ window.TEUI.CoolingSankey = (function () {
       });
     }
 
-    if (k_95 < -MIN_VALUE) {
+    if (k_95 <= 0 && k_95 !== 0) {
       energyRemovedLinks.push({
         source: 0,
         target: 24,
@@ -317,7 +320,7 @@ window.TEUI.CoolingSankey = (function () {
       });
     }
 
-    if (k_97 < -MIN_VALUE) {
+    if (k_97 <= 0 && k_97 !== 0) {
       energyRemovedLinks.push({
         source: 0,
         target: 27,
