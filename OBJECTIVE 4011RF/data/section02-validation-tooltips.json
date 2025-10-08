@@ -1,0 +1,104 @@
+{
+  "H12": {
+    "title": "Year Data Entered",
+    "message": "Select a Reporting Period. This will determine Annualized Emissions Factors and Forecasted Factors per the Toronto Atmospheric Fund. ",
+    "row": 12,
+    "col": "H"
+  },
+  "L12": {
+    "title": "Assume $0.13/kwh",
+    "message": "Delivery Charges, Debt Retirement, Rebates, TOU rates and Taxes May Vary. Enter Gross Value to closer approximate complete Utility Bill Costs",
+    "row": 12,
+    "col": "L"
+  },
+  "H13": {
+    "title": "Select a period in Years",
+    "message": "Period related to durability level of building. 30 = Stick Frame Residential. 50 = ICI buildings. 80 = Long-life buildings and 100 = legacy class buildings (Historic, Monumental, etc). Larger number = larger denominator for Lifetime Carbon. ",
+    "row": 13,
+    "col": "H"
+  },
+  "L13": {
+    "title": "Assume $0.507 (Ontario)",
+    "message": "Adjust for Different Regions, be sure to add any fees, charges, tax & delivery to totals. ",
+    "row": 13,
+    "col": "L"
+  },
+  "D14": {
+    "title": "Select a Method",
+    "message": "Targeted Use: All Design Phases_x000a_Utility Bills: Read from Meters, 12mos. Post-Occupancy",
+    "row": 14,
+    "col": "D"
+  },
+  "E14": {
+    "title": "Select a Method",
+    "message": "Targeted Use: All Design Phases_x000a_Utility Bills: Read from Meters, 12mos. Post-Occupancy",
+    "row": 14,
+    "col": "E"
+  },
+  "H14": {
+    "title": "Project Name",
+    "message": "You may anonymize any owner info here. Use a project number or location or secret code name. Useful also for naming variations of your OBJECTIVE models ie. Run 1, 2, 3, etc.",
+    "row": 14,
+    "col": "H"
+  },
+  "L14": {
+    "title": "Assume $1.62 (Ontario)",
+    "message": "Adjust for Different Regions, be sure to add any fees, charges, tax & delivery to totals. ",
+    "row": 14,
+    "col": "L"
+  },
+  "D15": {
+    "title": "Carbon Benchmark",
+    "message": "Enter relevant standard otherwise 'Self Reported'. If no A1-3 Embodied carbon has been calculated using another tool, select 'Not Reported' to use default values (Upset Limits from TGS4)",
+    "row": 15,
+    "col": "D"
+  },
+  "E15": {
+    "title": "Carbon Benchmark",
+    "message": "Enter relevant standard otherwise 'Self Reported'. If no A1-3 Embodied carbon has been calculated using another tool, select 'Not Reported' to use default values (Upset Limits from TGS4)",
+    "row": 15,
+    "col": "E"
+  },
+  "H15": {
+    "title": "Net Conditioned Area",
+    "message": "Net Conditioned Area is measured from the interior face of any construction assembly that separates the exterior interior conditioned volume from the exterior air or ground surfaces, this is required for consistency of all other area and volume calculatio",
+    "row": 15,
+    "col": "H"
+  },
+  "L15": {
+    "title": "Assume $180/m3 (Ontario)",
+    "message": "Adjust for Different Regions, be sure to add any tax & delivery to totals. ",
+    "row": 15,
+    "col": "L"
+  },
+  "D16": {
+    "title": "S4. Targets",
+    "message": "IPCC AR6 EPC = Equal PerCapita method to limit to 1.5\u00baC_x000a_IPCC AR6 EA = Equity-Adjusted method to limit to 1.5\u00baC_x000a_(refer to Worksheet S.3 Carbon Standards)",
+    "row": 16,
+    "col": "D"
+  },
+  "H16": {
+    "title": "Certifier",
+    "message": "The name of the entity that holds a Certificate of Practice if Architect, or the Certificate of Authourization if Engineer. If the firm is a BCIN firm, enter the name of that entity. This is a prerequisite to be considered a 'Certifier' by OpenBuilding",
+    "row": 16,
+    "col": "H"
+  },
+  "I16": {
+    "title": "Certifier",
+    "message": "The name of the entity that holds a Certificate of Practice if Architect, or the Certificate of Authourization if Engineer. If the firm is a BCIN firm, enter the name of that entity. This is a prerequisite to be considered a 'Certifier' by OpenBuilding",
+    "row": 16,
+    "col": "I"
+  },
+  "L16": {
+    "title": "Assume $1.50 (Ontario)",
+    "message": "Adjust for Different Regions, be sure to add any charges, fees, tax & delivery to totals. ",
+    "row": 16,
+    "col": "L"
+  },
+  "H17": {
+    "title": "License or Authorization",
+    "message": "Enter here the OAA CofP Number, or PEO issued Cert. of Auth here, or if BCIN the BCIN No. ",
+    "row": 17,
+    "col": "H"
+  }
+}
