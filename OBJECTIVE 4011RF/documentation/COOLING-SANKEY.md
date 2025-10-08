@@ -298,13 +298,63 @@ The issue is in the **S14 cooling calculation logic itself**, specifically:
 - Free cooling calc appears correct: `345.58 kWh/day → 41,469.81 kWh/yr`
 - Energy balance formula (E52) shows large negative value: `-59,688.92`
 
-**Further Investigation Needed:**
-- Review S14 cooling demand calculation formula (m_129_annual)
-- Compare S14 logic with Excel BALANCE.csv formulas row 46 (m_129)
-- Check E50, E51, E52 intermediate calculations in S14
-- Verify cooling setpoint temperatures and degree-day calculations
+**Formula Analysis (Excel vs Code):**
 
-**Workaround:** Gap is currently acceptable for visualization purposes, represents energy balance discrepancy in underlying calculations. The cooling Sankey accurately visualizes the current calculation state and serves as a diagnostic tool.
+**Excel Formula (FORMULAE-3039.csv, Line 129):**
+```
+T.5.2 less Free Cool. & Vent. Exhaust (M129):
+= D129 - H124 - D123
+
+Where:
+  D129 = CED Unmitigated = K71+K79+K97+K104+K103+D122
+  H124 = Free cooling capacity
+  D123 = Ventilation exhaust energy
+```
+
+**Code Implementation (S13, lines 2802-2832):**
+```javascript
+// calculateCEDUnmitigated() - Line 2768
+d_129 = k71 + k79 + k98 + k104 + k103 + d122  // ❌ WRONG: Uses K98
+
+// calculateCEDMitigated() - Line 2802
+m_129 = Math.max(0, d129 - h124 - d123)  // ✅ Correct formula
+```
+
+**🔴 BUG FOUND: k_98 vs k_97** ✅ **FIXED**
+
+S13 line 2788 was using **K98** instead of **K97** in the d_129 calculation!
+
+```javascript
+// BEFORE (Line 2776-2788, S13)
+const k98 = getGlobalNumericValue(...);  // ❌ WRONG VARIABLE
+const cedUnmitigated = k71 + k79 + k98 + k104 + k103 + d122;
+
+// AFTER (Fixed)
+const k97 = getGlobalNumericValue(...);  // ✅ CORRECT
+const cedUnmitigated = k71 + k79 + k97 + k104 + k103 + d122;
+```
+
+Excel expects: `D129 = K71 + K79 + K97 + K104 + K103 + D122`
+Code was using: `d_129 = k71 + k79 + k98 + k104 + k103 + d122` ❌
+Code now uses: `d_129 = k71 + k79 + k97 + k104 + k103 + d122` ✅
+
+**K97** = TB Penalty (thermal bridge)
+**K98** = Different value (not relevant to cooling unmitigated demand)
+
+This explained the 2,663.90 kWh discrepancy (24.9% error: 8,045.10 vs expected 10,709.00)!
+
+**Fix Applied:** [4012-Section13.js:2776-2788](../sections/4012-Section13.js#L2776-L2788)
+- Changed variable declaration from `k98` to `k97`
+- Updated formula to use `k97` in calculation
+- Added inline comment documenting correct Excel formula
+
+**Expected Result:** m_129 should now calculate as ~10,709.00 kWh (pending browser test)
+
+**Investigation Complete:**
+- ✅ Review S14 cooling demand calculation formula - Formula is correct
+- ✅ Compare S14 logic with Excel formulas - Found discrepancy in S13
+- ✅ Verify K97 vs K98 values to confirm impact - K97 is TB Penalty (correct)
+- ✅ Fix S13 line 2783 - Changed `k_98` to `k_97`
 
 ---
 

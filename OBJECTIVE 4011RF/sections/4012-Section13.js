@@ -2773,8 +2773,8 @@ window.TEUI.SectionModules.sect13 = (function () {
     const k79 = getGlobalNumericValue(
       isReferenceCalculation ? "ref_k_79" : "k_79",
     );
-    const k98 = getGlobalNumericValue(
-      isReferenceCalculation ? "ref_k_98" : "k_98",
+    const k97 = getGlobalNumericValue(
+      isReferenceCalculation ? "ref_k_97" : "k_97",
     );
     const k104 = getGlobalNumericValue(
       isReferenceCalculation ? "ref_k_104" : "k_104",
@@ -2784,8 +2784,8 @@ window.TEUI.SectionModules.sect13 = (function () {
     );
     const d122 = window.TEUI.parseNumeric(getFieldValue("d_122")) || 0; // From S13's own calculation
 
-    // Excel formula: D129 = K71+K79+K98+K104+K103+D122
-    const cedUnmitigated = k71 + k79 + k98 + k104 + k103 + d122;
+    // Excel formula: D129 = K71+K79+K97+K104+K103+D122 (FIXED: was K98, should be K97)
+    const cedUnmitigated = k71 + k79 + k97 + k104 + k103 + d122;
 
     // Only update DOM for Target calculations
     if (!isReferenceCalculation) {
