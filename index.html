@@ -1110,11 +1110,13 @@ Select a province and city to view weather data.</pre
           const updateButtonState = () => {
             const isEnabled = window.TEUI.TooltipManager.isEnabled();
             if (isEnabled) {
-              toggleHelpBtn.classList.remove('btn-outline-secondary');
+              toggleHelpBtn.classList.remove('btn-outline-secondary', 'btn-danger');
               toggleHelpBtn.classList.add('btn-success');
+              toggleHelpBtn.innerHTML = '<i class="bi bi-question-circle-fill"></i> Help On';
             } else {
-              toggleHelpBtn.classList.remove('btn-success');
-              toggleHelpBtn.classList.add('btn-outline-secondary');
+              toggleHelpBtn.classList.remove('btn-success', 'btn-outline-secondary');
+              toggleHelpBtn.classList.add('btn-danger');
+              toggleHelpBtn.innerHTML = '<i class="bi bi-question-circle"></i> Help Off';
             }
           };
 
