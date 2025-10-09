@@ -265,14 +265,16 @@
           .split(/\r?\n/)
           .filter((row) => row.trim() !== ""); // Split lines and remove empty ones
 
-        if (rows.length !== 2) {
+        // Support both legacy (2 rows) and new dual-state format (3 rows)
+        if (rows.length !== 2 && rows.length !== 3) {
           throw new Error(
-            `Expected 2 data rows (headers and values), but found ${rows.length}.`,
+            `Expected 2 rows (legacy) or 3 rows (dual-state), but found ${rows.length}.`,
           );
         }
 
         const headerRow = rows[0];
-        const valueRow = rows[1];
+        const targetValueRow = rows[1]; // Target/Application values
+        const referenceValueRow = rows.length === 3 ? rows[2] : null; // Reference values (if present)
 
         // Basic parsing for CSV row, handles quoted fields from our escapeCSV output
         const parseCSVRow = (rowString) => {
@@ -304,20 +306,38 @@
         };
 
         const fieldIds = parseCSVRow(headerRow);
-        const values = parseCSVRow(valueRow);
+        const targetValues = parseCSVRow(targetValueRow);
+        const referenceValues = referenceValueRow ? parseCSVRow(referenceValueRow) : null;
 
-        if (fieldIds.length !== values.length) {
+        if (fieldIds.length !== targetValues.length) {
           throw new Error(
-            `Header count (${fieldIds.length}) does not match value count (${values.length}). CSV may be malformed.`,
+            `Header count (${fieldIds.length}) does not match target value count (${targetValues.length}). CSV may be malformed.`,
           );
         }
 
+        if (referenceValues && fieldIds.length !== referenceValues.length) {
+          throw new Error(
+            `Header count (${fieldIds.length}) does not match reference value count (${referenceValues.length}). CSV may be malformed.`,
+          );
+        }
+
+        // Import target values (unprefixed field IDs)
         for (let i = 0; i < fieldIds.length; i++) {
           const fieldId = fieldIds[i];
-          const value = values[i];
+          const value = targetValues[i];
           if (fieldId && value !== undefined) {
-            // Ensure fieldId is not empty
             importedData[fieldId] = value;
+          }
+        }
+
+        // Import reference values (with ref_ prefix)
+        if (referenceValues) {
+          for (let i = 0; i < fieldIds.length; i++) {
+            const fieldId = fieldIds[i];
+            const refValue = referenceValues[i];
+            if (fieldId && refValue !== undefined) {
+              importedData[`ref_${fieldId}`] = refValue;
+            }
           }
         }
 
@@ -329,7 +349,9 @@
           return;
         }
 
-        message = `Standardized CSV parsed successfully. ${Object.keys(importedData).length} fields found.`;
+        const targetCount = fieldIds.length;
+        const refCount = referenceValues ? fieldIds.length : 0;
+        message = `Dual-state CSV parsed successfully. ${targetCount} target fields and ${refCount} reference fields imported.`;
         this.showStatus(message, "info");
         this.updateStateFromImportData(importedData); // No skippedCount for this format
       } catch (error) {
