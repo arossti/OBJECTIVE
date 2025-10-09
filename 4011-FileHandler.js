@@ -265,14 +265,16 @@
           .split(/\r?\n/)
           .filter((row) => row.trim() !== ""); // Split lines and remove empty ones
 
-        if (rows.length !== 2) {
+        // Support both legacy (2 rows) and new dual-state format (3 rows)
+        if (rows.length !== 2 && rows.length !== 3) {
           throw new Error(
-            `Expected 2 data rows (headers and values), but found ${rows.length}.`,
+            `Expected 2 rows (legacy) or 3 rows (dual-state), but found ${rows.length}.`,
           );
         }
 
         const headerRow = rows[0];
-        const valueRow = rows[1];
+        const targetValueRow = rows[1]; // Target/Application values
+        const referenceValueRow = rows.length === 3 ? rows[2] : null; // Reference values (if present)
 
         // Basic parsing for CSV row, handles quoted fields from our escapeCSV output
         const parseCSVRow = (rowString) => {
@@ -304,20 +306,38 @@
         };
 
         const fieldIds = parseCSVRow(headerRow);
-        const values = parseCSVRow(valueRow);
+        const targetValues = parseCSVRow(targetValueRow);
+        const referenceValues = referenceValueRow ? parseCSVRow(referenceValueRow) : null;
 
-        if (fieldIds.length !== values.length) {
+        if (fieldIds.length !== targetValues.length) {
           throw new Error(
-            `Header count (${fieldIds.length}) does not match value count (${values.length}). CSV may be malformed.`,
+            `Header count (${fieldIds.length}) does not match target value count (${targetValues.length}). CSV may be malformed.`,
           );
         }
 
+        if (referenceValues && fieldIds.length !== referenceValues.length) {
+          throw new Error(
+            `Header count (${fieldIds.length}) does not match reference value count (${referenceValues.length}). CSV may be malformed.`,
+          );
+        }
+
+        // Import target values (unprefixed field IDs)
         for (let i = 0; i < fieldIds.length; i++) {
           const fieldId = fieldIds[i];
-          const value = values[i];
+          const value = targetValues[i];
           if (fieldId && value !== undefined) {
-            // Ensure fieldId is not empty
             importedData[fieldId] = value;
+          }
+        }
+
+        // Import reference values (with ref_ prefix)
+        if (referenceValues) {
+          for (let i = 0; i < fieldIds.length; i++) {
+            const fieldId = fieldIds[i];
+            const refValue = referenceValues[i];
+            if (fieldId && refValue !== undefined) {
+              importedData[`ref_${fieldId}`] = refValue;
+            }
           }
         }
 
@@ -329,9 +349,61 @@
           return;
         }
 
-        message = `Standardized CSV parsed successfully. ${Object.keys(importedData).length} fields found.`;
+        const targetCount = fieldIds.length;
+        const refCount = referenceValues ? fieldIds.length : 0;
+        message = `Dual-state CSV parsed successfully. ${targetCount} target and ${refCount} reference fields found.`;
         this.showStatus(message, "info");
-        this.updateStateFromImportData(importedData); // No skippedCount for this format
+
+        // 🔒 START IMPORT QUARANTINE - Mute listeners to prevent premature calculations
+        console.log(
+          "[FileHandler] 🔒 CSV IMPORT QUARANTINE START - Muting listeners",
+        );
+        window.TEUI.StateManager.muteListeners();
+
+        try {
+          // Import all data (target + reference)
+          this.updateStateFromImportData(importedData, 0, false);
+          console.log(
+            `[FileHandler] Imported ${targetCount} target + ${refCount} reference values`,
+          );
+
+          // ✅ CRITICAL: Sync Pattern A sections AFTER import
+          console.log(
+            "[FileHandler] 🔧 Syncing all Pattern A sections after CSV import...",
+          );
+          this.syncPatternASections();
+          console.log(
+            "[FileHandler] ✅ Pattern A sections synced with imported values",
+          );
+        } finally {
+          // 🔓 END IMPORT QUARANTINE - Always unmute, even if import fails
+          window.TEUI.StateManager.unmuteListeners();
+          console.log(
+            "[FileHandler] 🔓 CSV IMPORT QUARANTINE END - Unmuting listeners",
+          );
+        }
+
+        // Trigger clean recalculation with all imported values loaded
+        console.log(
+          "[FileHandler] Triggering post-import calculation with fresh values...",
+        );
+        if (
+          this.calculator &&
+          typeof this.calculator.calculateAll === "function"
+        ) {
+          this.calculator.calculateAll();
+
+          // Refresh S03 UI after calculateAll
+          if (window.TEUI?.SectionModules?.sect03?.ModeManager?.refreshUI) {
+            window.TEUI.SectionModules.sect03.ModeManager.refreshUI();
+            console.log("[FileHandler] ✅ S03 UI refreshed after calculateAll()");
+          }
+        }
+
+        this.showStatus(
+          `Import successful. ${targetCount} target and ${refCount} reference fields imported. All calculations updated.`,
+          "success",
+        );
       } catch (error) {
         console.error("Error parsing standardized CSV:", error);
         this.showStatus(
