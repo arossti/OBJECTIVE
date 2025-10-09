@@ -592,7 +592,6 @@
       }
 
       if (!tooltipData) {
-        console.log(`[TooltipManager] No tooltip data for field: ${fieldId}`);
         return;
       }
 
@@ -621,7 +620,6 @@
           container: 'body',
           sanitize: false, // Allow HTML content
         });
-        console.log(`✅ [TooltipManager] Applied tooltip to ${fieldId}`);
       } catch (error) {
         console.error(`[TooltipManager] Error initializing popover for ${fieldId}:`, error);
       }
@@ -650,14 +648,10 @@
             if (element) {
               this.applyTooltip(element, cell.fieldId, cell.tooltip);
               appliedCount++;
-            } else {
-              console.warn(`[TooltipManager] Element not found for field: ${cell.fieldId}`);
             }
           }
         });
       });
-
-      console.log(`✅ [TooltipManager] Applied ${appliedCount} tooltips to section`);
     }
 
     /**
@@ -669,15 +663,13 @@
         document.querySelectorAll('[data-bs-toggle="popover"]')
       );
 
-      const popoverList = popoverTriggerList.map(popoverTriggerEl => {
+      popoverTriggerList.map(popoverTriggerEl => {
         return new bootstrap.Popover(popoverTriggerEl, {
           delay: { show: 500, hide: 100 },
           container: 'body',
           sanitize: false,
         });
       });
-
-      console.log(`✅ [TooltipManager] Initialized ${popoverList.length} popovers`);
     }
   }
 
