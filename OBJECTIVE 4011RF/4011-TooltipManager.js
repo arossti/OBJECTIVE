@@ -559,6 +559,7 @@
     constructor() {
       this.tooltips = VALIDATION_TOOLTIPS;
       this.initialized = true;
+      this.enabled = localStorage.getItem('tooltipsEnabled') !== 'false'; // Default to enabled
     }
 
     /**
@@ -670,6 +671,60 @@
           sanitize: false,
         });
       });
+    }
+
+    /**
+     * Enable tooltips globally
+     */
+    enableTooltips() {
+      this.enabled = true;
+      localStorage.setItem('tooltipsEnabled', 'true');
+
+      // Enable all existing popovers
+      document.querySelectorAll('[data-bs-toggle="popover"]').forEach(element => {
+        const popover = bootstrap.Popover.getInstance(element);
+        if (popover) {
+          popover.enable();
+        }
+      });
+    }
+
+    /**
+     * Disable tooltips globally
+     */
+    disableTooltips() {
+      this.enabled = false;
+      localStorage.setItem('tooltipsEnabled', 'false');
+
+      // Disable all existing popovers
+      document.querySelectorAll('[data-bs-toggle="popover"]').forEach(element => {
+        const popover = bootstrap.Popover.getInstance(element);
+        if (popover) {
+          popover.hide();
+          popover.disable();
+        }
+      });
+    }
+
+    /**
+     * Toggle tooltips on/off
+     * @returns {boolean} New state (true = enabled, false = disabled)
+     */
+    toggleTooltips() {
+      if (this.enabled) {
+        this.disableTooltips();
+      } else {
+        this.enableTooltips();
+      }
+      return this.enabled;
+    }
+
+    /**
+     * Check if tooltips are currently enabled
+     * @returns {boolean}
+     */
+    isEnabled() {
+      return this.enabled;
     }
   }
 

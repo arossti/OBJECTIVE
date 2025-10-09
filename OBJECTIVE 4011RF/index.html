@@ -138,6 +138,14 @@
             <!-- Weather Location Buttons RETIRED - Now using ClimateValues.js -->
             <button
               type="button"
+              class="btn btn-outline-secondary btn-sm me-2"
+              id="toggleHelpBtn"
+              title="Toggle context help tooltips on/off"
+            >
+              <i class="bi bi-question-circle"></i> Help
+            </button>
+            <button
+              type="button"
               class="btn btn-outline-danger btn-sm me-2"
               id="debugExcelBtn"
               title="Reload page with QC monitoring enabled"
@@ -1093,6 +1101,31 @@ Select a province and city to view weather data.</pre
         // 🕐 ENSURE CLOCK INITIALIZATION: Force Clock init after all other initialization
         if (window.TEUI?.Clock?.init) {
           window.TEUI.Clock.init();
+        }
+
+        // 📚 HELP BUTTON: Toggle tooltips on/off
+        const toggleHelpBtn = document.getElementById('toggleHelpBtn');
+        if (toggleHelpBtn && window.TEUI?.TooltipManager) {
+          // Set initial button state
+          const updateButtonState = () => {
+            const isEnabled = window.TEUI.TooltipManager.isEnabled();
+            if (isEnabled) {
+              toggleHelpBtn.classList.remove('btn-outline-secondary');
+              toggleHelpBtn.classList.add('btn-success');
+            } else {
+              toggleHelpBtn.classList.remove('btn-success');
+              toggleHelpBtn.classList.add('btn-outline-secondary');
+            }
+          };
+
+          // Initialize button state
+          updateButtonState();
+
+          // Add click handler
+          toggleHelpBtn.addEventListener('click', function() {
+            window.TEUI.TooltipManager.toggleTooltips();
+            updateButtonState();
+          });
         }
       });
     </script>
