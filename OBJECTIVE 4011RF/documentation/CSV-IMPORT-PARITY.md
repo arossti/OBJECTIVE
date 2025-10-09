@@ -276,6 +276,14 @@ Reference model state differences observed between:
 
 Investigation and resolution deferred to next session. Related to work documented in Master-Reference-Roadmap.md.
 
+**Next Session Plan:**
+1. Compare Excel codebase section-by-section with App Reference model calculations
+2. Investigate `d_13` reference standard application issues (observed in S11)
+   - Current selection: OBC SB10 5.5-6 Z5 (2010)
+   - Problem: Reference values not applying as expected to Reference model calculations
+3. Establish Excel as single "source of truth" for Reference model test file
+4. Once baseline parity established, Reference model export/import will work correctly
+
 ---
 
 ## Next Steps
@@ -283,6 +291,12 @@ Investigation and resolution deferred to next session. Related to work documente
 1. ✅ ~~Implement Phase 1 & 2 (quarantine + calculateAll)~~ - COMPLETE
 2. ✅ ~~Test with Sherwood CC CSV file~~ - COMPLETE
 3. ✅ ~~Compare results with Excel import of same project~~ - COMPLETE (Target/Actual Model)
-4. 🟡 Investigate Reference model state discrepancies (DEFERRED)
-5. 🟡 Document Reference model findings in Master-Reference-Roadmap.md (DEFERRED)
-6. Consider unifying Excel/CSV import into shared helper function (future enhancement)
+4. 🟡 **[NEXT SESSION]** Section-by-section comparison of Excel vs App Reference model
+   - Focus on `d_13` reference standard selection behavior
+   - Verify OBC SB10 5.5-6 Z5 (2010) reference value application
+   - Establish Excel baseline as source of truth
+5. 🟡 Fix Reference model calculation parity issues identified in step 4
+6. 🟡 Verify Reference model export correctly represents fixed state
+7. 🟡 Verify Reference model import correctly restores fixed state
+8. 🟡 Document Reference model findings in Master-Reference-Roadmap.md
+9. Consider unifying Excel/CSV import into shared helper function (future enhancement)
