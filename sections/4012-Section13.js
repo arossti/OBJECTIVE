@@ -842,6 +842,7 @@ window.TEUI.SectionModules.sect13 = (function () {
           dropdownId: "dd_d_113",
           value: "Heatpump",
           section: "mechanicalLoads",
+          tooltip: true, // Select Primary Heating System
           options: [
             { value: "Heatpump", name: "Heatpump" },
             { value: "Electricity", name: "Electricity" },
@@ -861,6 +862,7 @@ window.TEUI.SectionModules.sect13 = (function () {
           max: 20, // Max value
           step: 0.1, // Step increment
           section: "mechanicalLoads",
+          tooltip: true, // HSPF Dictates COP, CEER
           // Removed classes: ["user-input", "editable"]
         },
         g: {
@@ -1048,6 +1050,7 @@ window.TEUI.SectionModules.sect13 = (function () {
           dropdownId: "dd_d_116",
           value: "Cooling",
           section: "mechanicalLoads",
+          tooltip: true, // Cooling Provided?
           options: [
             { value: "Cooling", name: "Cooling" },
             { value: "No Cooling", name: "No Cooling" },
@@ -1156,6 +1159,7 @@ window.TEUI.SectionModules.sect13 = (function () {
           max: 100,
           step: 1,
           section: "mechanicalLoads",
+          tooltip: true, // Typ. Range 50-90%
         },
         e: {},
         f: {
@@ -1168,6 +1172,7 @@ window.TEUI.SectionModules.sect13 = (function () {
           dropdownId: "dd_g_118",
           value: "Volume by Schedule",
           section: "mechanicalLoads",
+          tooltip: true, // Select Ventilation Method
           options: [
             { value: "Volume Constant", name: "Volume Constant" }, // ADDED MISSING
             { value: "Volume by Schedule", name: "Volume by Schedule" },
@@ -1190,6 +1195,7 @@ window.TEUI.SectionModules.sect13 = (function () {
           type: "editable",
           value: "3",
           section: "mechanicalLoads",
+          tooltip: true, // ACH Value
         },
         m: {
           fieldId: "m_118",
@@ -1214,6 +1220,7 @@ window.TEUI.SectionModules.sect13 = (function () {
           type: "editable",
           value: "14.00", // RESTORED default value
           section: "mechanicalLoads",
+          tooltip: true, // Ventilation Guidance
         },
         e: {
           content: "l/s per person",
@@ -1252,6 +1259,7 @@ window.TEUI.SectionModules.sect13 = (function () {
           dropdownId: "dd_l_119",
           value: "None",
           section: "mechanicalLoads",
+          tooltip: true, // Ventilation Boost Rate
           options: [
             // CORRECTED OPTIONS
             { value: "None", name: "None" },
@@ -1335,6 +1343,7 @@ window.TEUI.SectionModules.sect13 = (function () {
           max: 100, // ADD max
           step: 10, // ADD step (e.g., 10 for 10% increments, or 1 for 1%)
           section: "mechanicalLoads",
+          tooltip: true, // Unoccupied Ventilation Setback %
           classes: ["col-small"],
         },
         l: { content: "Unoccupied Setback", classes: ["label"] }, // Unoccupied Setback label
@@ -1522,6 +1531,7 @@ window.TEUI.SectionModules.sect13 = (function () {
           type: "calculated",
           value: "96",
           section: "mechanicalLoads",
+          tooltip: true, // Negative Values
           dependencies: ["cooling_daysActiveCooling", "h_124"], // Added h_124 dependency
         },
         n: {},
@@ -2068,6 +2078,13 @@ window.TEUI.SectionModules.sect13 = (function () {
     // 3. Initialize event handlers for this section
     initializeEventHandlers();
     registerWithStateManager();
+
+    // 4. Apply validation tooltips to fields
+    if (window.TEUI.TooltipManager && window.TEUI.TooltipManager.initialized) {
+      setTimeout(() => {
+        window.TEUI.TooltipManager.applyTooltipsToSection(sectionRows);
+      }, 300);
+    }
 
     if (window.TEUI?.StateManager?.setValue) {
       const fields = getFields(); // Get field definitions for this section

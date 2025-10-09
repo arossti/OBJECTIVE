@@ -829,6 +829,7 @@ window.TEUI.SectionModules.sect15 = (function () {
           value: "30000.00", // Default value from CSV example
           classes: ["user-input"], // Assuming user input style
           section: "teuiSummary",
+          tooltip: true, // Capital Cost Premium
         },
         e: { content: "" },
         f: {
@@ -2296,6 +2297,13 @@ window.TEUI.SectionModules.sect15 = (function () {
 
     // Initialize event handlers AFTER dependencies are registered
     initializeEventHandlers();
+
+    // Apply validation tooltips to fields
+    if (window.TEUI.TooltipManager && window.TEUI.TooltipManager.initialized) {
+      setTimeout(() => {
+        window.TEUI.TooltipManager.applyTooltipsToSection(sectionRows);
+      }, 300);
+    }
 
     // Initial calculation should now be triggered by the central Calculator.calculateAll
     // or by listeners responding to dependency updates.

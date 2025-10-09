@@ -188,11 +188,6 @@
       "title": "A Note on Methods:",
       "message": "NRC: 0% = Intermittent Occupancies_x000a_NRC: 40% = Light-Wood Framed Buildings_x000a_NRC: 50% = Light-Wood Buildings + Transfer Strategies_x000a_NRC: 60% = Massive Buildings + Transfer Strategies_x000a_PH Method: Approximation of PHPP"
     },
-    "d_81": {
-      "cell": "D81",
-      "title": "Cooling Guidance",
-      "message": "ASHRAE may permit 26°C, where NBC 2025 may require 24°C. Residents will often set lower. Use 24°C as Default for design. "
-    },
     "d_96": {
       "cell": "D96",
       "title": "B.11 Interior Floors",
@@ -253,13 +248,13 @@
       "title": "HSPF Dictates COP, CEER",
       "message": "Enter Value Required by Reference Standard. _x000a_Typ. range is 7-14. Only applies when 'Heatpump' Option is Selected from the dropdown to the left. _x000a__x000a_This has an outsized influence on TEUI - Choose Well!"
     },
-    "f_49": {
-      "cell": "F49",
+    "e_49": {
+      "cell": "E49",
       "title": "Litres/Per-Person/Day",
       "message": "Enter a value for Total Water Per Day. If you are trying to match values from a water meter, divide the meter value by 365 and then again by #Occupants. "
     },
-    "f_50": {
-      "cell": "F50",
+    "e_50": {
+      "cell": "E50",
       "title": "Litres/Per-Person/Day",
       "message": "Enter a value for Total Water Per Day. If you are trying to match values from a water meter, divide the meter value by 365 and then again by #Occupants. "
     },
@@ -292,6 +287,11 @@
       "cell": "F78",
       "title": "Solar Heat Gain Coefficient",
       "message": "0.5 = 50% Gain Permitted (Default)_x000a_Higher Numbers Increase Solar Heat Gain (Reduces Heating)_x000a_Lower Numbers Reduce Solar Heat Gain (Reduces Cooling)"
+    },
+    "g_103": {
+      "cell": "G103",
+      "title": "Exposure Level",
+      "message": "Select a level of wind exposure to simulate air-leakage effects due to pressure."
     },
     "g_109": {
       "cell": "G109",
@@ -428,6 +428,11 @@
       "title": "Total Excludes B.12 TB Penalty",
       "message": ""
     },
+    "k_52": {
+      "cell": "K52",
+      "title": "AFUE",
+      "message": "Enter AFUE Efficiency for Gas or Oil fired equipment here."
+    },
     "k_120": {
       "cell": "K120",
       "title": "Unoccupied Ventilation Setback %",
@@ -445,8 +450,8 @@
     },
     "l_119": {
       "cell": "L119",
-      "title": "Ventilation Boost Rate",
-      "message": ""
+      "title": "Summer Boost",
+      "message": "Multiply Cooling Season Ventilation to test effects of increased ventilation on reducing cooling loads - does it help?"
     },
     "l_12": {
       "cell": "L12",
@@ -517,6 +522,11 @@
       "cell": "M124",
       "title": "Negative Values",
       "message": "Negative Days Active Cooling Rewuired simply means no days require mechanical cooling - Passive Strategies for Free Cooling ie. Night-time ventilation *MAY* be adequate."
+    },
+    "d_142": {
+      "cell": "D142",
+      "title": "Capital Cost Premium",
+      "message": "Add here the capital cost premium for Heatpump vs. Conventional Equipment"
     },
     "m_141": {
       "cell": "M141",

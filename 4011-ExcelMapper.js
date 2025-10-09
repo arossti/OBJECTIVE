@@ -85,7 +85,7 @@ class ExcelMapper {
       D44: "d_44", // Photovoltaics kWh/yr
       D45: "d_45", // Wind kWh/yr
       D46: "d_46", // Remove EV Charging kWh/yr
-      I45: "i_45", // WWS Electricity kWh/yr
+      I45: "i_44", // WWS Electricity kWh/yr
       K45: "k_45", // Green Natural Gas m3/yr
       I46: "i_46", // Other Removals kWh/yr
       M43: "m_43", // P.5 Exterior/Site/Other Loads (kWh) - ADDED
@@ -242,8 +242,8 @@ class ExcelMapper {
       D44: "ref_d_44",
       D45: "ref_d_45",
       D46: "ref_d_46",
-      I45: "ref_i_45",
-      K45: "ref_k_45",
+      //I45: "ref_i_45", Calculated field, not user input
+      K45: "ref_k_45", // Green Natural Gas m3/yr
       I46: "ref_i_46",
       M43: "ref_m_43",
 

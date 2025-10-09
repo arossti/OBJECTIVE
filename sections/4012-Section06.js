@@ -322,6 +322,7 @@ window.TEUI.SectionModules.sect06 = (function () {
           type: "editable",
           value: "0.00",
           classes: ["user-input"],
+          tooltip: true, // Default is 0
         },
       },
     },
@@ -336,6 +337,7 @@ window.TEUI.SectionModules.sect06 = (function () {
           type: "editable",
           value: "0.00",
           classes: ["user-input"],
+          tooltip: true, // Photovoltaics (no tooltip data available in TooltipManager)
         },
         f: { content: "R.6", classes: ["label-prefix"] },
         g: { content: "WWS Electricity", classes: ["label-main"] },
@@ -345,6 +347,7 @@ window.TEUI.SectionModules.sect06 = (function () {
           type: "editable",
           value: "0.00",
           classes: ["user-input"],
+          tooltip: true, // WWS Electricity (no tooltip data available)
         },
       },
     },
@@ -359,6 +362,7 @@ window.TEUI.SectionModules.sect06 = (function () {
           type: "editable",
           value: "0.00",
           classes: ["user-input"],
+          tooltip: true, // Wind (no tooltip data available)
         },
         f: { content: "R.7", classes: ["label-prefix"] },
         g: { content: "Green Natural Gas", classes: ["label-main"] },
@@ -370,6 +374,7 @@ window.TEUI.SectionModules.sect06 = (function () {
           type: "editable",
           value: "0.00",
           classes: ["user-input"],
+          tooltip: true, // Green Natural Gas (no tooltip data available)
         },
         l: { content: "m³" },
       },
@@ -385,6 +390,7 @@ window.TEUI.SectionModules.sect06 = (function () {
           type: "editable",
           value: "0.00",
           classes: ["user-input"],
+          tooltip: true, // Remove EV Charging (no tooltip data available)
         },
         f: { content: "R.8", classes: ["label-prefix"] },
         g: { content: "Reserved (other removals)", classes: ["label-main"] },
@@ -394,6 +400,7 @@ window.TEUI.SectionModules.sect06 = (function () {
           type: "editable",
           value: "0.00",
           classes: ["user-input"],
+          tooltip: true, // Reserved other removals (no tooltip data available)
         },
       },
     },
@@ -749,6 +756,13 @@ window.TEUI.SectionModules.sect06 = (function () {
 
     // 6. Update DOM with calculated values
     ModeManager.updateCalculatedDisplayValues();
+
+    // 7. Apply validation tooltips to fields
+    if (window.TEUI.TooltipManager && window.TEUI.TooltipManager.initialized) {
+      setTimeout(() => {
+        window.TEUI.TooltipManager.applyTooltipsToSection(sectionRows);
+      }, 300);
+    }
 
     console.log("S06: Pattern A initialization complete.");
   }

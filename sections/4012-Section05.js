@@ -408,6 +408,7 @@ window.TEUI.SectionModules.sect05 = (function () {
           dropdownId: "dd_d_39",
           value: "Pt.3 Mass Timber",
           section: "emissions",
+          tooltip: true, // Building Typology
           options: [
             { value: "Pt.9 Res. Stick Frame", name: "Pt.9 Res. Stick Frame" },
             { value: "Pt.9 Small Mass Timber", name: "Pt.9 Small Mass Timber" },
@@ -518,6 +519,7 @@ window.TEUI.SectionModules.sect05 = (function () {
           value: "345.82",
           section: "emissions",
           classes: ["user-input"],
+          tooltip: true, // Externally Defined Value
           // ✅ IMPLEMENTED (Oct 1, 2025): Reference mode i_41 = i_39 (typology-based cap)
           // Target mode: User-defined modelled value (345.82 default)
           // Reference mode: Calculated from typology (Steel/Mass Timber/Concrete)
@@ -1296,6 +1298,13 @@ window.TEUI.SectionModules.sect05 = (function () {
 
     // 6. Update DOM with calculated values
     ModeManager.updateCalculatedDisplayValues();
+
+    // 7. Apply validation tooltips to fields
+    if (window.TEUI.TooltipManager && window.TEUI.TooltipManager.initialized) {
+      setTimeout(() => {
+        window.TEUI.TooltipManager.applyTooltipsToSection(sectionRows);
+      }, 300);
+    }
 
     // console.log("S05: Pattern A initialization complete.");
   }

@@ -435,6 +435,7 @@ window.TEUI.SectionModules.sect07 = (function () {
           type: "dropdown",
           dropdownId: "d_49",
           value: "User Defined",
+          tooltip: true, // DHW/SHW Use Method (lpppd)
           options: [
             "User Defined",
             "By Engineer",
@@ -449,6 +450,7 @@ window.TEUI.SectionModules.sect07 = (function () {
           type: "editable",
           value: "40.00",
           classes: ["user-input"],
+          tooltip: true, // Litres/Per-Person/Day
         },
         f: { content: "lpppd (User Defined)", classes: ["text-left"] },
         h: { fieldId: "h_49", type: "calculated", value: "40.00" },
@@ -471,6 +473,7 @@ window.TEUI.SectionModules.sect07 = (function () {
           type: "editable",
           value: "10,000.00",
           classes: ["user-input"],
+          tooltip: true, // Occupancy-Dependent Calculation
         },
         f: { content: "kWh/yr (IF By Engineer)", classes: ["text-left"] },
         h: { fieldId: "h_50", type: "calculated", value: "16.00" },
@@ -490,6 +493,7 @@ window.TEUI.SectionModules.sect07 = (function () {
           type: "dropdown",
           dropdownId: "d_51",
           value: "Heatpump",
+          tooltip: true, // DHW/SHW Heating Source
           options: ["Heatpump", "Gas", "Oil", "Electric"],
         },
         e: { fieldId: "e_51", type: "calculated", value: "0.00" },
@@ -514,6 +518,7 @@ window.TEUI.SectionModules.sect07 = (function () {
           max: 400,
           step: 2,
           classes: ["user-input"],
+          tooltip: true, // If Heatpump Selected
         },
         e: { fieldId: "e_52", type: "calculated", value: "3.00" },
         f: { content: "COPdhw", classes: ["text-left"] },
@@ -525,6 +530,7 @@ window.TEUI.SectionModules.sect07 = (function () {
           type: "editable",
           value: "0.90",
           classes: ["user-input"],
+          tooltip: true, // AFUE
         },
         l: { content: "W.4.2 AFUE", classes: ["text-left"] },
         m: { content: "✓", classes: ["checkmark"] },
@@ -544,6 +550,7 @@ window.TEUI.SectionModules.sect07 = (function () {
           max: 70,
           step: 1,
           classes: ["user-input"],
+          tooltip: true, // Range of DWHR Efficiency
         },
         e: { fieldId: "e_53", type: "calculated", value: "0.00" },
         f: { content: "kWh/yr", classes: ["text-left"] },
@@ -1508,6 +1515,13 @@ window.TEUI.SectionModules.sect07 = (function () {
 
     // 5. Update DOM display
     ModeManager.updateCalculatedDisplayValues();
+
+    // 6. Apply validation tooltips to fields
+    if (window.TEUI.TooltipManager && window.TEUI.TooltipManager.initialized) {
+      setTimeout(() => {
+        window.TEUI.TooltipManager.applyTooltipsToSection(sectionRows);
+      }, 300);
+    }
   }
 
   //==========================================================================

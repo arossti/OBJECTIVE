@@ -76,6 +76,7 @@ window.TEUI.SectionModules.sect04 = (function () {
           value: "132938", // Excel default (utility bill input)
           classes: ["user-input", "editable"],
           section: "actualTargetEnergy",
+          tooltip: true, // Electricity
         },
         e: { content: "kWh/yr" },
         f: {
@@ -139,6 +140,7 @@ window.TEUI.SectionModules.sect04 = (function () {
           value: "0", // User utility bill input
           classes: ["user-input", "editable"],
           section: "actualTargetEnergy",
+          tooltip: true, // Gas
         },
         e: { content: "m³/yr" },
         f: {
@@ -196,6 +198,7 @@ window.TEUI.SectionModules.sect04 = (function () {
           value: "0", // User utility bill input
           classes: ["user-input", "editable"],
           section: "actualTargetEnergy",
+          tooltip: true, // Propane
         },
         e: { content: "kg/yr" },
         f: {
@@ -253,6 +256,7 @@ window.TEUI.SectionModules.sect04 = (function () {
           value: "0", // User utility bill input
           classes: ["user-input", "editable"],
           section: "actualTargetEnergy",
+          tooltip: true, // Oil
         },
         e: { content: "litres/yr" },
         f: {
@@ -310,6 +314,7 @@ window.TEUI.SectionModules.sect04 = (function () {
           value: "0", // User utility bill input
           classes: ["user-input", "editable"],
           section: "actualTargetEnergy",
+          tooltip: true, // Wood
         },
         e: { content: "m³/yr" },
         f: {
@@ -506,6 +511,7 @@ window.TEUI.SectionModules.sect04 = (function () {
           value: "1.0", // User input: PER Factor
           classes: ["user-input", "editable"],
           section: "actualTargetEnergy",
+          tooltip: true, // PER Factors
         },
         i: { content: "PER Factor" },
         j: { content: "" },
@@ -1317,6 +1323,13 @@ window.TEUI.SectionModules.sect04 = (function () {
     calculateAll();
     ModeManager.updateCalculatedDisplayValues();
     ModeManager.refreshUI();
+
+    // Apply validation tooltips to fields
+    if (window.TEUI.TooltipManager && window.TEUI.TooltipManager.initialized) {
+      setTimeout(() => {
+        window.TEUI.TooltipManager.applyTooltipsToSection(sectionRows);
+      }, 300);
+    }
   }
 
   function initializeEventHandlers() {
