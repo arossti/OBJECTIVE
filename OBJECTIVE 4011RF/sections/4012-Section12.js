@@ -587,6 +587,7 @@ window.TEUI.SectionModules.sect12 = (function () {
           dropdownId: "dd_d_103",
           value: "1.5",
           section: "volumeSurfaceMetrics",
+          tooltip: true, // Select Stories
           options: [
             { value: "1", name: "1" },
             { value: "1.5", name: "1.5" },
@@ -605,6 +606,7 @@ window.TEUI.SectionModules.sect12 = (function () {
           dropdownId: "dd_g_103",
           value: "Normal",
           section: "volumeSurfaceMetrics",
+          tooltip: true, // Exposure (no tooltip in manager, but keeping for future)
           options: [
             { value: "Shielded", name: "Shielded" },
             { value: "Normal", name: "Normal" },
@@ -683,6 +685,7 @@ window.TEUI.SectionModules.sect12 = (function () {
           type: "calculated",
           value: "100%",
           section: "volumeSurfaceMetrics",
+          tooltip: true, // Total Excludes B.12 TB Penalty
           classes: ["percentage-value", "total-row-text"],
           dependencies: ["l_101", "l_102", "l_103"],
         },
@@ -701,6 +704,7 @@ window.TEUI.SectionModules.sect12 = (function () {
           type: "editable",
           value: "8000.00",
           section: "volumeSurfaceMetrics",
+          tooltip: true, // Conditioned Volume
           classes: ["user-input"],
         },
         e: { content: "m³", classes: ["unit-label"] },
@@ -804,6 +808,7 @@ window.TEUI.SectionModules.sect12 = (function () {
           dropdownId: "dd_d_108",
           value: "AL-1B",
           section: "volumeSurfaceMetrics",
+          tooltip: true, // A.2 NRL50 * Ae
           options: [
             { value: "MEASURED", name: "Measured" },
             { value: "PH_CLASSIC", name: "PH Classic" },
@@ -860,6 +865,7 @@ window.TEUI.SectionModules.sect12 = (function () {
           type: "editable",
           value: "1.50",
           section: "volumeSurfaceMetrics",
+          tooltip: true, // Calculation Dependency
           classes: ["user-input"],
         },
         h: {},
@@ -898,6 +904,7 @@ window.TEUI.SectionModules.sect12 = (function () {
           type: "calculated",
           value: "16.7",
           section: "volumeSurfaceMetrics",
+          tooltip: true, // n-Factor Description
           dependencies: ["j_19", "d_103", "g_103"],
         },
         h: { content: "B.18.3 Ae₁₀ Zone", classes: ["text-center"] },
@@ -2588,17 +2595,24 @@ window.TEUI.SectionModules.sect12 = (function () {
     // 5. Add StateManager listeners (including robot fingers)
     addStateManagerListeners();
 
-    // 6. Register with StateManager and dependencies
+    // 6. Apply validation tooltips to fields
+    if (window.TEUI.TooltipManager && window.TEUI.TooltipManager.initialized) {
+      setTimeout(() => {
+        window.TEUI.TooltipManager.applyTooltipsToSection(sectionRows);
+      }, 300);
+    }
+
+    // 7. Register with StateManager and dependencies
     registerWithStateManager();
     registerDependencies();
 
-    // 7. Perform initial calculations
+    // 8. Perform initial calculations
     calculateAll();
 
-    // 8. Initialize conditional field state
+    // 9. Initialize conditional field state
     handleConditionalEditability();
 
-    // 9. Add section-specific styles
+    // 10. Add section-specific styles
     addCheckmarkStyles();
 
     isInitialized = true;

@@ -288,6 +288,11 @@
       "title": "Solar Heat Gain Coefficient",
       "message": "0.5 = 50% Gain Permitted (Default)_x000a_Higher Numbers Increase Solar Heat Gain (Reduces Heating)_x000a_Lower Numbers Reduce Solar Heat Gain (Reduces Cooling)"
     },
+    "g_103": {
+      "cell": "G103",
+      "title": "Exposure Level",
+      "message": "Select a level of wind exposure to simulate air-leakage effects due to pressure."
+    },
     "g_109": {
       "cell": "G109",
       "title": "Calculation Dependency",
