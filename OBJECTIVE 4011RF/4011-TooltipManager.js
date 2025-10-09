@@ -450,8 +450,8 @@
     },
     "l_119": {
       "cell": "L119",
-      "title": "Ventilation Boost Rate",
-      "message": ""
+      "title": "Summer Boost",
+      "message": "Multiply Cooling Season Ventilation to test effects of increased ventilation on reducing cooling loads - does it help?"
     },
     "l_12": {
       "cell": "L12",
