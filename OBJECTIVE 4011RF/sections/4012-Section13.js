@@ -1522,7 +1522,7 @@ window.TEUI.SectionModules.sect13 = (function () {
         },
         j: {},
         k: {
-          content: "Days Active Cooling Req'd (Experimental)",
+          content: "Days Active Cooling Req'd",
           classes: ["label", "flex-cell"],
         },
         l: {},
