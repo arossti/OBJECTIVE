@@ -523,6 +523,11 @@
       "title": "Negative Values",
       "message": "Negative Days Active Cooling Rewuired simply means no days require mechanical cooling - Passive Strategies for Free Cooling ie. Night-time ventilation *MAY* be adequate."
     },
+    "d_142": {
+      "cell": "D142",
+      "title": "Capital Cost Premium",
+      "message": "Add here the capital cost premium for Heatpump vs. Conventional Equipment"
+    },
     "m_141": {
       "cell": "M141",
       "title": "Assume $0.122 (Ontario)",
