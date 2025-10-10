@@ -632,6 +632,16 @@
       });
 
       console.log("[FileHandler] ✅ PHASE 2: Pattern A section sync complete");
+
+      // ✅ FIX (Oct 10): Manually sync S11 window areas from S10 AFTER all imports complete
+      // S11's syncFromGlobalState() no longer calls this to prevent premature sync
+      if (window.TEUI?.SectionModules?.sect11?.syncAreasFromS10) {
+        console.log(
+          "[FileHandler] 🔧 PHASE 2.5: Syncing S11 window areas from S10...",
+        );
+        window.TEUI.SectionModules.sect11.syncAreasFromS10();
+        console.log("[FileHandler] ✅ PHASE 2.5: S11 window area sync complete");
+      }
     }
 
     // --- EXPORT LOGIC ---

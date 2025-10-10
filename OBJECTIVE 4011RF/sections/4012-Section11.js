@@ -172,11 +172,12 @@ window.TEUI.SectionModules.sect11 = (function () {
         }
       });
 
-      // ✅ S10-S11 AREA SYNC: Sync areas from S10 after all imports complete
+      // ✅ FIX (Oct 10): Don't call syncAreasFromS10() during import
+      // FileHandler will call it manually AFTER all Pattern A sections synced
+      // This prevents syncing from S10 before S10's import values are ready
       console.log(
-        "[S11 TargetState] Import sync complete, now syncing areas from S10...",
+        "[S11 TargetState] Import sync complete (S10 sync deferred to FileHandler)",
       );
-      syncAreasFromS10();
     },
     saveState: function () {
       localStorage.setItem("S11_TARGET_STATE", JSON.stringify(this.state));
@@ -354,11 +355,12 @@ window.TEUI.SectionModules.sect11 = (function () {
         }
       });
 
-      // ✅ S10-S11 AREA SYNC: Sync areas from S10 after all imports complete
+      // ✅ FIX (Oct 10): Don't call syncAreasFromS10() during import
+      // FileHandler will call it manually AFTER all Pattern A sections synced
+      // This prevents syncing from S10 before S10's import values are ready
       console.log(
-        "[S11 ReferenceState] Import sync complete, now syncing areas from S10...",
+        "[S11 ReferenceState] Import sync complete (S10 sync deferred to FileHandler)",
       );
-      syncAreasFromS10();
     },
     setValue: function (fieldId, value) {
       this.state[fieldId] = value;
@@ -2341,6 +2343,9 @@ window.TEUI.SectionModules.sect11 = (function () {
     // ✅ PHASE 2: Expose state objects for import sync
     TargetState: TargetState,
     ReferenceState: ReferenceState,
+
+    // ✅ FIX (Oct 10): Expose S10 area sync for FileHandler post-import call
+    syncAreasFromS10: syncAreasFromS10,
   };
 })();
 
