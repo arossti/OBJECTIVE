@@ -1103,7 +1103,159 @@ See [4012-S13-DEBUG.md](4012-S13-DEBUG.md) for detailed implementation plans, ri
 
 ---
 
-_Last Updated: October 6, 2025 - S13 calculation fixes complete, import sync pending_
+_Last Updated: October 10, 2025 - S11 Reference import bug documented_
+
+---
+
+## 🚨 CRITICAL BUG - S11 Reference Area Import Failure (Oct 10, 2025)
+
+### Problem Statement
+
+**ALL S11 Reference area fields show defaults after Excel import, not imported values:**
+
+**Observed Behavior:**
+- Excel REFERENCE sheet: D85, D87, D95, D96 contain formulas `=REPORT!D85`, `=REPORT!D87`, etc.
+- Excel displays calculated values correctly in REFERENCE sheet cells
+- After import: **ALL S11 Reference fields show hardcoded defaults**
+  - `ref_d_85`: Shows `1411.52` (default) instead of imported value
+  - `ref_d_87`: Shows `0.00` (default) instead of imported value
+  - `ref_d_95`: Shows `1100.42` (default) instead of imported value
+  - `ref_d_96`: Shows `29.70` (default) instead of imported value
+
+**Downstream Impact:**
+- S12 Reference d_106 calculation uses wrong areas → incorrect result (1130.20 defaults)
+- S05 Reference d_40 (Total Embedded Carbon) uses wrong d_106 → incorrect calculation
+- Reference model calculations do NOT match Excel Reference model
+
+### Root Cause Investigation
+
+**Key Discovery:** `ref_d_85` imports correctly and works, but `ref_d_87`, `ref_d_95`, `ref_d_96` do NOT.
+
+**Question:** What's different about `ref_d_85` vs the others?
+
+**Hypothesis Paths:**
+
+1. **Excel Formula Detection Issue:**
+   - ExcelMapper.mapExcelToReferenceModel() has formula detection logic (lines 707-725)
+   - Checks if `cell.f` starts with `"REPORT!"` or `"=REPORT!"`
+   - If formula detected, reads from REPORT sheet instead
+   - **Problem:** SheetJS may not always populate `cell.f` depending on Excel file format
+   - **Alternative:** Trust calculated `cell.v` (Option 1 - tried and reverted)
+
+2. **StateManager Storage Issue:**
+   - Import stores `ref_d_87`, `ref_d_95`, `ref_d_96` correctly
+   - S11 ReferenceState.syncFromGlobalState() reads from StateManager
+   - **Problem:** Values might not persist to StateManager or sync fails silently
+
+3. **S12 Fallback Logic Issue:**
+   - S12 reads Reference areas with fallback: `parseFloat(getGlobalNumericValue("ref_d_87")) || parseFloat(getGlobalNumericValue("d_87")) || 0`
+   - **Problem:** If `ref_d_87 = "0.00"`, parses to `0`, which is falsy → falls back to Target value
+   - JavaScript `||` operator treats numeric `0` as falsy
+
+4. **S11 Default Overwrite Issue:**
+   - S11 ReferenceState.setDefaults() hardcodes area values
+   - These might be overwriting imported values after sync
+
+### Why This Matters
+
+**Excel Architecture:**
+- REFERENCE sheet formulas reference REPORT sheet (Target) values
+- Reference model uses **SAME geometry** as Target model
+- Only thermal performance values (RSI/U-values) differ by code standard
+
+**App Architecture (More Flexible):**
+- App ALLOWS Reference to have independent geometry values
+- This gives users flexibility Excel doesn't have
+- **But** import should respect Excel's formula-based values
+
+### Attempted Fixes
+
+**Option 1: Trust Calculated Values (Oct 10, 2025)** - **REVERTED**
+- Removed formula detection logic
+- Directly read `cell.v` (Excel's calculated value)
+- **Rationale:** Excel evaluates `=REPORT!D87` and stores result in `cell.v`
+- **Status:** Reverted at user request for deeper investigation
+- **Commit:** `58c595a` (reverted to `80cc47a`)
+
+### Solution Strategies
+
+**Option 1: Trust Calculated Cell Values**
+- Remove formula detection entirely
+- Read whatever value Excel calculated in REFERENCE sheet
+- **Pros:** Simple, works with any Excel file format
+- **Cons:** If Excel formula broken, imports wrong value
+- **Status:** Tried, reverted for investigation
+
+**Option 2: Enhanced Formula Detection**
+- Keep formula detection but handle `cell.f` missing
+- Better logging for debugging
+- **Pros:** Handles both formula and value cases
+- **Cons:** More complex, may still fail if SheetJS doesn't populate `cell.f`
+
+**Option 3: Force REPORT Values for Area Fields**
+- For specific area fields (d_85-d_96), ALWAYS read from REPORT sheet
+- Ignore REFERENCE sheet values for geometry
+- **Pros:** Ensures geometric consistency with Excel
+- **Cons:** Removes app's flexibility for independent Reference geometry
+
+**Option 4: Fix S12 Fallback Logic** (Most Likely Root Cause)
+- Change from falsy check (`||`) to null/undefined check
+- `const ref_d87 = getGlobalNumericValue("ref_d_87"); d87 = ref_d87 !== null && ref_d87 !== undefined ? parseFloat(ref_d87) : parseFloat(getGlobalNumericValue("d_87")) || 0;`
+- **Pros:** Preserves legitimate zero values, allows fallback only when truly missing
+- **Cons:** Need to apply pattern to ALL area fields in S12
+
+### Investigation Plan
+
+**Tonight's Session Goals:**
+
+1. **Verify import storage:** Add logging to confirm `ref_d_87`, `ref_d_95`, `ref_d_96` stored in StateManager
+2. **Verify sync:** Add logging to confirm S11.ReferenceState.syncFromGlobalState() reads values
+3. **Compare `ref_d_85` behavior:** Why does it work when others don't?
+4. **Test fallback logic:** Check if S12's `||` fallback is treating `0` as missing value
+5. **Choose solution:** Based on findings, implement Option 1, 3, or 4
+
+### Expected Excel Values
+
+From test CSV (TEUIv4011-DualState-Sherwood_CC.csv):
+- Target `d_87`: `0` (Floor Exposed)
+- Target `d_95`: `11167` (Floor Slab)
+- Target `d_96`: `398` (Interior Floors)
+
+**If Excel REFERENCE formulas work correctly:**
+- Reference `d_87`: Should equal Target `0` (via `=REPORT!D87`)
+- Reference `d_95`: Should equal Target `11167` (via `=REPORT!D95`)
+- Reference `d_96`: Should equal Target `398` (via `=REPORT!D96`)
+- Reference `d_106`: Should equal Target `d_106` = `0 + 11167 + 398 = 11565`
+
+**Current incorrect behavior:**
+- Reference shows defaults: `d_87=0.00`, `d_95=1100.42`, `d_96=29.70`
+- Reference `d_106` = `0 + 1100.42 + 29.70 = 1130.12` ❌
+
+### Priority
+
+**CRITICAL** - Reference model calculations depend on correct area values. This blocks:
+- Reference model TEUI calculations
+- Reference vs Target comparison accuracy
+- CSV export/import roundtrip (exports wrong values, re-imports wrong values)
+- Public launch readiness
+
+### Related Issues
+
+- S12 Volume Metrics calculation (depends on correct d_106)
+- S05 Embedded Carbon calculation (depends on correct d_40, which depends on d_106)
+- CSV export format (may be exporting incorrect Reference defaults)
+
+### Next Steps
+
+1. Add diagnostic logging to trace value flow: Excel → ExcelMapper → StateManager → S11.ReferenceState → S12 calculation
+2. Compare successful `ref_d_85` import with failing `ref_d_87/d_95/d_96` imports
+3. Identify exact point where values are lost or overwritten
+4. Choose and implement fix (Option 1, 3, or 4)
+5. Test with actual Excel file import
+6. Verify CSV export contains correct values
+7. Test CSV re-import roundtrip
+
+---
 
 Theory: Why Import Breaks State Isolation during partial refactors... (But Our MAPPER.md Fixes Won't)
 Let me analyze the mechanism that's causing state mixing after import but not before.
