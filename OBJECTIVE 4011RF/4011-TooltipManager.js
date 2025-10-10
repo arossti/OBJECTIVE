@@ -401,7 +401,7 @@
     "i_21": {
       "cell": "I21",
       "title": "Capacitance Factor",
-      "message": "Fakes a value (0-50% max.) for ground-facing elements, that absorb some excess thermal energy. Cooling season is short in Canada and mass-y elements eventually reach equilibrium/steady-state. Enter 0% when subgrade elements are not part of conditioned vol"
+      "message": "Fakes a value (0-50% max.) for ground-facing elements, that absorb some excess thermal energy. Cooling season is short in Canada and massy elements eventually reach equilibrium/steady-state. Enter 0% when subgrade elements are not part of the conditioned volume"
     },
     "i_41": {
       "cell": "I41",
