@@ -1245,15 +1245,57 @@ From test CSV (TEUIv4011-DualState-Sherwood_CC.csv):
 - S05 Embedded Carbon calculation (depends on correct d_40, which depends on d_106)
 - CSV export format (may be exporting incorrect Reference defaults)
 
-### Next Steps
+### ✅ SOLUTION IMPLEMENTED (Oct 10, 2025)
 
-1. Add diagnostic logging to trace value flow: Excel → ExcelMapper → StateManager → S11.ReferenceState → S12 calculation
-2. Compare successful `ref_d_85` import with failing `ref_d_87/d_95/d_96` imports
-3. Identify exact point where values are lost or overwritten
-4. Choose and implement fix (Option 1, 3, or 4)
-5. Test with actual Excel file import
-6. Verify CSV export contains correct values
-7. Test CSV re-import roundtrip
+**Root Cause Found:** Import timing issue with S10→S11 area sync
+
+**The Problem:**
+1. S11.ReferenceState.syncFromGlobalState() synced ref_d_85, ref_d_87, ref_d_95, ref_d_96 from StateManager ✅
+2. Then **immediately** called `syncAreasFromS10()`
+3. `syncAreasFromS10()` called `refreshUI()` and `calculateAll()`
+4. These ran **DURING import quarantine** before FileHandler.calculateAll()
+5. Calculations used default values, overwrote imported values ❌
+
+**The Fix (Commit `76ec774`):**
+
+**S11 Changes:**
+- Removed `syncAreasFromS10()` calls from both `TargetState.syncFromGlobalState()` and `ReferenceState.syncFromGlobalState()`
+- Added `syncAreasFromS10` to public API export
+- Added comment explaining FileHandler will call it manually
+
+**FileHandler Changes:**
+- Added Phase 2.5: Manual `syncAreasFromS10()` call AFTER all Pattern A sections synced
+- Ensures S10 values imported before syncing to S11
+
+**Why This Works:**
+
+**Import Flow (Fixed):**
+1. Quarantine starts → Listeners muted
+2. S10 imports → d_73-d_78 stored in StateManager
+3. S11 imports → d_85-d_96 stored in StateManager
+4. FileHandler.syncPatternASections() calls:
+   - S10.TargetState.syncFromGlobalState() ✅
+   - S10.ReferenceState.syncFromGlobalState() ✅
+   - S11.TargetState.syncFromGlobalState() ✅ (d_85, d_87, d_95, d_96 synced, no premature calculations)
+   - S11.ReferenceState.syncFromGlobalState() ✅ (ref_d_85, ref_d_87, ref_d_95, ref_d_96 synced, no premature calculations)
+5. FileHandler calls `syncAreasFromS10()` ONCE ✅ (d_88-d_93 synced from S10)
+6. Quarantine ends → Listeners unmuted
+7. Clean `calculateAll()` with all imported values ✅
+
+**Normal Usage (Still Works):**
+- User changes S10 window area → Listener fires → `debouncedSyncAreasFromS10()` → S11 updates ✅
+- User switches modes → `ModeManager.switchMode()` → `syncAreasFromS10()` → S11 updates ✅
+
+**Testing Plan:**
+1. ✅ ~~Add diagnostic logging~~ - Root cause identified
+2. ✅ ~~Compare ref_d_85 vs ref_d_87/d_95/d_96~~ - Timing issue found
+3. ✅ ~~Identify exact failure point~~ - syncAreasFromS10() premature call
+4. ✅ ~~Choose and implement fix~~ - Defer S10 sync to FileHandler
+5. ⏳ Test with actual Excel file import
+6. ⏳ Verify CSV export contains correct values
+7. ⏳ Test CSV re-import roundtrip
+
+**Status:** Fix committed, ready for user testing
 
 ---
 
