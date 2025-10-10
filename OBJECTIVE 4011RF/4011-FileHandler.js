@@ -223,6 +223,10 @@
           const section = window.TEUI?.SectionModules?.[sectionId];
           if (section?.ModeManager?.refreshUI) {
             section.ModeManager.refreshUI();
+            // ✅ Also update calculated display values (some sections need both calls)
+            if (section.ModeManager.updateCalculatedDisplayValues) {
+              section.ModeManager.updateCalculatedDisplayValues();
+            }
             console.log(`[FileHandler] ✅ ${sectionId} UI refreshed`);
           }
         });
@@ -441,6 +445,10 @@
             const section = window.TEUI?.SectionModules?.[sectionId];
             if (section?.ModeManager?.refreshUI) {
               section.ModeManager.refreshUI();
+              // ✅ Also update calculated display values (some sections need both calls)
+              if (section.ModeManager.updateCalculatedDisplayValues) {
+                section.ModeManager.updateCalculatedDisplayValues();
+              }
               console.log(`[FileHandler] ✅ ${sectionId} UI refreshed`);
             }
           });
