@@ -198,11 +198,34 @@
       ) {
         this.calculator.calculateAll();
 
-        // Refresh S03 UI after calculateAll
-        if (window.TEUI?.SectionModules?.sect03?.ModeManager?.refreshUI) {
-          window.TEUI.SectionModules.sect03.ModeManager.refreshUI();
-          console.log("[FileHandler] ✅ S03 UI refreshed after calculateAll()");
-        }
+        // ✅ FIX (Oct 10): Refresh ALL Pattern A section UIs after calculateAll
+        // Pattern A sections use isolated state - DOM must be refreshed to show updated values
+        console.log(
+          "[FileHandler] 🔄 Refreshing Pattern A section UIs after import...",
+        );
+        const patternASections = [
+          "sect02",
+          "sect03",
+          "sect04",
+          "sect05",
+          "sect06",
+          "sect07",
+          "sect08",
+          "sect09",
+          "sect10",
+          "sect11",
+          "sect12",
+          "sect13",
+          "sect15",
+        ];
+
+        patternASections.forEach((sectionId) => {
+          const section = window.TEUI?.SectionModules?.[sectionId];
+          if (section?.ModeManager?.refreshUI) {
+            section.ModeManager.refreshUI();
+            console.log(`[FileHandler] ✅ ${sectionId} UI refreshed`);
+          }
+        });
       }
     }
 
@@ -393,11 +416,34 @@
         ) {
           this.calculator.calculateAll();
 
-          // Refresh S03 UI after calculateAll
-          if (window.TEUI?.SectionModules?.sect03?.ModeManager?.refreshUI) {
-            window.TEUI.SectionModules.sect03.ModeManager.refreshUI();
-            console.log("[FileHandler] ✅ S03 UI refreshed after calculateAll()");
-          }
+          // ✅ FIX (Oct 10): Refresh ALL Pattern A section UIs after calculateAll
+          // Pattern A sections use isolated state - DOM must be refreshed to show updated values
+          console.log(
+            "[FileHandler] 🔄 Refreshing Pattern A section UIs after CSV import...",
+          );
+          const patternASections = [
+            "sect02",
+            "sect03",
+            "sect04",
+            "sect05",
+            "sect06",
+            "sect07",
+            "sect08",
+            "sect09",
+            "sect10",
+            "sect11",
+            "sect12",
+            "sect13",
+            "sect15",
+          ];
+
+          patternASections.forEach((sectionId) => {
+            const section = window.TEUI?.SectionModules?.[sectionId];
+            if (section?.ModeManager?.refreshUI) {
+              section.ModeManager.refreshUI();
+              console.log(`[FileHandler] ✅ ${sectionId} UI refreshed`);
+            }
+          });
         }
 
         this.showStatus(
