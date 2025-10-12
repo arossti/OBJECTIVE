@@ -18,12 +18,12 @@ The TEUI calculator has a **legacy Reference Model system** that needs cleanup a
    - **This performance must NOT regress**
 
 2. **Perfect State Isolation**:
-   - Target values stored in StateManager without prefix: `d_52`, `f_85`, `j_115`
-   - Reference values stored with `ref_` prefix: `ref_d_52`, `ref_f_85`, `ref_j_115`
+   - Target model values stored in StateManager without prefix: `d_52`, `f_85`, `j_115`
+   - Reference model values stored with `ref_` prefix: `ref_d_52`, `ref_f_85`, `ref_j_115`
    - Target calculations NEVER affect Reference calculations and vice versa
 
 3. **Sacred Calculation Formulas**:
-   - All calculation formulas are Excel-vetted with 100% parity
+   - All calculation formulas are Excel-vetted with 100.00% parity
    - **NEVER modify calculation logic or formulas**
    - We only SET input values; calculations always run automatically
 
@@ -49,26 +49,26 @@ The confusion in the old documentation came from mixing these two concepts:
 - **Methods**:
   - **A) User Manual Entry**: User edits fields while viewing Reference mode
   - **B) File Import**: Excel import populates both Target AND Reference from external file
-  - **C) Reference Setup Modes**: Dropdown commands that copy/overlay values
+  - **C) Reference Setup Modes**: Dropdown commands (ref_d_13) that copies/overlays values based on corresponding ReferenceValues for ref_d_13 selected. 
 
 ### The Reference Setup Modes (Three Scenarios)
 
 These are commands from the Reference dropdown in index.html:
 
 #### **Mode 1: Mirror Target**
-- **What it does**: Copies ALL Target input values → Reference input values
+- **What it does**: Copies ALL Target input values → Reference input values (making two copies of the same building model, Target and Reference)
 - **Then**: Both engines recalculate (Reference should match Target initially)
 - **Use case**: "Start with identical building, then customize specific Reference values"
 - **Example**:
   - Target: 1500m² Toronto heatpump building
   - Reference: 1500m² Toronto heatpump building (initially identical)
-  - User can then edit specific Reference values to test variations
+  - User can then edit specific Reference value(s) ie. 'set Reference to Gas heating' -  to test variations
 
 #### **Mode 2: Mirror Target + Reference Overlay** (Most Common)
 - **What it does**:
-  1. Copies ALL Target input values → Reference input values
+  1. Copies ALL Target input values → Reference input values as per Mode 1, 
   2. THEN overlays specific values from `ReferenceValues.js` based on `ref_d_13` setting
-  3. THEN both engines recalculate
+  3. THEN both engines recalculate. This then gives us the same building in Reference as in Target with the Building Code minimum required levels of insulation and equipment efficiencies. 
 - **ReferenceValues.js subset includes**:
   - Building envelope U-values/RSI-values (walls, roofs, floors, windows)
   - HVAC system efficiencies (AFUE, HSPF, COP)
@@ -192,54 +192,111 @@ refreshAllPatternAUIs();
 
 ---
 
-## Implementation Questions to Resolve
+## Implementation Questions - RESOLVED ✓
 
-Before implementing, we need to clarify:
-
-### 1. Field Discovery Method
+### 1. Field Discovery Method ✓
 **Question**: How do we get the list of all input field IDs for each section?
 
-**Options**:
-- A) From FieldManager: `window.TEUI.FieldManager.getFieldsForSection(sectionId)`
-- B) From section module: `window.TEUI[sectionId].getFields()`
-- C) From StateManager: Filter all keys by section patterns
-- D) From section definitions: Parse sectionRows for field IDs
+**Answer**: Read from StateManager as single source of truth for Target and Reference model values.
 
-**Need**: Your recommendation on which pattern matches current architecture
+**Implementation**: Use ExcelMapper field mapping structure as the authoritative list:
+- `ExcelMapper.excelReportInputMapping` contains all Target field IDs
+- `ExcelMapper.excelReferenceInputMapping` contains all Reference field IDs (with `ref_` prefix)
+- This matches the proven file import pattern
+- Can create a helper method: `getAllInputFieldIds()` that returns Object.keys from the mapping
 
-### 2. ReferenceValues Application Level
+**Benefits**:
+- Same field list used for Excel import (proven, tested)
+- Single source of truth
+- No need to query individual sections
+- Centralized and easy to maintain
+
+### 2. ReferenceValues Application Level ✓
 **Question**: Where should ReferenceValues overlay be applied?
 
-**Options**:
-- A) At field definition level in section files (modify defaults)
-- B) At StateManager level (just set values, let render happen naturally)
-- C) Hybrid approach
+**Answer**: At StateManager level using quarantine pattern, matching FileHandler import method.
 
-**Your preference**: "I suspect there is an elegance in using the methods we use on file imports... that gives us clean values, rendered, and calculated with no state mixing"
+**Implementation**:
+```javascript
+// 🔒 START QUARANTINE
+window.TEUI.StateManager.muteListeners();
 
-**Recommendation**: Use quarantine pattern (Option B) - matches FileHandler proven pattern
+try {
+    // Set all Reference values directly in StateManager with ref_ prefix
+    Object.entries(refValues).forEach(([fieldId, value]) => {
+        StateManager.setValue(`ref_${fieldId}`, value, 'reference-standard');
+    });
+} finally {
+    // 🔓 END QUARANTINE
+    window.TEUI.StateManager.unmuteListeners();
+}
 
-### 3. Highlighting Function Location
+// Then calculate once
+calculator.calculateAll();
+```
+
+**Benefits**:
+- Matches proven FileHandler pattern (KWW - Keep What Works)
+- Clean values, no state mixing
+- Most efficient and performant
+- Centralized, easy to manage
+- Visual overlay styling applied separately via CSS classes
+
+### 3. Highlighting Function Location ✓
 **Question**: Where does the highlighting logic currently live (or should live)?
 
-**Options**:
-- A) In ReferenceManager.js
-- B) In ReferenceToggle.js
-- C) In individual section files
-- D) New dedicated module
+**Answer**: Primarily in ReferenceManager.js (Option A), which already has `createReferenceHandler()` factory.
 
-**Need**: Your guidance on current/preferred location
+**Current State**:
+- ReferenceManager.js has highlighting logic in `updateReferenceDisplay()` method
+- Uses CSS classes: `reference-locked`, `data-locked` attributes
+- Locks/unlocks fields based on `isCodeDefinedField()` and `isEditableInReferenceMode()`
+- This code needs restoration/completion after refactoring
 
-### 4. Calculation Timing
+**Future Enhancement**: For visual overlay styling (red italic for ReferenceValues fields, highlighting differences):
+- Apply CSS classes via ReferenceManager methods
+- Classes already exist in styles.css
+- Just need to apply them based on field source/state
+
+**Benefits**:
+- Keeps highlighting logic centralized
+- Already exists (needs restoration)
+- Works with existing CSS system
+
+### 4. Calculation Timing ✓
 **Question**: For "Mirror Target + Reference Overlay", when should calculations run?
 
-**Options**:
-- A) After Pass 1 (mirror), then again after Pass 2 (overlay)
-- B) Only once after both passes complete (quarantine pattern)
+**Answer**: Option B - Only once after both passes complete (quarantine pattern).
 
-**Your answer**: "Technically both should generate the same totals"
+**Implementation**:
+```javascript
+// 🔒 START QUARANTINE - Mute listeners
+window.TEUI.StateManager.muteListeners();
 
-**Recommendation**: Option B (quarantine) - cleaner, matches FileHandler, avoids double calculation
+try {
+    // PASS 1: Copy all Target inputs → Reference
+    copyAllTargetInputsToReference();
+
+    // PASS 2: Overlay ReferenceValues.js subset
+    applyReferenceValuesOverlay(refValues);
+
+    // Sync all Pattern A sections
+    syncPatternASections();
+} finally {
+    // 🔓 END QUARANTINE - Always unmute
+    window.TEUI.StateManager.unmuteListeners();
+}
+
+// THEN calculate once with all values settled
+calculator.calculateAll();
+```
+
+**Benefits**:
+- Matches FileHandler proven pattern (KWW)
+- Cleaner, avoids double calculation
+- More efficient
+- No intermediate state visible to user
+- Both approaches yield identical totals (as confirmed)
 
 ---
 
@@ -328,3 +385,371 @@ Before implementing, we need to clarify:
 - **Performance critical**: Must not regress excellent current performance of dual calculation engines
 - **Excel parity**: Must maintain 100% calculation accuracy
 - **State isolation**: Perfect separation between Target and Reference is non-negotiable
+
+---
+
+## Analysis of Existing Reference Files
+
+### 4011-ReferenceValues.js (626 lines)
+
+**Purpose**: Data file containing building code standards (OBC, NBC, etc.) with minimum U-values, efficiencies, etc.
+
+**Current State**:
+- ✅ **Well structured**: Clean object mapping of standards to field values
+- ✅ **Complete data**: Has multiple building code standards defined
+- ✅ **Helper functions**: `getStandardFields()`, `getStandards()`, etc.
+- ✅ **Documentation**: Clear comments about what each value represents
+
+**Assessment**: **Keep as-is, no changes needed**
+
+**Rationale**:
+- This is pure data, working perfectly
+- Used by both import and overlay systems
+- Helper functions are useful
+- No refactoring needed
+
+---
+
+### 4011-ReferenceManager.js (357 lines)
+
+**Purpose**: Service to manage access to reference standard values and handle display updates
+
+**Current State**:
+- 🟡 **Partially implemented**: Has good foundation but mixing concerns
+- ✅ **Good parts**:
+  - `getValue()`, `getTargetCell()` helpers for ReferenceValues lookup
+  - `isCodeDefinedField()`, `isEditableInReferenceMode()` field classification
+  - `createReferenceHandler()` factory for section-specific handling
+- 🔴 **Problem areas**:
+  - Lines 35-57: Uses `setTimeout()` (Anti-pattern - should be removed)
+  - Lines 13-19: `fetchInitialStandard()` - reads from d_13 but should use ref_d_13 for Reference mode
+  - Lines 217-333: `updateReferenceDisplay()` - Direct DOM manipulation, should use StateManager
+  - Line 262: Locking fields with `disabled` - We decided NOT to lock, just style differently
+
+**Recommendations**:
+
+1. **SIMPLIFY** - Remove DOM manipulation code:
+   - Delete `updateReferenceDisplay()` method (lines 217-298)
+   - Delete `restoreDisplay()` method (lines 300-333)
+   - Delete `createReferenceHandler()` factory (lines 155-334)
+   - **Reason**: We're using quarantine pattern + StateManager, not direct DOM manipulation
+
+2. **FIX** - Standard selection listener:
+   - Line 35: Change `StateManager.addListener("d_13"...)` to listen to `ref_d_13` for Reference mode
+   - Remove `setTimeout` anti-pattern (lines 49-56)
+   - **Reason**: Reference model should track its own standard selection
+
+3. **KEEP** - Helper functions are useful:
+   - `getValue(fieldId)` - lookup ReferenceValues for current standard ✓
+   - `getTargetCell(fieldId)` - get target DOM cell ID ✓
+   - `isCodeDefinedField(fieldId)` - check if field comes from building code ✓
+   - `isEditableInReferenceMode(fieldId)` - field classification ✓
+
+4. **ADD** - New helper for visual styling:
+   - `applyOverlayHighlighting(fieldId)` - apply CSS class to show field came from ReferenceValues
+   - Uses existing CSS classes, doesn't manipulate values
+
+**Simplified Structure**:
+```javascript
+TEUI.ReferenceManager = {
+    // Lookup helpers (keep)
+    getValue(fieldId) { /* ... */ },
+    getTargetCell(fieldId) { /* ... */ },
+    getCurrentStandardFields() { /* ... */ },
+
+    // Field classification (keep)
+    isCodeDefinedField(fieldId) { /* ... */ },
+    isEditableInReferenceMode(fieldId) { /* ... */ },
+
+    // Visual styling helper (add)
+    applyOverlayHighlighting(fieldIds) { /* ... */ },
+
+    // Standard tracking (fix)
+    initialize() {
+        // Listen to ref_d_13, not d_13
+        // Remove setTimeout anti-pattern
+    }
+};
+```
+
+**Lines to Delete**: ~200 lines (DOM manipulation code)
+**Lines to Fix**: ~30 lines (standard listener, initialization)
+**Lines to Add**: ~20 lines (highlighting helper)
+**Net Result**: Simpler, cleaner, follows architecture
+
+---
+
+### 4011-ReferenceToggle.js (589 lines)
+
+**Purpose**: Handle switching between Target/Reference views and setup modes (Mirror, Overlay, etc.)
+
+**Current State**:
+- 🟡 **Partially working**: Core toggle works, setup modes implemented but may need refinement
+- ✅ **Good parts**:
+  - Lines 30-57: `getAllDualStateSections()` - correctly finds Pattern A sections ✓
+  - Lines 63-97: `switchAllSectionsMode()` - properly switches all sections with CSS ✓
+  - Lines 421-492: `mirrorTarget()` - uses ModeManager facade pattern correctly ✓
+  - Lines 498-564: `mirrorTargetWithReference()` - correct structure ✓
+  - Lines 129-203: Button wiring and initialization ✓
+- 🟡 **Needs refinement**:
+  - Lines 364-415: `getFieldIdsForSection()` - should use ExcelMapper mapping instead
+  - Lines 421-492: `mirrorTarget()` - should use quarantine pattern, not per-section switches
+  - Lines 498-564: `mirrorTargetWithReference()` - should apply overlay in quarantine
+- 🔴 **Unused/legacy code**:
+  - Lines 310-337: `toggleReferenceInputsView()` - incomplete, can be simplified
+  - Lines 262-304: `handleStandardChange()` - may be redundant with ReferenceManager listener
+
+**Recommendations**:
+
+1. **REFACTOR** - Mirror Target to use quarantine pattern:
+```javascript
+function mirrorTarget() {
+    // Get all field IDs from ExcelMapper
+    const fieldIds = Object.keys(window.TEUI.ExcelMapper.excelReportInputMapping);
+
+    // 🔒 START QUARANTINE
+    window.TEUI.StateManager.muteListeners();
+
+    try {
+        // Copy all Target → Reference in one pass
+        fieldIds.forEach(fieldId => {
+            const targetValue = StateManager.getValue(fieldId);
+            if (targetValue !== null && targetValue !== undefined) {
+                StateManager.setValue(`ref_${fieldId}`, targetValue, 'mirrored');
+            }
+        });
+
+        // Sync Pattern A sections
+        syncPatternASections();
+    } finally {
+        // 🔓 END QUARANTINE
+        window.TEUI.StateManager.unmuteListeners();
+    }
+
+    // Calculate once with all values set
+    Calculator.calculateAll();
+
+    // Refresh all section UIs
+    refreshAllPatternAUIs();
+}
+```
+
+2. **REFACTOR** - Mirror + Overlay to use quarantine pattern:
+```javascript
+function mirrorTargetWithReference() {
+    const standard = StateManager.getValue('ref_d_13') || 'OBC SB12 3.1.1.2.C1';
+    const refValues = TEUI.ReferenceValues[standard] || {};
+
+    // 🔒 START QUARANTINE
+    window.TEUI.StateManager.muteListeners();
+
+    try {
+        // PASS 1: Copy all Target → Reference
+        const fieldIds = Object.keys(window.TEUI.ExcelMapper.excelReportInputMapping);
+        fieldIds.forEach(fieldId => {
+            const targetValue = StateManager.getValue(fieldId);
+            if (targetValue !== null && targetValue !== undefined) {
+                StateManager.setValue(`ref_${fieldId}`, targetValue, 'mirrored');
+            }
+        });
+
+        // PASS 2: Overlay ReferenceValues subset
+        Object.entries(refValues).forEach(([fieldId, value]) => {
+            StateManager.setValue(`ref_${fieldId}`, value, 'reference-standard');
+        });
+
+        // Sync Pattern A sections
+        syncPatternASections();
+    } finally {
+        // 🔓 END QUARANTINE
+        window.TEUI.StateManager.unmuteListeners();
+    }
+
+    // Calculate once
+    Calculator.calculateAll();
+
+    // Refresh UIs
+    refreshAllPatternAUIs();
+
+    // Apply visual highlighting for overlaid fields
+    ReferenceManager.applyOverlayHighlighting(Object.keys(refValues));
+}
+```
+
+3. **SIMPLIFY** - Remove per-section field discovery:
+   - Delete `getFieldIdsForSection()` (lines 364-391)
+   - Delete `getUINameForSection()` (lines 396-415)
+   - **Reason**: Use ExcelMapper as single source of field list
+
+4. **KEEP** - Display toggle infrastructure:
+   - `switchAllSectionsMode()` ✓
+   - `getAllDualStateSections()` ✓
+   - Button initialization ✓
+
+5. **ENHANCE** - Add helper methods:
+   - `syncPatternASections()` - call sync on all Pattern A sections
+   - `refreshAllPatternAUIs()` - refresh all section UIs after bulk updates
+
+**Lines to Delete**: ~80 lines (per-section field discovery, unused handlers)
+**Lines to Refactor**: ~150 lines (Mirror functions to use quarantine)
+**Lines to Add**: ~40 lines (helper methods)
+**Net Result**: Cleaner, faster, matches FileHandler pattern
+
+---
+
+## Implementation Strategy - File by File
+
+### Phase 1: Core Functionality (Priority)
+
+#### Step 1: ReferenceToggle.js Refactoring
+**Goal**: Make Mirror Target and Mirror + Overlay work correctly with quarantine pattern
+
+**Changes**:
+1. Add `syncPatternASections()` helper
+2. Add `refreshAllPatternAUIs()` helper
+3. Refactor `mirrorTarget()` to use quarantine + ExcelMapper field list
+4. Refactor `mirrorTargetWithReference()` to use quarantine pattern
+5. Remove per-section field discovery methods
+6. Test: Verify e_10 (Reference TEUI) equals h_10 (Target TEUI) after Mirror Target
+
+**Files Modified**: `4011-ReferenceToggle.js`
+**Lines Changed**: ~150 lines refactored, ~80 deleted, ~40 added
+**Test After**: Mirror Target functionality
+
+---
+
+#### Step 2: ReferenceManager.js Simplification
+**Goal**: Remove DOM manipulation, keep helpers, fix standard listener
+
+**Changes**:
+1. Delete `createReferenceHandler()` factory (not needed with quarantine pattern)
+2. Delete `updateReferenceDisplay()` method (DOM manipulation)
+3. Delete `restoreDisplay()` method (DOM manipulation)
+4. Fix `initialize()` to listen to `ref_d_13` instead of `d_13`
+5. Remove `setTimeout` anti-pattern
+6. Keep all helper functions (getValue, isCodeDefinedField, etc.)
+
+**Files Modified**: `4011-ReferenceManager.js`
+**Lines Changed**: ~30 fixed, ~200 deleted
+**Test After**: Standard selection in Reference mode
+
+---
+
+#### Step 3: Master Toggle Fix
+**Goal**: Make master toggle actually switch all sections to show Reference values
+
+**Changes**:
+1. Verify `switchAllSectionsMode()` calls `section.modeManager.switchMode()`
+2. Verify global CSS classes are applied correctly
+3. Test with all sections to ensure synchronization
+
+**Files Modified**: `4011-ReferenceToggle.js` (minor verification only)
+**Lines Changed**: ~10 lines tested/verified
+**Test After**: Master toggle shows ref_ values in ALL sections
+
+---
+
+### Phase 2: Visual Feedback (Secondary)
+
+#### Step 4: Overlay Highlighting
+**Goal**: Show which fields came from ReferenceValues.js with red italic styling
+
+**Changes**:
+1. Add `applyOverlayHighlighting(fieldIds)` to ReferenceManager
+2. Apply CSS class `reference-overlay-value` to highlighted fields
+3. Remove highlighting when user edits field (change to user-modified style)
+
+**Files Modified**: `4011-ReferenceManager.js`
+**Lines Changed**: ~20 added
+**Test After**: Visual styling for overlaid fields
+
+---
+
+#### Step 5: Difference Highlighting
+**Goal**: Highlight fields where Target ≠ Reference
+
+**Changes**:
+1. Add `highlightDifferences()` method to ReferenceToggle
+2. Compare Target vs Reference values in StateManager
+3. Apply CSS class `reference-diff-highlight` to differing fields
+
+**Files Modified**: `4011-ReferenceToggle.js`
+**Lines Changed**: ~30 added
+**Test After**: Visual difference highlighting
+
+---
+
+## Testing Checklist
+
+### Phase 1 Tests (Core Functionality)
+
+- [ ] **Test 1.1**: Mirror Target copies all fields
+  - Action: Click "Mirror Target"
+  - Verify: All `ref_` values match non-prefixed values in StateManager
+  - Check: e_10 (Reference TEUI) = h_10 (Target TEUI)
+
+- [ ] **Test 1.2**: Mirror + Overlay applies building code values
+  - Action: Select building code standard, click "Mirror + Overlay"
+  - Verify: Geometry values match Target (h_15, d_19, etc.)
+  - Verify: U-values match ReferenceValues.js for selected standard
+  - Check: Reference TEUI uses code minimum envelope/equipment
+
+- [ ] **Test 1.3**: Master toggle switches all sections
+  - Action: Click master "Show Reference" button
+  - Verify: ALL sections show ref_ values (not just CSS change)
+  - Verify: Red UI theme applied globally
+  - Check: Toggle back to Target mode restores all sections
+
+- [ ] **Test 1.4**: No regressions in user editing
+  - Action: Edit a field in Target mode
+  - Verify: Target calculation updates correctly
+  - Action: Toggle to Reference, edit a ref_ field
+  - Verify: Reference calculation updates, Target unchanged
+
+- [ ] **Test 1.5**: No regressions in file import
+  - Action: Import Excel file with Target and Reference data
+  - Verify: Both models populate correctly
+  - Verify: Calculations run correctly for both
+  - Check: No state mixing between models
+
+### Phase 2 Tests (Visual Feedback)
+
+- [ ] **Test 2.1**: Overlay highlighting appears
+  - Action: Run "Mirror + Overlay"
+  - Verify: Fields from ReferenceValues.js show red italic styling
+  - Verify: Other fields show normal styling
+
+- [ ] **Test 2.2**: User override removes highlighting
+  - Action: Edit a red italic overlaid field
+  - Verify: Styling changes to blue bold (user-modified)
+  - Verify: Value persists in StateManager
+
+- [ ] **Test 2.3**: Difference highlighting shows divergence
+  - Action: Run "Mirror Target", then edit one Reference field
+  - Verify: Edited field highlights as different from Target
+  - Verify: Highlighting persists across toggle
+
+---
+
+## Summary
+
+**Current State**:
+- 3 files, ~1,572 total lines
+- Bones are good, needs refactoring and completion
+- Some DOM manipulation anti-patterns to remove
+- Setup modes partially implemented
+
+**After Refactoring**:
+- Cleaner, simpler code (~400 fewer lines)
+- Follows proven FileHandler quarantine pattern
+- No DOM manipulation (StateManager only)
+- Complete Phase 1 functionality
+- Foundation for Phase 2 visual enhancements
+
+**Key Philosophy**: KWW (Keep What Works)
+- Keep dual calculation engines untouched ✓
+- Keep ExcelMapper field list ✓
+- Keep StateManager patterns ✓
+- Keep existing CSS classes ✓
+- Remove DOM manipulation ✗
+- Remove setTimeout anti-patterns ✗
