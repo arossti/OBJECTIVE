@@ -607,7 +607,9 @@ window.TEUI.SectionModules.sect11 = (function () {
           );
           if (element) {
             const num = window.TEUI.parseNumeric(valueToDisplay, 0);
-            element.textContent = formatNumber(num, "number");
+            // ✅ FIX: Detect U-values (g_ fields) and format with 3dp
+            const format = fieldId.startsWith("g_") ? "W/m2" : "number";
+            element.textContent = formatNumber(num, format);
           }
         }
       });
