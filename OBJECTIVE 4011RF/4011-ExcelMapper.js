@@ -92,7 +92,7 @@ class ExcelMapper {
 
       // Section 07: Water Use (REPORT! Sheet)
       D49: "d_49", // Water Use Method (Dropdown)
-      E49: "e_49", // User Defined Water Use l/pp/day (Only used if d_49 is User Defined)
+      E49: "e_49", // User Defined Water Use l/pp/day (Only used if d_49 is User Defined) BUG: f_49 not reading e_49!
       E50: "e_50", // By Engineer DHW kWh/yr (Now correctly maps to e_50 which is the new input field)
       D51: "d_51", // DHW Energy Source (Dropdown)
       D52: "d_52", // DHW EF/COP (Editable Number)
@@ -249,7 +249,7 @@ class ExcelMapper {
 
       // Section 07: Water Use (REFERENCE! Sheet)
       D49: "ref_d_49",
-      E49: "ref_e_49",
+      E49: "ref_e_49", //BUG: ref_f_49 not calculaing =e_49!
       E50: "ref_e_50",
       D51: "ref_d_51",
       D52: "ref_d_52",
