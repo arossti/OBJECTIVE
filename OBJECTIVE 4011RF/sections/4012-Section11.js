@@ -20,7 +20,7 @@ window.TEUI.SectionModules.sect11 = (function () {
   let isSyncingFromS10 = false; // Prevents recursion in sync function
   let syncTimeout = null; // For debouncing rapid sync calls
 
-  // Baseline values for Reference % calculation (derived from screenshot)
+  // Baseline values for Reference % calculation (derived from screenshot)// CAN WE DELETE THESE? WE SHOULD NEVER HAVE HARDCODED DEFAULTS!!!
   const baselineValues = {
     85: { type: "rsi", value: 5.3 }, // Roof
     86: { type: "rsi", value: 4.1 }, // Walls AG
