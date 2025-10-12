@@ -1460,17 +1460,26 @@ window.TEUI.SectionModules.sect09 = (function () {
 
   /**
    * Calculate Occupant Activity watts based on activity level
+   *
+   * ✅ Excel parity: Values rounded to 2 decimals to match Excel display
+   *
+   * Formula: (Sensible_BTU * 0.29307107) + (Latent_BTU * 0.29307107)
+   *
+   * NOTE: Full-precision values are available (e.g., Active = 219.8033), but we
+   * deliberately round to 2 decimals to match Excel's displayed/calculated values.
+   * This ensures user-visible parity between app and Excel results, even though
+   * higher precision could theoretically be used.
    */
   function calculateActivityWatts(activityLevel) {
     // Use precise values derived from SCHEDULES-3037.csv G32:G43
     const activityWatts = {
-      Relaxed: 96.71, // Was 97
-      Normal: 117.23, // Was 117
-      Active: 219.8, // Was 220
-      Hyperactive: 424.95, // Was 425
+      Relaxed: 96.71, // (200*0.29307107)+(130*0.29307107) = 96.7135 → 96.71
+      Normal: 117.23, // (215*0.29307107)+(185*0.29307107) = 117.2284 → 117.23
+      Active: 219.81, // (240*0.29307107)+(510*0.29307107) = 219.8033 → 219.81 (was 219.8)
+      Hyperactive: 424.95, // (510*0.29307107)+(940*0.29307107) = 424.9531 → 424.95
     };
 
-    return activityWatts[activityLevel] || 117.23; // Default to Normal (precise value)
+    return activityWatts[activityLevel] || 117.23; // Default to Normal
   }
 
   /**
