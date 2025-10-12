@@ -85,10 +85,10 @@ These are commands from the Reference dropdown in index.html:
 - **Example**:
   - Target: 1500m² Toronto heatpump building with high-performance envelope
   - Reference: Same building geometry/location, but with OBC minimum U-values and efficiencies
-  - Visual comparison shows how much better design performs vs. code minimum
+  - Visual comparison shows how much better design performs vs. code minimum, and sets efficiency tiers automatically per S01 functions (already works this way)
 
 #### **Mode 3: Independent Models**
-- **What it does**: Nothing - models remain completely independent
+- **What it does**: Nothing - models remain completely independent, same state as after initialization, or immediately after an excel file import
 - **Use case**: "Compare any two completely different building scenarios"
 - **Example**:
   - Target: 1500m² Toronto heatpump building in 2024
@@ -141,7 +141,7 @@ calculator.calculateAll();
 refreshAllPatternAUIs();
 ```
 
-**Both approaches should yield identical results**. The quarantine pattern is cleaner and matches the proven FileHandler pattern.
+**Both approaches should yield identical results**. The quarantine pattern is cleaner and matches the proven FileHandler pattern from Excel imports (which maps all input cells).
 
 ---
 
