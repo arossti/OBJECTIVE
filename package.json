@@ -1,27 +1,38 @@
 {
-  "name": "objective-workspace",
-  "version": "1.0.0",
-  "description": "Objective TEUI 4.012 Framework - Next Generation Architecture",
-  "main": "index.js",
-  "type": "module",
+  "name": "objective",
+  "version": "4.012.0",
+  "description": "OBJECTIVE TEUI Calculator - Total Energy Use Intensity calculator for Canadian buildings",
+  "main": "index.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format:check": "prettier --check .",
-    "format:write": "prettier --write ."
+    "format:write": "prettier --write .",
+    "serve": "npx serve"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/arossti/OBJECTIVE.git"
+    "url": "git+https://github.com/openbuilding-ca/objective.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "teui",
+    "tedi",
+    "energy-modeling",
+    "building-performance",
+    "canada",
+    "architecture",
+    "sustainability"
+  ],
+  "author": "Andy Thomson, OpenBuilding, Inc.",
+  "contributors": [
+    "Mark H Pavlidis"
+  ],
+  "license": "CC-BY-NC-ND-4.0",
   "bugs": {
-    "url": "https://github.com/arossti/OBJECTIVE/issues"
+    "url": "https://github.com/openbuilding-ca/objective/issues"
   },
-  "homepage": "https://github.com/arossti/OBJECTIVE#readme",
+  "homepage": "https://objective.openbuilding.ca",
   "devDependencies": {
     "eslint": "^9.28.0",
     "eslint-config-prettier": "^10.1.5",
