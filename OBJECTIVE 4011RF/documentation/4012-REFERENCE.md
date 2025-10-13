@@ -370,12 +370,89 @@ calculator.calculateAll();
 
 ---
 
+## Implementation Attempt #1 - LESSONS LEARNED (Oct 13, 2025)
+
+**Status**: ❌ REVERTED - Accumulated too much technical debt
+
+We attempted to implement Mirror Target/Reference functions using a bulk StateManager approach. After 15+ commits and debugging sessions, we reverted to avoid technical debt. Here's what we learned:
+
+### ✅ What We Discovered (CRITICAL for next attempt)
+
+1. **Field ID Format**
+   - ExcelMapper uses: `D12`, `H15`, `D39` (uppercase, no underscore)
+   - StateManager uses: `d_12`, `h_15`, `d_39` (lowercase WITH underscore)
+   - **Conversion needed**: `D12` → `d_12` using regex `/^([A-Z]+)(\d+)$/`
+
+2. **StateManager Does Store Target Values**
+   - `StateManager.getValue("d_39")` returns Target value ✅
+   - `StateManager.getValue("ref_d_39")` returns Reference value ✅
+   - FileHandler exports prove this works
+
+3. **Sections Have Internal State Objects**
+   - Each section has `TargetState` and `ReferenceState` objects
+   - These need `syncFromGlobalState()` to read from StateManager
+   - Only ~12 of 15 sections have this method implemented
+   - Only 2 sections successfully synced using our approach (sect12, sect13)
+
+4. **Calculation Engine Doesn't Auto-Sync**
+   - `Calculator.calculateAll()` runs calculations
+   - But it doesn't trigger section sync from StateManager
+   - Sections read from their internal state, not directly from StateManager
+   - If internal state not synced, calculations use stale values
+
+### ❌ Why Our Approach Failed
+
+1. **Wrong execution order**: We synced AFTER calculations, should be BEFORE
+2. **Section access broken**: `window.TEUI[sectionId]` didn't work for most sections
+3. **Missing sync methods**: Not all sections implement `syncFromGlobalState()`
+4. **Calculated values not stored**: `ref_e_10` stayed null even after calculations
+5. **UI stale**: Even with values in StateManager, sections didn't display them
+
+### 🎯 The Right Approach: Study FileHandler
+
+**FileHandler successfully does what we need**:
+- Reads Target values from StateManager (`getValue(id)`)
+- Writes Reference values to StateManager (`setValue(ref_${id})`)
+- Calls `updateStateFromImportData()` which handles sync properly
+- Triggers calculations at the right time
+- UI updates correctly
+
+**Next attempt should**:
+1. Study `FileHandler.processImportedCSV()` and `FileHandler.importExcelReferenceData()`
+2. Use the EXACT same pattern they use
+3. Call the SAME helper methods they call
+4. Don't invent new sync mechanisms
+
+### 📋 Revised Implementation Strategy
+
+**Phase 0: Study FileHandler Pattern** (NEW - do this first!)
+- Read FileHandler code thoroughly
+- Document the exact sequence of operations
+- Identify which helper methods trigger section syncs
+- Map out the proven data flow
+
+**Phase 1: Mirror Using FileHandler Pattern**
+- Use `updateStateFromImportData()` or equivalent
+- Follow proven sync sequence
+- Leverage existing quarantine pattern from FileHandler
+- Test with ONE section first before scaling
+
+**Phase 2: Add ReferenceValues Overlay**
+- Only after Mirror Target works 100%
+- Use same proven patterns
+
+**Phase 3: Visual Feedback**
+- Only after core functionality works
+
+---
+
 ## Next Steps
 
-1. **Answer implementation questions above**
-2. **Review and approve this workplan**
-3. **Identify any missing concerns or requirements**
-4. **Proceed with Phase 1 implementation** once alignment is confirmed
+1. ~~Answer implementation questions above~~ ✅ DONE (documented above)
+2. ~~Review and approve this workplan~~ ⏸️ PAUSED - need FileHandler study first
+3. **NEW: Study FileHandler import pattern** ← START HERE
+4. **Revise workplan** based on FileHandler findings
+5. **Implement using proven patterns** (not custom approach)
 
 ---
 
@@ -385,6 +462,7 @@ calculator.calculateAll();
 - **Performance critical**: Must not regress excellent current performance of dual calculation engines
 - **Excel parity**: Must maintain 100% calculation accuracy
 - **State isolation**: Perfect separation between Target and Reference is non-negotiable
+- **KWW (Keep What Works)**: FileHandler import works perfectly - mirror that pattern exactly
 
 ---
 
