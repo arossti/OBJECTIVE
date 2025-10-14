@@ -1,19 +1,3 @@
- [S10DISPLAY] Display (target) i_78 = 0.00
- [S10DISPLAY] Display (target) i_79 = 14,626.70
- [S10DISPLAY] Display (target) k_73 = 0.00
- [S10DISPLAY] Display (target) k_74 = 0.00
- [S10DISPLAY] Display (target) k_75 = 0.00
- [S10DISPLAY] Display (target) k_76 = 0.00
- [S10DISPLAY] Display (target) k_77 = 130.15
- [S10DISPLAY] Display (target) k_78 = 0.00
- [S10DISPLAY] Display (target) k_79 = 130.15
- [S10DISPLAY] Display (target) j_73 = 2.56%
- [S10DISPLAY] Display (target) j_74 = 0.73%
- [S10DISPLAY] Display (target) j_75 = 2.01%
- [S10DISPLAY] Display (target) j_76 = 76.90%
- [S10DISPLAY] Display (target) j_77 = 17.80%
- [S10DISPLAY] Display (target) j_78 = 0.00%
- [S10DISPLAY] Display (target) j_79 = 100.00%
  [S10DISPLAY] Display (target) l_73 = 0.00%
  [S10DISPLAY] Display (target) l_74 = 0.00%
  [S10DISPLAY] Display (target) l_75 = 0.00%
@@ -74,6 +58,8 @@
  [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
  S10: Reference listener triggered by ref_m_121, recalculating all.
  [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+ [StateManager DEBUG] i_79 setValue: "14626.7012" (state: calculated, prev: 14626.7012)
+ [StateManager DEBUG] ref_i_79 setValue: "10060.174319999998" (state: calculated, prev: 10060.174319999998)
  [S10REF] Utilization calc: ref_i_71=113145.3708, ref_i_79=10060.174319999998, totalGains=123205.54512
  [S10REF] Using utilization method: NRC 40%
  [S10REF] Final calc: utilizationFactor=0.4, usableGains=49282.218048
@@ -168,6 +154,8 @@
  [S10DISPLAY] Display (target) i_82 = 68,819.37
  S10: Target listener triggered by m_121, recalculating all.
  [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+ [StateManager DEBUG] i_79 setValue: "14626.7012" (state: calculated, prev: 14626.7012)
+ [StateManager DEBUG] ref_i_79 setValue: "10060.174319999998" (state: calculated, prev: 10060.174319999998)
  [S10REF] Utilization calc: ref_i_71=113145.3708, ref_i_79=10060.174319999998, totalGains=123205.54512
  [S10REF] Using utilization method: NRC 40%
  [S10REF] Final calc: utilizationFactor=0.4, usableGains=49282.218048
@@ -426,6 +414,8 @@ calculateReferenceModel @ 4012-Section15.js:1411Understand this warningAI
  [S12] 🔵 REF CLIMATE READ: d_20=4600, d_21=196
  S10: Reference listener triggered by ref_i_103, recalculating all.
  [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+ [StateManager DEBUG] i_79 setValue: "14626.7012" (state: calculated, prev: 14626.7012)
+ [StateManager DEBUG] ref_i_79 setValue: "10060.174319999998" (state: calculated, prev: 10060.174319999998)
  [S10REF] Utilization calc: ref_i_71=113145.3708, ref_i_79=10060.174319999998, totalGains=123205.54512
  [S10REF] Using utilization method: NRC 40%
  [S10REF] Final calc: utilizationFactor=0.4, usableGains=49282.218048
@@ -550,6 +540,8 @@ calculateReferenceModel @ 4012-Section15.js:1411Understand this warningAI
  [S12] 🎯 TGT CLIMATE READ: d_20=4600, d_21=196
  S10: Target listener triggered by i_103, recalculating all.
  [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+ [StateManager DEBUG] i_79 setValue: "14626.7012" (state: calculated, prev: 14626.7012)
+ [StateManager DEBUG] ref_i_79 setValue: "10060.174319999998" (state: calculated, prev: 10060.174319999998)
  [S10REF] Utilization calc: ref_i_71=113145.3708, ref_i_79=10060.174319999998, totalGains=123205.54512
  [S10REF] Using utilization method: NRC 40%
  [S10REF] Final calc: utilizationFactor=0.4, usableGains=49282.218048
@@ -649,6 +641,8 @@ calculateReferenceModel @ 4012-Section15.js:1411Understand this warningAI
  [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
  S10: Reference listener triggered by ref_m_121, recalculating all.
  [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+ [StateManager DEBUG] i_79 setValue: "14626.7012" (state: calculated, prev: 14626.7012)
+ [StateManager DEBUG] ref_i_79 setValue: "10060.174319999998" (state: calculated, prev: 10060.174319999998)
  [S10REF] Utilization calc: ref_i_71=113145.3708, ref_i_79=10060.174319999998, totalGains=123205.54512
  [S10REF] Using utilization method: NRC 40%
  [S10REF] Final calc: utilizationFactor=0.4, usableGains=49282.218048
@@ -928,69 +922,75 @@ applyTooltip @ 4011-TooltipManager.js:605Understand this warningAI
  [Cooling] 🚀 Starting cooling calculations (mode=reference)...
  [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
  [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Section03.js:1857 [S03] Reference CALCULATED results stored (climate data + setpoints - INPUT fields excluded)
-4012-Section12.js:1637 [S12] U-agg REF: TB%=50 → g_101=0.347926, g_102=0.405405
-4012-Section12.js:1907 [S12] 🔵 REF CLIMATE READ: d_20=4600, d_21=196
-4012-Section12.js:1981 [S12DB] REF CLIMATE: d_20=4600, d_21=196, d_22=1960, h_22=-1680
-4012-Section12.js:2009 [S12DB] REF h_101 calc: (4600*0.3479263283096109*24)/1000 = 38.41106664538104
-4012-Section12.js:2012 [S12DB] REF i_101 result: 38.41106664538104 * 2476.6199999999994 = 95129.61587528358
-4012-Section12.js:2164 [S12DB] REF g_104 calc: (0.3479263283096109*2476.6199999999994 + 0.4054054054054054*1100.42)/3577.0400009999994 = 0.36560886069732407
-4012-Section12.js:2188 [S12DB] REF ROW104: i_101=95129.61587528358, i_102=20985.306810810813, i_103=36440.079840319355 → i_104=152555.00252641374
-4012-Section12.js:2191 [S12DB] REF ROW104: h_21="Capacitance", k_98=-4267.625965209389 → k_104=-4267.625965209389
-24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4012-Section12.js:2376 [S12DB] STORED for S15: ref_d_101=2476.6199999999994
-4012-Section12.js:2376 [S12DB] STORED for S15: ref_d_102=1100.42
-4012-Section12.js:2376 [S12DB] STORED for S15: ref_g_101=0.3479263283096109
-4012-Section12.js:2376 [S12DB] STORED for S15: ref_g_102=0.4054054054054054
-4012-Section12.js:2376 [S12DB] STORED for S15: ref_g_104=0.36560886069732407
-4012-Section12.js:2376 [S12DB] STORED for S15: ref_i_101=95129.61587528358
-4012-Section12.js:2376 [S12DB] STORED for S15: ref_i_102=20985.306810810813
-4012-Section12.js:2376 [S12DB] STORED for S15: ref_i_104=152555.00252641374
-4012-Section12.js:2381 [Section12] Reference results stored with ref_ prefix for downstream sections
-4012-Section12.js:1637 [S12] U-agg TGT: TB%=20 → g_101=0.278341, g_102=0.324324
-4012-Section12.js:1914 [S12] 🎯 TGT CLIMATE READ: d_20=4600, d_21=196
-4012-Section12.js:1992 [S12DB] TGT CLIMATE: d_20=4600, d_21=196, d_22=1960, h_22=-1680
-4012-Section12.js:2016 [S12DB] TGT h_101 calc: (4600*0.2783410626476887*24)/1000 = 30.728853316304836
-4012-Section12.js:2019 [S12DB] TGT i_101 result: 30.728853316304836 * 2476.6199999999994 = 76103.69270022686
-4012-Section12.js:2168 [S12DB] TGT g_104 calc: (0.2783410626476887*2476.6199999999994 + 0.3243243243243243*1100.42)/3577.0400009999994 = 0.2924870885578592
-4012-Section12.js:2195 [S12DB] TGT ROW104: i_101=76103.69270022686, i_102=16788.24544864865, i_103=23178.387012790416 → i_104=116070.32516166594
-4012-Section12.js:2198 [S12DB] TGT ROW104: h_21="Capacitance", k_98=-3293.5693790538335 → k_104=-3293.5693790538335
-4012-Section12.js:299 [S12DB] g_104 DISPLAY (target): 0.29248708863962714
-4012-Section12.js:303 [Section12] Calculated display values updated for target mode
-4012-Section10.js:1915 [S10 DEBUG] calculateAll() triggered in target mode - running both engines
-4012-Section10.js:2136 [S10REF] Utilization calc: ref_i_71=113145.3708, ref_i_79=10060.174319999998, totalGains=123205.54512
-4012-Section10.js:2150 [S10REF] Using utilization method: NRC 40%
-4012-Section10.js:2187 [S10REF] Final calc: utilizationFactor=0.4, usableGains=49282.218048
-4012-Section10.js:2230 [S10REF] Complete: g_80=0.4, g_81=0.9956709734049238, i_80=49282.218048, i_81=122672.18503851465
-4012-Section10.js:1923 [S10 DEBUG] Dual-engine calculations complete in target mode
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section07.js:887 [S07] calculateEmissionsAndLosses: systemType="Heatpump" (TGT)
-4012-Section07.js:924 [S07] ⚡ Non-fossil fuel: Heatpump → e_51=0, k_54=0 (both cleared)
-4012-Section07.js:887 [S07] calculateEmissionsAndLosses: systemType="Electric" (REF)
-4012-Section07.js:924 [S07] ⚡ Non-fossil fuel: Electric → e_51=0, k_54=0 (both cleared)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Section06.js:515 🟢 [S06-TAR] Storing d_43 = 0 (from d_44=0, d_45=0, d_46=0)
-4012-Section06.js:510 🔵 [S06-REF] Storing ref_d_43 = 0 (from d_44=0, d_45=0, d_46=0)
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [S03] Reference CALCULATED results stored (climate data + setpoints - INPUT fields excluded)
+ [S09 DEBUG] calculateModel(isReference=true): Reading buildingType = "A-Assembly" from StateManager key "ref_d_12"
+ [StateManager DEBUG] ref_i_71 setValue: "113145.3708" (state: calculated, prev: 113145.3708)
+ [S09 DEBUG] calculateModel(isReference=false): Reading buildingType = "A-Assembly" from StateManager key "d_12"
+ [StateManager DEBUG] i_71 setValue: "100072.2492" (state: calculated, prev: 100072.2492)
+ [S12] U-agg REF: TB%=50 → g_101=0.347926, g_102=0.405405
+ [S12] 🔵 REF CLIMATE READ: d_20=4600, d_21=196
+ [S12DB] REF CLIMATE: d_20=4600, d_21=196, d_22=1960, h_22=-1680
+ [S12DB] REF h_101 calc: (4600*0.3479263283096109*24)/1000 = 38.41106664538104
+ [S12DB] REF i_101 result: 38.41106664538104 * 2476.6199999999994 = 95129.61587528358
+ [S12DB] REF g_104 calc: (0.3479263283096109*2476.6199999999994 + 0.4054054054054054*1100.42)/3577.0400009999994 = 0.36560886069732407
+ [S12DB] REF ROW104: i_101=95129.61587528358, i_102=20985.306810810813, i_103=36440.079840319355 → i_104=152555.00252641374
+ [S12DB] REF ROW104: h_21="Capacitance", k_98=-4267.625965209389 → k_104=-4267.625965209389
+2 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [S12DB] STORED for S15: ref_d_101=2476.6199999999994
+ [S12DB] STORED for S15: ref_d_102=1100.42
+ [S12DB] STORED for S15: ref_g_101=0.3479263283096109
+ [S12DB] STORED for S15: ref_g_102=0.4054054054054054
+ [S12DB] STORED for S15: ref_g_104=0.36560886069732407
+ [S12DB] STORED for S15: ref_i_101=95129.61587528358
+ [S12DB] STORED for S15: ref_i_102=20985.306810810813
+ [S12DB] STORED for S15: ref_i_104=152555.00252641374
+ [Section12] Reference results stored with ref_ prefix for downstream sections
+ [S12] U-agg TGT: TB%=20 → g_101=0.278341, g_102=0.324324
+ [S12] 🎯 TGT CLIMATE READ: d_20=4600, d_21=196
+ [S12DB] TGT CLIMATE: d_20=4600, d_21=196, d_22=1960, h_22=-1680
+ [S12DB] TGT h_101 calc: (4600*0.2783410626476887*24)/1000 = 30.728853316304836
+ [S12DB] TGT i_101 result: 30.728853316304836 * 2476.6199999999994 = 76103.69270022686
+ [S12DB] TGT g_104 calc: (0.2783410626476887*2476.6199999999994 + 0.3243243243243243*1100.42)/3577.0400009999994 = 0.2924870885578592
+ [S12DB] TGT ROW104: i_101=76103.69270022686, i_102=16788.24544864865, i_103=23178.387012790416 → i_104=116070.32516166594
+ [S12DB] TGT ROW104: h_21="Capacitance", k_98=-3293.5693790538335 → k_104=-3293.5693790538335
+ [S12DB] g_104 DISPLAY (target): 0.29248708863962714
+ [Section12] Calculated display values updated for target mode
+ [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+ [StateManager DEBUG] i_79 setValue: "14626.7012" (state: calculated, prev: 14626.7012)
+ [StateManager DEBUG] ref_i_79 setValue: "10060.174319999998" (state: calculated, prev: 10060.174319999998)
+ [S10REF] Utilization calc: ref_i_71=113145.3708, ref_i_79=10060.174319999998, totalGains=123205.54512
+ [S10REF] Using utilization method: NRC 40%
+ [S10REF] Final calc: utilizationFactor=0.4, usableGains=49282.218048
+ [S10REF] Complete: g_80=0.4, g_81=0.9956709734049238, i_80=49282.218048, i_81=122672.18503851465
+ [S10 DEBUG] Dual-engine calculations complete in target mode
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S07] calculateEmissionsAndLosses: systemType="Heatpump" (TGT)
+ [S07] ⚡ Non-fossil fuel: Heatpump → e_51=0, k_54=0 (both cleared)
+ [S07] calculateEmissionsAndLosses: systemType="Electric" (REF)
+ [S07] ⚡ Non-fossil fuel: Electric → e_51=0, k_54=0 (both cleared)
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ 🟢 [S06-TAR] Storing d_43 = 0 (from d_44=0, d_45=0, d_46=0)
+ 🔵 [S06-REF] Storing ref_d_43 = 0 (from d_44=0, d_45=0, d_46=0)
 4011-Dependency.js:116 [DependencyGraph] Data loaded: 349 nodes, 588 links
 4011-Dependency.js:718 [DependencyGraph] Calculating node sizes...
 4012-Section01.js:1204 [S01DB] upstream snapshot Object
@@ -998,13 +998,38 @@ applyTooltip @ 4011-TooltipManager.js:605Understand this warningAI
 4012-Section01.js:825 🔍 [S01] T.1 Calculation: e_6=29 (ref), h_6=11.7 (target) → reduction should be 60%
 4012-Section01.js:917 🔍 [S01DB] UPDATING h_10: 93.7 (from j_32=133757.22783115375, area=1427.2)
 4012-Section01.js:511 🔍 [S01] h_6 explanation: target=11.7, ref=29, reduction=0.596551724137931, percent=60%
-4011-Clock.js:59 🕐 [CLOCK] ⭐ INITIALIZATION COMPLETE: 566ms (all calculations finalized)
+4011-Clock.js:59 🕐 [CLOCK] ⭐ INITIALIZATION COMPLETE: 553ms (all calculations finalized)
 4012-Section01.js:1222 ✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10
+4012-Section02.js:1879 [S02] Switched to REFERENCE mode
+4012-Section02.js:1920 [S02] Refreshing UI for REFERENCE mode
+4012-Section02.js:1978 [S02] Updated h_12 (reporting year) slider = "2022" (reference mode)
+4012-Section02.js:1995 [S02] Updated h_13 (service life) slider = "50" (reference mode)
+4012-Section02.js:2045 [S02] Updated h_15 = "1,427.20" (reference mode)
+4012-Section02.js:2045 [S02] Updated i_17 = "8154" (reference mode)
+4012-Section02.js:2045 [S02] Updated l_12 = "$0.1300" (reference mode)
+4012-Section02.js:2045 [S02] Updated l_13 = "$0.5070" (reference mode)
+4012-Section02.js:2045 [S02] Updated l_14 = "$1.6200" (reference mode)
+4012-Section02.js:2045 [S02] Updated l_15 = "$180.00" (reference mode)
+4012-Section02.js:2045 [S02] Updated l_16 = "$1.5000" (reference mode)
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-StateManager.js:361 [StateManager DEBUG] d_12 setValue: "B1-Detention" (state: user-modified, prev: A-Assembly)
 4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
 4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
 4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
 4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
 4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
 4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
 4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
 4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
@@ -1012,23 +1037,10 @@ applyTooltip @ 4011-TooltipManager.js:605Understand this warningAI
 4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
 4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
 24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
 4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
 2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
  [S03] Target CALCULATED results stored (setpoints + derived values only - climate data already published)
  [S12] U-agg TGT: TB%=20 → g_101=0.278341, g_102=0.324324
@@ -1042,23 +1054,66 @@ applyTooltip @ 4011-TooltipManager.js:605Understand this warningAI
  [S12DB] g_104 DISPLAY (target): 0.29248708863962714
  [Section12] Calculated display values updated for target mode
  [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
 4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
 4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
 24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
 4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
 4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
 24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
 4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
 4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
 4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
@@ -1067,6 +1122,72 @@ applyTooltip @ 4011-TooltipManager.js:605Understand this warningAI
 4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
 4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
 4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [S03] Reference CALCULATED results stored (climate data + setpoints - INPUT fields excluded)
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S03] Target CALCULATED results stored (setpoints + derived values only - climate data already published)
+ [S12] U-agg TGT: TB%=20 → g_101=0.278341, g_102=0.324324
+ [S12] 🎯 TGT CLIMATE READ: d_20=4600, d_21=196
+ [S12DB] TGT CLIMATE: d_20=4600, d_21=196, d_22=1960, h_22=-1680
+ [S12DB] TGT h_101 calc: (4600*0.2783410626476887*24)/1000 = 30.728853316304836
+ [S12DB] TGT i_101 result: 30.728853316304836 * 2476.6199999999994 = 76103.69270022686
+ [S12DB] TGT g_104 calc: (0.2783410626476887*2476.6199999999994 + 0.3243243243243243*1100.42)/3577.0400009999994 = 0.2924870885578592
+ [S12DB] TGT ROW104: i_101=76103.69270022686, i_102=16788.24544864865, i_103=23178.387012790416 → i_104=116070.32516166594
+ [S12DB] TGT ROW104: h_21="Capacitance", k_98=-3293.5693790538335 → k_104=-3293.5693790538335
+ [S12DB] g_104 DISPLAY (target): 0.29248708863962714
+ [Section12] Calculated display values updated for target mode
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
 4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
 4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
 24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
@@ -1088,158 +1209,29 @@ applyTooltip @ 4011-TooltipManager.js:605Understand this warningAI
  [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
  [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
  [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Section03.js:1857 [S03] Reference CALCULATED results stored (climate data + setpoints - INPUT fields excluded)
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S03] Target CALCULATED results stored (setpoints + derived values only - climate data already published)
- [S12] U-agg TGT: TB%=20 → g_101=0.278341, g_102=0.324324
- [S12] 🎯 TGT CLIMATE READ: d_20=4600, d_21=196
- [S12DB] TGT CLIMATE: d_20=4600, d_21=196, d_22=1960, h_22=-1680
- [S12DB] TGT h_101 calc: (4600*0.2783410626476887*24)/1000 = 30.728853316304836
- [S12DB] TGT i_101 result: 30.728853316304836 * 2476.6199999999994 = 76103.69270022686
- [S12DB] TGT g_104 calc: (0.2783410626476887*2476.6199999999994 + 0.3243243243243243*1100.42)/3577.0400009999994 = 0.2924870885578592
- [S12DB] TGT ROW104: i_101=76103.69270022686, i_102=16788.24544864865, i_103=23178.387012790416 → i_104=116070.32516166594
- [S12DB] TGT ROW104: h_21="Capacitance", k_98=-3293.5693790538335 → k_104=-3293.5693790538335
- [S12DB] g_104 DISPLAY (target): 0.29248708863962714
- [Section12] Calculated display values updated for target mode
  [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
 4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
 4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
 4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
 4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
 4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
 24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
 4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
@@ -1258,37 +1250,61 @@ applyTooltip @ 4011-TooltipManager.js:605Understand this warningAI
  [Cooling] 🚀 Starting cooling calculations (mode=target)...
  [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
  [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
+4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
 4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
 4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
 4012-Section03.js:1857 [S03] Reference CALCULATED results stored (climate data + setpoints - INPUT fields excluded)
+4012-Section09.js:2010 [S09 DEBUG] calculateModel(isReference=false): Reading buildingType = "B1-Detention" from StateManager key "d_12"
 4012-Section01.js:1301 [S01] j_32 listener: 133757.22783115375 → 127506.09183115375
 4012-Section01.js:1302 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 127506.09183115375
 24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4012-Section10.js:2763 S10: Target listener triggered by i_71, recalculating all.
-4012-Section10.js:1915 [S10 DEBUG] calculateAll() triggered in target mode - running both engines
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Section01.js:1301 [S01] j_32 listener: 127506.09183115375 → 127964.22440126576
-4012-Section01.js:1302 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 127964.22440126576
-24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [StateManager DEBUG] i_71 setValue: "95876.28120000001" (state: calculated, prev: 100072.2492)
+ S10: Target listener triggered by i_71, recalculating all.
+ [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+ [StateManager DEBUG] i_79 setValue: "14626.7012" (state: calculated, prev: 14626.7012)
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [S01] j_32 listener: 127506.09183115375 → 127964.22440126576
+ [S01] 🕐 j_32 listener timing: StateManager current j_32 = 127964.22440126576
+2 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [StateManager DEBUG] ref_i_79 setValue: "10060.174319999998" (state: calculated, prev: 10060.174319999998)
  [S10REF] Utilization calc: ref_i_71=113145.3708, ref_i_79=10060.174319999998, totalGains=123205.54512
  [S10REF] Using utilization method: NRC 40%
  [S10REF] Final calc: utilizationFactor=0.4, usableGains=49282.218048
@@ -1327,668 +1343,16 @@ applyTooltip @ 4011-TooltipManager.js:605Understand this warningAI
  [S10DISPLAY] Display (target) l_75 = 0.00%
  [S10DISPLAY] Display (target) l_76 = 0.00%
  [S10DISPLAY] Display (target) l_77 = 100.00%
-4012-Section10.js:530 [S10DISPLAY] Display (target) l_78 = 0.00%
-4012-Section10.js:530 [S10DISPLAY] Display (target) l_79 = 100.00%
-4012-Section10.js:530 [S10DISPLAY] Display (target) e_80 = 110,502.98
-4012-Section10.js:530 [S10DISPLAY] Display (target) e_81 = 110,502.98
-4012-Section10.js:497 [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
-4012-Section10.js:530 [S10DISPLAY] Display (target) g_80 = 40.00%
-4012-Section10.js:530 [S10DISPLAY] Display (target) g_81 = 95.11%
-4012-Section10.js:530 [S10DISPLAY] Display (target) i_80 = 44,201.19
-4012-Section10.js:530 [S10DISPLAY] Display (target) i_81 = 105,104.14
-4012-Section10.js:530 [S10DISPLAY] Display (target) i_82 = 66,301.79
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-34012-Section09.js:442 [S09] Updated calculated display values for target mode
-4012-Section09.js:442 [S09] Updated calculated display values for target mode
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section02.js:863 [S02] Reference CALCULATED results stored (d_16 only - INPUT fields excluded)
-4012-Section01.js:1204 [S01DB] upstream snapshot {ref_j_32: '448394.0938117469', ref_k_32: '22868.09878439909', j_32: '127964.22440126576', k_32: '6526.175444464554', ref_h_15: '1427.20', …}
-4012-Section01.js:755 🔍 [S01DB] updateTEUIDisplay START: e_10=341.2, h_10=89.66103167129047, useType=Utility Bills
-4012-Section01.js:825 🔍 [S01] T.1 Calculation: e_6=29 (ref), h_6=11.5 (target) → reduction should be 60%
-4012-Section01.js:917 🔍 [S01DB] UPDATING h_10: 89.7 (from j_32=127964.22440126576, area=1427.2)
-4012-Section01.js:511 🔍 [S01] h_6 explanation: target=11.5, ref=29, reduction=0.603448275862069, percent=60%
-4011-Clock.js:65 🕐 [CLOCK] ⚡ CALCULATION COMPLETE: 18ms (subsequent update)
-4011-Clock.js:161 🕐 [CLOCK] ⚡ USER INTERACTION COMPLETE: 18ms (interaction → h_10 settlement)
-4012-Section01.js:1222 ✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] calculateAll TRIGGERED. isReferenceMode: false
-2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
- [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S03] Target CALCULATED results stored (setpoints + derived values only - climate data already published)
- [S12] U-agg TGT: TB%=20 → g_101=0.278341, g_102=0.324324
- [S12] 🎯 TGT CLIMATE READ: d_20=4600, d_21=196
- [S12DB] TGT CLIMATE: d_20=4600, d_21=196, d_22=1960, h_22=-1680
- [S12DB] TGT h_101 calc: (4600*0.2783410626476887*24)/1000 = 30.728853316304836
- [S12DB] TGT i_101 result: 30.728853316304836 * 2476.6199999999994 = 76103.69270022686
- [S12DB] TGT g_104 calc: (0.2783410626476887*2476.6199999999994 + 0.3243243243243243*1100.42)/3577.0400009999994 = 0.2924870885578592
- [S12DB] TGT ROW104: i_101=76103.69270022686, i_102=16788.24544864865, i_103=23178.387012790416 → i_104=116070.32516166594
- [S12DB] TGT ROW104: h_21="Capacitance", k_98=-3293.5693790538335 → k_104=-3293.5693790538335
-4012-Section12.js:299 [S12DB] g_104 DISPLAY (target): 0.29248708863962714
-4012-Section12.js:303 [Section12] Calculated display values updated for target mode
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Section01.js:1301 [S01] j_32 listener: 127964.22440126576 → 127192.63183788548
-4012-Section01.js:1302 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 127192.63183788548
-24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [S11] calculateAll TRIGGERED. isReferenceMode: false
-2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
- [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] calculateAll TRIGGERED. isReferenceMode: false
-2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
- [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [Cooling] 🚀 Starting cooling calculations (mode=reference)...
- [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
- [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Cooling.js:454 [Cooling] ⚠️ Already calculating (mode=reference) - skipping to prevent recursion
-4012-Cooling.js:454 [Cooling] ⚠️ Already calculating (mode=target) - skipping to prevent recursion
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
- [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Section03.js:1857 [S03] Reference CALCULATED results stored (climate data + setpoints - INPUT fields excluded)
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] calculateAll TRIGGERED. isReferenceMode: false
-2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
- [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S03] Target CALCULATED results stored (setpoints + derived values only - climate data already published)
- [S12] U-agg TGT: TB%=20 → g_101=0.278341, g_102=0.324324
- [S12] 🎯 TGT CLIMATE READ: d_20=4600, d_21=196
- [S12DB] TGT CLIMATE: d_20=4600, d_21=196, d_22=1960, h_22=-1680
- [S12DB] TGT h_101 calc: (4600*0.2783410626476887*24)/1000 = 30.728853316304836
- [S12DB] TGT i_101 result: 30.728853316304836 * 2476.6199999999994 = 76103.69270022686
-4012-Section12.js:2168 [S12DB] TGT g_104 calc: (0.2783410626476887*2476.6199999999994 + 0.3243243243243243*1100.42)/3577.0400009999994 = 0.2924870885578592
-4012-Section12.js:2195 [S12DB] TGT ROW104: i_101=76103.69270022686, i_102=16788.24544864865, i_103=23178.387012790416 → i_104=116070.32516166594
-4012-Section12.js:2198 [S12DB] TGT ROW104: h_21="Capacitance", k_98=-3293.5693790538335 → k_104=-3293.5693790538335
-4012-Section12.js:299 [S12DB] g_104 DISPLAY (target): 0.29248708863962714
-4012-Section12.js:303 [Section12] Calculated display values updated for target mode
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
- [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] calculateAll TRIGGERED. isReferenceMode: false
-2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
- [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [Cooling] 🚀 Starting cooling calculations (mode=reference)...
- [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
- [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
- [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Section03.js:1857 [S03] Reference CALCULATED results stored (climate data + setpoints - INPUT fields excluded)
-4012-Section01.js:1301 [S01] j_32 listener: 127192.63183788548 → 133443.76783788548
-4012-Section01.js:1302 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 133443.76783788548
-24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4012-Section10.js:2763 S10: Target listener triggered by i_71, recalculating all.
-4012-Section10.js:1915 [S10 DEBUG] calculateAll() triggered in target mode - running both engines
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Section01.js:1301 [S01] j_32 listener: 133443.76783788548 → 132985.63526777347
-4012-Section01.js:1302 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 132985.63526777347
-24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
- [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
- [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
- [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
- [Cooling] 📊 Publishing results with prefix="" (mode=target)
- [S10REF] Utilization calc: ref_i_71=113145.3708, ref_i_79=10060.174319999998, totalGains=123205.54512
- [S10REF] Using utilization method: NRC 40%
- [S10REF] Final calc: utilizationFactor=0.4, usableGains=49282.218048
- [S10REF] Complete: g_80=0.4, g_81=0.9956709734049238, i_80=49282.218048, i_81=122672.18503851465
- [S10 DEBUG] Dual-engine calculations complete in target mode
- [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
- [S10DISPLAY] Display (target) m_73 = 50.00
- [S10DISPLAY] Display (target) m_74 = 1.31
- [S10DISPLAY] Display (target) m_75 = 76.94
- [S10DISPLAY] Display (target) m_76 = 70.74
- [S10DISPLAY] Display (target) m_77 = 25.86
- [S10DISPLAY] Display (target) m_78 = 75.00
- [S10DISPLAY] Display (target) i_73 = 375.00
- [S10DISPLAY] Display (target) i_74 = 106.29
- [S10DISPLAY] Display (target) i_75 = 294.68
- [S10DISPLAY] Display (target) i_76 = 11,247.66
- [S10DISPLAY] Display (target) i_77 = 2,603.07
- [S10DISPLAY] Display (target) i_78 = 0.00
- [S10DISPLAY] Display (target) i_79 = 14,626.70
- [S10DISPLAY] Display (target) k_73 = 0.00
- [S10DISPLAY] Display (target) k_74 = 0.00
- [S10DISPLAY] Display (target) k_75 = 0.00
- [S10DISPLAY] Display (target) k_76 = 0.00
- [S10DISPLAY] Display (target) k_77 = 130.15
- [S10DISPLAY] Display (target) k_78 = 0.00
- [S10DISPLAY] Display (target) k_79 = 130.15
- [S10DISPLAY] Display (target) j_73 = 2.56%
- [S10DISPLAY] Display (target) j_74 = 0.73%
- [S10DISPLAY] Display (target) j_75 = 2.01%
- [S10DISPLAY] Display (target) j_76 = 76.90%
- [S10DISPLAY] Display (target) j_77 = 17.80%
- [S10DISPLAY] Display (target) j_78 = 0.00%
- [S10DISPLAY] Display (target) j_79 = 100.00%
- [S10DISPLAY] Display (target) l_73 = 0.00%
- [S10DISPLAY] Display (target) l_74 = 0.00%
- [S10DISPLAY] Display (target) l_75 = 0.00%
- [S10DISPLAY] Display (target) l_76 = 0.00%
-4012-Section10.js:530 [S10DISPLAY] Display (target) l_77 = 100.00%
-4012-Section10.js:530 [S10DISPLAY] Display (target) l_78 = 0.00%
-4012-Section10.js:530 [S10DISPLAY] Display (target) l_79 = 100.00%
-4012-Section10.js:530 [S10DISPLAY] Display (target) e_80 = 114,698.95
-4012-Section10.js:530 [S10DISPLAY] Display (target) e_81 = 114,698.95
-4012-Section10.js:497 [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
-4012-Section10.js:530 [S10DISPLAY] Display (target) g_80 = 40.00%
-4012-Section10.js:530 [S10DISPLAY] Display (target) g_81 = 94.43%
-4012-Section10.js:530 [S10DISPLAY] Display (target) i_80 = 45,879.58
-4012-Section10.js:530 [S10DISPLAY] Display (target) i_81 = 108,308.11
-4012-Section10.js:530 [S10DISPLAY] Display (target) i_82 = 68,819.37
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-34012-Section09.js:442 [S09] Updated calculated display values for target mode
-4012-Section09.js:442 [S09] Updated calculated display values for target mode
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section02.js:863 [S02] Reference CALCULATED results stored (d_16 only - INPUT fields excluded)
-4012-Section01.js:1204 [S01DB] upstream snapshot {ref_j_32: '448394.0938117469', ref_k_32: '22868.09878439909', j_32: '132985.63526777347', k_32: '6782.267398656447', ref_h_15: '1427.20', …}
-4012-Section01.js:755 🔍 [S01DB] updateTEUIDisplay START: e_10=341.2, h_10=93.17939690847356, useType=Utility Bills
-4012-Section01.js:825 🔍 [S01] T.1 Calculation: e_6=29 (ref), h_6=11.7 (target) → reduction should be 60%
-4012-Section01.js:917 🔍 [S01DB] UPDATING h_10: 93.2 (from j_32=132985.63526777347, area=1427.2)
-4012-Section01.js:511 🔍 [S01] h_6 explanation: target=11.7, ref=29, reduction=0.596551724137931, percent=60%
-4011-Clock.js:65 🕐 [CLOCK] ⚡ CALCULATION COMPLETE: 17ms (subsequent update)
-4011-Clock.js:161 🕐 [CLOCK] ⚡ USER INTERACTION COMPLETE: 18ms (interaction → h_10 settlement)
-4012-Section01.js:1222 ✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10
-4012-Section02.js:1864 [S02] Switched to REFERENCE mode
-4012-Section02.js:1900 [S02] Refreshing UI for REFERENCE mode
-4012-Section02.js:1958 [S02] Updated h_12 (reporting year) slider = "2022" (reference mode)
-4012-Section02.js:1975 [S02] Updated h_13 (service life) slider = "50" (reference mode)
-4012-Section02.js:2025 [S02] Updated h_15 = "1,427.20" (reference mode)
-4012-Section02.js:2025 [S02] Updated i_17 = "8154" (reference mode)
-4012-Section02.js:2025 [S02] Updated l_12 = "$0.1300" (reference mode)
-4012-Section02.js:2025 [S02] Updated l_13 = "$0.5070" (reference mode)
-4012-Section02.js:2025 [S02] Updated l_14 = "$1.6200" (reference mode)
-4012-Section02.js:2025 [S02] Updated l_15 = "$180.00" (reference mode)
-4012-Section02.js:2025 [S02] Updated l_16 = "$1.5000" (reference mode)
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] calculateAll TRIGGERED. isReferenceMode: false
-2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
- [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S03] Target CALCULATED results stored (setpoints + derived values only - climate data already published)
- [S12] U-agg TGT: TB%=20 → g_101=0.278341, g_102=0.324324
- [S12] 🎯 TGT CLIMATE READ: d_20=4600, d_21=196
- [S12DB] TGT CLIMATE: d_20=4600, d_21=196, d_22=1960, h_22=-1680
- [S12DB] TGT h_101 calc: (4600*0.2783410626476887*24)/1000 = 30.728853316304836
- [S12DB] TGT i_101 result: 30.728853316304836 * 2476.6199999999994 = 76103.69270022686
- [S12DB] TGT g_104 calc: (0.2783410626476887*2476.6199999999994 + 0.3243243243243243*1100.42)/3577.0400009999994 = 0.2924870885578592
- [S12DB] TGT ROW104: i_101=76103.69270022686, i_102=16788.24544864865, i_103=23178.387012790416 → i_104=116070.32516166594
- [S12DB] TGT ROW104: h_21="Capacitance", k_98=-3293.5693790538335 → k_104=-3293.5693790538335
-4012-Section12.js:299 [S12DB] g_104 DISPLAY (target): 0.29248708863962714
-4012-Section12.js:303 [Section12] Calculated display values updated for target mode
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Section01.js:1301 [S01] j_32 listener: 132985.63526777347 → 133757.22783115375
-4012-Section01.js:1302 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 133757.22783115375
-24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [S11] calculateAll TRIGGERED. isReferenceMode: false
-2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
- [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] calculateAll TRIGGERED. isReferenceMode: false
-2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
- [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [Cooling] 🚀 Starting cooling calculations (mode=reference)...
- [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
- [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Cooling.js:454 [Cooling] ⚠️ Already calculating (mode=reference) - skipping to prevent recursion
-4012-Cooling.js:454 [Cooling] ⚠️ Already calculating (mode=target) - skipping to prevent recursion
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
- [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Section03.js:1857 [S03] Reference CALCULATED results stored (climate data + setpoints - INPUT fields excluded)
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [S11] calculateAll TRIGGERED. isReferenceMode: false
-2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
- [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section03.js:1887 [S03] Target CALCULATED results stored (setpoints + derived values only - climate data already published)
-4012-Section12.js:1637 [S12] U-agg TGT: TB%=20 → g_101=0.278341, g_102=0.324324
-4012-Section12.js:1914 [S12] 🎯 TGT CLIMATE READ: d_20=4600, d_21=196
-4012-Section12.js:1992 [S12DB] TGT CLIMATE: d_20=4600, d_21=196, d_22=1960, h_22=-1680
-4012-Section12.js:2016 [S12DB] TGT h_101 calc: (4600*0.2783410626476887*24)/1000 = 30.728853316304836
-4012-Section12.js:2019 [S12DB] TGT i_101 result: 30.728853316304836 * 2476.6199999999994 = 76103.69270022686
-4012-Section12.js:2168 [S12DB] TGT g_104 calc: (0.2783410626476887*2476.6199999999994 + 0.3243243243243243*1100.42)/3577.0400009999994 = 0.2924870885578592
-4012-Section12.js:2195 [S12DB] TGT ROW104: i_101=76103.69270022686, i_102=16788.24544864865, i_103=23178.387012790416 → i_104=116070.32516166594
-4012-Section12.js:2198 [S12DB] TGT ROW104: h_21="Capacitance", k_98=-3293.5693790538335 → k_104=-3293.5693790538335
-4012-Section12.js:299 [S12DB] g_104 DISPLAY (target): 0.29248708863962714
-4012-Section12.js:303 [Section12] Calculated display values updated for target mode
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [Cooling] 🚀 Starting cooling calculations (mode=reference)...
- [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S10DISPLAY] Display (target) l_78 = 0.00%
+ [S10DISPLAY] Display (target) l_79 = 100.00%
+ [S10DISPLAY] Display (target) e_80 = 110,502.98
+ [S10DISPLAY] Display (target) e_81 = 110,502.98
+ [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+ [S10DISPLAY] Display (target) g_80 = 40.00%
+ [S10DISPLAY] Display (target) g_81 = 95.11%
+ [S10DISPLAY] Display (target) i_80 = 44,201.19
+ [S10DISPLAY] Display (target) i_81 = 105,104.14
+ [S10DISPLAY] Display (target) i_82 = 66,301.79
  [Cooling] 🚀 Starting cooling calculations (mode=reference)...
  [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
  [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
@@ -1999,45 +1363,6 @@ applyTooltip @ 4011-TooltipManager.js:605Understand this warningAI
  [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
  [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
  [Cooling] 📊 Publishing results with prefix="" (mode=target)
- [S11] calculateAll TRIGGERED. isReferenceMode: false
-2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
- [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] calculateAll TRIGGERED. isReferenceMode: false
-2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Section03.js:1857 [S03] Reference CALCULATED results stored (climate data + setpoints - INPUT fields excluded)
-4012-Section01.js:1301 [S01] j_32 listener: 133757.22783115375 → 127506.09183115375
-4012-Section01.js:1302 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 127506.09183115375
-24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4012-Section10.js:2763 S10: Target listener triggered by i_71, recalculating all.
-4012-Section10.js:1915 [S10 DEBUG] calculateAll() triggered in target mode - running both engines
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Section01.js:1301 [S01] j_32 listener: 127506.09183115375 → 127964.22440126576
-4012-Section01.js:1302 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 127964.22440126576
-24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
  [Cooling] 🚀 Starting cooling calculations (mode=reference)...
  [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
  [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
@@ -2048,94 +1373,25 @@ applyTooltip @ 4011-TooltipManager.js:605Understand this warningAI
  [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
  [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
  [Cooling] 📊 Publishing results with prefix="" (mode=target)
- [S10REF] Utilization calc: ref_i_71=113145.3708, ref_i_79=10060.174319999998, totalGains=123205.54512
- [S10REF] Using utilization method: NRC 40%
- [S10REF] Final calc: utilizationFactor=0.4, usableGains=49282.218048
- [S10REF] Complete: g_80=0.4, g_81=0.9956709734049238, i_80=49282.218048, i_81=122672.18503851465
- [S10 DEBUG] Dual-engine calculations complete in target mode
- [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
- [S10DISPLAY] Display (target) m_73 = 50.00
- [S10DISPLAY] Display (target) m_74 = 1.31
- [S10DISPLAY] Display (target) m_75 = 76.94
- [S10DISPLAY] Display (target) m_76 = 70.74
- [S10DISPLAY] Display (target) m_77 = 25.86
- [S10DISPLAY] Display (target) m_78 = 75.00
- [S10DISPLAY] Display (target) i_73 = 375.00
- [S10DISPLAY] Display (target) i_74 = 106.29
- [S10DISPLAY] Display (target) i_75 = 294.68
- [S10DISPLAY] Display (target) i_76 = 11,247.66
- [S10DISPLAY] Display (target) i_77 = 2,603.07
- [S10DISPLAY] Display (target) i_78 = 0.00
- [S10DISPLAY] Display (target) i_79 = 14,626.70
- [S10DISPLAY] Display (target) k_73 = 0.00
- [S10DISPLAY] Display (target) k_74 = 0.00
- [S10DISPLAY] Display (target) k_75 = 0.00
- [S10DISPLAY] Display (target) k_76 = 0.00
- [S10DISPLAY] Display (target) k_77 = 130.15
- [S10DISPLAY] Display (target) k_78 = 0.00
- [S10DISPLAY] Display (target) k_79 = 130.15
- [S10DISPLAY] Display (target) j_73 = 2.56%
- [S10DISPLAY] Display (target) j_74 = 0.73%
- [S10DISPLAY] Display (target) j_75 = 2.01%
- [S10DISPLAY] Display (target) j_76 = 76.90%
- [S10DISPLAY] Display (target) j_77 = 17.80%
- [S10DISPLAY] Display (target) j_78 = 0.00%
- [S10DISPLAY] Display (target) j_79 = 100.00%
- [S10DISPLAY] Display (target) l_73 = 0.00%
- [S10DISPLAY] Display (target) l_74 = 0.00%
- [S10DISPLAY] Display (target) l_75 = 0.00%
- [S10DISPLAY] Display (target) l_76 = 0.00%
-4012-Section10.js:530 [S10DISPLAY] Display (target) l_77 = 100.00%
-4012-Section10.js:530 [S10DISPLAY] Display (target) l_78 = 0.00%
-4012-Section10.js:530 [S10DISPLAY] Display (target) l_79 = 100.00%
-4012-Section10.js:530 [S10DISPLAY] Display (target) e_80 = 110,502.98
-4012-Section10.js:530 [S10DISPLAY] Display (target) e_81 = 110,502.98
-4012-Section10.js:497 [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
-4012-Section10.js:530 [S10DISPLAY] Display (target) g_80 = 40.00%
-4012-Section10.js:530 [S10DISPLAY] Display (target) g_81 = 95.11%
-4012-Section10.js:530 [S10DISPLAY] Display (target) i_80 = 44,201.19
-4012-Section10.js:530 [S10DISPLAY] Display (target) i_81 = 105,104.14
-4012-Section10.js:530 [S10DISPLAY] Display (target) i_82 = 66,301.79
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-34012-Section09.js:442 [S09] Updated calculated display values for target mode
+ [S09] Updated calculated display values for target mode
+ [S09 DEBUG] calculateModel(isReference=false): Reading buildingType = "B1-Detention" from StateManager key "d_12"
+4011-StateManager.js:361 [StateManager DEBUG] i_71 setValue: "95876.28120000001" (state: calculated, prev: 95876.28120000001)
 4012-Section09.js:442 [S09] Updated calculated display values for target mode
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+4012-Section09.js:2010 [S09 DEBUG] calculateModel(isReference=false): Reading buildingType = "B1-Detention" from StateManager key "d_12"
+4011-StateManager.js:361 [StateManager DEBUG] i_71 setValue: "95876.28120000001" (state: calculated, prev: 95876.28120000001)
+4012-Section09.js:442 [S09] Updated calculated display values for target mode
+4012-Section09.js:2010 [S09 DEBUG] calculateModel(isReference=true): Reading buildingType = "A-Assembly" from StateManager key "ref_d_12"
+4011-StateManager.js:361 [StateManager DEBUG] ref_i_71 setValue: "113145.3708" (state: calculated, prev: 113145.3708)
+4012-Section09.js:2010 [S09 DEBUG] calculateModel(isReference=false): Reading buildingType = "B1-Detention" from StateManager key "d_12"
+4011-StateManager.js:361 [StateManager DEBUG] i_71 setValue: "95876.28120000001" (state: calculated, prev: 95876.28120000001)
+ [S09] Updated calculated display values for target mode
+ [S02 ModeManager] setValue d_12: currentMode="reference", will write to StateManager key="ref_d_12"
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [StateManager DEBUG] ref_d_12 setValue: "B1-Detention" (state: user-modified, prev: A-Assembly)
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
  [CLOCK] 🎯 User interaction started - timing to h_10 settlement
  [CLOCK] 🎯 User interaction started - timing to h_10 settlement
  [S11] calculateAll TRIGGERED. isReferenceMode: false
@@ -2143,324 +1399,9 @@ applyTooltip @ 4011-TooltipManager.js:605Understand this warningAI
  [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
  [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
 2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section03.js:1887 [S03] Target CALCULATED results stored (setpoints + derived values only - climate data already published)
-4012-Section12.js:1637 [S12] U-agg TGT: TB%=20 → g_101=0.278341, g_102=0.324324
-4012-Section12.js:1914 [S12] 🎯 TGT CLIMATE READ: d_20=4600, d_21=196
-4012-Section12.js:1992 [S12DB] TGT CLIMATE: d_20=4600, d_21=196, d_22=1960, h_22=-1680
-4012-Section12.js:2016 [S12DB] TGT h_101 calc: (4600*0.2783410626476887*24)/1000 = 30.728853316304836
-4012-Section12.js:2019 [S12DB] TGT i_101 result: 30.728853316304836 * 2476.6199999999994 = 76103.69270022686
-4012-Section12.js:2168 [S12DB] TGT g_104 calc: (0.2783410626476887*2476.6199999999994 + 0.3243243243243243*1100.42)/3577.0400009999994 = 0.2924870885578592
-4012-Section12.js:2195 [S12DB] TGT ROW104: i_101=76103.69270022686, i_102=16788.24544864865, i_103=23178.387012790416 → i_104=116070.32516166594
-4012-Section12.js:2198 [S12DB] TGT ROW104: h_21="Capacitance", k_98=-3293.5693790538335 → k_104=-3293.5693790538335
-4012-Section12.js:299 [S12DB] g_104 DISPLAY (target): 0.29248708863962714
-4012-Section12.js:303 [Section12] Calculated display values updated for target mode
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Section01.js:1301 [S01] j_32 listener: 127964.22440126576 → 127192.63183788548
-4012-Section01.js:1302 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 127192.63183788548
-24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Cooling.js:454 [Cooling] ⚠️ Already calculating (mode=reference) - skipping to prevent recursion
-4012-Cooling.js:454 [Cooling] ⚠️ Already calculating (mode=target) - skipping to prevent recursion
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [S11] calculateAll TRIGGERED. isReferenceMode: false
-2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
- [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] calculateAll TRIGGERED. isReferenceMode: false
-2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
- [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [Cooling] 🚀 Starting cooling calculations (mode=reference)...
- [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
- [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
- [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
- [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
- [Cooling] 🚀 Starting cooling calculations (mode=target)...
- [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
- [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
- [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
- [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Section03.js:1857 [S03] Reference CALCULATED results stored (climate data + setpoints - INPUT fields excluded)
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
  [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section03.js:1887 [S03] Target CALCULATED results stored (setpoints + derived values only - climate data already published)
-4012-Section12.js:1637 [S12] U-agg TGT: TB%=20 → g_101=0.278341, g_102=0.324324
-4012-Section12.js:1914 [S12] 🎯 TGT CLIMATE READ: d_20=4600, d_21=196
-4012-Section12.js:1992 [S12DB] TGT CLIMATE: d_20=4600, d_21=196, d_22=1960, h_22=-1680
-4012-Section12.js:2016 [S12DB] TGT h_101 calc: (4600*0.2783410626476887*24)/1000 = 30.728853316304836
-4012-Section12.js:2019 [S12DB] TGT i_101 result: 30.728853316304836 * 2476.6199999999994 = 76103.69270022686
-4012-Section12.js:2168 [S12DB] TGT g_104 calc: (0.2783410626476887*2476.6199999999994 + 0.3243243243243243*1100.42)/3577.0400009999994 = 0.2924870885578592
-4012-Section12.js:2195 [S12DB] TGT ROW104: i_101=76103.69270022686, i_102=16788.24544864865, i_103=23178.387012790416 → i_104=116070.32516166594
-4012-Section12.js:2198 [S12DB] TGT ROW104: h_21="Capacitance", k_98=-3293.5693790538335 → k_104=-3293.5693790538335
-4012-Section12.js:299 [S12DB] g_104 DISPLAY (target): 0.29248708863962714
-4012-Section12.js:303 [Section12] Calculated display values updated for target mode
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
  [S11] calculateAll TRIGGERED. isReferenceMode: false
 2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
- [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [Cooling] 🚀 Starting cooling calculations (mode=reference)...
- [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
- [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
- [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
- [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
- [Cooling] 🚀 Starting cooling calculations (mode=target)...
- [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] calculateAll TRIGGERED. isReferenceMode: false
-2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
- [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Section03.js:1857 [S03] Reference CALCULATED results stored (climate data + setpoints - INPUT fields excluded)
-24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
- S10: Reference listener triggered by ref_i_71, recalculating all.
- [S10 DEBUG] calculateAll() triggered in target mode - running both engines
- [S10REF] Utilization calc: ref_i_71=108949.40280000001, ref_i_79=10060.174319999998, totalGains=119009.57712
- [S10REF] Using utilization method: NRC 40%
- [S10REF] Final calc: utilizationFactor=0.4, usableGains=47603.830848000005
-2 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [S10REF] Complete: g_80=0.4, g_81=0.9962888590496914, i_80=47603.830848000005, i_81=118567.91580487107
- [S10 DEBUG] Dual-engine calculations complete in target mode
- [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
- [S10DISPLAY] Display (target) m_73 = 50.00
- [S10DISPLAY] Display (target) m_74 = 1.31
- [S10DISPLAY] Display (target) m_75 = 76.94
- [S10DISPLAY] Display (target) m_76 = 70.74
- [S10DISPLAY] Display (target) m_77 = 25.86
- [S10DISPLAY] Display (target) m_78 = 75.00
- [S10DISPLAY] Display (target) i_73 = 375.00
- [S10DISPLAY] Display (target) i_74 = 106.29
- [S10DISPLAY] Display (target) i_75 = 294.68
- [S10DISPLAY] Display (target) i_76 = 11,247.66
- [S10DISPLAY] Display (target) i_77 = 2,603.07
- [S10DISPLAY] Display (target) i_78 = 0.00
- [S10DISPLAY] Display (target) i_79 = 14,626.70
-4012-Section10.js:530 [S10DISPLAY] Display (target) k_73 = 0.00
-4012-Section10.js:530 [S10DISPLAY] Display (target) k_74 = 0.00
-4012-Section10.js:530 [S10DISPLAY] Display (target) k_75 = 0.00
-4012-Section10.js:530 [S10DISPLAY] Display (target) k_76 = 0.00
-4012-Section10.js:530 [S10DISPLAY] Display (target) k_77 = 130.15
-4012-Section10.js:530 [S10DISPLAY] Display (target) k_78 = 0.00
-4012-Section10.js:530 [S10DISPLAY] Display (target) k_79 = 130.15
-4012-Section10.js:530 [S10DISPLAY] Display (target) j_73 = 2.56%
-4012-Section10.js:530 [S10DISPLAY] Display (target) j_74 = 0.73%
-4012-Section10.js:530 [S10DISPLAY] Display (target) j_75 = 2.01%
-4012-Section10.js:530 [S10DISPLAY] Display (target) j_76 = 76.90%
-4012-Section10.js:530 [S10DISPLAY] Display (target) j_77 = 17.80%
-4012-Section10.js:530 [S10DISPLAY] Display (target) j_78 = 0.00%
-4012-Section10.js:530 [S10DISPLAY] Display (target) j_79 = 100.00%
-4012-Section10.js:530 [S10DISPLAY] Display (target) l_73 = 0.00%
-4012-Section10.js:530 [S10DISPLAY] Display (target) l_74 = 0.00%
-4012-Section10.js:530 [S10DISPLAY] Display (target) l_75 = 0.00%
-4012-Section10.js:530 [S10DISPLAY] Display (target) l_76 = 0.00%
-4012-Section10.js:530 [S10DISPLAY] Display (target) l_77 = 100.00%
-4012-Section10.js:530 [S10DISPLAY] Display (target) l_78 = 0.00%
-4012-Section10.js:530 [S10DISPLAY] Display (target) l_79 = 100.00%
-4012-Section10.js:530 [S10DISPLAY] Display (target) e_80 = 110,502.98
-4012-Section10.js:530 [S10DISPLAY] Display (target) e_81 = 110,502.98
-4012-Section10.js:497 [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
-4012-Section10.js:530 [S10DISPLAY] Display (target) g_80 = 40.00%
-4012-Section10.js:530 [S10DISPLAY] Display (target) g_81 = 95.11%
-4012-Section10.js:530 [S10DISPLAY] Display (target) i_80 = 44,201.19
-4012-Section10.js:530 [S10DISPLAY] Display (target) i_81 = 105,104.14
-4012-Section10.js:530 [S10DISPLAY] Display (target) i_82 = 66,301.79
-34012-Section09.js:442 [S09] Updated calculated display values for target mode
-4012-Section02.js:863 [S02] Reference CALCULATED results stored (d_16 only - INPUT fields excluded)
-4012-Section01.js:1204 [S01DB] upstream snapshot {ref_j_32: '443821.345011747', ref_k_32: '22634.888595599095', j_32: '127192.63183788548', k_32: '6486.824223732159', ref_h_15: '1427.20', …}
-4012-Section01.js:755 🔍 [S01DB] updateTEUIDisplay START: e_10=341.2, h_10=89.12039786847356, useType=Utility Bills
-4012-Section01.js:825 🔍 [S01] T.1 Calculation: e_6=28.9 (ref), h_6=11.4 (target) → reduction should be 61%
-4012-Section01.js:917 🔍 [S01DB] UPDATING h_10: 89.1 (from j_32=127192.63183788548, area=1427.2)
-4012-Section01.js:511 🔍 [S01] h_6 explanation: target=11.4, ref=28.9, reduction=0.6055363321799307, percent=61%
-4011-Clock.js:65 🕐 [CLOCK] ⚡ CALCULATION COMPLETE: 336ms (subsequent update)
-4011-Clock.js:161 🕐 [CLOCK] ⚡ USER INTERACTION COMPLETE: 336ms (interaction → h_10 settlement)
-4012-Section01.js:1222 ✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
 4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
 4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
 24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
@@ -2488,136 +1429,6 @@ applyTooltip @ 4011-TooltipManager.js:605Understand this warningAI
  [S12DB] g_104 DISPLAY (target): 0.29248708863962714
  [Section12] Calculated display values updated for target mode
  [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [S11] calculateAll TRIGGERED. isReferenceMode: false
-2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
- [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] calculateAll TRIGGERED. isReferenceMode: false
-2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
- [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Section03.js:1857 [S03] Reference CALCULATED results stored (climate data + setpoints - INPUT fields excluded)
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section03.js:1887 [S03] Target CALCULATED results stored (setpoints + derived values only - climate data already published)
-4012-Section12.js:1637 [S12] U-agg TGT: TB%=20 → g_101=0.278341, g_102=0.324324
-4012-Section12.js:1914 [S12] 🎯 TGT CLIMATE READ: d_20=4600, d_21=196
-4012-Section12.js:1992 [S12DB] TGT CLIMATE: d_20=4600, d_21=196, d_22=1960, h_22=-1680
-4012-Section12.js:2016 [S12DB] TGT h_101 calc: (4600*0.2783410626476887*24)/1000 = 30.728853316304836
-4012-Section12.js:2019 [S12DB] TGT i_101 result: 30.728853316304836 * 2476.6199999999994 = 76103.69270022686
-4012-Section12.js:2168 [S12DB] TGT g_104 calc: (0.2783410626476887*2476.6199999999994 + 0.3243243243243243*1100.42)/3577.0400009999994 = 0.2924870885578592
-4012-Section12.js:2195 [S12DB] TGT ROW104: i_101=76103.69270022686, i_102=16788.24544864865, i_103=23178.387012790416 → i_104=116070.32516166594
-4012-Section12.js:2198 [S12DB] TGT ROW104: h_21="Capacitance", k_98=-3293.5693790538335 → k_104=-3293.5693790538335
-4012-Section12.js:299 [S12DB] g_104 DISPLAY (target): 0.29248708863962714
-4012-Section12.js:303 [Section12] Calculated display values updated for target mode
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
  [CLOCK] 🎯 User interaction started - timing to h_10 settlement
  [CLOCK] 🎯 User interaction started - timing to h_10 settlement
  [CLOCK] 🎯 User interaction started - timing to h_10 settlement
@@ -2633,85 +1444,54 @@ applyTooltip @ 4011-TooltipManager.js:605Understand this warningAI
  [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
  [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
 2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [Cooling] 🚀 Starting cooling calculations (mode=reference)...
- [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
  [Cooling] 🚀 Starting cooling calculations (mode=reference)...
  [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
  [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Section03.js:1857 [S03] Reference CALCULATED results stored (climate data + setpoints - INPUT fields excluded)
-4012-Section01.js:1301 [S01] j_32 listener: 127192.63183788548 → 133443.76783788548
-4012-Section01.js:1302 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 133443.76783788548
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+4012-Section01.js:1301 [S01] j_32 listener: 127964.22440126576 → 127192.63183788548
+4012-Section01.js:1302 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 127192.63183788548
 24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
- S10: Target listener triggered by i_71, recalculating all.
- [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
+4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
+4012-Cooling.js:454 [Cooling] ⚠️ Already calculating (mode=reference) - skipping to prevent recursion
+4012-Cooling.js:454 [Cooling] ⚠️ Already calculating (mode=target) - skipping to prevent recursion
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
  [Cooling] 🚀 Starting cooling calculations (mode=reference)...
  [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
  [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
@@ -2722,19 +1502,246 @@ applyTooltip @ 4011-TooltipManager.js:605Understand this warningAI
  [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
  [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
  [Cooling] 📊 Publishing results with prefix="" (mode=target)
- [S01] j_32 listener: 133443.76783788548 → 132985.63526777347
- [S01] 🕐 j_32 listener timing: StateManager current j_32 = 132985.63526777347
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [S03] Reference CALCULATED results stored (climate data + setpoints - INPUT fields excluded)
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S03] Target CALCULATED results stored (setpoints + derived values only - climate data already published)
+ [S12] U-agg TGT: TB%=20 → g_101=0.278341, g_102=0.324324
+ [S12] 🎯 TGT CLIMATE READ: d_20=4600, d_21=196
+ [S12DB] TGT CLIMATE: d_20=4600, d_21=196, d_22=1960, h_22=-1680
+ [S12DB] TGT h_101 calc: (4600*0.2783410626476887*24)/1000 = 30.728853316304836
+ [S12DB] TGT i_101 result: 30.728853316304836 * 2476.6199999999994 = 76103.69270022686
+ [S12DB] TGT g_104 calc: (0.2783410626476887*2476.6199999999994 + 0.3243243243243243*1100.42)/3577.0400009999994 = 0.2924870885578592
+ [S12DB] TGT ROW104: i_101=76103.69270022686, i_102=16788.24544864865, i_103=23178.387012790416 → i_104=116070.32516166594
+ [S12DB] TGT ROW104: h_21="Capacitance", k_98=-3293.5693790538335 → k_104=-3293.5693790538335
+ [S12DB] g_104 DISPLAY (target): 0.29248708863962714
+ [Section12] Calculated display values updated for target mode
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
+4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
+4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
+4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
+4012-Section03.js:1857 [S03] Reference CALCULATED results stored (climate data + setpoints - INPUT fields excluded)
+ [S09 DEBUG] calculateModel(isReference=true): Reading buildingType = "B1-Detention" from StateManager key "ref_d_12"
 2 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [Cooling] 🚀 Starting cooling calculations (mode=reference)...
- [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
- [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
- [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
- [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
- [Cooling] 🚀 Starting cooling calculations (mode=target)...
- [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
- [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
- [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
- [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [StateManager DEBUG] ref_i_71 setValue: "108949.40280000001" (state: calculated, prev: 113145.3708)
+ S10: Reference listener triggered by ref_i_71, recalculating all.
+ [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+ [StateManager DEBUG] i_79 setValue: "14626.7012" (state: calculated, prev: 14626.7012)
+ [StateManager DEBUG] ref_i_79 setValue: "10060.174319999998" (state: calculated, prev: 10060.174319999998)
+ [S10REF] Utilization calc: ref_i_71=108949.40280000001, ref_i_79=10060.174319999998, totalGains=119009.57712
+ [S10REF] Using utilization method: NRC 40%
+ [S10REF] Final calc: utilizationFactor=0.4, usableGains=47603.830848000005
+2 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [S10REF] Complete: g_80=0.4, g_81=0.9962888590496914, i_80=47603.830848000005, i_81=118567.91580487107
+ [S10 DEBUG] Dual-engine calculations complete in target mode
+ [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+ [S10DISPLAY] Display (target) m_73 = 50.00
+ [S10DISPLAY] Display (target) m_74 = 1.31
+ [S10DISPLAY] Display (target) m_75 = 76.94
+ [S10DISPLAY] Display (target) m_76 = 70.74
+ [S10DISPLAY] Display (target) m_77 = 25.86
+ [S10DISPLAY] Display (target) m_78 = 75.00
+ [S10DISPLAY] Display (target) i_73 = 375.00
+ [S10DISPLAY] Display (target) i_74 = 106.29
+ [S10DISPLAY] Display (target) i_75 = 294.68
+ [S10DISPLAY] Display (target) i_76 = 11,247.66
+ [S10DISPLAY] Display (target) i_77 = 2,603.07
+ [S10DISPLAY] Display (target) i_78 = 0.00
+ [S10DISPLAY] Display (target) i_79 = 14,626.70
+ [S10DISPLAY] Display (target) k_73 = 0.00
+ [S10DISPLAY] Display (target) k_74 = 0.00
+ [S10DISPLAY] Display (target) k_75 = 0.00
+ [S10DISPLAY] Display (target) k_76 = 0.00
+ [S10DISPLAY] Display (target) k_77 = 130.15
+ [S10DISPLAY] Display (target) k_78 = 0.00
+ [S10DISPLAY] Display (target) k_79 = 130.15
+ [S10DISPLAY] Display (target) j_73 = 2.56%
+ [S10DISPLAY] Display (target) j_74 = 0.73%
+ [S10DISPLAY] Display (target) j_75 = 2.01%
+ [S10DISPLAY] Display (target) j_76 = 76.90%
+ [S10DISPLAY] Display (target) j_77 = 17.80%
+ [S10DISPLAY] Display (target) j_78 = 0.00%
+ [S10DISPLAY] Display (target) j_79 = 100.00%
+ [S10DISPLAY] Display (target) l_73 = 0.00%
+ [S10DISPLAY] Display (target) l_74 = 0.00%
+ [S10DISPLAY] Display (target) l_75 = 0.00%
+ [S10DISPLAY] Display (target) l_76 = 0.00%
+ [S10DISPLAY] Display (target) l_77 = 100.00%
+ [S10DISPLAY] Display (target) l_78 = 0.00%
+ [S10DISPLAY] Display (target) l_79 = 100.00%
+ [S10DISPLAY] Display (target) e_80 = 110,502.98
+ [S10DISPLAY] Display (target) e_81 = 110,502.98
+ [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+ [S10DISPLAY] Display (target) g_80 = 40.00%
+ [S10DISPLAY] Display (target) g_81 = 95.11%
+ [S10DISPLAY] Display (target) i_80 = 44,201.19
+ [S10DISPLAY] Display (target) i_81 = 105,104.14
+4012-Section10.js:530 [S10DISPLAY] Display (target) i_82 = 66,301.79
+4012-Section09.js:442 [S09] Updated calculated display values for target mode
+4012-Section09.js:2010 [S09 DEBUG] calculateModel(isReference=true): Reading buildingType = "B1-Detention" from StateManager key "ref_d_12"
+4011-StateManager.js:361 [StateManager DEBUG] ref_i_71 setValue: "108949.40280000001" (state: calculated, prev: 108949.40280000001)
+4012-Section09.js:442 [S09] Updated calculated display values for target mode
+4012-Section09.js:2010 [S09 DEBUG] calculateModel(isReference=true): Reading buildingType = "B1-Detention" from StateManager key "ref_d_12"
+4011-StateManager.js:361 [StateManager DEBUG] ref_i_71 setValue: "108949.40280000001" (state: calculated, prev: 108949.40280000001)
+4012-Section09.js:442 [S09] Updated calculated display values for target mode
+4012-Section02.js:863 [S02] Reference CALCULATED results stored (d_16 only - INPUT fields excluded)
+4012-Section01.js:1204 [S01DB] upstream snapshot {ref_j_32: '443821.345011747', ref_k_32: '22634.888595599095', j_32: '127192.63183788548', k_32: '6486.824223732159', ref_h_15: '1427.20', …}
+4012-Section01.js:755 🔍 [S01DB] updateTEUIDisplay START: e_10=341.2, h_10=89.12039786847356, useType=Utility Bills
+4012-Section01.js:825 🔍 [S01] T.1 Calculation: e_6=28.9 (ref), h_6=11.4 (target) → reduction should be 61%
+4012-Section01.js:917 🔍 [S01DB] UPDATING h_10: 89.1 (from j_32=127192.63183788548, area=1427.2)
+4012-Section01.js:511 🔍 [S01] h_6 explanation: target=11.4, ref=28.9, reduction=0.6055363321799307, percent=61%
+4011-Clock.js:65 🕐 [CLOCK] ⚡ CALCULATION COMPLETE: 160ms (subsequent update)
+4011-Clock.js:161 🕐 [CLOCK] ⚡ USER INTERACTION COMPLETE: 160ms (interaction → h_10 settlement)
+4012-Section01.js:1222 ✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-StateManager.js:361 [StateManager DEBUG] d_12 setValue: "B2-Care and Treatment" (state: user-modified, prev: B1-Detention)
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ S10: Target listener triggered by i_97, recalculating all.
+ [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+ [StateManager DEBUG] i_79 setValue: "14626.7012" (state: calculated, prev: 14626.7012)
+ [StateManager DEBUG] ref_i_79 setValue: "10060.174319999998" (state: calculated, prev: 10060.174319999998)
  [S10REF] Utilization calc: ref_i_71=108949.40280000001, ref_i_79=10060.174319999998, totalGains=119009.57712
  [S10REF] Using utilization method: NRC 40%
  [S10REF] Final calc: utilizationFactor=0.4, usableGains=47603.830848000005
@@ -2775,15 +1782,329 @@ applyTooltip @ 4011-TooltipManager.js:605Understand this warningAI
  [S10DISPLAY] Display (target) l_77 = 100.00%
  [S10DISPLAY] Display (target) l_78 = 0.00%
  [S10DISPLAY] Display (target) l_79 = 100.00%
- [S10DISPLAY] Display (target) e_80 = 114,698.95
-4012-Section10.js:530 [S10DISPLAY] Display (target) e_81 = 114,698.95
-4012-Section10.js:497 [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
-4012-Section10.js:530 [S10DISPLAY] Display (target) g_80 = 40.00%
-4012-Section10.js:530 [S10DISPLAY] Display (target) g_81 = 94.43%
-4012-Section10.js:530 [S10DISPLAY] Display (target) i_80 = 45,879.58
-4012-Section10.js:530 [S10DISPLAY] Display (target) i_81 = 108,308.11
-4012-Section10.js:530 [S10DISPLAY] Display (target) i_82 = 68,819.37
+ [S10DISPLAY] Display (target) e_80 = 110,502.98
+ [S10DISPLAY] Display (target) e_81 = 110,502.98
+ [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+ [S10DISPLAY] Display (target) g_80 = 40.00%
+ [S10DISPLAY] Display (target) g_81 = 95.26%
+ [S10DISPLAY] Display (target) i_80 = 44,201.19
+ [S10DISPLAY] Display (target) i_81 = 105,264.72
+ [S10DISPLAY] Display (target) i_82 = 66,301.79
+ S10: Target utilization factor dependency i_97 changed.
+ [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+ [S10DISPLAY] Display (target) m_73 = 50.00
+ [S10DISPLAY] Display (target) m_74 = 1.31
+ [S10DISPLAY] Display (target) m_75 = 76.94
+ [S10DISPLAY] Display (target) m_76 = 70.74
+ [S10DISPLAY] Display (target) m_77 = 25.86
+ [S10DISPLAY] Display (target) m_78 = 75.00
+ [S10DISPLAY] Display (target) i_73 = 375.00
+ [S10DISPLAY] Display (target) i_74 = 106.29
+ [S10DISPLAY] Display (target) i_75 = 294.68
+ [S10DISPLAY] Display (target) i_76 = 11,247.66
+ [S10DISPLAY] Display (target) i_77 = 2,603.07
+ [S10DISPLAY] Display (target) i_78 = 0.00
+ [S10DISPLAY] Display (target) i_79 = 14,626.70
+ [S10DISPLAY] Display (target) k_73 = 0.00
+ [S10DISPLAY] Display (target) k_74 = 0.00
+ [S10DISPLAY] Display (target) k_75 = 0.00
+ [S10DISPLAY] Display (target) k_76 = 0.00
+ [S10DISPLAY] Display (target) k_77 = 130.15
+ [S10DISPLAY] Display (target) k_78 = 0.00
+ [S10DISPLAY] Display (target) k_79 = 130.15
+ [S10DISPLAY] Display (target) j_73 = 2.56%
+ [S10DISPLAY] Display (target) j_74 = 0.73%
+ [S10DISPLAY] Display (target) j_75 = 2.01%
+ [S10DISPLAY] Display (target) j_76 = 76.90%
+ [S10DISPLAY] Display (target) j_77 = 17.80%
+ [S10DISPLAY] Display (target) j_78 = 0.00%
+ [S10DISPLAY] Display (target) j_79 = 100.00%
+ [S10DISPLAY] Display (target) l_73 = 0.00%
+ [S10DISPLAY] Display (target) l_74 = 0.00%
+ [S10DISPLAY] Display (target) l_75 = 0.00%
+ [S10DISPLAY] Display (target) l_76 = 0.00%
+ [S10DISPLAY] Display (target) l_77 = 100.00%
+ [S10DISPLAY] Display (target) l_78 = 0.00%
+ [S10DISPLAY] Display (target) l_79 = 100.00%
+ [S10DISPLAY] Display (target) e_80 = 110,502.98
+ [S10DISPLAY] Display (target) e_81 = 110,502.98
+ [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+ [S10DISPLAY] Display (target) g_80 = 40.00%
+ [S10DISPLAY] Display (target) g_81 = 95.26%
+ [S10DISPLAY] Display (target) i_80 = 44,201.19
+ [S10DISPLAY] Display (target) i_81 = 105,264.72
+ [S10DISPLAY] Display (target) i_82 = 66,301.79
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+4012-Section01.js:1301 [S01] j_32 listener: 127192.63183788548 → 127574.50846102406
+4012-Section01.js:1302 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 127574.50846102406
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
 4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ S10: Target listener triggered by i_98, recalculating all.
+ [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+ [StateManager DEBUG] i_79 setValue: "14626.7012" (state: calculated, prev: 14626.7012)
+ [StateManager DEBUG] ref_i_79 setValue: "10060.174319999998" (state: calculated, prev: 10060.174319999998)
+ [S10REF] Utilization calc: ref_i_71=108949.40280000001, ref_i_79=10060.174319999998, totalGains=119009.57712
+ [S10REF] Using utilization method: NRC 40%
+ [S10REF] Final calc: utilizationFactor=0.4, usableGains=47603.830848000005
+ [S10REF] Complete: g_80=0.4, g_81=0.9962888590496914, i_80=47603.830848000005, i_81=118567.91580487107
+ [S10 DEBUG] Dual-engine calculations complete in target mode
+ [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+ [S10DISPLAY] Display (target) m_73 = 50.00
+ [S10DISPLAY] Display (target) m_74 = 1.31
+ [S10DISPLAY] Display (target) m_75 = 76.94
+ [S10DISPLAY] Display (target) m_76 = 70.74
+ [S10DISPLAY] Display (target) m_77 = 25.86
+ [S10DISPLAY] Display (target) m_78 = 75.00
+ [S10DISPLAY] Display (target) i_73 = 375.00
+ [S10DISPLAY] Display (target) i_74 = 106.29
+ [S10DISPLAY] Display (target) i_75 = 294.68
+ [S10DISPLAY] Display (target) i_76 = 11,247.66
+ [S10DISPLAY] Display (target) i_77 = 2,603.07
+ [S10DISPLAY] Display (target) i_78 = 0.00
+ [S10DISPLAY] Display (target) i_79 = 14,626.70
+ [S10DISPLAY] Display (target) k_73 = 0.00
+ [S10DISPLAY] Display (target) k_74 = 0.00
+ [S10DISPLAY] Display (target) k_75 = 0.00
+ [S10DISPLAY] Display (target) k_76 = 0.00
+ [S10DISPLAY] Display (target) k_77 = 130.15
+ [S10DISPLAY] Display (target) k_78 = 0.00
+ [S10DISPLAY] Display (target) k_79 = 130.15
+ [S10DISPLAY] Display (target) j_73 = 2.56%
+ [S10DISPLAY] Display (target) j_74 = 0.73%
+ [S10DISPLAY] Display (target) j_75 = 2.01%
+ [S10DISPLAY] Display (target) j_76 = 76.90%
+ [S10DISPLAY] Display (target) j_77 = 17.80%
+ [S10DISPLAY] Display (target) j_78 = 0.00%
+ [S10DISPLAY] Display (target) j_79 = 100.00%
+ [S10DISPLAY] Display (target) l_73 = 0.00%
+ [S10DISPLAY] Display (target) l_74 = 0.00%
+ [S10DISPLAY] Display (target) l_75 = 0.00%
+ [S10DISPLAY] Display (target) l_76 = 0.00%
+ [S10DISPLAY] Display (target) l_77 = 100.00%
+ [S10DISPLAY] Display (target) l_78 = 0.00%
+ [S10DISPLAY] Display (target) l_79 = 100.00%
+ [S10DISPLAY] Display (target) e_80 = 110,502.98
+ [S10DISPLAY] Display (target) e_81 = 110,502.98
+ [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+ [S10DISPLAY] Display (target) g_80 = 40.00%
+ [S10DISPLAY] Display (target) g_81 = 95.92%
+ [S10DISPLAY] Display (target) i_80 = 44,201.19
+ [S10DISPLAY] Display (target) i_81 = 105,991.99
+ [S10DISPLAY] Display (target) i_82 = 66,301.79
+ S10: Target utilization factor dependency i_98 changed.
+ [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+ [S10DISPLAY] Display (target) m_73 = 50.00
+ [S10DISPLAY] Display (target) m_74 = 1.31
+ [S10DISPLAY] Display (target) m_75 = 76.94
+ [S10DISPLAY] Display (target) m_76 = 70.74
+ [S10DISPLAY] Display (target) m_77 = 25.86
+ [S10DISPLAY] Display (target) m_78 = 75.00
+ [S10DISPLAY] Display (target) i_73 = 375.00
+ [S10DISPLAY] Display (target) i_74 = 106.29
+ [S10DISPLAY] Display (target) i_75 = 294.68
+ [S10DISPLAY] Display (target) i_76 = 11,247.66
+ [S10DISPLAY] Display (target) i_77 = 2,603.07
+ [S10DISPLAY] Display (target) i_78 = 0.00
+ [S10DISPLAY] Display (target) i_79 = 14,626.70
+ [S10DISPLAY] Display (target) k_73 = 0.00
+ [S10DISPLAY] Display (target) k_74 = 0.00
+ [S10DISPLAY] Display (target) k_75 = 0.00
+ [S10DISPLAY] Display (target) k_76 = 0.00
+ [S10DISPLAY] Display (target) k_77 = 130.15
+ [S10DISPLAY] Display (target) k_78 = 0.00
+ [S10DISPLAY] Display (target) k_79 = 130.15
+ [S10DISPLAY] Display (target) j_73 = 2.56%
+ [S10DISPLAY] Display (target) j_74 = 0.73%
+ [S10DISPLAY] Display (target) j_75 = 2.01%
+ [S10DISPLAY] Display (target) j_76 = 76.90%
+ [S10DISPLAY] Display (target) j_77 = 17.80%
+ [S10DISPLAY] Display (target) j_78 = 0.00%
+ [S10DISPLAY] Display (target) j_79 = 100.00%
+ [S10DISPLAY] Display (target) l_73 = 0.00%
+ [S10DISPLAY] Display (target) l_74 = 0.00%
+ [S10DISPLAY] Display (target) l_75 = 0.00%
+ [S10DISPLAY] Display (target) l_76 = 0.00%
+ [S10DISPLAY] Display (target) l_77 = 100.00%
+ [S10DISPLAY] Display (target) l_78 = 0.00%
+ [S10DISPLAY] Display (target) l_79 = 100.00%
+ [S10DISPLAY] Display (target) e_80 = 110,502.98
+ [S10DISPLAY] Display (target) e_81 = 110,502.98
+ [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+ [S10DISPLAY] Display (target) g_80 = 40.00%
+ [S10DISPLAY] Display (target) g_81 = 95.92%
+ [S10DISPLAY] Display (target) i_80 = 44,201.19
+ [S10DISPLAY] Display (target) i_81 = 105,991.99
+ [S10DISPLAY] Display (target) i_82 = 66,301.79
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [S01] j_32 listener: 127574.50846102406 → 129483.89157671704
+ [S01] 🕐 j_32 listener timing: StateManager current j_32 = 129483.89157671704
+2 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S03] Target CALCULATED results stored (setpoints + derived values only - climate data already published)
+ [S12] U-agg TGT: TB%=20 → g_101=0.278341, g_102=0.324324
+ [S12] 🎯 TGT CLIMATE READ: d_20=4600, d_21=196
+ [S12DB] TGT CLIMATE: d_20=4600, d_21=196, d_22=2940, h_22=-1680
+ [S12DB] TGT h_101 calc: (4600*0.2783410626476887*24)/1000 = 30.728853316304836
+ [S12DB] TGT i_101 result: 30.728853316304836 * 2476.6199999999994 = 76103.69270022686
+ [S12DB] TGT g_104 calc: (0.2783410626476887*2476.6199999999994 + 0.3243243243243243*1100.42)/3577.0400009999994 = 0.2924870885578592
+ [S12DB] TGT ROW104: i_101=76103.69270022686, i_102=25182.368172972972, i_103=23178.387012790416 → i_104=124464.44788599026
+ [S12DB] TGT ROW104: h_21="Capacitance", k_98=-3293.5693790538335 → k_104=-3293.5693790538335
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
+4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
+4012-Section12.js:299 [S12DB] g_104 DISPLAY (target): 0.29248708863962714
+4012-Section12.js:303 [Section12] Calculated display values updated for target mode
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
+4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
 4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
 4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
 4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
@@ -2793,27 +2114,260 @@ applyTooltip @ 4011-TooltipManager.js:605Understand this warningAI
 4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
 4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
 4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-34012-Section09.js:442 [S09] Updated calculated display values for target mode
-4012-Section09.js:442 [S09] Updated calculated display values for target mode
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S03] Reference CALCULATED results stored (climate data + setpoints - INPUT fields excluded)
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
 4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
 4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
 4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
 24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S03] Target CALCULATED results stored (setpoints + derived values only - climate data already published)
+ [S12] U-agg TGT: TB%=20 → g_101=0.278341, g_102=0.324324
+ [S12] 🎯 TGT CLIMATE READ: d_20=4600, d_21=196
+ [S12DB] TGT CLIMATE: d_20=4600, d_21=196, d_22=2940, h_22=-1680
+ [S12DB] TGT h_101 calc: (4600*0.2783410626476887*24)/1000 = 30.728853316304836
+ [S12DB] TGT i_101 result: 30.728853316304836 * 2476.6199999999994 = 76103.69270022686
+ [S12DB] TGT g_104 calc: (0.2783410626476887*2476.6199999999994 + 0.3243243243243243*1100.42)/3577.0400009999994 = 0.2924870885578592
+ [S12DB] TGT ROW104: i_101=76103.69270022686, i_102=25182.368172972972, i_103=23178.387012790416 → i_104=124464.44788599026
+ [S12DB] TGT ROW104: h_21="Capacitance", k_98=-3293.5693790538335 → k_104=-3293.5693790538335
+ [S12DB] g_104 DISPLAY (target): 0.29248708863962714
+ [Section12] Calculated display values updated for target mode
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [S03] Reference CALCULATED results stored (climate data + setpoints - INPUT fields excluded)
+ [S09 DEBUG] calculateModel(isReference=false): Reading buildingType = "B2-Care and Treatment" from StateManager key "d_12"
+ [S01] j_32 listener: 129483.89157671704 → 185744.11557671704
+ [S01] 🕐 j_32 listener timing: StateManager current j_32 = 185744.11557671704
+2 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [StateManager DEBUG] i_71 setValue: "133639.99320000003" (state: calculated, prev: 95876.28120000001)
+ S10: Target listener triggered by i_71, recalculating all.
+ [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+ [StateManager DEBUG] i_79 setValue: "14626.7012" (state: calculated, prev: 14626.7012)
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [S01] j_32 listener: 185744.11557671704 → 181620.92244570903
+ [S01] 🕐 j_32 listener timing: StateManager current j_32 = 181620.92244570903
+2 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
+4011-StateManager.js:361 [StateManager DEBUG] ref_i_79 setValue: "10060.174319999998" (state: calculated, prev: 10060.174319999998)
+4012-Section10.js:2136 [S10REF] Utilization calc: ref_i_71=108949.40280000001, ref_i_79=10060.174319999998, totalGains=119009.57712
+4012-Section10.js:2150 [S10REF] Using utilization method: NRC 40%
+4012-Section10.js:2187 [S10REF] Final calc: utilizationFactor=0.4, usableGains=47603.830848000005
+4012-Section10.js:2230 [S10REF] Complete: g_80=0.4, g_81=0.9962888590496914, i_80=47603.830848000005, i_81=118567.91580487107
+ [S10 DEBUG] Dual-engine calculations complete in target mode
+ [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+ [S10DISPLAY] Display (target) m_73 = 50.00
+ [S10DISPLAY] Display (target) m_74 = 1.31
+ [S10DISPLAY] Display (target) m_75 = 76.94
+ [S10DISPLAY] Display (target) m_76 = 70.74
+ [S10DISPLAY] Display (target) m_77 = 25.86
+ [S10DISPLAY] Display (target) m_78 = 75.00
+ [S10DISPLAY] Display (target) i_73 = 375.00
+ [S10DISPLAY] Display (target) i_74 = 106.29
+ [S10DISPLAY] Display (target) i_75 = 294.68
+ [S10DISPLAY] Display (target) i_76 = 11,247.66
+ [S10DISPLAY] Display (target) i_77 = 2,603.07
+ [S10DISPLAY] Display (target) i_78 = 0.00
+ [S10DISPLAY] Display (target) i_79 = 14,626.70
+ [S10DISPLAY] Display (target) k_73 = 0.00
+ [S10DISPLAY] Display (target) k_74 = 0.00
+ [S10DISPLAY] Display (target) k_75 = 0.00
+ [S10DISPLAY] Display (target) k_76 = 0.00
+ [S10DISPLAY] Display (target) k_77 = 130.15
+ [S10DISPLAY] Display (target) k_78 = 0.00
+ [S10DISPLAY] Display (target) k_79 = 130.15
+ [S10DISPLAY] Display (target) j_73 = 2.56%
+ [S10DISPLAY] Display (target) j_74 = 0.73%
+ [S10DISPLAY] Display (target) j_75 = 2.01%
+ [S10DISPLAY] Display (target) j_76 = 76.90%
+ [S10DISPLAY] Display (target) j_77 = 17.80%
+ [S10DISPLAY] Display (target) j_78 = 0.00%
+ [S10DISPLAY] Display (target) j_79 = 100.00%
+ [S10DISPLAY] Display (target) l_73 = 0.00%
+ [S10DISPLAY] Display (target) l_74 = 0.00%
+ [S10DISPLAY] Display (target) l_75 = 0.00%
+ [S10DISPLAY] Display (target) l_76 = 0.00%
+ [S10DISPLAY] Display (target) l_77 = 100.00%
+ [S10DISPLAY] Display (target) l_78 = 0.00%
+ [S10DISPLAY] Display (target) l_79 = 100.00%
+ [S10DISPLAY] Display (target) e_80 = 148,266.69
+ [S10DISPLAY] Display (target) e_81 = 148,266.69
+ [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+ [S10DISPLAY] Display (target) g_80 = 40.00%
+ [S10DISPLAY] Display (target) g_81 = 89.13%
+ [S10DISPLAY] Display (target) i_80 = 59,306.68
+ [S10DISPLAY] Display (target) i_81 = 132,155.40
+ [S10DISPLAY] Display (target) i_82 = 88,960.02
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [S09] Updated calculated display values for target mode
+ [S09 DEBUG] calculateModel(isReference=false): Reading buildingType = "B2-Care and Treatment" from StateManager key "d_12"
+ [StateManager DEBUG] i_71 setValue: "133639.99320000003" (state: calculated, prev: 133639.99320000003)
+ [S09] Updated calculated display values for target mode
+ [S09 DEBUG] calculateModel(isReference=false): Reading buildingType = "B2-Care and Treatment" from StateManager key "d_12"
+ [StateManager DEBUG] i_71 setValue: "133639.99320000003" (state: calculated, prev: 133639.99320000003)
+ [S09] Updated calculated display values for target mode
+ [S09 DEBUG] calculateModel(isReference=true): Reading buildingType = "B1-Detention" from StateManager key "ref_d_12"
+4011-StateManager.js:361 [StateManager DEBUG] ref_i_71 setValue: "108949.40280000001" (state: calculated, prev: 108949.40280000001)
+4012-Section09.js:2010 [S09 DEBUG] calculateModel(isReference=false): Reading buildingType = "B2-Care and Treatment" from StateManager key "d_12"
+4011-StateManager.js:361 [StateManager DEBUG] i_71 setValue: "133639.99320000003" (state: calculated, prev: 133639.99320000003)
+4012-Section09.js:442 [S09] Updated calculated display values for target mode
+4012-Section02.js:1904 [S02 ModeManager] setValue d_12: currentMode="reference", will write to StateManager key="ref_d_12"
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-StateManager.js:361 [StateManager DEBUG] ref_d_12 setValue: "B2-Care and Treatment" (state: user-modified, prev: B1-Detention)
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
 4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
 4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
 24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
@@ -2832,14 +2386,933 @@ applyTooltip @ 4011-TooltipManager.js:605Understand this warningAI
 2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
  [S11] calculateAll TRIGGERED. isReferenceMode: false
 2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S03] Target CALCULATED results stored (setpoints + derived values only - climate data already published)
+ [S12] U-agg TGT: TB%=20 → g_101=0.278341, g_102=0.324324
+ [S12] 🎯 TGT CLIMATE READ: d_20=4600, d_21=196
+ [S12DB] TGT CLIMATE: d_20=4600, d_21=196, d_22=2940, h_22=-1680
+ [S12DB] TGT h_101 calc: (4600*0.2783410626476887*24)/1000 = 30.728853316304836
+ [S12DB] TGT i_101 result: 30.728853316304836 * 2476.6199999999994 = 76103.69270022686
+ [S12DB] TGT g_104 calc: (0.2783410626476887*2476.6199999999994 + 0.3243243243243243*1100.42)/3577.0400009999994 = 0.2924870885578592
+ [S12DB] TGT ROW104: i_101=76103.69270022686, i_102=25182.368172972972, i_103=23178.387012790416 → i_104=124464.44788599026
+ [S12DB] TGT ROW104: h_21="Capacitance", k_98=-3293.5693790538335 → k_104=-3293.5693790538335
+ [S12DB] g_104 DISPLAY (target): 0.29248708863962714
+ [Section12] Calculated display values updated for target mode
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ S10: Reference listener triggered by ref_i_98, recalculating all.
+ [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+ [StateManager DEBUG] i_79 setValue: "14626.7012" (state: calculated, prev: 14626.7012)
+ [StateManager DEBUG] ref_i_79 setValue: "10060.174319999998" (state: calculated, prev: 10060.174319999998)
+ [S10REF] Utilization calc: ref_i_71=108949.40280000001, ref_i_79=10060.174319999998, totalGains=119009.57712
+ [S10REF] Using utilization method: NRC 40%
+ [S10REF] Final calc: utilizationFactor=0.4, usableGains=47603.830848000005
+ [S10REF] Complete: g_80=0.4, g_81=0.9966348216050154, i_80=47603.830848000005, i_81=118609.08866227952
+ [S10 DEBUG] Dual-engine calculations complete in target mode
+ [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+ [S10DISPLAY] Display (target) m_73 = 50.00
+ [S10DISPLAY] Display (target) m_74 = 1.31
+ [S10DISPLAY] Display (target) m_75 = 76.94
+ [S10DISPLAY] Display (target) m_76 = 70.74
+ [S10DISPLAY] Display (target) m_77 = 25.86
+ [S10DISPLAY] Display (target) m_78 = 75.00
+ [S10DISPLAY] Display (target) i_73 = 375.00
+ [S10DISPLAY] Display (target) i_74 = 106.29
+ [S10DISPLAY] Display (target) i_75 = 294.68
+ [S10DISPLAY] Display (target) i_76 = 11,247.66
+ [S10DISPLAY] Display (target) i_77 = 2,603.07
+ [S10DISPLAY] Display (target) i_78 = 0.00
+ [S10DISPLAY] Display (target) i_79 = 14,626.70
+ [S10DISPLAY] Display (target) k_73 = 0.00
+ [S10DISPLAY] Display (target) k_74 = 0.00
+ [S10DISPLAY] Display (target) k_75 = 0.00
+ [S10DISPLAY] Display (target) k_76 = 0.00
+ [S10DISPLAY] Display (target) k_77 = 130.15
+ [S10DISPLAY] Display (target) k_78 = 0.00
+ [S10DISPLAY] Display (target) k_79 = 130.15
+ [S10DISPLAY] Display (target) j_73 = 2.56%
+ [S10DISPLAY] Display (target) j_74 = 0.73%
+ [S10DISPLAY] Display (target) j_75 = 2.01%
+ [S10DISPLAY] Display (target) j_76 = 76.90%
+ [S10DISPLAY] Display (target) j_77 = 17.80%
+ [S10DISPLAY] Display (target) j_78 = 0.00%
+ [S10DISPLAY] Display (target) j_79 = 100.00%
+ [S10DISPLAY] Display (target) l_73 = 0.00%
+ [S10DISPLAY] Display (target) l_74 = 0.00%
+ [S10DISPLAY] Display (target) l_75 = 0.00%
+ [S10DISPLAY] Display (target) l_76 = 0.00%
+ [S10DISPLAY] Display (target) l_77 = 100.00%
+ [S10DISPLAY] Display (target) l_78 = 0.00%
+ [S10DISPLAY] Display (target) l_79 = 100.00%
+ [S10DISPLAY] Display (target) e_80 = 148,266.69
+ [S10DISPLAY] Display (target) e_81 = 148,266.69
+ [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+ [S10DISPLAY] Display (target) g_80 = 40.00%
+ [S10DISPLAY] Display (target) g_81 = 89.13%
+ [S10DISPLAY] Display (target) i_80 = 59,306.68
+ [S10DISPLAY] Display (target) i_81 = 132,155.40
+ [S10DISPLAY] Display (target) i_82 = 88,960.02
+ S10: Reference utilization factor dependency ref_i_98 changed.
+ [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+ [S10DISPLAY] Display (target) m_73 = 50.00
+ [S10DISPLAY] Display (target) m_74 = 1.31
+ [S10DISPLAY] Display (target) m_75 = 76.94
+ [S10DISPLAY] Display (target) m_76 = 70.74
+ [S10DISPLAY] Display (target) m_77 = 25.86
+ [S10DISPLAY] Display (target) m_78 = 75.00
+ [S10DISPLAY] Display (target) i_73 = 375.00
+ [S10DISPLAY] Display (target) i_74 = 106.29
+ [S10DISPLAY] Display (target) i_75 = 294.68
+ [S10DISPLAY] Display (target) i_76 = 11,247.66
+ [S10DISPLAY] Display (target) i_77 = 2,603.07
+ [S10DISPLAY] Display (target) i_78 = 0.00
+ [S10DISPLAY] Display (target) i_79 = 14,626.70
+ [S10DISPLAY] Display (target) k_73 = 0.00
+ [S10DISPLAY] Display (target) k_74 = 0.00
+ [S10DISPLAY] Display (target) k_75 = 0.00
+ [S10DISPLAY] Display (target) k_76 = 0.00
+ [S10DISPLAY] Display (target) k_77 = 130.15
+ [S10DISPLAY] Display (target) k_78 = 0.00
+ [S10DISPLAY] Display (target) k_79 = 130.15
+ [S10DISPLAY] Display (target) j_73 = 2.56%
+ [S10DISPLAY] Display (target) j_74 = 0.73%
+ [S10DISPLAY] Display (target) j_75 = 2.01%
+ [S10DISPLAY] Display (target) j_76 = 76.90%
+ [S10DISPLAY] Display (target) j_77 = 17.80%
+ [S10DISPLAY] Display (target) j_78 = 0.00%
+ [S10DISPLAY] Display (target) j_79 = 100.00%
+ [S10DISPLAY] Display (target) l_73 = 0.00%
+ [S10DISPLAY] Display (target) l_74 = 0.00%
+ [S10DISPLAY] Display (target) l_75 = 0.00%
+ [S10DISPLAY] Display (target) l_76 = 0.00%
+ [S10DISPLAY] Display (target) l_77 = 100.00%
+ [S10DISPLAY] Display (target) l_78 = 0.00%
+ [S10DISPLAY] Display (target) l_79 = 100.00%
+4012-Section10.js:530 [S10DISPLAY] Display (target) e_80 = 148,266.69
+4012-Section10.js:530 [S10DISPLAY] Display (target) e_81 = 148,266.69
+4012-Section10.js:497 [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+4012-Section10.js:530 [S10DISPLAY] Display (target) g_80 = 40.00%
+4012-Section10.js:530 [S10DISPLAY] Display (target) g_81 = 89.13%
+4012-Section10.js:530 [S10DISPLAY] Display (target) i_80 = 59,306.68
+4012-Section10.js:530 [S10DISPLAY] Display (target) i_81 = 132,155.40
+4012-Section10.js:530 [S10DISPLAY] Display (target) i_82 = 88,960.02
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+ S10: Reference listener triggered by ref_i_97, recalculating all.
+ [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+ [StateManager DEBUG] i_79 setValue: "14626.7012" (state: calculated, prev: 14626.7012)
+ [StateManager DEBUG] ref_i_79 setValue: "10060.174319999998" (state: calculated, prev: 10060.174319999998)
+ [S10REF] Utilization calc: ref_i_71=108949.40280000001, ref_i_79=10060.174319999998, totalGains=119009.57712
+ [S10REF] Using utilization method: NRC 40%
+ [S10REF] Final calc: utilizationFactor=0.4, usableGains=47603.830848000005
+ [S10REF] Complete: g_80=0.4, g_81=0.9967934040358821, i_80=47603.830848000005, i_81=118627.96149031563
+ [S10 DEBUG] Dual-engine calculations complete in target mode
+ [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+ [S10DISPLAY] Display (target) m_73 = 50.00
+ [S10DISPLAY] Display (target) m_74 = 1.31
+ [S10DISPLAY] Display (target) m_75 = 76.94
+ [S10DISPLAY] Display (target) m_76 = 70.74
+ [S10DISPLAY] Display (target) m_77 = 25.86
+ [S10DISPLAY] Display (target) m_78 = 75.00
+ [S10DISPLAY] Display (target) i_73 = 375.00
+ [S10DISPLAY] Display (target) i_74 = 106.29
+ [S10DISPLAY] Display (target) i_75 = 294.68
+ [S10DISPLAY] Display (target) i_76 = 11,247.66
+ [S10DISPLAY] Display (target) i_77 = 2,603.07
+ [S10DISPLAY] Display (target) i_78 = 0.00
+ [S10DISPLAY] Display (target) i_79 = 14,626.70
+ [S10DISPLAY] Display (target) k_73 = 0.00
+ [S10DISPLAY] Display (target) k_74 = 0.00
+ [S10DISPLAY] Display (target) k_75 = 0.00
+ [S10DISPLAY] Display (target) k_76 = 0.00
+ [S10DISPLAY] Display (target) k_77 = 130.15
+ [S10DISPLAY] Display (target) k_78 = 0.00
+ [S10DISPLAY] Display (target) k_79 = 130.15
+ [S10DISPLAY] Display (target) j_73 = 2.56%
+ [S10DISPLAY] Display (target) j_74 = 0.73%
+ [S10DISPLAY] Display (target) j_75 = 2.01%
+ [S10DISPLAY] Display (target) j_76 = 76.90%
+ [S10DISPLAY] Display (target) j_77 = 17.80%
+ [S10DISPLAY] Display (target) j_78 = 0.00%
+ [S10DISPLAY] Display (target) j_79 = 100.00%
+ [S10DISPLAY] Display (target) l_73 = 0.00%
+ [S10DISPLAY] Display (target) l_74 = 0.00%
+ [S10DISPLAY] Display (target) l_75 = 0.00%
+ [S10DISPLAY] Display (target) l_76 = 0.00%
+ [S10DISPLAY] Display (target) l_77 = 100.00%
+ [S10DISPLAY] Display (target) l_78 = 0.00%
+ [S10DISPLAY] Display (target) l_79 = 100.00%
+ [S10DISPLAY] Display (target) e_80 = 148,266.69
+ [S10DISPLAY] Display (target) e_81 = 148,266.69
+ [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+ [S10DISPLAY] Display (target) g_80 = 40.00%
+ [S10DISPLAY] Display (target) g_81 = 89.13%
+ [S10DISPLAY] Display (target) i_80 = 59,306.68
+ [S10DISPLAY] Display (target) i_81 = 132,155.40
+ [S10DISPLAY] Display (target) i_82 = 88,960.02
+ S10: Reference utilization factor dependency ref_i_97 changed.
+ [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+ [S10DISPLAY] Display (target) m_73 = 50.00
+ [S10DISPLAY] Display (target) m_74 = 1.31
+ [S10DISPLAY] Display (target) m_75 = 76.94
+ [S10DISPLAY] Display (target) m_76 = 70.74
+ [S10DISPLAY] Display (target) m_77 = 25.86
+ [S10DISPLAY] Display (target) m_78 = 75.00
+ [S10DISPLAY] Display (target) i_73 = 375.00
+ [S10DISPLAY] Display (target) i_74 = 106.29
+ [S10DISPLAY] Display (target) i_75 = 294.68
+ [S10DISPLAY] Display (target) i_76 = 11,247.66
+ [S10DISPLAY] Display (target) i_77 = 2,603.07
+ [S10DISPLAY] Display (target) i_78 = 0.00
+ [S10DISPLAY] Display (target) i_79 = 14,626.70
+ [S10DISPLAY] Display (target) k_73 = 0.00
+ [S10DISPLAY] Display (target) k_74 = 0.00
+ [S10DISPLAY] Display (target) k_75 = 0.00
+ [S10DISPLAY] Display (target) k_76 = 0.00
+ [S10DISPLAY] Display (target) k_77 = 130.15
+ [S10DISPLAY] Display (target) k_78 = 0.00
+ [S10DISPLAY] Display (target) k_79 = 130.15
+ [S10DISPLAY] Display (target) j_73 = 2.56%
+ [S10DISPLAY] Display (target) j_74 = 0.73%
+ [S10DISPLAY] Display (target) j_75 = 2.01%
+ [S10DISPLAY] Display (target) j_76 = 76.90%
+ [S10DISPLAY] Display (target) j_77 = 17.80%
+ [S10DISPLAY] Display (target) j_78 = 0.00%
+ [S10DISPLAY] Display (target) j_79 = 100.00%
+ [S10DISPLAY] Display (target) l_73 = 0.00%
+ [S10DISPLAY] Display (target) l_74 = 0.00%
+ [S10DISPLAY] Display (target) l_75 = 0.00%
+ [S10DISPLAY] Display (target) l_76 = 0.00%
+ [S10DISPLAY] Display (target) l_77 = 100.00%
+ [S10DISPLAY] Display (target) l_78 = 0.00%
+ [S10DISPLAY] Display (target) l_79 = 100.00%
+ [S10DISPLAY] Display (target) e_80 = 148,266.69
+ [S10DISPLAY] Display (target) e_81 = 148,266.69
+ [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+ [S10DISPLAY] Display (target) g_80 = 40.00%
+4012-Section10.js:530 [S10DISPLAY] Display (target) g_81 = 89.13%
+4012-Section10.js:530 [S10DISPLAY] Display (target) i_80 = 59,306.68
+4012-Section10.js:530 [S10DISPLAY] Display (target) i_81 = 132,155.40
+4012-Section10.js:530 [S10DISPLAY] Display (target) i_82 = 88,960.02
 24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section03.js:1887 [S03] Target CALCULATED results stored (setpoints + derived values only - climate data already published)
-4012-Section12.js:1637 [S12] U-agg TGT: TB%=20 → g_101=0.278341, g_102=0.324324
-4012-Section12.js:1914 [S12] 🎯 TGT CLIMATE READ: d_20=4600, d_21=196
-4012-Section12.js:1992 [S12DB] TGT CLIMATE: d_20=4600, d_21=196, d_22=1960, h_22=-1680
-4012-Section12.js:2016 [S12DB] TGT h_101 calc: (4600*0.2783410626476887*24)/1000 = 30.728853316304836
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
+4012-Section01.js:1301 [S01] j_32 listener: 181620.92244570903 → 188565.25551613158
+4012-Section01.js:1302 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 188565.25551613158
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=27121.296597699657, E37_daily=138.3739622331615, E45(d_21)=196, E50=27121.296597699657, E51=67734.01555200001, E52=-40612.718954300355, E54(m_19)=120, E55(result)=-14.101638525798734
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [Cooling] ⚠️ Already calculating (mode=reference) - skipping to prevent recursion
+ [Cooling] ⚠️ Already calculating (mode=target) - skipping to prevent recursion
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=27121.296597699657, E37_daily=138.3739622331615, E45(d_21)=196, E50=27121.296597699657, E51=67734.01555200001, E52=-40612.718954300355, E54(m_19)=120, E55(result)=-14.101638525798734
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=27121.296597699657, E37_daily=138.3739622331615, E45(d_21)=196, E50=27121.296597699657, E51=67734.01555200001, E52=-40612.718954300355, E54(m_19)=120, E55(result)=-14.101638525798734
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [S03] Reference CALCULATED results stored (climate data + setpoints - INPUT fields excluded)
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S03] Target CALCULATED results stored (setpoints + derived values only - climate data already published)
+ [S12] U-agg TGT: TB%=20 → g_101=0.278341, g_102=0.324324
+ [S12] 🎯 TGT CLIMATE READ: d_20=4600, d_21=196
+ [S12DB] TGT CLIMATE: d_20=4600, d_21=196, d_22=2940, h_22=-1680
+ [S12DB] TGT h_101 calc: (4600*0.2783410626476887*24)/1000 = 30.728853316304836
+ [S12DB] TGT i_101 result: 30.728853316304836 * 2476.6199999999994 = 76103.69270022686
+ [S12DB] TGT g_104 calc: (0.2783410626476887*2476.6199999999994 + 0.3243243243243243*1100.42)/3577.0400009999994 = 0.2924870885578592
+ [S12DB] TGT ROW104: i_101=76103.69270022686, i_102=25182.368172972972, i_103=23178.387012790416 → i_104=124464.44788599026
+ [S12DB] TGT ROW104: h_21="Capacitance", k_98=-3293.5693790538335 → k_104=-3293.5693790538335
+ [S12DB] g_104 DISPLAY (target): 0.29248708863962714
+ [Section12] Calculated display values updated for target mode
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
+4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=27121.296597699657, E37_daily=138.3739622331615, E45(d_21)=196, E50=27121.296597699657, E51=67734.01555200001, E52=-40612.718954300355, E54(m_19)=120, E55(result)=-14.101638525798734
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
+4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=27121.296597699657, E37_daily=138.3739622331615, E45(d_21)=196, E50=27121.296597699657, E51=67734.01555200001, E52=-40612.718954300355, E54(m_19)=120, E55(result)=-14.101638525798734
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=27121.296597699657, E37_daily=138.3739622331615, E45(d_21)=196, E50=27121.296597699657, E51=67734.01555200001, E52=-40612.718954300355, E54(m_19)=120, E55(result)=-14.101638525798734
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
+4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=27121.296597699657, E37_daily=138.3739622331615, E45(d_21)=196, E50=27121.296597699657, E51=67734.01555200001, E52=-40612.718954300355, E54(m_19)=120, E55(result)=-14.101638525798734
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
+4012-Section03.js:1857 [S03] Reference CALCULATED results stored (climate data + setpoints - INPUT fields excluded)
+4012-Section09.js:2010 [S09 DEBUG] calculateModel(isReference=true): Reading buildingType = "B2-Care and Treatment" from StateManager key "ref_d_12"
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [StateManager DEBUG] ref_i_71 setValue: "159301.0188" (state: calculated, prev: 108949.40280000001)
+ S10: Reference listener triggered by ref_i_71, recalculating all.
+ [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+ [StateManager DEBUG] i_79 setValue: "14626.7012" (state: calculated, prev: 14626.7012)
+ [StateManager DEBUG] ref_i_79 setValue: "10060.174319999998" (state: calculated, prev: 10060.174319999998)
+ [S10REF] Utilization calc: ref_i_71=159301.0188, ref_i_79=10060.174319999998, totalGains=169361.19311999998
+ [S10REF] Using utilization method: NRC 40%
+ [S10REF] Final calc: utilizationFactor=0.4, usableGains=67744.477248
+2 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [S10REF] Complete: g_80=0.4, g_81=0.9852733230709347, i_80=67744.477248, i_81=166867.06554460071
+ [S10 DEBUG] Dual-engine calculations complete in target mode
+ [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+ [S10DISPLAY] Display (target) m_73 = 50.00
+ [S10DISPLAY] Display (target) m_74 = 1.31
+ [S10DISPLAY] Display (target) m_75 = 76.94
+ [S10DISPLAY] Display (target) m_76 = 70.74
+ [S10DISPLAY] Display (target) m_77 = 25.86
+ [S10DISPLAY] Display (target) m_78 = 75.00
+ [S10DISPLAY] Display (target) i_73 = 375.00
+ [S10DISPLAY] Display (target) i_74 = 106.29
+ [S10DISPLAY] Display (target) i_75 = 294.68
+ [S10DISPLAY] Display (target) i_76 = 11,247.66
+ [S10DISPLAY] Display (target) i_77 = 2,603.07
+ [S10DISPLAY] Display (target) i_78 = 0.00
+ [S10DISPLAY] Display (target) i_79 = 14,626.70
+ [S10DISPLAY] Display (target) k_73 = 0.00
+ [S10DISPLAY] Display (target) k_74 = 0.00
+ [S10DISPLAY] Display (target) k_75 = 0.00
+ [S10DISPLAY] Display (target) k_76 = 0.00
+ [S10DISPLAY] Display (target) k_77 = 130.15
+ [S10DISPLAY] Display (target) k_78 = 0.00
+ [S10DISPLAY] Display (target) k_79 = 130.15
+ [S10DISPLAY] Display (target) j_73 = 2.56%
+ [S10DISPLAY] Display (target) j_74 = 0.73%
+ [S10DISPLAY] Display (target) j_75 = 2.01%
+ [S10DISPLAY] Display (target) j_76 = 76.90%
+ [S10DISPLAY] Display (target) j_77 = 17.80%
+ [S10DISPLAY] Display (target) j_78 = 0.00%
+ [S10DISPLAY] Display (target) j_79 = 100.00%
+ [S10DISPLAY] Display (target) l_73 = 0.00%
+ [S10DISPLAY] Display (target) l_74 = 0.00%
+ [S10DISPLAY] Display (target) l_75 = 0.00%
+ [S10DISPLAY] Display (target) l_76 = 0.00%
+ [S10DISPLAY] Display (target) l_77 = 100.00%
+ [S10DISPLAY] Display (target) l_78 = 0.00%
+ [S10DISPLAY] Display (target) l_79 = 100.00%
+ [S10DISPLAY] Display (target) e_80 = 148,266.69
+ [S10DISPLAY] Display (target) e_81 = 148,266.69
+ [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+ [S10DISPLAY] Display (target) g_80 = 40.00%
+ [S10DISPLAY] Display (target) g_81 = 89.13%
+ [S10DISPLAY] Display (target) i_80 = 59,306.68
+ [S10DISPLAY] Display (target) i_81 = 132,155.40
+4012-Section10.js:530 [S10DISPLAY] Display (target) i_82 = 88,960.02
+4012-Section09.js:442 [S09] Updated calculated display values for target mode
+4012-Section09.js:2010 [S09 DEBUG] calculateModel(isReference=true): Reading buildingType = "B2-Care and Treatment" from StateManager key "ref_d_12"
+4011-StateManager.js:361 [StateManager DEBUG] ref_i_71 setValue: "159301.0188" (state: calculated, prev: 159301.0188)
+4012-Section09.js:442 [S09] Updated calculated display values for target mode
+4012-Section09.js:2010 [S09 DEBUG] calculateModel(isReference=true): Reading buildingType = "B2-Care and Treatment" from StateManager key "ref_d_12"
+4011-StateManager.js:361 [StateManager DEBUG] ref_i_71 setValue: "159301.0188" (state: calculated, prev: 159301.0188)
+4012-Section09.js:442 [S09] Updated calculated display values for target mode
+4012-Section02.js:863 [S02] Reference CALCULATED results stored (d_16 only - INPUT fields excluded)
+4012-Section01.js:1204 [S01DB] upstream snapshot {ref_j_32: '498694.330611747', ref_k_32: '25433.410861199096', j_32: '188565.25551613158', k_32: '9616.82803132271', ref_h_15: '1427.20', …}
+4012-Section01.js:755 🔍 [S01DB] updateTEUIDisplay START: e_10=341.2, h_10=132.12251647711014, useType=Utility Bills
+4012-Section01.js:825 🔍 [S01] T.1 Calculation: e_6=30.8 (ref), h_6=13.6 (target) → reduction should be 56%
+4012-Section01.js:917 🔍 [S01DB] UPDATING h_10: 132.1 (from j_32=188565.25551613158, area=1427.2)
+4012-Section01.js:511 🔍 [S01] h_6 explanation: target=13.6, ref=30.8, reduction=0.5584415584415585, percent=56%
+4011-Clock.js:65 🕐 [CLOCK] ⚡ CALCULATION COMPLETE: 167ms (subsequent update)
+4011-Clock.js:161 🕐 [CLOCK] ⚡ USER INTERACTION COMPLETE: 167ms (interaction → h_10 settlement)
+4012-Section01.js:1222 ✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-StateManager.js:361 [StateManager DEBUG] d_12 setValue: "A-Assembly" (state: user-modified, prev: B2-Care and Treatment)
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ S10: Target listener triggered by i_97, recalculating all.
+ [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+ [StateManager DEBUG] i_79 setValue: "14626.7012" (state: calculated, prev: 14626.7012)
+ [StateManager DEBUG] ref_i_79 setValue: "10060.174319999998" (state: calculated, prev: 10060.174319999998)
+ [S10REF] Utilization calc: ref_i_71=159301.0188, ref_i_79=10060.174319999998, totalGains=169361.19311999998
+ [S10REF] Using utilization method: NRC 40%
+ [S10REF] Final calc: utilizationFactor=0.4, usableGains=67744.477248
+ [S10REF] Complete: g_80=0.4, g_81=0.9852733230709347, i_80=67744.477248, i_81=166867.06554460071
+ [S10 DEBUG] Dual-engine calculations complete in target mode
+ [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+ [S10DISPLAY] Display (target) m_73 = 50.00
+ [S10DISPLAY] Display (target) m_74 = 1.31
+ [S10DISPLAY] Display (target) m_75 = 76.94
+ [S10DISPLAY] Display (target) m_76 = 70.74
+ [S10DISPLAY] Display (target) m_77 = 25.86
+ [S10DISPLAY] Display (target) m_78 = 75.00
+ [S10DISPLAY] Display (target) i_73 = 375.00
+ [S10DISPLAY] Display (target) i_74 = 106.29
+ [S10DISPLAY] Display (target) i_75 = 294.68
+ [S10DISPLAY] Display (target) i_76 = 11,247.66
+ [S10DISPLAY] Display (target) i_77 = 2,603.07
+ [S10DISPLAY] Display (target) i_78 = 0.00
+ [S10DISPLAY] Display (target) i_79 = 14,626.70
+ [S10DISPLAY] Display (target) k_73 = 0.00
+ [S10DISPLAY] Display (target) k_74 = 0.00
+ [S10DISPLAY] Display (target) k_75 = 0.00
+ [S10DISPLAY] Display (target) k_76 = 0.00
+ [S10DISPLAY] Display (target) k_77 = 130.15
+ [S10DISPLAY] Display (target) k_78 = 0.00
+ [S10DISPLAY] Display (target) k_79 = 130.15
+ [S10DISPLAY] Display (target) j_73 = 2.56%
+ [S10DISPLAY] Display (target) j_74 = 0.73%
+ [S10DISPLAY] Display (target) j_75 = 2.01%
+ [S10DISPLAY] Display (target) j_76 = 76.90%
+ [S10DISPLAY] Display (target) j_77 = 17.80%
+ [S10DISPLAY] Display (target) j_78 = 0.00%
+ [S10DISPLAY] Display (target) j_79 = 100.00%
+ [S10DISPLAY] Display (target) l_73 = 0.00%
+ [S10DISPLAY] Display (target) l_74 = 0.00%
+ [S10DISPLAY] Display (target) l_75 = 0.00%
+ [S10DISPLAY] Display (target) l_76 = 0.00%
+ [S10DISPLAY] Display (target) l_77 = 100.00%
+ [S10DISPLAY] Display (target) l_78 = 0.00%
+ [S10DISPLAY] Display (target) l_79 = 100.00%
+ [S10DISPLAY] Display (target) e_80 = 148,266.69
+ [S10DISPLAY] Display (target) e_81 = 148,266.69
+ [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+ [S10DISPLAY] Display (target) g_80 = 40.00%
+ [S10DISPLAY] Display (target) g_81 = 88.87%
+ [S10DISPLAY] Display (target) i_80 = 59,306.68
+ [S10DISPLAY] Display (target) i_81 = 131,767.26
+ [S10DISPLAY] Display (target) i_82 = 88,960.02
+ S10: Target utilization factor dependency i_97 changed.
+ [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+ [S10DISPLAY] Display (target) m_73 = 50.00
+ [S10DISPLAY] Display (target) m_74 = 1.31
+ [S10DISPLAY] Display (target) m_75 = 76.94
+ [S10DISPLAY] Display (target) m_76 = 70.74
+ [S10DISPLAY] Display (target) m_77 = 25.86
+ [S10DISPLAY] Display (target) m_78 = 75.00
+ [S10DISPLAY] Display (target) i_73 = 375.00
+ [S10DISPLAY] Display (target) i_74 = 106.29
+ [S10DISPLAY] Display (target) i_75 = 294.68
+ [S10DISPLAY] Display (target) i_76 = 11,247.66
+ [S10DISPLAY] Display (target) i_77 = 2,603.07
+ [S10DISPLAY] Display (target) i_78 = 0.00
+ [S10DISPLAY] Display (target) i_79 = 14,626.70
+ [S10DISPLAY] Display (target) k_73 = 0.00
+ [S10DISPLAY] Display (target) k_74 = 0.00
+ [S10DISPLAY] Display (target) k_75 = 0.00
+ [S10DISPLAY] Display (target) k_76 = 0.00
+ [S10DISPLAY] Display (target) k_77 = 130.15
+ [S10DISPLAY] Display (target) k_78 = 0.00
+ [S10DISPLAY] Display (target) k_79 = 130.15
+ [S10DISPLAY] Display (target) j_73 = 2.56%
+ [S10DISPLAY] Display (target) j_74 = 0.73%
+ [S10DISPLAY] Display (target) j_75 = 2.01%
+ [S10DISPLAY] Display (target) j_76 = 76.90%
+ [S10DISPLAY] Display (target) j_77 = 17.80%
+ [S10DISPLAY] Display (target) j_78 = 0.00%
+ [S10DISPLAY] Display (target) j_79 = 100.00%
+ [S10DISPLAY] Display (target) l_73 = 0.00%
+ [S10DISPLAY] Display (target) l_74 = 0.00%
+ [S10DISPLAY] Display (target) l_75 = 0.00%
+ [S10DISPLAY] Display (target) l_76 = 0.00%
+ [S10DISPLAY] Display (target) l_77 = 100.00%
+ [S10DISPLAY] Display (target) l_78 = 0.00%
+ [S10DISPLAY] Display (target) l_79 = 100.00%
+ [S10DISPLAY] Display (target) e_80 = 148,266.69
+ [S10DISPLAY] Display (target) e_81 = 148,266.69
+ [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+ [S10DISPLAY] Display (target) g_80 = 40.00%
+ [S10DISPLAY] Display (target) g_81 = 88.87%
+ [S10DISPLAY] Display (target) i_80 = 59,306.68
+ [S10DISPLAY] Display (target) i_81 = 131,767.26
+ [S10DISPLAY] Display (target) i_82 = 88,960.02
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=27121.296597699657, E37_daily=138.3739622331615, E45(d_21)=196, E50=27121.296597699657, E51=67734.01555200001, E52=-40612.718954300355, E54(m_19)=120, E55(result)=-14.101638525798734
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [S01] j_32 listener: 188565.25551613158 → 188183.37889299297
+ [S01] 🕐 j_32 listener timing: StateManager current j_32 = 188183.37889299297
+2 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
+4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=27121.296597699657, E37_daily=138.3739622331615, E45(d_21)=196, E50=27121.296597699657, E51=67734.01555200001, E52=-40612.718954300355, E54(m_19)=120, E55(result)=-14.101638525798734
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ S10: Target listener triggered by i_98, recalculating all.
+ [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+ [StateManager DEBUG] i_79 setValue: "14626.7012" (state: calculated, prev: 14626.7012)
+ [StateManager DEBUG] ref_i_79 setValue: "10060.174319999998" (state: calculated, prev: 10060.174319999998)
+ [S10REF] Utilization calc: ref_i_71=159301.0188, ref_i_79=10060.174319999998, totalGains=169361.19311999998
+ [S10REF] Using utilization method: NRC 40%
+ [S10REF] Final calc: utilizationFactor=0.4, usableGains=67744.477248
+ [S10REF] Complete: g_80=0.4, g_81=0.9852733230709347, i_80=67744.477248, i_81=166867.06554460071
+ [S10 DEBUG] Dual-engine calculations complete in target mode
+ [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+ [S10DISPLAY] Display (target) m_73 = 50.00
+ [S10DISPLAY] Display (target) m_74 = 1.31
+ [S10DISPLAY] Display (target) m_75 = 76.94
+ [S10DISPLAY] Display (target) m_76 = 70.74
+ [S10DISPLAY] Display (target) m_77 = 25.86
+ [S10DISPLAY] Display (target) m_78 = 75.00
+ [S10DISPLAY] Display (target) i_73 = 375.00
+ [S10DISPLAY] Display (target) i_74 = 106.29
+ [S10DISPLAY] Display (target) i_75 = 294.68
+ [S10DISPLAY] Display (target) i_76 = 11,247.66
+ [S10DISPLAY] Display (target) i_77 = 2,603.07
+ [S10DISPLAY] Display (target) i_78 = 0.00
+ [S10DISPLAY] Display (target) i_79 = 14,626.70
+ [S10DISPLAY] Display (target) k_73 = 0.00
+ [S10DISPLAY] Display (target) k_74 = 0.00
+ [S10DISPLAY] Display (target) k_75 = 0.00
+ [S10DISPLAY] Display (target) k_76 = 0.00
+ [S10DISPLAY] Display (target) k_77 = 130.15
+ [S10DISPLAY] Display (target) k_78 = 0.00
+ [S10DISPLAY] Display (target) k_79 = 130.15
+ [S10DISPLAY] Display (target) j_73 = 2.56%
+ [S10DISPLAY] Display (target) j_74 = 0.73%
+ [S10DISPLAY] Display (target) j_75 = 2.01%
+ [S10DISPLAY] Display (target) j_76 = 76.90%
+ [S10DISPLAY] Display (target) j_77 = 17.80%
+ [S10DISPLAY] Display (target) j_78 = 0.00%
+ [S10DISPLAY] Display (target) j_79 = 100.00%
+ [S10DISPLAY] Display (target) l_73 = 0.00%
+ [S10DISPLAY] Display (target) l_74 = 0.00%
+ [S10DISPLAY] Display (target) l_75 = 0.00%
+ [S10DISPLAY] Display (target) l_76 = 0.00%
+ [S10DISPLAY] Display (target) l_77 = 100.00%
+ [S10DISPLAY] Display (target) l_78 = 0.00%
+ [S10DISPLAY] Display (target) l_79 = 100.00%
+ [S10DISPLAY] Display (target) e_80 = 148,266.69
+ [S10DISPLAY] Display (target) e_81 = 148,266.69
+ [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+ [S10DISPLAY] Display (target) g_80 = 40.00%
+ [S10DISPLAY] Display (target) g_81 = 87.46%
+ [S10DISPLAY] Display (target) i_80 = 59,306.68
+ [S10DISPLAY] Display (target) i_81 = 129,680.23
+ [S10DISPLAY] Display (target) i_82 = 88,960.02
+ S10: Target utilization factor dependency i_98 changed.
+ [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+ [S10DISPLAY] Display (target) m_73 = 50.00
+ [S10DISPLAY] Display (target) m_74 = 1.31
+ [S10DISPLAY] Display (target) m_75 = 76.94
+ [S10DISPLAY] Display (target) m_76 = 70.74
+ [S10DISPLAY] Display (target) m_77 = 25.86
+ [S10DISPLAY] Display (target) m_78 = 75.00
+ [S10DISPLAY] Display (target) i_73 = 375.00
+ [S10DISPLAY] Display (target) i_74 = 106.29
+ [S10DISPLAY] Display (target) i_75 = 294.68
+ [S10DISPLAY] Display (target) i_76 = 11,247.66
+ [S10DISPLAY] Display (target) i_77 = 2,603.07
+ [S10DISPLAY] Display (target) i_78 = 0.00
+ [S10DISPLAY] Display (target) i_79 = 14,626.70
+ [S10DISPLAY] Display (target) k_73 = 0.00
+ [S10DISPLAY] Display (target) k_74 = 0.00
+ [S10DISPLAY] Display (target) k_75 = 0.00
+ [S10DISPLAY] Display (target) k_76 = 0.00
+ [S10DISPLAY] Display (target) k_77 = 130.15
+ [S10DISPLAY] Display (target) k_78 = 0.00
+ [S10DISPLAY] Display (target) k_79 = 130.15
+ [S10DISPLAY] Display (target) j_73 = 2.56%
+ [S10DISPLAY] Display (target) j_74 = 0.73%
+ [S10DISPLAY] Display (target) j_75 = 2.01%
+ [S10DISPLAY] Display (target) j_76 = 76.90%
+ [S10DISPLAY] Display (target) j_77 = 17.80%
+ [S10DISPLAY] Display (target) j_78 = 0.00%
+ [S10DISPLAY] Display (target) j_79 = 100.00%
+ [S10DISPLAY] Display (target) l_73 = 0.00%
+ [S10DISPLAY] Display (target) l_74 = 0.00%
+ [S10DISPLAY] Display (target) l_75 = 0.00%
+ [S10DISPLAY] Display (target) l_76 = 0.00%
+ [S10DISPLAY] Display (target) l_77 = 100.00%
+ [S10DISPLAY] Display (target) l_78 = 0.00%
+ [S10DISPLAY] Display (target) l_79 = 100.00%
+ [S10DISPLAY] Display (target) e_80 = 148,266.69
+ [S10DISPLAY] Display (target) e_81 = 148,266.69
+ [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+ [S10DISPLAY] Display (target) g_80 = 40.00%
+ [S10DISPLAY] Display (target) g_81 = 87.46%
+ [S10DISPLAY] Display (target) i_80 = 59,306.68
+ [S10DISPLAY] Display (target) i_81 = 129,680.23
+ [S10DISPLAY] Display (target) i_82 = 88,960.02
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=27121.296597699657, E37_daily=138.3739622331615, E45(d_21)=196, E50=27121.296597699657, E51=67734.01555200001, E52=-40612.718954300355, E54(m_19)=120, E55(result)=-14.101638525798734
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [S01] j_32 listener: 188183.37889299297 → 186273.9957773
+ [S01] 🕐 j_32 listener timing: StateManager current j_32 = 186273.9957773
+2 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=27121.296597699657, E37_daily=138.3739622331615, E45(d_21)=196, E50=27121.296597699657, E51=67734.01555200001, E52=-40612.718954300355, E54(m_19)=120, E55(result)=-14.101638525798734
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S03] Target CALCULATED results stored (setpoints + derived values only - climate data already published)
+ [S12] U-agg TGT: TB%=20 → g_101=0.278341, g_102=0.324324
+ [S12] 🎯 TGT CLIMATE READ: d_20=4600, d_21=196
+ [S12DB] TGT CLIMATE: d_20=4600, d_21=196, d_22=1960, h_22=-1680
+ [S12DB] TGT h_101 calc: (4600*0.2783410626476887*24)/1000 = 30.728853316304836
+ [S12DB] TGT i_101 result: 30.728853316304836 * 2476.6199999999994 = 76103.69270022686
+ [S12DB] TGT g_104 calc: (0.2783410626476887*2476.6199999999994 + 0.3243243243243243*1100.42)/3577.0400009999994 = 0.2924870885578592
+ [S12DB] TGT ROW104: i_101=76103.69270022686, i_102=16788.24544864865, i_103=23178.387012790416 → i_104=116070.32516166594
+ [S12DB] TGT ROW104: h_21="Capacitance", k_98=-3293.5693790538335 → k_104=-3293.5693790538335
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=27121.296597699657, E37_daily=138.3739622331615, E45(d_21)=196, E50=27121.296597699657, E51=67734.01555200001, E52=-40612.718954300355, E54(m_19)=120, E55(result)=-14.101638525798734
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=27121.296597699657, E37_daily=138.3739622331615, E45(d_21)=196, E50=27121.296597699657, E51=67734.01555200001, E52=-40612.718954300355, E54(m_19)=120, E55(result)=-14.101638525798734
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [S12DB] g_104 DISPLAY (target): 0.29248708863962714
+ [Section12] Calculated display values updated for target mode
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=27121.296597699657, E37_daily=138.3739622331615, E45(d_21)=196, E50=27121.296597699657, E51=67734.01555200001, E52=-40612.718954300355, E54(m_19)=120, E55(result)=-14.101638525798734
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=27121.296597699657, E37_daily=138.3739622331615, E45(d_21)=196, E50=27121.296597699657, E51=67734.01555200001, E52=-40612.718954300355, E54(m_19)=120, E55(result)=-14.101638525798734
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=27121.296597699657, E37_daily=138.3739622331615, E45(d_21)=196, E50=27121.296597699657, E51=67734.01555200001, E52=-40612.718954300355, E54(m_19)=120, E55(result)=-14.101638525798734
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
+4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=27121.296597699657, E37_daily=138.3739622331615, E45(d_21)=196, E50=27121.296597699657, E51=67734.01555200001, E52=-40612.718954300355, E54(m_19)=120, E55(result)=-14.101638525798734
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [S03] Reference CALCULATED results stored (climate data + setpoints - INPUT fields excluded)
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S03] Target CALCULATED results stored (setpoints + derived values only - climate data already published)
+ [S12] U-agg TGT: TB%=20 → g_101=0.278341, g_102=0.324324
+ [S12] 🎯 TGT CLIMATE READ: d_20=4600, d_21=196
+ [S12DB] TGT CLIMATE: d_20=4600, d_21=196, d_22=1960, h_22=-1680
+ [S12DB] TGT h_101 calc: (4600*0.2783410626476887*24)/1000 = 30.728853316304836
 4012-Section12.js:2019 [S12DB] TGT i_101 result: 30.728853316304836 * 2476.6199999999994 = 76103.69270022686
 4012-Section12.js:2168 [S12DB] TGT g_104 calc: (0.2783410626476887*2476.6199999999994 + 0.3243243243243243*1100.42)/3577.0400009999994 = 0.2924870885578592
 4012-Section12.js:2195 [S12DB] TGT ROW104: i_101=76103.69270022686, i_102=16788.24544864865, i_103=23178.387012790416 → i_104=116070.32516166594
@@ -2849,20 +3322,83 @@ applyTooltip @ 4011-TooltipManager.js:605Understand this warningAI
 4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
 4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
 4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=27121.296597699657, E37_daily=138.3739622331615, E45(d_21)=196, E50=27121.296597699657, E51=67734.01555200001, E52=-40612.718954300355, E54(m_19)=120, E55(result)=-14.101638525798734
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
 4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
 4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
 24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
 24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
 4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
+4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=27121.296597699657, E37_daily=138.3739622331615, E45(d_21)=196, E50=27121.296597699657, E51=67734.01555200001, E52=-40612.718954300355, E54(m_19)=120, E55(result)=-14.101638525798734
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=27121.296597699657, E37_daily=138.3739622331615, E45(d_21)=196, E50=27121.296597699657, E51=67734.01555200001, E52=-40612.718954300355, E54(m_19)=120, E55(result)=-14.101638525798734
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
 4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
 4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
 4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
@@ -2870,27 +3406,401 @@ applyTooltip @ 4011-TooltipManager.js:605Understand this warningAI
 4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
 4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
 4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=8624.784597699656, E37_daily=44.00400304948804, E45(d_21)=196, E50=8624.784597699656, E51=67734.01555200001, E52=-59109.23095430036, E54(m_19)=120, E55(result)=-20.524038525798737
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=27121.296597699657, E37_daily=138.3739622331615, E45(d_21)=196, E50=27121.296597699657, E51=67734.01555200001, E52=-40612.718954300355, E54(m_19)=120, E55(result)=-14.101638525798734
 4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Section01.js:1301 [S01] j_32 listener: 132985.63526777347 → 133757.22783115375
-4012-Section01.js:1302 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 133757.22783115375
+ [S03] Reference CALCULATED results stored (climate data + setpoints - INPUT fields excluded)
+ [S09 DEBUG] calculateModel(isReference=false): Reading buildingType = "A-Assembly" from StateManager key "d_12"
+ [S01] j_32 listener: 186273.9957773 → 136264.9077773
+ [S01] 🕐 j_32 listener timing: StateManager current j_32 = 136264.9077773
+2 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [StateManager DEBUG] i_71 setValue: "100072.2492" (state: calculated, prev: 133639.99320000003)
+ S10: Target listener triggered by i_71, recalculating all.
+ [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+ [StateManager DEBUG] i_79 setValue: "14626.7012" (state: calculated, prev: 14626.7012)
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
+4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=27121.296597699657, E37_daily=138.3739622331615, E45(d_21)=196, E50=27121.296597699657, E51=67734.01555200001, E52=-40612.718954300355, E54(m_19)=120, E55(result)=-14.101638525798734
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
+4012-Section01.js:1301 [S01] j_32 listener: 136264.9077773 → 139929.968338196
+4012-Section01.js:1302 [S01] 🕐 j_32 listener timing: StateManager current j_32 = 139929.968338196
 24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=27121.296597699657, E37_daily=138.3739622331615, E45(d_21)=196, E50=27121.296597699657, E51=67734.01555200001, E52=-40612.718954300355, E54(m_19)=120, E55(result)=-14.101638525798734
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [StateManager DEBUG] ref_i_79 setValue: "10060.174319999998" (state: calculated, prev: 10060.174319999998)
+ [S10REF] Utilization calc: ref_i_71=159301.0188, ref_i_79=10060.174319999998, totalGains=169361.19311999998
+ [S10REF] Using utilization method: NRC 40%
+ [S10REF] Final calc: utilizationFactor=0.4, usableGains=67744.477248
+ [S10REF] Complete: g_80=0.4, g_81=0.9852733230709347, i_80=67744.477248, i_81=166867.06554460071
+ [S10 DEBUG] Dual-engine calculations complete in target mode
+ [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+ [S10DISPLAY] Display (target) m_73 = 50.00
+ [S10DISPLAY] Display (target) m_74 = 1.31
+ [S10DISPLAY] Display (target) m_75 = 76.94
+ [S10DISPLAY] Display (target) m_76 = 70.74
+ [S10DISPLAY] Display (target) m_77 = 25.86
+ [S10DISPLAY] Display (target) m_78 = 75.00
+ [S10DISPLAY] Display (target) i_73 = 375.00
+ [S10DISPLAY] Display (target) i_74 = 106.29
+ [S10DISPLAY] Display (target) i_75 = 294.68
+ [S10DISPLAY] Display (target) i_76 = 11,247.66
+ [S10DISPLAY] Display (target) i_77 = 2,603.07
+ [S10DISPLAY] Display (target) i_78 = 0.00
+ [S10DISPLAY] Display (target) i_79 = 14,626.70
+ [S10DISPLAY] Display (target) k_73 = 0.00
+ [S10DISPLAY] Display (target) k_74 = 0.00
+ [S10DISPLAY] Display (target) k_75 = 0.00
+ [S10DISPLAY] Display (target) k_76 = 0.00
+ [S10DISPLAY] Display (target) k_77 = 130.15
+ [S10DISPLAY] Display (target) k_78 = 0.00
+ [S10DISPLAY] Display (target) k_79 = 130.15
+ [S10DISPLAY] Display (target) j_73 = 2.56%
+ [S10DISPLAY] Display (target) j_74 = 0.73%
+ [S10DISPLAY] Display (target) j_75 = 2.01%
+ [S10DISPLAY] Display (target) j_76 = 76.90%
+ [S10DISPLAY] Display (target) j_77 = 17.80%
+ [S10DISPLAY] Display (target) j_78 = 0.00%
+ [S10DISPLAY] Display (target) j_79 = 100.00%
+ [S10DISPLAY] Display (target) l_73 = 0.00%
+ [S10DISPLAY] Display (target) l_74 = 0.00%
+ [S10DISPLAY] Display (target) l_75 = 0.00%
+ [S10DISPLAY] Display (target) l_76 = 0.00%
+ [S10DISPLAY] Display (target) l_77 = 100.00%
+ [S10DISPLAY] Display (target) l_78 = 0.00%
+ [S10DISPLAY] Display (target) l_79 = 100.00%
+ [S10DISPLAY] Display (target) e_80 = 114,698.95
+ [S10DISPLAY] Display (target) e_81 = 114,698.95
+ [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+ [S10DISPLAY] Display (target) g_80 = 40.00%
+ [S10DISPLAY] Display (target) g_81 = 94.43%
+ [S10DISPLAY] Display (target) i_80 = 45,879.58
+ [S10DISPLAY] Display (target) i_81 = 108,308.11
+ [S10DISPLAY] Display (target) i_82 = 68,819.37
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=27121.296597699657, E37_daily=138.3739622331615, E45(d_21)=196, E50=27121.296597699657, E51=67734.01555200001, E52=-40612.718954300355, E54(m_19)=120, E55(result)=-14.101638525798734
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
 4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
 4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
 4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
 4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
+4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=27121.296597699657, E37_daily=138.3739622331615, E45(d_21)=196, E50=27121.296597699657, E51=67734.01555200001, E52=-40612.718954300355, E54(m_19)=120, E55(result)=-14.101638525798734
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [S09] Updated calculated display values for target mode
+ [S09 DEBUG] calculateModel(isReference=false): Reading buildingType = "A-Assembly" from StateManager key "d_12"
+ [StateManager DEBUG] i_71 setValue: "100072.2492" (state: calculated, prev: 100072.2492)
+ [S09] Updated calculated display values for target mode
+ [S09 DEBUG] calculateModel(isReference=false): Reading buildingType = "A-Assembly" from StateManager key "d_12"
+ [StateManager DEBUG] i_71 setValue: "100072.2492" (state: calculated, prev: 100072.2492)
+ [S09] Updated calculated display values for target mode
+ [S09 DEBUG] calculateModel(isReference=true): Reading buildingType = "B2-Care and Treatment" from StateManager key "ref_d_12"
+ [StateManager DEBUG] ref_i_71 setValue: "159301.0188" (state: calculated, prev: 159301.0188)
+ [S09 DEBUG] calculateModel(isReference=false): Reading buildingType = "A-Assembly" from StateManager key "d_12"
+ [StateManager DEBUG] i_71 setValue: "100072.2492" (state: calculated, prev: 100072.2492)
+ [S09] Updated calculated display values for target mode
+ [S02 ModeManager] setValue d_12: currentMode="reference", will write to StateManager key="ref_d_12"
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [StateManager DEBUG] ref_d_12 setValue: "A-Assembly" (state: user-modified, prev: B2-Care and Treatment)
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=35392.36, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=35392.36, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S03] Target CALCULATED results stored (setpoints + derived values only - climate data already published)
+ [S12] U-agg TGT: TB%=20 → g_101=0.278341, g_102=0.324324
+ [S12] 🎯 TGT CLIMATE READ: d_20=4600, d_21=196
+ [S12DB] TGT CLIMATE: d_20=4600, d_21=196, d_22=1960, h_22=-1680
+ [S12DB] TGT h_101 calc: (4600*0.2783410626476887*24)/1000 = 30.728853316304836
+ [S12DB] TGT i_101 result: 30.728853316304836 * 2476.6199999999994 = 76103.69270022686
+ [S12DB] TGT g_104 calc: (0.2783410626476887*2476.6199999999994 + 0.3243243243243243*1100.42)/3577.0400009999994 = 0.2924870885578592
+ [S12DB] TGT ROW104: i_101=76103.69270022686, i_102=16788.24544864865, i_103=23178.387012790416 → i_104=116070.32516166594
+ [S12DB] TGT ROW104: h_21="Capacitance", k_98=-3293.5693790538335 → k_104=-3293.5693790538335
+ [S12DB] g_104 DISPLAY (target): 0.29248708863962714
+ [Section12] Calculated display values updated for target mode
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section10.js:2772 S10: Reference listener triggered by ref_i_98, recalculating all.
+4012-Section10.js:1915 [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+4011-StateManager.js:361 [StateManager DEBUG] i_79 setValue: "14626.7012" (state: calculated, prev: 14626.7012)
+4011-StateManager.js:361 [StateManager DEBUG] ref_i_79 setValue: "10060.174319999998" (state: calculated, prev: 10060.174319999998)
+ [S10REF] Utilization calc: ref_i_71=159301.0188, ref_i_79=10060.174319999998, totalGains=169361.19311999998
+ [S10REF] Using utilization method: NRC 40%
+ [S10REF] Final calc: utilizationFactor=0.4, usableGains=67744.477248
+ [S10REF] Complete: g_80=0.4, g_81=0.9839030559288453, i_80=67744.477248, i_81=166634.9954665233
+ [S10 DEBUG] Dual-engine calculations complete in target mode
+ [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+ [S10DISPLAY] Display (target) m_73 = 50.00
+ [S10DISPLAY] Display (target) m_74 = 1.31
+ [S10DISPLAY] Display (target) m_75 = 76.94
+ [S10DISPLAY] Display (target) m_76 = 70.74
+ [S10DISPLAY] Display (target) m_77 = 25.86
+ [S10DISPLAY] Display (target) m_78 = 75.00
+ [S10DISPLAY] Display (target) i_73 = 375.00
+ [S10DISPLAY] Display (target) i_74 = 106.29
+ [S10DISPLAY] Display (target) i_75 = 294.68
+ [S10DISPLAY] Display (target) i_76 = 11,247.66
+ [S10DISPLAY] Display (target) i_77 = 2,603.07
+ [S10DISPLAY] Display (target) i_78 = 0.00
+ [S10DISPLAY] Display (target) i_79 = 14,626.70
+ [S10DISPLAY] Display (target) k_73 = 0.00
+ [S10DISPLAY] Display (target) k_74 = 0.00
+ [S10DISPLAY] Display (target) k_75 = 0.00
+ [S10DISPLAY] Display (target) k_76 = 0.00
+ [S10DISPLAY] Display (target) k_77 = 130.15
+ [S10DISPLAY] Display (target) k_78 = 0.00
+ [S10DISPLAY] Display (target) k_79 = 130.15
+ [S10DISPLAY] Display (target) j_73 = 2.56%
+ [S10DISPLAY] Display (target) j_74 = 0.73%
+ [S10DISPLAY] Display (target) j_75 = 2.01%
+ [S10DISPLAY] Display (target) j_76 = 76.90%
+ [S10DISPLAY] Display (target) j_77 = 17.80%
+ [S10DISPLAY] Display (target) j_78 = 0.00%
+ [S10DISPLAY] Display (target) j_79 = 100.00%
+ [S10DISPLAY] Display (target) l_73 = 0.00%
+ [S10DISPLAY] Display (target) l_74 = 0.00%
+ [S10DISPLAY] Display (target) l_75 = 0.00%
+ [S10DISPLAY] Display (target) l_76 = 0.00%
+ [S10DISPLAY] Display (target) l_77 = 100.00%
+ [S10DISPLAY] Display (target) l_78 = 0.00%
+ [S10DISPLAY] Display (target) l_79 = 100.00%
+ [S10DISPLAY] Display (target) e_80 = 114,698.95
+ [S10DISPLAY] Display (target) e_81 = 114,698.95
+ [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+ [S10DISPLAY] Display (target) g_80 = 40.00%
+ [S10DISPLAY] Display (target) g_81 = 94.43%
+ [S10DISPLAY] Display (target) i_80 = 45,879.58
+ [S10DISPLAY] Display (target) i_81 = 108,308.11
+ [S10DISPLAY] Display (target) i_82 = 68,819.37
+ S10: Reference utilization factor dependency ref_i_98 changed.
+ [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+ [S10DISPLAY] Display (target) m_73 = 50.00
+ [S10DISPLAY] Display (target) m_74 = 1.31
+ [S10DISPLAY] Display (target) m_75 = 76.94
+ [S10DISPLAY] Display (target) m_76 = 70.74
+ [S10DISPLAY] Display (target) m_77 = 25.86
+ [S10DISPLAY] Display (target) m_78 = 75.00
+ [S10DISPLAY] Display (target) i_73 = 375.00
+ [S10DISPLAY] Display (target) i_74 = 106.29
+ [S10DISPLAY] Display (target) i_75 = 294.68
+ [S10DISPLAY] Display (target) i_76 = 11,247.66
+ [S10DISPLAY] Display (target) i_77 = 2,603.07
+ [S10DISPLAY] Display (target) i_78 = 0.00
+ [S10DISPLAY] Display (target) i_79 = 14,626.70
+ [S10DISPLAY] Display (target) k_73 = 0.00
+ [S10DISPLAY] Display (target) k_74 = 0.00
+ [S10DISPLAY] Display (target) k_75 = 0.00
+ [S10DISPLAY] Display (target) k_76 = 0.00
+ [S10DISPLAY] Display (target) k_77 = 130.15
+ [S10DISPLAY] Display (target) k_78 = 0.00
+ [S10DISPLAY] Display (target) k_79 = 130.15
+ [S10DISPLAY] Display (target) j_73 = 2.56%
+ [S10DISPLAY] Display (target) j_74 = 0.73%
+ [S10DISPLAY] Display (target) j_75 = 2.01%
+ [S10DISPLAY] Display (target) j_76 = 76.90%
+ [S10DISPLAY] Display (target) j_77 = 17.80%
+ [S10DISPLAY] Display (target) j_78 = 0.00%
+ [S10DISPLAY] Display (target) j_79 = 100.00%
+ [S10DISPLAY] Display (target) l_73 = 0.00%
+ [S10DISPLAY] Display (target) l_74 = 0.00%
+ [S10DISPLAY] Display (target) l_75 = 0.00%
+ [S10DISPLAY] Display (target) l_76 = 0.00%
+ [S10DISPLAY] Display (target) l_77 = 100.00%
+ [S10DISPLAY] Display (target) l_78 = 0.00%
+ [S10DISPLAY] Display (target) l_79 = 100.00%
+ [S10DISPLAY] Display (target) e_80 = 114,698.95
+ [S10DISPLAY] Display (target) e_81 = 114,698.95
+ [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+ [S10DISPLAY] Display (target) g_80 = 40.00%
+ [S10DISPLAY] Display (target) g_81 = 94.43%
+ [S10DISPLAY] Display (target) i_80 = 45,879.58
+ [S10DISPLAY] Display (target) i_81 = 108,308.11
+ [S10DISPLAY] Display (target) i_82 = 68,819.37
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+ S10: Reference listener triggered by ref_i_97, recalculating all.
+ [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+ [StateManager DEBUG] i_79 setValue: "14626.7012" (state: calculated, prev: 14626.7012)
+ [StateManager DEBUG] ref_i_79 setValue: "10060.174319999998" (state: calculated, prev: 10060.174319999998)
+ [S10REF] Utilization calc: ref_i_71=159301.0188, ref_i_79=10060.174319999998, totalGains=169361.19311999998
+ [S10REF] Using utilization method: NRC 40%
+ [S10REF] Final calc: utilizationFactor=0.4, usableGains=67744.477248
+ [S10REF] Complete: g_80=0.4, g_81=0.9831627784433606, i_80=67744.477248, i_81=166509.62118834176
+ [S10 DEBUG] Dual-engine calculations complete in target mode
+ [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+ [S10DISPLAY] Display (target) m_73 = 50.00
+ [S10DISPLAY] Display (target) m_74 = 1.31
+ [S10DISPLAY] Display (target) m_75 = 76.94
+ [S10DISPLAY] Display (target) m_76 = 70.74
+ [S10DISPLAY] Display (target) m_77 = 25.86
+ [S10DISPLAY] Display (target) m_78 = 75.00
+ [S10DISPLAY] Display (target) i_73 = 375.00
+ [S10DISPLAY] Display (target) i_74 = 106.29
+ [S10DISPLAY] Display (target) i_75 = 294.68
+ [S10DISPLAY] Display (target) i_76 = 11,247.66
+ [S10DISPLAY] Display (target) i_77 = 2,603.07
+ [S10DISPLAY] Display (target) i_78 = 0.00
+ [S10DISPLAY] Display (target) i_79 = 14,626.70
+ [S10DISPLAY] Display (target) k_73 = 0.00
+ [S10DISPLAY] Display (target) k_74 = 0.00
+ [S10DISPLAY] Display (target) k_75 = 0.00
+ [S10DISPLAY] Display (target) k_76 = 0.00
+ [S10DISPLAY] Display (target) k_77 = 130.15
+ [S10DISPLAY] Display (target) k_78 = 0.00
+ [S10DISPLAY] Display (target) k_79 = 130.15
+ [S10DISPLAY] Display (target) j_73 = 2.56%
+ [S10DISPLAY] Display (target) j_74 = 0.73%
+ [S10DISPLAY] Display (target) j_75 = 2.01%
+ [S10DISPLAY] Display (target) j_76 = 76.90%
+ [S10DISPLAY] Display (target) j_77 = 17.80%
+ [S10DISPLAY] Display (target) j_78 = 0.00%
+ [S10DISPLAY] Display (target) j_79 = 100.00%
+ [S10DISPLAY] Display (target) l_73 = 0.00%
+ [S10DISPLAY] Display (target) l_74 = 0.00%
+ [S10DISPLAY] Display (target) l_75 = 0.00%
+ [S10DISPLAY] Display (target) l_76 = 0.00%
+ [S10DISPLAY] Display (target) l_77 = 100.00%
+ [S10DISPLAY] Display (target) l_78 = 0.00%
+ [S10DISPLAY] Display (target) l_79 = 100.00%
+ [S10DISPLAY] Display (target) e_80 = 114,698.95
+ [S10DISPLAY] Display (target) e_81 = 114,698.95
+ [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+ [S10DISPLAY] Display (target) g_80 = 40.00%
+ [S10DISPLAY] Display (target) g_81 = 94.43%
+ [S10DISPLAY] Display (target) i_80 = 45,879.58
+ [S10DISPLAY] Display (target) i_81 = 108,308.11
+ [S10DISPLAY] Display (target) i_82 = 68,819.37
+ S10: Reference utilization factor dependency ref_i_97 changed.
+ [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+ [S10DISPLAY] Display (target) m_73 = 50.00
+ [S10DISPLAY] Display (target) m_74 = 1.31
+ [S10DISPLAY] Display (target) m_75 = 76.94
+ [S10DISPLAY] Display (target) m_76 = 70.74
+ [S10DISPLAY] Display (target) m_77 = 25.86
+ [S10DISPLAY] Display (target) m_78 = 75.00
+ [S10DISPLAY] Display (target) i_73 = 375.00
+ [S10DISPLAY] Display (target) i_74 = 106.29
+ [S10DISPLAY] Display (target) i_75 = 294.68
+ [S10DISPLAY] Display (target) i_76 = 11,247.66
+ [S10DISPLAY] Display (target) i_77 = 2,603.07
+ [S10DISPLAY] Display (target) i_78 = 0.00
+ [S10DISPLAY] Display (target) i_79 = 14,626.70
+ [S10DISPLAY] Display (target) k_73 = 0.00
+ [S10DISPLAY] Display (target) k_74 = 0.00
+ [S10DISPLAY] Display (target) k_75 = 0.00
+ [S10DISPLAY] Display (target) k_76 = 0.00
+ [S10DISPLAY] Display (target) k_77 = 130.15
+ [S10DISPLAY] Display (target) k_78 = 0.00
+ [S10DISPLAY] Display (target) k_79 = 130.15
+ [S10DISPLAY] Display (target) j_73 = 2.56%
+ [S10DISPLAY] Display (target) j_74 = 0.73%
+ [S10DISPLAY] Display (target) j_75 = 2.01%
+ [S10DISPLAY] Display (target) j_76 = 76.90%
+ [S10DISPLAY] Display (target) j_77 = 17.80%
+ [S10DISPLAY] Display (target) j_78 = 0.00%
+ [S10DISPLAY] Display (target) j_79 = 100.00%
+ [S10DISPLAY] Display (target) l_73 = 0.00%
+ [S10DISPLAY] Display (target) l_74 = 0.00%
+ [S10DISPLAY] Display (target) l_75 = 0.00%
+ [S10DISPLAY] Display (target) l_76 = 0.00%
+ [S10DISPLAY] Display (target) l_77 = 100.00%
+ [S10DISPLAY] Display (target) l_78 = 0.00%
+4012-Section10.js:530 [S10DISPLAY] Display (target) l_79 = 100.00%
+4012-Section10.js:530 [S10DISPLAY] Display (target) e_80 = 114,698.95
+4012-Section10.js:530 [S10DISPLAY] Display (target) e_81 = 114,698.95
+4012-Section10.js:497 [S10DISPLAY] g_80 DEBUG: mode=target, valueToDisplay=0.4
+4012-Section10.js:530 [S10DISPLAY] Display (target) g_80 = 40.00%
+4012-Section10.js:530 [S10DISPLAY] Display (target) g_81 = 94.43%
+4012-Section10.js:530 [S10DISPLAY] Display (target) i_80 = 45,879.58
+4012-Section10.js:530 [S10DISPLAY] Display (target) i_81 = 108,308.11
+4012-Section10.js:530 [S10DISPLAY] Display (target) i_82 = 68,819.37
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=27121.296597699657, E37_daily=138.3739622331615, E45(d_21)=196, E50=27121.296597699657, E51=67734.01555200001, E52=-40612.718954300355, E54(m_19)=120, E55(result)=-14.101638525798734
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [S01] j_32 listener: 139929.968338196 → 133757.22783115375
+ [S01] 🕐 j_32 listener timing: StateManager current j_32 = 133757.22783115375
+2 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
 4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
 4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
 4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
@@ -2900,11 +3810,11 @@ applyTooltip @ 4011-TooltipManager.js:605Understand this warningAI
 4012-Cooling.js:454 [Cooling] ⚠️ Already calculating (mode=target) - skipping to prevent recursion
 4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
 4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
  [S11] calculateAll TRIGGERED. isReferenceMode: false
 2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
  [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
@@ -2916,136 +3826,6 @@ applyTooltip @ 4011-TooltipManager.js:605Understand this warningAI
  [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
  [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
  [Cooling] 🚀 Starting cooling calculations (mode=target)...
- [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
- [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
- [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
- [Cooling] 📊 Publishing results with prefix="" (mode=target)
- [S11] calculateAll TRIGGERED. isReferenceMode: false
-2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4012-Section03.js:1857 [S03] Reference CALCULATED results stored (climate data + setpoints - INPUT fields excluded)
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [S11] calculateAll TRIGGERED. isReferenceMode: false
-2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
- [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section03.js:1887 [S03] Target CALCULATED results stored (setpoints + derived values only - climate data already published)
-4012-Section12.js:1637 [S12] U-agg TGT: TB%=20 → g_101=0.278341, g_102=0.324324
-4012-Section12.js:1914 [S12] 🎯 TGT CLIMATE READ: d_20=4600, d_21=196
-4012-Section12.js:1992 [S12DB] TGT CLIMATE: d_20=4600, d_21=196, d_22=1960, h_22=-1680
-4012-Section12.js:2016 [S12DB] TGT h_101 calc: (4600*0.2783410626476887*24)/1000 = 30.728853316304836
-4012-Section12.js:2019 [S12DB] TGT i_101 result: 30.728853316304836 * 2476.6199999999994 = 76103.69270022686
-4012-Section12.js:2168 [S12DB] TGT g_104 calc: (0.2783410626476887*2476.6199999999994 + 0.3243243243243243*1100.42)/3577.0400009999994 = 0.2924870885578592
-4012-Section12.js:2195 [S12DB] TGT ROW104: i_101=76103.69270022686, i_102=16788.24544864865, i_103=23178.387012790416 → i_104=116070.32516166594
-4012-Section12.js:2198 [S12DB] TGT ROW104: h_21="Capacitance", k_98=-3293.5693790538335 → k_104=-3293.5693790538335
-4012-Section12.js:299 [S12DB] g_104 DISPLAY (target): 0.29248708863962714
-4012-Section12.js:303 [Section12] Calculated display values updated for target mode
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [Cooling] 🚀 Starting cooling calculations (mode=reference)...
- [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
- [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
- [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
- [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
- [Cooling] 🚀 Starting cooling calculations (mode=target)...
- [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
- [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
- [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
- [Cooling] 📊 Publishing results with prefix="" (mode=target)
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
-24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
-4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
-24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
-4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
-4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
-4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
-4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
-4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
 4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
 4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
 4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
@@ -3071,29 +3851,163 @@ applyTooltip @ 4011-TooltipManager.js:605Understand this warningAI
  [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
  [Cooling] 📊 Publishing results with prefix="" (mode=target)
  [S03] Reference CALCULATED results stored (climate data + setpoints - INPUT fields excluded)
-2 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+4011-Clock.js:146 [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S03] Target CALCULATED results stored (setpoints + derived values only - climate data already published)
+ [S12] U-agg TGT: TB%=20 → g_101=0.278341, g_102=0.324324
+ [S12] 🎯 TGT CLIMATE READ: d_20=4600, d_21=196
+ [S12DB] TGT CLIMATE: d_20=4600, d_21=196, d_22=1960, h_22=-1680
+ [S12DB] TGT h_101 calc: (4600*0.2783410626476887*24)/1000 = 30.728853316304836
+ [S12DB] TGT i_101 result: 30.728853316304836 * 2476.6199999999994 = 76103.69270022686
+ [S12DB] TGT g_104 calc: (0.2783410626476887*2476.6199999999994 + 0.3243243243243243*1100.42)/3577.0400009999994 = 0.2924870885578592
+ [S12DB] TGT ROW104: i_101=76103.69270022686, i_102=16788.24544864865, i_103=23178.387012790416 → i_104=116070.32516166594
+ [S12DB] TGT ROW104: h_21="Capacitance", k_98=-3293.5693790538335 → k_104=-3293.5693790538335
+ [S12DB] g_104 DISPLAY (target): 0.29248708863962714
+ [Section12] Calculated display values updated for target mode
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 🚀 Starting cooling calculations (mode=target)...
+ [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
+ [Cooling] 📊 Publishing results with prefix="" (mode=target)
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+24012-Section11.js:1443 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+ [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
+4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
+4012-Section11.js:1957 [S11] calculateAll TRIGGERED. isReferenceMode: false
+24012-Section11.js:1438 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+4012-Section11.js:1510 [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+4012-Section11.js:1693 [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [S11] calculateAll TRIGGERED. isReferenceMode: false
+2 [S11] 🔵 REF CLIMATE READ: h_22=-1680
+ [S11] REF TB%=50% → ref_i_97=31694.95, ref_k_97=-2133.81
+ [S11] Writing ref penalty: ref_i_97=31694.95, ref_k_97=-2133.81
+2 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
+ [Cooling] 🚀 Starting cooling calculations (mode=reference)...
+ [Cooling] Free cooling calc: massFlow=9.599 kg/s, ΔT=3.6°C → 826.52 kWh/day → 99181.95 kWh/yr
+ [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+ [Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0, E45(d_21)=196, E50=0, E51=67734.01555200001, E52=-67734.01555200001, E54(m_19)=120, E55(result)=-23.518755400000003
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+4012-Cooling.js:461 [Cooling] 🚀 Starting cooling calculations (mode=target)...
+4012-Cooling.js:293 [Cooling] Free cooling calc: massFlow=4.013 kg/s, ΔT=3.6°C → 345.58 kWh/day → 41469.81 kWh/yr
+4012-Cooling.js:408 [Cooling A33 PHYSICS] d_120=3333.333333333333, l_119=None, A28=3333.333333333333, A29=3.333333333333333, A30=4.013333333333333, A16=3.5700000000000003, A31=14399.238, A32=1244094163.2, A33=345.58171200000004
+4012-Cooling.js:362 [Cooling m_124 COOLING-TARGET] m_129_annual=10679.952597699661, E37_daily=54.48955406989623, E45(d_21)=196, E50=10679.952597699661, E51=67734.01555200001, E52=-57054.06295430035, E54(m_19)=120, E55(result)=-19.810438525798734
+4012-Cooling.js:535 [Cooling] 📊 Publishing results with prefix="" (mode=target)
+4012-Section03.js:1857 [S03] Reference CALCULATED results stored (climate data + setpoints - INPUT fields excluded)
+4012-Section09.js:2010 [S09 DEBUG] calculateModel(isReference=true): Reading buildingType = "A-Assembly" from StateManager key "ref_d_12"
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [StateManager DEBUG] ref_i_71 setValue: "113145.3708" (state: calculated, prev: 159301.0188)
  S10: Reference listener triggered by ref_i_71, recalculating all.
  [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+ [StateManager DEBUG] i_79 setValue: "14626.7012" (state: calculated, prev: 14626.7012)
+ [StateManager DEBUG] ref_i_79 setValue: "10060.174319999998" (state: calculated, prev: 10060.174319999998)
  [S10REF] Utilization calc: ref_i_71=113145.3708, ref_i_79=10060.174319999998, totalGains=123205.54512
  [S10REF] Using utilization method: NRC 40%
  [S10REF] Final calc: utilizationFactor=0.4, usableGains=49282.218048
-2 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [S10REF] Complete: g_80=0.4, g_81=0.9956709734049238, i_80=49282.218048, i_81=122672.18503851465
- [S10 DEBUG] Dual-engine calculations complete in target mode
- [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
- [S10DISPLAY] Display (target) m_73 = 50.00
- [S10DISPLAY] Display (target) m_74 = 1.31
- [S10DISPLAY] Display (target) m_75 = 76.94
- [S10DISPLAY] Display (target) m_76 = 70.74
- [S10DISPLAY] Display (target) m_77 = 25.86
- [S10DISPLAY] Display (target) m_78 = 75.00
- [S10DISPLAY] Display (target) i_73 = 375.00
- [S10DISPLAY] Display (target) i_74 = 106.29
- [S10DISPLAY] Display (target) i_75 = 294.68
- [S10DISPLAY] Display (target) i_76 = 11,247.66
- [S10DISPLAY] Display (target) i_77 = 2,603.07
- [S10DISPLAY] Display (target) i_78 = 0.00
- [S10DISPLAY] Display (target) i_79 = 14,626.70
+24012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Section10.js:2230 [S10REF] Complete: g_80=0.4, g_81=0.9956709734049238, i_80=49282.218048, i_81=122672.18503851465
+4012-Section10.js:1923 [S10 DEBUG] Dual-engine calculations complete in target mode
+4012-Section10.js:423 [S10DISPLAY] updateCalculatedDisplayValues() called in target mode
+4012-Section10.js:530 [S10DISPLAY] Display (target) m_73 = 50.00
+4012-Section10.js:530 [S10DISPLAY] Display (target) m_74 = 1.31
+4012-Section10.js:530 [S10DISPLAY] Display (target) m_75 = 76.94
+4012-Section10.js:530 [S10DISPLAY] Display (target) m_76 = 70.74
+4012-Section10.js:530 [S10DISPLAY] Display (target) m_77 = 25.86
+4012-Section10.js:530 [S10DISPLAY] Display (target) m_78 = 75.00
+4012-Section10.js:530 [S10DISPLAY] Display (target) i_73 = 375.00
+4012-Section10.js:530 [S10DISPLAY] Display (target) i_74 = 106.29
+4012-Section10.js:530 [S10DISPLAY] Display (target) i_75 = 294.68
+4012-Section10.js:530 [S10DISPLAY] Display (target) i_76 = 11,247.66
+4012-Section10.js:530 [S10DISPLAY] Display (target) i_77 = 2,603.07
+4012-Section10.js:530 [S10DISPLAY] Display (target) i_78 = 0.00
+4012-Section10.js:530 [S10DISPLAY] Display (target) i_79 = 14,626.70
 4012-Section10.js:530 [S10DISPLAY] Display (target) k_73 = 0.00
 4012-Section10.js:530 [S10DISPLAY] Display (target) k_74 = 0.00
 4012-Section10.js:530 [S10DISPLAY] Display (target) k_75 = 0.00
@@ -3123,13 +4037,19 @@ applyTooltip @ 4011-TooltipManager.js:605Understand this warningAI
 4012-Section10.js:530 [S10DISPLAY] Display (target) i_80 = 45,879.58
 4012-Section10.js:530 [S10DISPLAY] Display (target) i_81 = 108,308.11
 4012-Section10.js:530 [S10DISPLAY] Display (target) i_82 = 68,819.37
-34012-Section09.js:442 [S09] Updated calculated display values for target mode
+4012-Section09.js:442 [S09] Updated calculated display values for target mode
+4012-Section09.js:2010 [S09 DEBUG] calculateModel(isReference=true): Reading buildingType = "A-Assembly" from StateManager key "ref_d_12"
+4011-StateManager.js:361 [StateManager DEBUG] ref_i_71 setValue: "113145.3708" (state: calculated, prev: 113145.3708)
+4012-Section09.js:442 [S09] Updated calculated display values for target mode
+4012-Section09.js:2010 [S09 DEBUG] calculateModel(isReference=true): Reading buildingType = "A-Assembly" from StateManager key "ref_d_12"
+4011-StateManager.js:361 [StateManager DEBUG] ref_i_71 setValue: "113145.3708" (state: calculated, prev: 113145.3708)
+4012-Section09.js:442 [S09] Updated calculated display values for target mode
 4012-Section02.js:863 [S02] Reference CALCULATED results stored (d_16 only - INPUT fields excluded)
 4012-Section01.js:1204 [S01DB] upstream snapshot {ref_j_32: '448394.0938117469', ref_k_32: '22868.09878439909', j_32: '133757.22783115375', k_32: '6821.618619388841', ref_h_15: '1427.20', …}
 4012-Section01.js:755 🔍 [S01DB] updateTEUIDisplay START: e_10=341.2, h_10=93.72003071129046, useType=Utility Bills
 4012-Section01.js:825 🔍 [S01] T.1 Calculation: e_6=29 (ref), h_6=11.7 (target) → reduction should be 60%
 4012-Section01.js:917 🔍 [S01DB] UPDATING h_10: 93.7 (from j_32=133757.22783115375, area=1427.2)
 4012-Section01.js:511 🔍 [S01] h_6 explanation: target=11.7, ref=29, reduction=0.596551724137931, percent=60%
-4011-Clock.js:65 🕐 [CLOCK] ⚡ CALCULATION COMPLETE: 336ms (subsequent update)
-4011-Clock.js:161 🕐 [CLOCK] ⚡ USER INTERACTION COMPLETE: 336ms (interaction → h_10 settlement)
+4011-Clock.js:65 🕐 [CLOCK] ⚡ CALCULATION COMPLETE: 167ms (subsequent update)
+4011-Clock.js:161 🕐 [CLOCK] ⚡ USER INTERACTION COMPLETE: 167ms (interaction → h_10 settlement)
 4012-Section01.js:1222 ✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10

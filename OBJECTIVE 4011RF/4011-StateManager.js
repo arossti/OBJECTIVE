@@ -356,6 +356,14 @@ TEUI.StateManager = (function () {
       console.trace("[StateManager] ref_h_15 setValue stack trace:");
     }
 
+    // 🔍 CRITICAL DEBUG: Track d_12/ref_d_12 writes with full call stack to find mystery caller
+    if (fieldId === "d_12" || fieldId === "ref_d_12") {
+      console.log(
+        `[StateManager TRACE] ${fieldId} setValue: "${value}" (state: ${state}, prev: ${fields.get(fieldId)?.value})`,
+      );
+      console.trace(`[StateManager] ${fieldId} call stack:`);
+    }
+
     // Check if we're in Reference Mode and this is an independently editable field
     if (
       window.TEUI &&
