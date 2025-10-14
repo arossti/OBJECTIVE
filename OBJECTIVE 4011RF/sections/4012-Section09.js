@@ -2647,7 +2647,10 @@ window.TEUI.SectionModules.sect09 = (function () {
     const dropdownFields = [
       { fieldId: "g_67", description: "Equipment efficiency" },
       { fieldId: "d_68", description: "Elevator status" },
-      { fieldId: "d_12", description: "Building type" },
+      // ❌ REMOVED d_12: S09 should NOT listen to S02's dropdown directly
+      // S09 already has StateManager listeners for d_12/ref_d_12 (lines 2301-2309)
+      // Listening to the dropdown causes state mixing because S09's ModeManager
+      // is in target mode while S02's dropdown is in reference mode
     ];
 
     // Set up listeners for all relevant dropdowns
