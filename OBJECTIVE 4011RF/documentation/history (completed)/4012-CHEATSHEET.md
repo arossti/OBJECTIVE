@@ -118,17 +118,20 @@ const calculatedFields = [
 **Symptom:** Reference mode changes in one section cause Target model recalculations. Unprefixed values are written to StateManager even though only prefixed values should be written.
 
 **Example Bug:**
+
 ```javascript
 // ❌ WRONG: S09 listening to S02's d_12 dropdown
 function setupEquipmentDropdownListeners() {
   const dropdownFields = [
-    { fieldId: "g_67" },  // ✅ OK - S09's own field
-    { fieldId: "d_12" },  // ❌ WRONG - S02's field!
+    { fieldId: "g_67" }, // ✅ OK - S09's own field
+    { fieldId: "d_12" }, // ❌ WRONG - S02's field!
   ];
 
   dropdownFields.forEach((field) => {
-    const dropdown = document.querySelector(`[data-field-id="${field.fieldId}"]`);
-    dropdown.addEventListener("change", function() {
+    const dropdown = document.querySelector(
+      `[data-field-id="${field.fieldId}"]`,
+    );
+    dropdown.addEventListener("change", function () {
       // This writes using S09's ModeManager, which is in target mode
       // even when S02's dropdown is in reference mode!
       ModeManager.setValue(field.fieldId, this.value); // ❌ State mixing!
@@ -138,6 +141,7 @@ function setupEquipmentDropdownListeners() {
 ```
 
 **The Problem Chain:**
+
 1. User changes d_12 in S02 Reference mode
 2. S09's DOM listener fires (attached to same dropdown)
 3. S09's `ModeManager.currentMode` is "target" (default)
@@ -164,8 +168,8 @@ window.TEUI.StateManager.addListener("ref_d_12", () => {
 // ✅ CORRECT: Only listen to YOUR OWN fields via DOM
 function setupEquipmentDropdownListeners() {
   const dropdownFields = [
-    { fieldId: "g_67" },  // ✅ S09's field - OK to listen
-    { fieldId: "d_68" },  // ✅ S09's field - OK to listen
+    { fieldId: "g_67" }, // ✅ S09's field - OK to listen
+    { fieldId: "d_68" }, // ✅ S09's field - OK to listen
     // d_12 removed - belongs to S02!
   ];
 }
@@ -176,6 +180,7 @@ function setupEquipmentDropdownListeners() {
 When you see unexpected Target model changes from Reference mode operations:
 
 1. **Add call stack trace to StateManager.setValue():**
+
 ```javascript
 if (fieldId === "d_12" || fieldId === "ref_d_12") {
   console.log(`[StateManager TRACE] ${fieldId} setValue: "${value}"`);
@@ -184,10 +189,12 @@ if (fieldId === "d_12" || fieldId === "ref_d_12") {
 ```
 
 2. **Look for the pattern:**
+
    - Unprefixed write BEFORE prefixed write = cross-section listener
    - Call stack shows different section than expected = DOM listener contamination
 
 3. **Check for cross-section DOM listeners:**
+
    - Search for `querySelector.*data-field-id.*${problematic_field}`
    - Look for sections listening to fields they don't own
    - Verify each section only listens to its own fields via DOM
@@ -197,6 +204,7 @@ if (fieldId === "d_12" || fieldId === "ref_d_12") {
    - Listeners should be mode-selective (only run appropriate engine)
 
 **Key Principle:**
+
 - **DOM listeners** = Section's OWN input fields only
 - **StateManager listeners** = External dependencies from other sections
 

@@ -3,7 +3,7 @@
 ## Lightweight Implementation Plan for Global Reference System
 
 > **Status**: Implementation-Ready Specification  
-> **Current Issue**: "Show Reference" button crashes due to architecture mismatch  (fixed, doesn't crash now)
+> **Current Issue**: "Show Reference" button crashes due to architecture mismatch (fixed, doesn't crash now)
 > **Goal**: Minimal-code solution leveraging existing dual-state architecture and CSS system  
 > **Key Principle**: Maximum reuse of existing patterns, zero architectural changes
 
@@ -48,7 +48,7 @@
 #### **1. Display-Only System**
 
 - **Purpose**: Switch display between Target and Reference **calculated & ReferenceValues only**
-- **No Calculation Changes**: System must not modify, trigger, or interfere with calculations - except when a Reference Overlay is set by the user by modifying ref_d_13, or by selecting 'Mirror Target' model. 
+- **No Calculation Changes**: System must not modify, trigger, or interfere with calculations - except when a Reference Overlay is set by the user by modifying ref_d_13, or by selecting 'Mirror Target' model.
 - **Pre-Calculated Values**: Both Target and Reference values are already calculated by dual-state engines
 - **UI Toggle Only**: Master toggle is purely a display/styling system (but with ability for user to write to target or reference models based on mode)
 
@@ -180,19 +180,20 @@ const dependencies = [
    - User edits: Change specific Reference values to test variations
    - This must set all Reference model input values to be the same as the Target model. This could use the FileHandler methods we use for importing values, where a script imports and maps target values to the Reference values in a kind of internal round-trip then caclulateAll run. Or it could simply look up Target values and set Reference values to the same... then allow calculations. Calculated cells in both models would thus derive the same results
 
-2. **Mirror Target + Reference**: Match Target model input values BUT with an overlay for relevant building code standards mapped via ReferenceValues.js, based on what Reference System is set at ref_d_13 in S02. 
+2. **Mirror Target + Reference**: Match Target model input values BUT with an overlay for relevant building code standards mapped via ReferenceValues.js, based on what Reference System is set at ref_d_13 in S02.
 
    - Target: 1500m² Toronto heatpump building (actual design)
    - Reference: 1500m² Toronto building with code minimum insulation values and equipment efficiencies from ReferenceValues.js
    - Comparison: Actual design vs code compliance
 
 3. **Independent Models**: Complete freedom - any building vs any building
+
    - Target: 1500m² Toronto heatpump building in 2024
    - Reference: 2000m² Vancouver gas building in 2030
    - Comparison: Completely different scenarios
    - This is the default way the app is set up after initialization
 
-   In all three variations, after any ReferenceValues are set for Input fields in the Reference Model, a user can simply over-ride them afterwards. 
+   In all three variations, after any ReferenceValues are set for Input fields in the Reference Model, a user can simply over-ride them afterwards.
 
 #### **Why Complete Listener Pairs Are Critical**:
 

@@ -24,13 +24,16 @@ We attempted to implement "Mirror Target" functionality (copy all Target values 
 ## What We Attempted
 
 ### The Vision (from 4012-REFERENCE.md)
+
 Create "Mirror Target" mode that:
+
 1. User selects "Mirror Target" from ref_d_13 dropdown in Section 02
 2. All Reference input fields automatically copy from Target
 3. Reference model recalculates with identical inputs
 4. Result: e_10 (Reference TEUI) === h_10 (Target TEUI)
 
 ### The Implementation Approach
+
 1. Added "Mirror Target" entry to ReferenceValues.js with all fields set to `"{{MIRROR}}"`
 2. Modified each section's `setDefaults()` to detect {{MIRROR}} tokens and read from Target StateManager
 3. Added `ref_d_13` listeners to all sections
@@ -38,6 +41,7 @@ Create "Mirror Target" mode that:
 5. Ensured `calculateAll()` and `updateCalculatedDisplayValues()` always run
 
 ### Commits Made
+
 ```
 e87bb16 - 🐛 CRITICAL FIX: Add missing onReferenceStandardChange methods
 a498f9e - 🐛 FIX: Trigger Reference calculations after Mirror Target mirroring
@@ -50,6 +54,7 @@ e3aaff6 - ✨ IMPLEMENT: Mirror Target via ReferenceValues.js (Sections 02-05, 1
 ```
 
 ### Files Modified
+
 - **Documentation**: 4012-REFERENCE.md (strategic plan)
 - **ReferenceValues.js**: Added "Mirror Target" entry with {{MIRROR}} tokens
 - **Section 02**: Added "Mirror Target" dropdown option
@@ -60,7 +65,9 @@ e3aaff6 - ✨ IMPLEMENT: Mirror Target via ReferenceValues.js (Sections 02-05, 1
 ## What Went Wrong
 
 ### 1. Architectural Inconsistency
+
 **Problem**: Sections have different patterns
+
 - Some have `ModeManager.refreshUI()` and `ModeManager.updateCalculatedDisplayValues()`
 - Some don't have ModeManager at all
 - Some have `ReferenceState.saveState()`, others don't
@@ -69,19 +76,24 @@ e3aaff6 - ✨ IMPLEMENT: Mirror Target via ReferenceValues.js (Sections 02-05, 1
 **Impact**: Can't apply consistent pattern across all sections
 
 ### 2. Over-Engineering
+
 **Problem**: Required modifying 14 section files
+
 - Each section needed resolveValue() helper
 - Each section needed ref_d_13 listener
 - Each section needed onReferenceStandardChange() method
 - Each section needed to wrap fields with resolveValue()
 
 **Impact**:
+
 - Hundreds of lines of repetitive code
 - Hard to maintain and debug
 - Easy to miss sections or make mistakes
 
 ### 3. Breaking Existing Functionality
+
 **Evidence from Logs.md**:
+
 - Line 1644: `TypeError: section.modeManager.refreshUI is not a function`
 - Sections showing zeros instead of calculated values
 - S01 Reference totals not updating (e_6, e_8, e_10)
@@ -90,30 +102,36 @@ e3aaff6 - ✨ IMPLEMENT: Mirror Target via ReferenceValues.js (Sections 02-05, 1
 **Impact**: Made existing Reference mode worse, not better
 
 ### 4. Incomplete Implementation
+
 **What worked**:
+
 - S05, S06, S12, S14 partially worked (had all methods)
 - Values were being read from StateManager
 - Some sections loaded defaults
 
 **What didn't work**:
+
 - S07, S08, S10, S13, S15 initially missing onReferenceStandardChange()
 - Calculations not propagating through sections
 - UI not updating properly
 - Reference model showing stale/wrong values
 
 ### 5. Wrong Abstraction Layer
+
 **Realization**: We're solving this at the WRONG level
+
 - Section-level: Complex, requires coordinating 14 files
 - StateManager-level: Simple, bulk operations, proven pattern
 
 **Key insight**: FileHandler's Excel import ALREADY does exactly what we want:
+
 ```javascript
 // FileHandler pattern (works perfectly)
 window.TEUI.StateManager.muteListeners();
 try {
   // Bulk write all values
   Object.entries(mappedValues).forEach(([fieldId, value]) => {
-    window.TEUI.StateManager.setValue(fieldId, value, 'import');
+    window.TEUI.StateManager.setValue(fieldId, value, "import");
   });
 } finally {
   window.TEUI.StateManager.unmuteListeners();
@@ -126,12 +144,14 @@ calculator.calculateAll(); // Clean recalculation
 ## Lessons Learned
 
 ### ✅ What Worked Well
+
 1. **Documentation-first approach**: 4012-REFERENCE.md clarified requirements and architecture
 2. **{{MIRROR}} token concept**: Clean way to represent "copy from Target"
 3. **ReferenceValues.js structure**: Good place to define reference standards
 4. **Systematic testing**: Found bugs through user testing (Logs.md analysis)
 
 ### ❌ What Didn't Work
+
 1. **Section-by-section modifications**: Too many files to coordinate
 2. **Assuming sections have consistent APIs**: They don't (ModeManager, saveState, etc.)
 3. **Ignoring proven patterns**: FileHandler already solves bulk value copying
@@ -140,6 +160,7 @@ calculator.calculateAll(); // Clean recalculation
 ### 🎯 Key Insights for Next Attempt
 
 #### 1. Use StateManager-Level Operations (Like FileHandler)
+
 ```javascript
 // GOOD: Centralized, simple, proven
 function mirrorTargetToReference() {
@@ -148,9 +169,9 @@ function mirrorTargetToReference() {
 
   sm.muteListeners(); // Quarantine pattern
   try {
-    allFields.forEach(fieldId => {
+    allFields.forEach((fieldId) => {
       const targetValue = sm.getValue(fieldId);
-      sm.setValue(`ref_${fieldId}`, targetValue, 'mirror');
+      sm.setValue(`ref_${fieldId}`, targetValue, "mirror");
     });
   } finally {
     sm.unmuteListeners();
@@ -162,6 +183,7 @@ function mirrorTargetToReference() {
 ```
 
 **Advantages**:
+
 - ✅ One function, ~20 lines of code
 - ✅ Works for ALL sections automatically
 - ✅ Uses proven FileHandler pattern
@@ -169,29 +191,35 @@ function mirrorTargetToReference() {
 - ✅ Centralized in one place (index.html or ReferenceToggle.js)
 
 #### 2. Leverage ExcelMapper Field Lists
+
 **Discovery**: ExcelMapper already has complete field lists
+
 - `excelReportInputMapping`: All Target input fields
 - `excelReferenceInputMapping`: All Reference input fields
 - These are THE authoritative source
 
 **Use them**:
+
 ```javascript
 // Get all input field IDs from ExcelMapper
 const allInputFields = Object.values(ExcelMapper.excelReportInputMapping)
   .flat()
-  .map(field => field.teui_id);
+  .map((field) => field.teui_id);
 
 // Mirror them all
-allInputFields.forEach(fieldId => {
-  if (fieldId !== 'd_13') { // Skip standard selector
+allInputFields.forEach((fieldId) => {
+  if (fieldId !== "d_13") {
+    // Skip standard selector
     const targetValue = sm.getValue(fieldId);
-    sm.setValue(`ref_${fieldId}`, targetValue, 'mirror');
+    sm.setValue(`ref_${fieldId}`, targetValue, "mirror");
   }
 });
 ```
 
 #### 3. Don't Modify Section Files
+
 **Principle**: Section files should ONLY:
+
 - Define UI structure
 - Define calculations
 - React to state changes (via listeners)
@@ -199,15 +227,17 @@ allInputFields.forEach(fieldId => {
 **Never**: Have section files orchestrate cross-section operations like "mirror all values"
 
 #### 4. Use Quarantine Pattern
+
 **From FileHandler** (proven to work):
+
 ```javascript
-muteListeners();     // Prevent premature calculations
+muteListeners(); // Prevent premature calculations
 try {
   // ... bulk value writes ...
 } finally {
   unmuteListeners(); // Always unmute
 }
-calculateAll();      // Clean recalculation with all values loaded
+calculateAll(); // Clean recalculation with all values loaded
 ```
 
 This prevents calculation cascade during bulk operations.
@@ -217,6 +247,7 @@ This prevents calculation cascade during bulk operations.
 ## Recommended Next Steps
 
 ### Option 1: FileHandler-Based Approach (RECOMMENDED)
+
 1. Create `mirrorTargetToReference()` function in index.html or ReferenceToggle.js
 2. Use ExcelMapper field lists to get all input field IDs
 3. Use quarantine pattern (mute → bulk write → unmute → calculate)
@@ -228,6 +259,7 @@ This prevents calculation cascade during bulk operations.
 **Maintainability**: High (one function)
 
 ### Option 2: Revisit After More Research
+
 1. Study FileHandler's import mechanism in depth
 2. Document how it handles Reference sheet import
 3. Extract pattern into reusable utility
@@ -238,6 +270,7 @@ This prevents calculation cascade during bulk operations.
 **Maintainability**: Very high
 
 ### Option 3: Abandon Mirror Target
+
 1. Keep "Mirror + Overlay" only
 2. Users manually copy values if they want identical models
 3. Document workaround: Export → Import to copy values
@@ -251,23 +284,27 @@ This prevents calculation cascade during bulk operations.
 ## How to Revert Cleanly
 
 ### Step 1: Verify Current Branch
+
 ```bash
 git branch --show-current
 # Should show: REFERENCE-OVERLAY-COMPLETION
 ```
 
 ### Step 2: Create Backup Branch (Just in Case)
+
 ```bash
 git branch REFERENCE-OVERLAY-COMPLETION-backup
 ```
 
 ### Step 3: Find Commit Before Our Work
+
 ```bash
 git log --oneline | grep -A 1 "79ec536"
 # 79ec536 ⏪ REVERT: Step 1 implementation + document lessons learned
 ```
 
 ### Step 4: Revert to That Commit
+
 ```bash
 # Option A: Hard reset (loses all changes)
 git reset --hard 79ec536
@@ -283,12 +320,14 @@ git commit -m "⏪ REVERT: Mirror Target implementation (see postmortem)"
 **Recommended**: Option C (preserves history for future reference)
 
 ### Step 5: Verify Reversion
+
 ```bash
 git diff 79ec536 HEAD  # Should show only documentation differences
 git status
 ```
 
 ### Step 6: Keep Documentation for Future
+
 - Move 4012-REFERENCE.md → documentation/history (completed)/
 - Keep this postmortem document
 - Archive Logs.md from failed attempt
@@ -298,11 +337,13 @@ git status
 ## Files to Preserve (Move to Archive)
 
 Before reverting, save these for future reference:
+
 1. `4012-REFERENCE.md` (strategic plan)
 2. `Logs.md` (shows what went wrong)
 3. This postmortem document
 
 Suggested structure:
+
 ```
 documentation/
   history (completed)/
@@ -326,6 +367,7 @@ documentation/
 ---
 
 ## References
+
 - Original plan: `documentation/history (completed)/2025-01-13-4012-REFERENCE.md`
 - Debugging logs: `documentation/history (completed)/2025-01-13-Logs.md`
 - FileHandler pattern: `4011-FileHandler.js` (lines ~200-400)

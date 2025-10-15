@@ -24,21 +24,21 @@ Successfully implemented a comprehensive tooltip system for TEUI 4.0, extracting
 
 **Tooltip Coverage:**
 
-| Field ID | Cell | Title | Type |
-|----------|------|-------|------|
-| d_12 | D12 | Major Occupancy | dropdown |
-| d_13 | D13 | Reference Standards | dropdown |
-| d_14 | D14 | Select a Method | dropdown |
-| d_15 | D15 | Carbon Benchmark | dropdown |
-| d_16 | D16 | S4. Targets | derived |
-| h_12 | H12 | Year Data Entered | year_slider |
-| h_13 | H13 | Select a period in Years | year_slider |
-| h_14 | H14 | Project Name | editable |
-| h_15 | H15 | Net Conditioned Area | editable |
-| i_16 | H16 | Certifier | editable |
-| i_17 | H17 | License or Authorization | editable |
-| l_12 | L12 | Assume $0.13/kwh | editable |
-| l_13 | L13 | Assume $0.507 (Ontario) | editable |
+| Field ID | Cell | Title                    | Type        |
+| -------- | ---- | ------------------------ | ----------- |
+| d_12     | D12  | Major Occupancy          | dropdown    |
+| d_13     | D13  | Reference Standards      | dropdown    |
+| d_14     | D14  | Select a Method          | dropdown    |
+| d_15     | D15  | Carbon Benchmark         | dropdown    |
+| d_16     | D16  | S4. Targets              | derived     |
+| h_12     | H12  | Year Data Entered        | year_slider |
+| h_13     | H13  | Select a period in Years | year_slider |
+| h_14     | H14  | Project Name             | editable    |
+| h_15     | H15  | Net Conditioned Area     | editable    |
+| i_16     | H16  | Certifier                | editable    |
+| i_17     | H17  | License or Authorization | editable    |
+| l_12     | L12  | Assume $0.13/kwh         | editable    |
+| l_13     | L13  | Assume $0.507 (Ontario)  | editable    |
 
 **Plus 5 cost fields:** l_14, l_15, l_16 (energy costs)
 
@@ -53,14 +53,14 @@ Successfully implemented a comprehensive tooltip system for TEUI 4.0, extracting
 
 **Tooltip Coverage:**
 
-| Field ID | Cell | Title | Type |
-|----------|------|-------|------|
-| d_19 | D19 | Select a Province | dropdown |
-| h_19 | H19 | Municipality | dropdown |
-| m_19 | M19 | Cooling Days are Increasing | editable |
-| h_20 | H20 | Weather Data Range | dropdown |
-| h_21 | H21 | Select Calculation Method | dropdown |
-| i_21 | I21 | Capacitance Factor | percentage_slider |
+| Field ID | Cell | Title                       | Type              |
+| -------- | ---- | --------------------------- | ----------------- |
+| d_19     | D19  | Select a Province           | dropdown          |
+| h_19     | H19  | Municipality                | dropdown          |
+| m_19     | M19  | Cooling Days are Increasing | editable          |
+| h_20     | H20  | Weather Data Range          | dropdown          |
+| h_21     | H21  | Select Calculation Method   | dropdown          |
+| i_21     | I21  | Capacitance Factor          | percentage_slider |
 
 **Integration:** Added to `onSectionRendered()` callback after `ClimateDataService.ensureAvailable()`
 
@@ -73,6 +73,7 @@ Successfully implemented a comprehensive tooltip system for TEUI 4.0, extracting
 **Available Tooltips:** 12 fields
 
 **Energy Use Fields:**
+
 - d_27 (D27) - Electricity
 - d_28 (D28) - Gas
 - d_29 (D29) - Propane
@@ -81,6 +82,7 @@ Successfully implemented a comprehensive tooltip system for TEUI 4.0, extracting
 - d_32 (D32) - Biomass Guidance
 
 **Additional Climate:**
+
 - l_20 (L20) - Cooling Season Mean Overnight °C
 - l_21 (L21) - Cooling Outdoor Mean RH%
 - l_22 (L22) - Elevation ASL in metres
@@ -90,6 +92,7 @@ Successfully implemented a comprehensive tooltip system for TEUI 4.0, extracting
 - d_25 (D25) - Cooling Guidance
 
 **Emission Factors:**
+
 - l_33 (L33) - High Level Nuclear Waste
 - h_35 (H35) - PER Factors
 
@@ -123,6 +126,7 @@ Successfully implemented a comprehensive tooltip system for TEUI 4.0, extracting
 **Available Tooltips:** 12 fields
 
 **Water Use Method:**
+
 - d_49 (D49) - DHW/SHW Use Method (lpppd)
 - e_49 (E49) - Litres/Per-Person/Day
 - f_49 (F49) - Litres/Per-Person/Day
@@ -131,18 +135,21 @@ Successfully implemented a comprehensive tooltip system for TEUI 4.0, extracting
 - f_50 (F50) - Litres/Per-Person/Day
 
 **DHW Equipment:**
+
 - d_51 (D51) - DHW/SHW Heating Source
 - d_52 (D52) - If Heatpump Selected
 - d_53 (D53) - Range of DWHR Efficiency
 - d_54 (D54) - Enter Percapita Metered Use
 
 **Gas Exhaust:**
+
 - e_54 (E54) - Gas Exhaust Energy
 - g_54 (G54) - Gas Exhaust Energy
 - h_54 (H54) - Gas Exhaust Energy
 - l_54 (L54) - Gas Exhaust Energy
 
 **Additional:**
+
 - d_59 (D59) - RH% Annual Average
 - i_59 (I59) - RH% Annual Average
 - d_60 (D60) - Biomass Guidance
@@ -156,6 +163,7 @@ Successfully implemented a comprehensive tooltip system for TEUI 4.0, extracting
 **Available Tooltips:** 50+ fields
 
 **Occupancy (S08?):**
+
 - d_63 (D63) - Occupants
 - g_63 (G63) - Occupied Hours
 - d_64 (D64) - Average Daily Metabolic Rate
@@ -166,10 +174,12 @@ Successfully implemented a comprehensive tooltip system for TEUI 4.0, extracting
 - d_68 (D68) - Include Elevator Load
 
 **Solar Gains (Glazing):**
+
 - e_73-78 (E73-E78) - Select an Orientation (6 orientations)
 - f_73-78 (F73-F78) - Solar Heat Gain Coefficient (6 orientations)
 
 **Thermal Mass:**
+
 - d_80 (D80) - A Note on Methods (NRC vs PHPP)
 - g_80 (G80) - A Note on Methods
 - d_81 (D81) - Cooling Guidance
@@ -177,31 +187,36 @@ Successfully implemented a comprehensive tooltip system for TEUI 4.0, extracting
 - o_84 (O84) - Thermal Phase Lag
 
 **Building Construction:**
+
 - d_96 (D96) - B.11 Interior Floors
 - d_97 (D97) - TB Penalty
 - j_98 (J98) - Total Excludes B.12 TB Penalty
 - l_98 (L98) - Total Excludes B.12 TB Penalty
 
 **Envelope Details:**
+
 - d_103 (D103) - Select Stories
 - j_104 (J104) - Checksum
 - l_104 (L104) - Total Excludes B.12 TB Penalty
 - d_105 (D105) - Conditioned Volume
 
 **Airtightness:**
-- d_108 (D108) - A.2 NRL50 * Ae
+
+- d_108 (D108) - A.2 NRL50 \* Ae
 - g_109 (G109) - Calculation Dependency
 - h_109 (H109) - Calculation Dependency
 - g_110 (G110) - n-Factor Description
 - j_110 (J110) - Climate Zone per n-Factor Table
 
 **Mechanical Systems:**
+
 - d_113 (D113) - Select Primary Heating System
 - f_113 (F113) - HSPF Dictates COP, CEER
 - d_116 (D116) - Cooling Provided?
 - d_118 (D118) - Typ. Range 50-90%
 
 **Ventilation:**
+
 - g_118 (G118) - Select Ventilation Method
 - l_118 (L118) - ACH Value
 - d_119 (D119) - Ventilation Guidance
@@ -209,6 +224,7 @@ Successfully implemented a comprehensive tooltip system for TEUI 4.0, extracting
 - k_120 (K120) - Unoccupied Ventilation Setback %
 
 **Other:**
+
 - m_124 (M124) - Negative Values (cooling days)
 - m_141 (M141) - Assume $0.122 (Ontario)
 
@@ -252,6 +268,7 @@ Bootstrap Popovers on hover
 **Purpose:** Extract Data Validation input messages from Excel REPORT sheet
 
 **Usage:**
+
 ```bash
 # Default mode - extract predefined mapped cells
 python3 extract-validation.py "/path/to/TEUIv3042.xlsx"
@@ -270,6 +287,7 @@ python3 extract-validation.py "/path/to/TEUIv3042.xlsx" --comprehensive
 **Purpose:** Convert JSON tooltips to JavaScript object format with field_id keys
 
 **Usage:**
+
 ```bash
 python3 convert-tooltips-to-js.py "OBJECTIVE 4011RF/data/validation-tooltips.json"
 ```
@@ -277,6 +295,7 @@ python3 convert-tooltips-to-js.py "OBJECTIVE 4011RF/data/validation-tooltips.jso
 **Output:** JavaScript object ready to paste into TooltipManager.js
 
 **Features:**
+
 - Maps cell references to field_ids automatically
 - Separates mapped vs unmapped tooltips
 - Outputs sorted by field_id for easy maintenance
@@ -335,11 +354,11 @@ When adding tooltips to a new section:
 
 ## Deployment History
 
-| Date | Commit | Description | Tooltips Added |
-|------|--------|-------------|----------------|
-| Oct 8 | `7a26607` | Initial S02 tooltips | 13 (S02) |
-| Oct 8 | `ccd6a47` | Add S03 tooltips + expand extraction | 6 (S03) |
-| Oct 8 | `ba6efd8` | Comprehensive tooltip harvest | 85 (data only) |
+| Date  | Commit    | Description                          | Tooltips Added |
+| ----- | --------- | ------------------------------------ | -------------- |
+| Oct 8 | `7a26607` | Initial S02 tooltips                 | 13 (S02)       |
+| Oct 8 | `ccd6a47` | Add S03 tooltips + expand extraction | 6 (S03)        |
+| Oct 8 | `ba6efd8` | Comprehensive tooltip harvest        | 85 (data only) |
 
 **Current Branch:** TOOLTIPS
 **Live Site:** https://arossti.github.io/OBJECTIVE/
@@ -360,6 +379,7 @@ Add `tooltip: true` flags to remaining sections with available tooltips:
 ### Priority 2: Identify S08+ Fields
 
 Map remaining 50+ tooltips to their section files:
+
 - Building envelope fields
 - Solar gain/glazing fields
 - Thermal mass fields
@@ -375,19 +395,23 @@ Implement optional Help mode toggle in top button row to show/hide all tooltips 
 ## Files Modified
 
 **Core System:**
+
 - `4011-TooltipManager.js` - Central tooltip repository (104 tooltips)
 - `index.html` - Added TooltipManager script tag
 
 **Section Files:**
+
 - `sections/4012-Section02.js` - Added 13 tooltip flags + integration
 - `sections/4012-Section03.js` - Added 6 tooltip flags + integration
 
 **Extraction Tools:**
+
 - `extract-validation.py` - Main extraction script (supports --comprehensive)
 - `extract-validation-section02.py` - Section-specific scanner (deprecated)
 - `convert-tooltips-to-js.py` - JSON to JavaScript converter
 
 **Documentation:**
+
 - `documentation/TOOLTIP-IMPLEMENTATION-GUIDE.md` - Complete guide
 - `documentation/TOOLTIP-SYSTEM.md` - Technical documentation
 - `documentation/TOOLTIP-QUICKSTART.md` - Quick start guide
@@ -396,6 +420,7 @@ Implement optional Help mode toggle in top button row to show/hide all tooltips 
 - `documentation/TOOLTIP-STATUS.md` - This file (status tracker)
 
 **Data Files:**
+
 - `data/validation-tooltips.json` - Comprehensive tooltip data (107 tooltips)
 - `data/section02-validation-tooltips.json` - S02-specific data (deprecated)
 

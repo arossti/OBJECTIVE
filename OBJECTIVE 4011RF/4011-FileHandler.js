@@ -334,7 +334,9 @@
 
         const fieldIds = parseCSVRow(headerRow);
         const targetValues = parseCSVRow(targetValueRow);
-        const referenceValues = referenceValueRow ? parseCSVRow(referenceValueRow) : null;
+        const referenceValues = referenceValueRow
+          ? parseCSVRow(referenceValueRow)
+          : null;
 
         if (fieldIds.length !== targetValues.length) {
           throw new Error(
@@ -694,7 +696,9 @@
           "[FileHandler] 🔧 PHASE 2.5: Syncing S11 window areas from S10...",
         );
         window.TEUI.SectionModules.sect11.syncAreasFromS10();
-        console.log("[FileHandler] ✅ PHASE 2.5: S11 window area sync complete");
+        console.log(
+          "[FileHandler] ✅ PHASE 2.5: S11 window area sync complete",
+        );
       }
     }
 

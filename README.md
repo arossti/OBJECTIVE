@@ -2159,6 +2159,7 @@ _Assisted with AFUE integration, Excel parity calculations, cross-section coordi
 The development of OBJECTIVE TEUI 4.012 involved substantial collaboration with AI assistants. Estimating the precise environmental footprint of this contribution is complex, but in the spirit of a "Feynman-esque" guesstimate, we can derive some illustrative figures based on assumptions and publicly available data:
 
 **Development Phases:**
+
 - **Phase 1 (Jan-May 2025):** Initial v4.011 refactoring, dual-engine architecture, core sections - ~50 active computational hours
 - **Phase 2 (May-Oct 2025):** Section 13 cooling integration, g_118 cascade debugging, volume constant fixes, graphics refinements, comprehensive code quality improvements - ~125 additional active computational hours
 
@@ -2177,6 +2178,7 @@ The development of OBJECTIVE TEUI 4.012 involved substantial collaboration with 
 - **Associated Direct Water Use (data center cooling):** Approximately **43.3 Liters**
 
 **Contextual Comparison:**
+
 - This energy usage is equivalent to:
   - Running a typical refrigerator for ~6 days
   - Driving an electric vehicle ~900 km
@@ -2789,11 +2791,13 @@ When creating sections for the 4012 framework, follow these principles:
 #### Symptoms
 
 1. **h_10 (TEDI) Discrepancy**
+
    - Expected (Excel): `93.7 kWh/m²/yr`
    - Actual (App): `93.0 kWh/m²/yr`
    - Difference: `-0.7 kWh/m²/yr` (0.75% lower)
 
 2. **m_129 (Cooling Energy Demand) Discrepancy**
+
    - Expected (Excel): `10,709.00 kWh`
    - Actual (App): `8,045.10 kWh`
    - Difference: `-2,663.90 kWh` (24.9% lower) ⚠️
@@ -2806,6 +2810,7 @@ When creating sections for the 4012 framework, follow these principles:
 #### Root Cause Hypothesis
 
 Both discrepancies likely stem from **ventilation calculation issues in Section 13**:
+
 - Ventilation heat recovery calculations may have timing/sequencing issues
 - Free cooling capacity calculation (h_124, c_124) may not be capturing full Excel logic
 - Cooling energy demand (m_129) calculation in S14 depends on S13 ventilation outputs
@@ -2815,10 +2820,12 @@ The h_10 drift from 93.7 to 93.0 occurred around Sept 23, 2025, correlating with
 #### Detailed Value Comparison (Default Model)
 
 **Occupant Gains:**
+
 - k_64 Excel: `21,269.93 kWh`
 - k_64 App: Minor difference (rounding)
 
 **Ventilation/Cooling:**
+
 - d_122 (Incoming Vent): Matches Excel `15,128.68 kWh`
 - d_123 (Vent Exhaust): Matches Excel `13,464.53 kWh`
 - h_124 (Free Cooling): Matches Excel `37,322.82 kWh`

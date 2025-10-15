@@ -981,25 +981,29 @@ class ExcelMapper {
     }
 
     // Iterate through all mapped input cells
-    Object.entries(this.excelReportInputMapping).forEach(([cellRef, fieldId]) => {
-      const cell = worksheet[cellRef];
+    Object.entries(this.excelReportInputMapping).forEach(
+      ([cellRef, fieldId]) => {
+        const cell = worksheet[cellRef];
 
-      if (cell) {
-        // Extract cell comment if present (XLSX.js does support this)
-        if (cell.c && cell.c.length > 0) {
-          const comment = cell.c[0];
-          tooltips[fieldId] = {
-            cell: cellRef,
-            comment: comment.t || comment.a || '', // .t is text, .a is author
-          };
+        if (cell) {
+          // Extract cell comment if present (XLSX.js does support this)
+          if (cell.c && cell.c.length > 0) {
+            const comment = cell.c[0];
+            tooltips[fieldId] = {
+              cell: cellRef,
+              comment: comment.t || comment.a || "", // .t is text, .a is author
+            };
+          }
+
+          // Note: Data validation input messages are NOT directly accessible via XLSX.js
+          // Use extract-validation.py script to generate full validation JSON
         }
+      },
+    );
 
-        // Note: Data validation input messages are NOT directly accessible via XLSX.js
-        // Use extract-validation.py script to generate full validation JSON
-      }
-    });
-
-    console.log(`[ExcelMapper] Extracted ${Object.keys(tooltips).length} cell comments from REPORT sheet`);
+    console.log(
+      `[ExcelMapper] Extracted ${Object.keys(tooltips).length} cell comments from REPORT sheet`,
+    );
     return tooltips;
   }
 }

@@ -1114,6 +1114,7 @@ _Last Updated: October 10, 2025 - S11 Reference import bug documented_
 **ALL S11 Reference area fields show defaults after Excel import, not imported values:**
 
 **Observed Behavior:**
+
 - Excel REFERENCE sheet: D85, D87, D95, D96 contain formulas `=REPORT!D85`, `=REPORT!D87`, etc.
 - Excel displays calculated values correctly in REFERENCE sheet cells
 - After import: **ALL S11 Reference fields show hardcoded defaults**
@@ -1123,6 +1124,7 @@ _Last Updated: October 10, 2025 - S11 Reference import bug documented_
   - `ref_d_96`: Shows `29.70` (default) instead of imported value
 
 **Downstream Impact:**
+
 - S12 Reference d_106 calculation uses wrong areas → incorrect result (1130.20 defaults)
 - S05 Reference d_40 (Total Embedded Carbon) uses wrong d_106 → incorrect calculation
 - Reference model calculations do NOT match Excel Reference model
@@ -1136,6 +1138,7 @@ _Last Updated: October 10, 2025 - S11 Reference import bug documented_
 **Hypothesis Paths:**
 
 1. **Excel Formula Detection Issue:**
+
    - ExcelMapper.mapExcelToReferenceModel() has formula detection logic (lines 707-725)
    - Checks if `cell.f` starts with `"REPORT!"` or `"=REPORT!"`
    - If formula detected, reads from REPORT sheet instead
@@ -1143,11 +1146,13 @@ _Last Updated: October 10, 2025 - S11 Reference import bug documented_
    - **Alternative:** Trust calculated `cell.v` (Option 1 - tried and reverted)
 
 2. **StateManager Storage Issue:**
+
    - Import stores `ref_d_87`, `ref_d_95`, `ref_d_96` correctly
    - S11 ReferenceState.syncFromGlobalState() reads from StateManager
    - **Problem:** Values might not persist to StateManager or sync fails silently
 
 3. **S12 Fallback Logic Issue:**
+
    - S12 reads Reference areas with fallback: `parseFloat(getGlobalNumericValue("ref_d_87")) || parseFloat(getGlobalNumericValue("d_87")) || 0`
    - **Problem:** If `ref_d_87 = "0.00"`, parses to `0`, which is falsy → falls back to Target value
    - JavaScript `||` operator treats numeric `0` as falsy
@@ -1159,11 +1164,13 @@ _Last Updated: October 10, 2025 - S11 Reference import bug documented_
 ### Why This Matters
 
 **Excel Architecture:**
+
 - REFERENCE sheet formulas reference REPORT sheet (Target) values
 - Reference model uses **SAME geometry** as Target model
 - Only thermal performance values (RSI/U-values) differ by code standard
 
 **App Architecture (More Flexible):**
+
 - App ALLOWS Reference to have independent geometry values
 - This gives users flexibility Excel doesn't have
 - **But** import should respect Excel's formula-based values
@@ -1171,6 +1178,7 @@ _Last Updated: October 10, 2025 - S11 Reference import bug documented_
 ### Attempted Fixes
 
 **Option 1: Trust Calculated Values (Oct 10, 2025)** - **REVERTED**
+
 - Removed formula detection logic
 - Directly read `cell.v` (Excel's calculated value)
 - **Rationale:** Excel evaluates `=REPORT!D87` and stores result in `cell.v`
@@ -1180,6 +1188,7 @@ _Last Updated: October 10, 2025 - S11 Reference import bug documented_
 ### Solution Strategies
 
 **Option 1: Trust Calculated Cell Values**
+
 - Remove formula detection entirely
 - Read whatever value Excel calculated in REFERENCE sheet
 - **Pros:** Simple, works with any Excel file format
@@ -1187,18 +1196,21 @@ _Last Updated: October 10, 2025 - S11 Reference import bug documented_
 - **Status:** Tried, reverted for investigation
 
 **Option 2: Enhanced Formula Detection**
+
 - Keep formula detection but handle `cell.f` missing
 - Better logging for debugging
 - **Pros:** Handles both formula and value cases
 - **Cons:** More complex, may still fail if SheetJS doesn't populate `cell.f`
 
 **Option 3: Force REPORT Values for Area Fields**
+
 - For specific area fields (d_85-d_96), ALWAYS read from REPORT sheet
 - Ignore REFERENCE sheet values for geometry
 - **Pros:** Ensures geometric consistency with Excel
 - **Cons:** Removes app's flexibility for independent Reference geometry
 
 **Option 4: Fix S12 Fallback Logic** (Most Likely Root Cause)
+
 - Change from falsy check (`||`) to null/undefined check
 - `const ref_d87 = getGlobalNumericValue("ref_d_87"); d87 = ref_d87 !== null && ref_d87 !== undefined ? parseFloat(ref_d87) : parseFloat(getGlobalNumericValue("d_87")) || 0;`
 - **Pros:** Preserves legitimate zero values, allows fallback only when truly missing
@@ -1217,23 +1229,27 @@ _Last Updated: October 10, 2025 - S11 Reference import bug documented_
 ### Expected Excel Values
 
 From test CSV (TEUIv4011-DualState-Sherwood_CC.csv):
+
 - Target `d_87`: `0` (Floor Exposed)
 - Target `d_95`: `11167` (Floor Slab)
 - Target `d_96`: `398` (Interior Floors)
 
 **If Excel REFERENCE formulas work correctly:**
+
 - Reference `d_87`: Should equal Target `0` (via `=REPORT!D87`)
 - Reference `d_95`: Should equal Target `11167` (via `=REPORT!D95`)
 - Reference `d_96`: Should equal Target `398` (via `=REPORT!D96`)
 - Reference `d_106`: Should equal Target `d_106` = `0 + 11167 + 398 = 11565`
 
 **Current incorrect behavior:**
+
 - Reference shows defaults: `d_87=0.00`, `d_95=1100.42`, `d_96=29.70`
 - Reference `d_106` = `0 + 1100.42 + 29.70 = 1130.12` ❌
 
 ### Priority
 
 **CRITICAL** - Reference model calculations depend on correct area values. This blocks:
+
 - Reference model TEUI calculations
 - Reference vs Target comparison accuracy
 - CSV export/import roundtrip (exports wrong values, re-imports wrong values)
@@ -1250,6 +1266,7 @@ From test CSV (TEUIv4011-DualState-Sherwood_CC.csv):
 **Root Cause Found:** Import timing issue with S10→S11 area sync
 
 **The Problem:**
+
 1. S11.ReferenceState.syncFromGlobalState() synced ref_d_85, ref_d_87, ref_d_95, ref_d_96 from StateManager ✅
 2. Then **immediately** called `syncAreasFromS10()`
 3. `syncAreasFromS10()` called `refreshUI()` and `calculateAll()`
@@ -1259,17 +1276,20 @@ From test CSV (TEUIv4011-DualState-Sherwood_CC.csv):
 **The Fix (Commit `76ec774`):**
 
 **S11 Changes:**
+
 - Removed `syncAreasFromS10()` calls from both `TargetState.syncFromGlobalState()` and `ReferenceState.syncFromGlobalState()`
 - Added `syncAreasFromS10` to public API export
 - Added comment explaining FileHandler will call it manually
 
 **FileHandler Changes:**
+
 - Added Phase 2.5: Manual `syncAreasFromS10()` call AFTER all Pattern A sections synced
 - Ensures S10 values imported before syncing to S11
 
 **Why This Works:**
 
 **Import Flow (Fixed):**
+
 1. Quarantine starts → Listeners muted
 2. S10 imports → d_73-d_78 stored in StateManager
 3. S11 imports → d_85-d_96 stored in StateManager
@@ -1283,10 +1303,12 @@ From test CSV (TEUIv4011-DualState-Sherwood_CC.csv):
 7. Clean `calculateAll()` with all imported values ✅
 
 **Normal Usage (Still Works):**
+
 - User changes S10 window area → Listener fires → `debouncedSyncAreasFromS10()` → S11 updates ✅
 - User switches modes → `ModeManager.switchMode()` → `syncAreasFromS10()` → S11 updates ✅
 
 **Testing Plan:**
+
 1. ✅ ~~Add diagnostic logging~~ - Root cause identified
 2. ✅ ~~Compare ref_d_85 vs ref_d_87/d_95/d_96~~ - Timing issue found
 3. ✅ ~~Identify exact failure point~~ - syncAreasFromS10() premature call
