@@ -20,20 +20,21 @@ window.TEUI.SectionModules.sect11 = (function () {
   let isSyncingFromS10 = false; // Prevents recursion in sync function
   let syncTimeout = null; // For debouncing rapid sync calls
 
-  // Baseline values for Reference % calculation (derived from screenshot)// CAN WE DELETE THESE? WE SHOULD NEVER HAVE HARDCODED DEFAULTS!!!
-  const baselineValues = {
-    85: { type: "rsi", value: 5.3 }, // Roof
-    86: { type: "rsi", value: 4.1 }, // Walls AG
-    87: { type: "rsi", value: 6.6 }, // Floor Exp
-    88: { type: "uvalue", value: 1.99 }, // Doors
-    89: { type: "uvalue", value: 1.42 }, // Window N
-    90: { type: "uvalue", value: 1.42 }, // Window E
-    91: { type: "uvalue", value: 1.42 }, // Window S
-    92: { type: "uvalue", value: 1.42 }, // Window W
-    93: { type: "uvalue", value: 1.42 }, // Skylights
-    94: { type: "rsi", value: 1.8 }, // Walls BG
-    95: { type: "rsi", value: 3.5 }, // Floor Slab
-    97: { type: "penalty", value: 0.2 }, // TBP (Pass <= 20%)
+  // ✅ ANTI-PATTERN FIX: Type metadata only (no duplicate default values)
+  // Component types for indicator calculation logic - values come from ReferenceState
+  const componentTypes = {
+    85: "rsi", // Roof
+    86: "rsi", // Walls AG
+    87: "rsi", // Floor Exp
+    88: "uvalue", // Doors
+    89: "uvalue", // Window N
+    90: "uvalue", // Window E
+    91: "uvalue", // Window S
+    92: "uvalue", // Window W
+    93: "uvalue", // Skylights
+    94: "rsi", // Walls BG
+    95: "rsi", // Floor Slab
+    97: "penalty", // TBP (Pass <= 20%)
   };
 
   //==========================================================================
@@ -1324,10 +1325,8 @@ window.TEUI.SectionModules.sect11 = (function () {
         // ✅ CRITICAL FIX: Reference calculations read from S11's own ReferenceState
         if (input === "rsi") {
           // Reference RSI: read from S11's ReferenceState (like Target does)
-          inputValue =
-            ReferenceState.getValue(rsiFieldId) ||
-            baselineValues[rowNumber]?.value ||
-            0;
+          // ✅ ANTI-PATTERN FIX: Removed baselineValues fallback - fail fast if missing
+          inputValue = ReferenceState.getValue(rsiFieldId) || 0;
           rsiValue = inputValue;
           if (rsiValue <= 0) {
             uValue = Infinity;
@@ -1335,10 +1334,8 @@ window.TEUI.SectionModules.sect11 = (function () {
         } else {
           // input === 'uvalue'
           // ✅ CRITICAL FIX: Reference U-value: read from S11's ReferenceState (like Target does)
-          inputValue =
-            ReferenceState.getValue(uValueFieldId) ||
-            baselineValues[rowNumber]?.value ||
-            0;
+          // ✅ ANTI-PATTERN FIX: Removed baselineValues fallback - fail fast if missing
+          inputValue = ReferenceState.getValue(uValueFieldId) || 0;
           uValue = inputValue;
           if (uValue <= 0) {
             rsiValue = Infinity;
@@ -1533,8 +1530,9 @@ window.TEUI.SectionModules.sect11 = (function () {
   }
 
   function updateReferenceIndicators(rowId) {
-    const baseline = baselineValues[rowId];
-    if (!baseline) return;
+    // ✅ ANTI-PATTERN FIX: Use componentTypes instead of baselineValues
+    const componentType = componentTypes[rowId];
+    if (!componentType) return;
     const mFieldId = `m_${rowId}`,
       nFieldId = `n_${rowId}`;
     let referencePercent = 100,
@@ -1559,13 +1557,13 @@ window.TEUI.SectionModules.sect11 = (function () {
       let valueSourceFieldId = null;
       let referenceFieldId = null;
 
-      if (baseline.type === "rsi") {
+      if (componentType === "rsi") {
         valueSourceFieldId = `f_${rowId}`;
         referenceFieldId = `f_${rowId}`;
-      } else if (baseline.type === "uvalue") {
+      } else if (componentType === "uvalue") {
         valueSourceFieldId = `g_${rowId}`;
         referenceFieldId = `g_${rowId}`;
-      } else if (baseline.type === "penalty") {
+      } else if (componentType === "penalty") {
         valueSourceFieldId = `d_${rowId}`;
         referenceFieldId = `d_${rowId}`;
       }
@@ -1577,23 +1575,23 @@ window.TEUI.SectionModules.sect11 = (function () {
 
       // Get dynamic reference value from ReferenceState
       const referenceValue = ReferenceState.getValue(referenceFieldId);
-      const referenceNumeric =
-        window.TEUI.parseNumeric(referenceValue) || baseline.value;
+      // ✅ ANTI-PATTERN FIX: Removed baseline.value fallback - fail with 0 if missing
+      const referenceNumeric = window.TEUI.parseNumeric(referenceValue) || 0;
 
       // Calculate percentage and pass/fail based on comparison type
-      if (baseline.type === "rsi") {
+      if (componentType === "rsi") {
         // RSI: Higher is better (current ÷ reference × 100%)
         if (referenceNumeric > 0 && !isNaN(currentValue)) {
           referencePercent = (currentValue / referenceNumeric) * 100;
         }
         isGood = currentValue >= referenceNumeric;
-      } else if (baseline.type === "uvalue") {
+      } else if (componentType === "uvalue") {
         // U-value: Lower is better (reference ÷ current × 100%)
         if (currentValue > 0 && !isNaN(currentValue)) {
           referencePercent = (referenceNumeric / currentValue) * 100;
         }
         isGood = currentValue <= referenceNumeric;
-      } else if (baseline.type === "penalty") {
+      } else if (componentType === "penalty") {
         // Thermal Bridge Penalty: Lower is better (reference ÷ current × 100%)
         const refPenalty = referenceNumeric / 100;
         const currentPenalty = currentValue / 100;
