@@ -198,11 +198,38 @@
       ) {
         this.calculator.calculateAll();
 
-        // Refresh S03 UI after calculateAll
-        if (window.TEUI?.SectionModules?.sect03?.ModeManager?.refreshUI) {
-          window.TEUI.SectionModules.sect03.ModeManager.refreshUI();
-          console.log("[FileHandler] ✅ S03 UI refreshed after calculateAll()");
-        }
+        // ✅ FIX (Oct 10): Refresh ALL Pattern A section UIs after calculateAll
+        // Pattern A sections use isolated state - DOM must be refreshed to show updated values
+        console.log(
+          "[FileHandler] 🔄 Refreshing Pattern A section UIs after import...",
+        );
+        const patternASections = [
+          "sect02",
+          "sect03",
+          "sect04",
+          "sect05",
+          "sect06",
+          "sect07",
+          "sect08",
+          "sect09",
+          "sect10",
+          "sect11",
+          "sect12",
+          "sect13",
+          "sect15",
+        ];
+
+        patternASections.forEach((sectionId) => {
+          const section = window.TEUI?.SectionModules?.[sectionId];
+          if (section?.ModeManager?.refreshUI) {
+            section.ModeManager.refreshUI();
+            // ✅ Also update calculated display values (some sections need both calls)
+            if (section.ModeManager.updateCalculatedDisplayValues) {
+              section.ModeManager.updateCalculatedDisplayValues();
+            }
+            console.log(`[FileHandler] ✅ ${sectionId} UI refreshed`);
+          }
+        });
       }
     }
 
@@ -307,7 +334,9 @@
 
         const fieldIds = parseCSVRow(headerRow);
         const targetValues = parseCSVRow(targetValueRow);
-        const referenceValues = referenceValueRow ? parseCSVRow(referenceValueRow) : null;
+        const referenceValues = referenceValueRow
+          ? parseCSVRow(referenceValueRow)
+          : null;
 
         if (fieldIds.length !== targetValues.length) {
           throw new Error(
@@ -393,11 +422,38 @@
         ) {
           this.calculator.calculateAll();
 
-          // Refresh S03 UI after calculateAll
-          if (window.TEUI?.SectionModules?.sect03?.ModeManager?.refreshUI) {
-            window.TEUI.SectionModules.sect03.ModeManager.refreshUI();
-            console.log("[FileHandler] ✅ S03 UI refreshed after calculateAll()");
-          }
+          // ✅ FIX (Oct 10): Refresh ALL Pattern A section UIs after calculateAll
+          // Pattern A sections use isolated state - DOM must be refreshed to show updated values
+          console.log(
+            "[FileHandler] 🔄 Refreshing Pattern A section UIs after CSV import...",
+          );
+          const patternASections = [
+            "sect02",
+            "sect03",
+            "sect04",
+            "sect05",
+            "sect06",
+            "sect07",
+            "sect08",
+            "sect09",
+            "sect10",
+            "sect11",
+            "sect12",
+            "sect13",
+            "sect15",
+          ];
+
+          patternASections.forEach((sectionId) => {
+            const section = window.TEUI?.SectionModules?.[sectionId];
+            if (section?.ModeManager?.refreshUI) {
+              section.ModeManager.refreshUI();
+              // ✅ Also update calculated display values (some sections need both calls)
+              if (section.ModeManager.updateCalculatedDisplayValues) {
+                section.ModeManager.updateCalculatedDisplayValues();
+              }
+              console.log(`[FileHandler] ✅ ${sectionId} UI refreshed`);
+            }
+          });
         }
 
         this.showStatus(
@@ -632,6 +688,18 @@
       });
 
       console.log("[FileHandler] ✅ PHASE 2: Pattern A section sync complete");
+
+      // ✅ FIX (Oct 10): Manually sync S11 window areas from S10 AFTER all imports complete
+      // S11's syncFromGlobalState() no longer calls this to prevent premature sync
+      if (window.TEUI?.SectionModules?.sect11?.syncAreasFromS10) {
+        console.log(
+          "[FileHandler] 🔧 PHASE 2.5: Syncing S11 window areas from S10...",
+        );
+        window.TEUI.SectionModules.sect11.syncAreasFromS10();
+        console.log(
+          "[FileHandler] ✅ PHASE 2.5: S11 window area sync complete",
+        );
+      }
     }
 
     // --- EXPORT LOGIC ---

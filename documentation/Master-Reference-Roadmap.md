@@ -3,7 +3,7 @@
 ## Lightweight Implementation Plan for Global Reference System
 
 > **Status**: Implementation-Ready Specification  
-> **Current Issue**: "Show Reference" button crashes due to architecture mismatch  
+> **Current Issue**: "Show Reference" button crashes due to architecture mismatch (fixed, doesn't crash now)
 > **Goal**: Minimal-code solution leveraging existing dual-state architecture and CSS system  
 > **Key Principle**: Maximum reuse of existing patterns, zero architectural changes
 
@@ -19,7 +19,7 @@
 
 - **❌ PROHIBITED**: Using `setTimeout()` to solve race conditions or timing issues
 - **❌ PROHIBITED**: Any hack-based timing solutions
-- **✅ REQUIRED**: Use `Dependency.js` for ordered calculations if timing is needed
+- **✅ REQUIRED**: Use `Dependency.js` for ordered calculations if timing is needed, should NOT be needed as both Target and Reference models calculate without race conditions presently
 - **Reference**: README.md lines 91-123 - StateManager integration patterns
 
 #### **2. Direct DOM Manipulation**
@@ -31,24 +31,24 @@
 
 #### **3. Calculation Modification**
 
-- **❌ PROHIBITED**: Modifying any calculation functions or formulas
+- **❌ PROHIBITED**: Modifying any calculation functions or formulas - these are all vetted and match excel codebase to 100.00% parity
 - **❌ PROHIBITED**: Adding new calculation triggers or dependencies
 - **❌ PROHIBITED**: Interfering with existing dual-state calculation engines
-- **✅ REQUIRED**: This is a **DISPLAY-ONLY** system that switches between pre-calculated values
+- **✅ REQUIRED**: This is mostly a **DISPLAY-ONLY** system (with limited Reference model value setting as per ReferenceValues.js) that switches between pre-calculated values
 
 #### **4. Global State Contamination**
 
 - **❌ PROHIBITED**: Any Reference operations that affect Target values
-- **❌ PROHIBITED**: Cross-mode state mixing or contamination
+- **❌ PROHIBITED**: Cross-mode state mixing or contamination (has been meticulously isolated)
 - **❌ PROHIBITED**: Global reference mode flags that affect calculations
-- **✅ REQUIRED**: Perfect state isolation between Target and Reference
+- **✅ REQUIRED**: Maintain perfect state isolation between Target and Reference
 
 ### **🎯 Core Architectural Requirements**
 
 #### **1. Display-Only System**
 
-- **Purpose**: Switch display between Target and Reference **calculated values only**
-- **No Calculation Changes**: System must not modify, trigger, or interfere with calculations
+- **Purpose**: Switch display between Target and Reference **calculated & ReferenceValues only**
+- **No Calculation Changes**: System must not modify, trigger, or interfere with calculations - except when a Reference Overlay is set by the user by modifying ref_d_13, or by selecting 'Mirror Target' model.
 - **Pre-Calculated Values**: Both Target and Reference values are already calculated by dual-state engines
 - **UI Toggle Only**: Master toggle is purely a display/styling system (but with ability for user to write to target or reference models based on mode)
 
@@ -113,7 +113,7 @@
 
 - **README.md Lines 91-123**: StateManager integration patterns (NO direct DOM manipulation)
 - **README.md Lines 169-200**: Calculation precision requirements (NO formula changes)
-- **DUAL-STATE-CHEATSHEET.md**: State contamination prevention patterns
+- **4012-CHEATSHEET.md**: State contamination prevention patterns
 
 #### **3. CSS System Documentation**
 
@@ -122,7 +122,6 @@
 
 #### **4. Current State Analysis**
 
-- **`S03-REPAIRS.md`**: Current dual-state implementation status and issues
 - **`Master-Reference-Roadmap.md`**: This document (complete implementation plan)
 
 **⚠️ Implementation without reading these documents will likely result in architectural violations and rejected code.**
@@ -174,29 +173,34 @@ const dependencies = [
 
 #### **Three Reference Model Scenarios Enabled**:
 
-1. **Mirror Target**: Start with identical building, customize specific differences
+1. **Mirror Target**: Start with identical building (Set Reference model to Match TArget model INPUT Values), user can subsequently customize specific fileds and maintain Reference and Target model isolation, ie.
 
    - Target: 1500m² Toronto heatpump building
    - Reference: 1500m² Toronto heatpump building (initially identical)
    - User edits: Change specific Reference values to test variations
+   - This must set all Reference model input values to be the same as the Target model. This could use the FileHandler methods we use for importing values, where a script imports and maps target values to the Reference values in a kind of internal round-trip then caclulateAll run. Or it could simply look up Target values and set Reference values to the same... then allow calculations. Calculated cells in both models would thus derive the same results
 
-2. **Mirror Target + Reference**: Apply building code standards via ReferenceValues.js
+2. **Mirror Target + Reference**: Match Target model input values BUT with an overlay for relevant building code standards mapped via ReferenceValues.js, based on what Reference System is set at ref_d_13 in S02.
 
    - Target: 1500m² Toronto heatpump building (actual design)
-   - Reference: 1500m² Toronto building with code minimums from ReferenceValues.js
+   - Reference: 1500m² Toronto building with code minimum insulation values and equipment efficiencies from ReferenceValues.js
    - Comparison: Actual design vs code compliance
 
 3. **Independent Models**: Complete freedom - any building vs any building
+
    - Target: 1500m² Toronto heatpump building in 2024
    - Reference: 2000m² Vancouver gas building in 2030
    - Comparison: Completely different scenarios
+   - This is the default way the app is set up after initialization
+
+   In all three variations, after any ReferenceValues are set for Input fields in the Reference Model, a user can simply over-ride them afterwards.
 
 #### **Why Complete Listener Pairs Are Critical**:
 
-- **Missing Reference Listeners**: Cause calculation chain delays/failures
+- **Missing Reference Listeners**: Cause calculation chain delays/failures (mostly fixed)
 - **Incomplete Dual-Engine**: Breaks "Independent Models" capability
-- **Silent Failures**: Reference changes don't propagate through system
-- **State Contamination Risk**: Fallback to Target values when Reference missing
+- **Silent Failures**: Reference changes don't propagate through system (mostly isolated as far as we can tell)
+- **State Contamination Risk**: Fallback to Target values when Reference missing, we are preferring to error rather than fail silently
 
 ---
 
@@ -204,7 +208,7 @@ const dependencies = [
 
 ### **Current Problem**
 
-The existing "Show Reference" button (`runReferenceBtn`) crashes because:
+The existing "Show Reference" button (`runReferenceBtn`) formerly caused crashes because:
 
 1. **Missing Core Function**: Current `4011-ReferenceToggle.js` lacks `executeReferenceRunAndCache()` function that button expects
 2. **Wrong Function Wired**: Button calls `toggleReferenceDisplay()` which tries to access non-existent section structure
@@ -712,13 +716,17 @@ const targetData = section.modeManager.TargetState.data;
 #### **Section Discovery Success (Working Code)**
 
 ```javascript
-// ✅ This part works - finds 9 sections correctly
+// ✅ This part works - finds 14 sections correctly
 function getAllDualStateSections() {
   const sectionIds = [
     "sect02",
     "sect03",
     "sect04",
+    "sect05",
+    "sect06",
+    "sect07",
     "sect08",
+    "sect09",
     "sect10",
     "sect11",
     "sect12",

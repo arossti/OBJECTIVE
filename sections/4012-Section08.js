@@ -589,7 +589,12 @@ window.TEUI.SectionModules.sect08 = (function () {
       label: "Wood Emissions Offset (Calculated)",
       cells: {
         c: { label: "Wood Emissions Offset (Calculated from Target Wood Use)" },
-        d: { fieldId: "d_60", type: "calculated", value: "0.00", tooltip: true },
+        d: {
+          fieldId: "d_60",
+          type: "calculated",
+          value: "0.00",
+          tooltip: true,
+        },
         e: { content: "MT/yr CO2e" },
       },
     },

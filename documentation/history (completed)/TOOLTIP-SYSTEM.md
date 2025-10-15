@@ -13,15 +13,18 @@ This system extracts Data Validation input messages from Excel and makes them av
 **Purpose:** Extracts data validation tooltips from the REPORT sheet in Excel files
 
 **Usage:**
+
 ```bash
 python3 extract-validation.py "/path/to/TEUIv3042.xlsx"
 ```
 
 **Output:**
+
 - Prints JSON to stdout
 - Saves to `OBJECTIVE 4011RF/data/validation-tooltips.json`
 
 **Dependencies:**
+
 ```bash
 pip3 install openpyxl
 ```
@@ -35,6 +38,7 @@ pip3 install openpyxl
 **Purpose:** Attempts to extract cell comments from Excel using XLSX.js (Note: XLSX.js has limited data validation support)
 
 **Usage:**
+
 ```javascript
 const tooltips = window.TEUI.ExcelMapper.extractValidationTooltips(workbook);
 // Returns: { field_id: { cell: "D12", comment: "..." }, ... }
@@ -47,6 +51,7 @@ const tooltips = window.TEUI.ExcelMapper.extractValidationTooltips(workbook);
 **Location:** [data/validation-tooltips.json](../data/validation-tooltips.json)
 
 **Format:**
+
 ```json
 {
   "field_id": {
@@ -66,14 +71,15 @@ const tooltips = window.TEUI.ExcelMapper.extractValidationTooltips(workbook);
 ### Option 1: Load JSON Statically
 
 Add to `index.html`:
+
 ```html
 <script>
   // Load validation tooltips
-  fetch('data/validation-tooltips.json')
-    .then(response => response.json())
-    .then(data => {
+  fetch("data/validation-tooltips.json")
+    .then((response) => response.json())
+    .then((data) => {
       window.TEUI.ValidationTooltips = data;
-      console.log('Loaded validation tooltips:', Object.keys(data).length);
+      console.log("Loaded validation tooltips:", Object.keys(data).length);
     });
 </script>
 ```
@@ -105,17 +111,20 @@ In section files or FieldManager, add tooltips to input fields:
 
 ```javascript
 function createInputField(fieldId, value) {
-  const input = document.createElement('input');
+  const input = document.createElement("input");
   input.id = fieldId;
   input.value = value;
 
   // Apply tooltip if available
   const tooltip = window.TEUI.ValidationTooltips?.[fieldId];
   if (tooltip) {
-    input.setAttribute('data-bs-toggle', 'tooltip');
-    input.setAttribute('data-bs-placement', 'top');
-    input.setAttribute('title', tooltip.title);
-    input.setAttribute('data-bs-content', tooltip.message.replace(/_x000a_/g, '\n'));
+    input.setAttribute("data-bs-toggle", "tooltip");
+    input.setAttribute("data-bs-placement", "top");
+    input.setAttribute("title", tooltip.title);
+    input.setAttribute(
+      "data-bs-content",
+      tooltip.message.replace(/_x000a_/g, "\n"),
+    );
 
     // Initialize Bootstrap tooltip
     new bootstrap.Tooltip(input);
@@ -132,6 +141,7 @@ function createInputField(fieldId, value) {
 When Excel file validation messages change:
 
 1. **Run Python script** on updated Excel file:
+
    ```bash
    python3 extract-validation.py "/path/to/updated-excel.xlsx"
    ```
@@ -139,6 +149,7 @@ When Excel file validation messages change:
 2. **Verify output** in `OBJECTIVE 4011RF/data/validation-tooltips.json`
 
 3. **Commit changes:**
+
    ```bash
    git add "OBJECTIVE 4011RF/data/validation-tooltips.json"
    git commit -m "📝 UPDATE: Refresh validation tooltips from Excel v3042"
@@ -153,6 +164,7 @@ When Excel file validation messages change:
 **Total Tooltips Extracted:** 35 (as of Oct 2025)
 
 **Sections Covered:**
+
 - Section 02: Building Information (8 fields)
 - Section 03: Climate (6 fields)
 - Section 04: Actual vs Target Energy (6 fields)
@@ -161,6 +173,7 @@ When Excel file validation messages change:
 - Section 07: Water Use (7 fields)
 
 **Missing Coverage:**
+
 - Sections 08-16 (envelope, ventilation, mechanical, etc.)
 - Need to expand `CELL_TO_FIELD_MAPPING` in Python script
 
@@ -188,6 +201,7 @@ When Excel file validation messages change:
 ### Excel Data Validation Structure
 
 Excel stores validation in `worksheet.data_validations.dataValidation` with:
+
 - `promptTitle` - Short title shown in validation popup
 - `prompt` - Longer help message
 - `cells` - Range of cells this validation applies to
@@ -195,6 +209,7 @@ Excel stores validation in `worksheet.data_validations.dataValidation` with:
 ### Newline Handling
 
 Excel uses `_x000a_` to represent newlines in XML. When displaying:
+
 - Web: Replace with `<br>` for HTML or `\n` for text
 - Bootstrap tooltips: Use `data-bs-html="true"` to render `<br>` tags
 

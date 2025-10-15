@@ -1104,19 +1104,27 @@ Select a province and city to view weather data.</pre
         }
 
         // 📚 HELP BUTTON: Toggle tooltips on/off
-        const toggleHelpBtn = document.getElementById('toggleHelpBtn');
+        const toggleHelpBtn = document.getElementById("toggleHelpBtn");
         if (toggleHelpBtn && window.TEUI?.TooltipManager) {
           // Set initial button state
           const updateButtonState = () => {
             const isEnabled = window.TEUI.TooltipManager.isEnabled();
             if (isEnabled) {
-              toggleHelpBtn.classList.remove('btn-outline-secondary', 'btn-danger');
-              toggleHelpBtn.classList.add('btn-success');
-              toggleHelpBtn.innerHTML = '<i class="bi bi-question-circle-fill"></i> Help On';
+              toggleHelpBtn.classList.remove(
+                "btn-outline-secondary",
+                "btn-danger",
+              );
+              toggleHelpBtn.classList.add("btn-success");
+              toggleHelpBtn.innerHTML =
+                '<i class="bi bi-question-circle-fill"></i> Help On';
             } else {
-              toggleHelpBtn.classList.remove('btn-success', 'btn-outline-secondary');
-              toggleHelpBtn.classList.add('btn-danger');
-              toggleHelpBtn.innerHTML = '<i class="bi bi-question-circle"></i> Help Off';
+              toggleHelpBtn.classList.remove(
+                "btn-success",
+                "btn-outline-secondary",
+              );
+              toggleHelpBtn.classList.add("btn-danger");
+              toggleHelpBtn.innerHTML =
+                '<i class="bi bi-question-circle"></i> Help Off';
             }
           };
 
@@ -1124,7 +1132,7 @@ Select a province and city to view weather data.</pre
           updateButtonState();
 
           // Add click handler
-          toggleHelpBtn.addEventListener('click', function() {
+          toggleHelpBtn.addEventListener("click", function () {
             window.TEUI.TooltipManager.toggleTooltips();
             updateButtonState();
           });

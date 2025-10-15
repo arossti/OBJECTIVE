@@ -9,12 +9,14 @@
 ## Problem Statement
 
 **Current Behavior:**
+
 - Users enter window/door areas in S10 (Building Enclosure) at fields `d_73-d_78`
 - Users must ALSO enter the same areas in S11 (Transmission Losses) at fields `d_88-d_93`
 - This creates duplicate data entry and potential inconsistencies
 - Previous sync implementation was surgically removed (Sept 2025, commits db3a48a, dd9b7bf)
 
 **Desired Behavior:**
+
 - S10 is the "source of truth" for window/door areas (fields `d_73` through `d_78`)
 - S11 should automatically "mirror" or "read" these values (fields `d_88` through `d_93`)
 - This sync must work in BOTH Target mode AND Reference mode
@@ -28,26 +30,29 @@
 
 S11 should read from S10 as follows:
 
-| S11 Field (display) | S10 Field (source) | Description |
-|---------------------|-------------------|-------------|
-| `d_88` | `d_73` | Window Area North |
-| `d_89` | `d_74` | Window Area East |
-| `d_90` | `d_75` | Window Area South |
-| `d_91` | `d_76` | Window Area West |
-| `d_92` | `d_77` | Door Area |
-| `d_93` | `d_78` | Skylight Area |
+| S11 Field (display) | S10 Field (source) | Description       |
+| ------------------- | ------------------ | ----------------- |
+| `d_88`              | `d_73`             | Window Area North |
+| `d_89`              | `d_74`             | Window Area East  |
+| `d_90`              | `d_75`             | Window Area South |
+| `d_91`              | `d_76`             | Window Area West  |
+| `d_92`              | `d_77`             | Door Area         |
+| `d_93`              | `d_78`             | Skylight Area     |
 
 ---
 
 ## Technical Context
 
 ### Dual-State Architecture
+
 Both S10 and S11 use Pattern A architecture with:
+
 - **TargetState**: User's design values
 - **ReferenceState**: Code compliance baseline values
 - **ModeManager**: Switches between modes
 
 ### State Prefixes
+
 - Target mode: Read from `d_73`, `d_74`, etc.
 - Reference mode: Read from `ref_d_73`, `ref_d_74`, etc.
 
@@ -58,12 +63,14 @@ Both S10 and S11 use Pattern A architecture with:
 ### September 2025: Surgical Removal (commits db3a48a, dd9b7bf)
 
 **What Existed:**
+
 - `areaSourceMap` object mapping S11 → S10 fields (e.g., `88: "d_73"`)
 - Mode-aware listeners for both Target (`d_73-d_78`) and Reference (`ref_d_73-ref_d_78`)
 - Calculation engine integration reading S10 values during S11 calcs
 - Display sync updating S11 input fields when S10 changed
 
 **Why It Was Removed:**
+
 - Code comments indicate "S11 now self-contained like row 85"
 - 110 lines of sync code surgically removed
 - S11 area fields changed from "calculated" to "editable"
@@ -73,11 +80,13 @@ Both S10 and S11 use Pattern A architecture with:
 ### Earlier Attempt (Pre-September)
 
 **What Broke:**
+
 - Syntax errors and recursion issues
 - Likely caused listener loops between S10 and S11
 - App became unstable
 
 **Why It Failed:**
+
 - Insufficient dual-state awareness in listeners
 - May have triggered infinite recalculation loops
 - Improper handling of import sequence
@@ -87,31 +96,41 @@ Both S10 and S11 use Pattern A architecture with:
 ## Key Technical Considerations (Based on User Clarification)
 
 ### 1. S10 Reference Defaults Are Incomplete
+
 **Issue:** Fields `d_76`, `d_77`, `d_78` have NO explicit Reference overrides in S10
+
 - Currently inherit from FieldDefinition (same as Target: 159.00, 100.66, 0.00)
 - S11 has "+1" differentiation values (160.00, 101.66, 1.00) that won't match
 - **Action Required:** Add explicit Reference defaults to S10 OR accept inheritance behavior
 
 ### 2. S11 Reference Defaults Must Be Cleared
+
 **Issue:** S11 currently has independent Reference defaults ("+1" values for differentiation)
+
 - These will conflict with syncing from S10
 - **Action Required:** Remove S11 Reference overrides for `d_88-d_93`, let them sync from S10
 
 ### 3. Reference Standard (d_13) Overlay Behavior
+
 **Important:** When `d_13` changes and ReferenceValues.js overlays reference values:
+
 - Area fields (`d_73-d_78` in S10, `d_88-d_93` in S11) are NOT affected
 - Only U-values and other characteristics overlay from reference standards
 - Area sync should continue working normally during/after reference overlay
 
 ### 4. Excel Import Sequence Requirements
+
 **Critical Flow:**
+
 1. S10 areas import from Excel → publish to StateManager
 2. S11 reads S10 values (NOT Excel S11 values) → syncs to S11 state
 3. Calculations run sequentially per row in S10, then S11
 4. Reference values must also follow this pattern (import S10 ref → sync to S11 ref)
 
 ### 5. Historical Implementation Pattern
+
 **Pattern Used (Sept 2025, before crashes):**
+
 - Used `areaSourceMap` for field mapping
 - Mode-aware listeners for Target and Reference states
 - Calculation engine read via `getGlobalNumericValue(sourceFieldId)`
@@ -125,6 +144,7 @@ Both S10 and S11 use Pattern A architecture with:
 ## Crash Risk Mitigation Strategy
 
 ### Root Causes of Previous Crashes (Hypothesis)
+
 1. **Listener Registration Timing:** Listeners may have fired before S11 state initialized
 2. **Infinite Recursion:** S11 setValue() may have triggered S10 listeners inadvertently
 3. **Mode Switch Race Conditions:** Sync during mode transition may have caused state corruption
@@ -134,6 +154,7 @@ Both S10 and S11 use Pattern A architecture with:
 ### Required Safeguards (MANDATORY)
 
 #### 1. Initialization Guard
+
 ```javascript
 let isS11Initialized = false;
 
@@ -148,6 +169,7 @@ if (!isS11Initialized) {
 ```
 
 #### 2. Sync-in-Progress Flag (Prevent Recursion)
+
 ```javascript
 let isSyncingFromS10 = false;
 
@@ -167,6 +189,7 @@ function syncAreasFromS10() {
 ```
 
 #### 3. Listener Mode Guard (Prevent Cross-Contamination)
+
 ```javascript
 // In listener setup - ONLY fire if mode matches
 window.TEUI.StateManager.addListener("d_73", (newValue) => {
@@ -177,12 +200,14 @@ window.TEUI.StateManager.addListener("d_73", (newValue) => {
 ```
 
 #### 4. Silent setValue (Prevent Recalc Triggers)
+
 ```javascript
 // Use "silent" flag if available to prevent calculation cascade
 TargetState.setValue(s11Field, areaValue, "calculated", { silent: true });
 ```
 
 #### 5. Debouncing (Prevent Rapid-Fire Syncs)
+
 ```javascript
 let syncTimeout = null;
 
@@ -209,13 +234,16 @@ function debouncedSyncAreasFromS10() {
 ## Recommended Implementation Path
 
 ### 0. PREREQUISITE: Add All Safeguards Listed Above
+
 **Before writing any sync code, implement:**
+
 - Initialization guard
 - Sync-in-progress flag
 - Listener mode guards
 - Debouncing mechanism
 
 ### 1. Fix S10 Reference Defaults (NEW STEP)
+
 **File:** `sections/4012-Section10.js`
 
 Add explicit Reference overrides for the three missing fields:
@@ -224,18 +252,19 @@ Add explicit Reference overrides for the three missing fields:
 // In ReferenceState.setDefaults() method
 const referenceDefaults = {
   // ... existing overrides ...
-  d_73: "5.00",   // Already exists
-  d_74: "60.00",  // Already exists
-  d_75: "2.50",   // Already exists
+  d_73: "5.00", // Already exists
+  d_74: "60.00", // Already exists
+  d_75: "2.50", // Already exists
   d_76: "159.00", // ADD THIS (or use different value if desired)
   d_77: "100.66", // ADD THIS (or use different value if desired)
-  d_78: "0.00",   // ADD THIS (or use different value if desired)
+  d_78: "0.00", // ADD THIS (or use different value if desired)
 };
 ```
 
 **Alternative:** Accept that d_76-d_78 inherit Target values (simplest approach)
 
 ### 2. Clear S11 Reference Defaults (NEW STEP)
+
 **File:** `sections/4012-Section11.js`
 
 Remove the "+1" differentiation values for Reference mode:
@@ -261,6 +290,7 @@ d_88: {
 **Repeat for all 6 area fields** (`d_88` through `d_93`)
 
 ### 4. Create Area Source Map (Restore Historical Pattern)
+
 **Location:** Inside S11 module
 
 ```javascript
@@ -275,6 +305,7 @@ const areaSourceMap = {
 ```
 
 ### 5. Implement Sync Function (Mode-Aware)
+
 **Location:** Inside S11 module
 
 ```javascript
@@ -287,7 +318,8 @@ function syncAreasFromS10() {
 
   Object.entries(areaSourceMap).forEach(([s11Field, s10Field]) => {
     // Determine source field based on mode
-    const sourceFieldId = currentMode === "reference" ? `ref_${s10Field}` : s10Field;
+    const sourceFieldId =
+      currentMode === "reference" ? `ref_${s10Field}` : s10Field;
 
     // Read from S10 via global StateManager
     const areaValue = window.TEUI.StateManager.getValue(sourceFieldId);
@@ -300,7 +332,9 @@ function syncAreasFromS10() {
         ReferenceState.setValue(s11Field, areaValue, "calculated");
       }
 
-      console.log(`[S11 Area Sync] ${s11Field} = ${areaValue} (from ${sourceFieldId})`);
+      console.log(
+        `[S11 Area Sync] ${s11Field} = ${areaValue} (from ${sourceFieldId})`,
+      );
     }
   });
 
@@ -310,6 +344,7 @@ function syncAreasFromS10() {
 ```
 
 ### 6. Setup S10 Area Listeners
+
 **Location:** Inside S11's `initializeEventHandlers()` function
 
 ```javascript
@@ -320,7 +355,7 @@ function setupS10AreaListeners() {
   const s10AreaFields = ["d_73", "d_74", "d_75", "d_76", "d_77", "d_78"];
 
   // Listen for Target mode changes
-  s10AreaFields.forEach(fieldId => {
+  s10AreaFields.forEach((fieldId) => {
     window.TEUI.StateManager.addListener(fieldId, (newValue) => {
       const currentMode = ModeManager.getCurrentMode();
       if (currentMode === "target") {
@@ -330,7 +365,7 @@ function setupS10AreaListeners() {
   });
 
   // Listen for Reference mode changes
-  s10AreaFields.forEach(fieldId => {
+  s10AreaFields.forEach((fieldId) => {
     window.TEUI.StateManager.addListener(`ref_${fieldId}`, (newValue) => {
       const currentMode = ModeManager.getCurrentMode();
       if (currentMode === "reference") {
@@ -344,6 +379,7 @@ function setupS10AreaListeners() {
 ```
 
 ### 7. Hook into Import Sequence
+
 **Location:** S11's `syncFromGlobalState()` method (should already exist)
 
 Add call to `syncAreasFromS10()` after field sync:
@@ -358,6 +394,7 @@ syncFromGlobalState: function(fieldIds) {
 ```
 
 ### 8. Hook into Mode Switch
+
 **Location:** S11's ModeManager switch handler
 
 Ensure `syncAreasFromS10()` is called when switching between Target/Reference:
@@ -376,34 +413,40 @@ ModeManager.onModeChange(() => {
 ## Testing Checklist
 
 ### Test 1: User Input Flow (Target Mode)
+
 - [ ] Change window area in S10 Target mode
 - [ ] Verify S11 Target mode updates automatically
 - [ ] Verify S11 calculations use updated area
 
 ### Test 2: User Input Flow (Reference Mode)
+
 - [ ] Switch to Reference mode
 - [ ] Change window area in S10 Reference mode
 - [ ] Verify S11 Reference mode updates automatically
 - [ ] Verify Reference calculations use updated area
 
 ### Test 3: Excel Import Flow
+
 - [ ] Import Excel file with known window/door areas
 - [ ] Verify S10 shows imported values
 - [ ] Verify S11 mirrors S10 values (not Excel S11 values)
 - [ ] Verify both Target and Reference modes sync correctly
 
 ### Test 4: Reference Standard Application
+
 - [ ] Apply Reference Standard dropdown (`d_13`)
 - [ ] Verify Reference mode updates
 - [ ] Verify S11 Reference areas sync from S10 Reference areas
 - [ ] Verify no cross-contamination with Target mode
 
 ### Test 5: No Infinite Loops
+
 - [ ] Monitor console for excessive calculation triggers
 - [ ] Verify app remains responsive
 - [ ] Check that calculations settle within ~100ms
 
 ### Test 6: Edge Cases
+
 - [ ] Test with zero area values
 - [ ] Test with very large area values
 - [ ] Test rapid mode switching
@@ -414,6 +457,7 @@ ModeManager.onModeChange(() => {
 ## Files to Modify
 
 1. **`sections/4012-Section10.js`** (OPTIONAL)
+
    - Add explicit Reference overrides for `d_76`, `d_77`, `d_78` if differentiation needed
    - OR accept that these inherit Target defaults (simplest)
 
@@ -436,6 +480,7 @@ ModeManager.onModeChange(() => {
 ## Red Flags / Anti-Patterns to Avoid
 
 ### CRITICAL - App Crash Risks
+
 ❌ **DON'T:** Register listeners before S11 initialization completes
 ❌ **DON'T:** Call sync functions without recursion guards
 ❌ **DON'T:** Allow sync to fire during mode transitions
@@ -443,6 +488,7 @@ ModeManager.onModeChange(() => {
 ❌ **DON'T:** Trigger calculations from within sync functions
 
 ### CRITICAL - State Management
+
 ❌ **DON'T:** Create listeners that trigger S10 calculations from S11
 ❌ **DON'T:** Use `setValue()` without specifying state ("calculated" vs "user-modified")
 ❌ **DON'T:** Mix Target and Reference field IDs in same listener
@@ -450,11 +496,13 @@ ModeManager.onModeChange(() => {
 ❌ **DON'T:** Assume S10 values exist before S10 initialization
 
 ### CRITICAL - Testing
+
 ❌ **DON'T:** Deploy without incremental testing (one listener at a time)
 ❌ **DON'T:** Skip console monitoring during testing
 ❌ **DON'T:** Test in production environment first
 
 ### Best Practices
+
 ✅ **DO:** Only READ from S10, never WRITE back
 ✅ **DO:** Respect current mode when determining source field
 ✅ **DO:** Use ALL safeguards (guards, flags, debouncing)
@@ -500,6 +548,7 @@ If implementation causes issues:
 ## Notes for Agent
 
 ### SEVERITY WARNING
+
 - This feature has **crashed the app twice** during previous implementation attempts
 - Root cause of crashes is unknown (likely timing, recursion, or state initialization)
 - This is NOT a simple feature - treat as **HIGH RISK** despite being labeled "quality of life"
@@ -508,6 +557,7 @@ If implementation causes issues:
 - **DO NOT** assume historical pattern will work - it crashed after dual-engine refactor
 
 ### Implementation Strategy
+
 - **Incremental approach mandatory:** Comment out listeners, test sync function in isolation first
 - **One listener at a time:** Add Target d_73 listener only, test thoroughly before adding others
 - **Console monitoring:** Watch for errors, warnings, recursion indicators
@@ -517,6 +567,7 @@ If implementation causes issues:
 - Reference S02/S03 for Pattern A dual-state examples
 
 ### User Clarifications (from conversation)
+
 1. **Excel Import:** S10 areas import first → publish to StateManager → S11 reads (NOT from Excel S11 values)
 2. **User Edits:** Any S10 area edit immediately triggers S11 update
 3. **Reference Standard (d_13):** Area values NOT affected by overlay - only U-values/characteristics change
@@ -524,6 +575,7 @@ If implementation causes issues:
 5. **Reference Model:** Both Target and Reference areas must sync (d_73-d_78 and ref_d_73-ref_d_78)
 
 ### Decision Points for Agent
+
 1. **S10 Reference Defaults:** Add explicit overrides for d_76-d_78, or accept inheritance? (Recommend: accept inheritance for simplicity)
 2. **Debounce Timing:** 50ms recommended, but adjust if needed based on testing
 3. **Silent setValue:** If TargetState.setValue() doesn't support `silent` flag, may need alternative approach

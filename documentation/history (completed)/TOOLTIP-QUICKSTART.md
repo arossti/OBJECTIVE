@@ -62,13 +62,13 @@ python3 extract-validation.py "/Users/andrewthomson/Library/Mobile Documents/com
   // Load validation tooltips on page load
   window.TEUI = window.TEUI || {};
 
-  fetch('data/validation-tooltips.json')
-    .then(response => response.json())
-    .then(data => {
+  fetch("data/validation-tooltips.json")
+    .then((response) => response.json())
+    .then((data) => {
       window.TEUI.ValidationTooltips = data;
       console.log(`✅ Loaded ${Object.keys(data).length} validation tooltips`);
     })
-    .catch(err => console.warn('Could not load tooltips:', err));
+    .catch((err) => console.warn("Could not load tooltips:", err));
 </script>
 ```
 
@@ -82,15 +82,15 @@ function applyTooltip(inputElement, fieldId) {
 
   if (tooltip) {
     // Clean up Excel newlines (_x000a_ → <br>)
-    const cleanMessage = tooltip.message.replace(/_x000a_/g, '<br>');
+    const cleanMessage = tooltip.message.replace(/_x000a_/g, "<br>");
 
     // Use Bootstrap popover for longer messages
-    inputElement.setAttribute('data-bs-toggle', 'popover');
-    inputElement.setAttribute('data-bs-trigger', 'hover focus');
-    inputElement.setAttribute('data-bs-placement', 'top');
-    inputElement.setAttribute('data-bs-html', 'true');
-    inputElement.setAttribute('data-bs-title', tooltip.title);
-    inputElement.setAttribute('data-bs-content', cleanMessage);
+    inputElement.setAttribute("data-bs-toggle", "popover");
+    inputElement.setAttribute("data-bs-trigger", "hover focus");
+    inputElement.setAttribute("data-bs-placement", "top");
+    inputElement.setAttribute("data-bs-html", "true");
+    inputElement.setAttribute("data-bs-title", tooltip.title);
+    inputElement.setAttribute("data-bs-content", cleanMessage);
 
     // Initialize Bootstrap popover
     new bootstrap.Popover(inputElement);
@@ -98,33 +98,36 @@ function applyTooltip(inputElement, fieldId) {
 }
 
 // Usage example:
-const input = document.getElementById('h_14');
-applyTooltip(input, 'h_14');
+const input = document.getElementById("h_14");
+applyTooltip(input, "h_14");
 ```
 
 ### Step 3: Add Info Icons (Optional Enhancement)
 
 ```javascript
 function createFieldWithTooltip(fieldId, labelText) {
-  const container = document.createElement('div');
-  container.className = 'field-with-tooltip';
+  const container = document.createElement("div");
+  container.className = "field-with-tooltip";
 
-  const label = document.createElement('label');
+  const label = document.createElement("label");
   label.textContent = labelText;
 
-  const input = document.createElement('input');
+  const input = document.createElement("input");
   input.id = fieldId;
 
   // Add info icon if tooltip exists
   const tooltip = window.TEUI.ValidationTooltips?.[fieldId];
   if (tooltip) {
-    const icon = document.createElement('i');
-    icon.className = 'bi bi-info-circle-fill text-primary ms-1';
-    icon.style.cursor = 'pointer';
-    icon.setAttribute('data-bs-toggle', 'popover');
-    icon.setAttribute('data-bs-html', 'true');
-    icon.setAttribute('data-bs-title', tooltip.title);
-    icon.setAttribute('data-bs-content', tooltip.message.replace(/_x000a_/g, '<br>'));
+    const icon = document.createElement("i");
+    icon.className = "bi bi-info-circle-fill text-primary ms-1";
+    icon.style.cursor = "pointer";
+    icon.setAttribute("data-bs-toggle", "popover");
+    icon.setAttribute("data-bs-html", "true");
+    icon.setAttribute("data-bs-title", tooltip.title);
+    icon.setAttribute(
+      "data-bs-content",
+      tooltip.message.replace(/_x000a_/g, "<br>"),
+    );
     new bootstrap.Popover(icon);
 
     label.appendChild(icon);
@@ -142,14 +145,14 @@ function createFieldWithTooltip(fieldId, labelText) {
 
 ✅ **35 fields** have tooltips extracted:
 
-| Section | Fields |
-|---------|--------|
-| S02 - Building Info | 8 |
-| S03 - Climate | 6 |
-| S04 - Actual vs Target | 6 |
-| S05 - Emissions | 2 |
-| S06 - Renewable Energy | 1 |
-| S07 - Water Use | 7 |
+| Section                | Fields |
+| ---------------------- | ------ |
+| S02 - Building Info    | 8      |
+| S03 - Climate          | 6      |
+| S04 - Actual vs Target | 6      |
+| S05 - Emissions        | 2      |
+| S06 - Renewable Energy | 1      |
+| S07 - Water Use        | 7      |
 
 **To expand coverage:** Add more cell mappings to `CELL_TO_FIELD_MAPPING` in `extract-validation.py`
 

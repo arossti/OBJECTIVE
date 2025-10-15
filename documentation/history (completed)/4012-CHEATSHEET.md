@@ -109,6 +109,105 @@ const calculatedFields = [
 ];
 ```
 
+### Anti-Pattern 6: Cross-Section DOM Listener Contamination ⚠️ CRITICAL
+
+**Discovered:** October 14, 2025 (d_12 state mixing bug)
+
+**Description:** A section attaches a DOM listener to another section's input field and writes to StateManager using its own `ModeManager.currentMode`, causing state contamination when the source section is in a different mode.
+
+**Symptom:** Reference mode changes in one section cause Target model recalculations. Unprefixed values are written to StateManager even though only prefixed values should be written.
+
+**Example Bug:**
+
+```javascript
+// ❌ WRONG: S09 listening to S02's d_12 dropdown
+function setupEquipmentDropdownListeners() {
+  const dropdownFields = [
+    { fieldId: "g_67" }, // ✅ OK - S09's own field
+    { fieldId: "d_12" }, // ❌ WRONG - S02's field!
+  ];
+
+  dropdownFields.forEach((field) => {
+    const dropdown = document.querySelector(
+      `[data-field-id="${field.fieldId}"]`,
+    );
+    dropdown.addEventListener("change", function () {
+      // This writes using S09's ModeManager, which is in target mode
+      // even when S02's dropdown is in reference mode!
+      ModeManager.setValue(field.fieldId, this.value); // ❌ State mixing!
+    });
+  });
+}
+```
+
+**The Problem Chain:**
+
+1. User changes d_12 in S02 Reference mode
+2. S09's DOM listener fires (attached to same dropdown)
+3. S09's `ModeManager.currentMode` is "target" (default)
+4. S09 writes unprefixed `d_12` to StateManager (WRONG!)
+5. S02's handler then writes `ref_d_12` (correct)
+6. Result: BOTH `d_12` and `ref_d_12` written → Target model contaminated
+
+**The Correct Pattern:**
+
+✅ **Sections should ONLY listen to their own input fields via DOM**
+✅ **For external dependencies, listen to StateManager changes (d_12 AND ref_d_12)**
+
+```javascript
+// ✅ CORRECT: Listen to StateManager, not DOM
+// S09 already has proper StateManager listeners
+window.TEUI.StateManager.addListener("d_12", () => {
+  calculateTargetModel(); // Only Target recalculates
+});
+
+window.TEUI.StateManager.addListener("ref_d_12", () => {
+  calculateReferenceModel(); // Only Reference recalculates
+});
+
+// ✅ CORRECT: Only listen to YOUR OWN fields via DOM
+function setupEquipmentDropdownListeners() {
+  const dropdownFields = [
+    { fieldId: "g_67" }, // ✅ S09's field - OK to listen
+    { fieldId: "d_68" }, // ✅ S09's field - OK to listen
+    // d_12 removed - belongs to S02!
+  ];
+}
+```
+
+**Debugging Methodology for State Mixing:**
+
+When you see unexpected Target model changes from Reference mode operations:
+
+1. **Add call stack trace to StateManager.setValue():**
+
+```javascript
+if (fieldId === "d_12" || fieldId === "ref_d_12") {
+  console.log(`[StateManager TRACE] ${fieldId} setValue: "${value}"`);
+  console.trace(`Call stack:`);
+}
+```
+
+2. **Look for the pattern:**
+
+   - Unprefixed write BEFORE prefixed write = cross-section listener
+   - Call stack shows different section than expected = DOM listener contamination
+
+3. **Check for cross-section DOM listeners:**
+
+   - Search for `querySelector.*data-field-id.*${problematic_field}`
+   - Look for sections listening to fields they don't own
+   - Verify each section only listens to its own fields via DOM
+
+4. **Verify StateManager listeners exist:**
+   - Sections needing external data should have BOTH `d_XX` AND `ref_d_XX` listeners
+   - Listeners should be mode-selective (only run appropriate engine)
+
+**Key Principle:**
+
+- **DOM listeners** = Section's OWN input fields only
+- **StateManager listeners** = External dependencies from other sections
+
 ---
 
 ## 🏛️ **DEFAULTS IMPLEMENTATION PATTERN (CRITICAL)**
