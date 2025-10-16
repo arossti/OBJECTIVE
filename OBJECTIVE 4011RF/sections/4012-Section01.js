@@ -1201,9 +1201,8 @@ window.TEUI.SectionModules.sect01 = (function () {
             ref_h_13: window.TEUI?.StateManager?.getValue("ref_h_13"),
             h_13: window.TEUI?.StateManager?.getValue("h_13"),
           };
-          console.log("[S01DB] upstream snapshot", snapshot);
         } catch (e) {
-          console.warn("[S01DB] snapshot failed", e);
+          // Snapshot failed
         }
         // ✅ PURE DISPLAY CONSUMER: Single function does all math and display
         updateTEUIDisplay(); // Calculates all values and updates display
@@ -1297,17 +1296,6 @@ window.TEUI.SectionModules.sect01 = (function () {
         (newValue, oldValue, sourceFieldId) => {
           // Only recalculate if the value actually changed
           if (newValue !== oldValue) {
-            if (fieldId === "j_32") {
-              console.log(`[S01] j_32 listener: ${oldValue} → ${newValue}`);
-              console.log(
-                `[S01] 🕐 j_32 listener timing: StateManager current j_32 = ${window.TEUI.StateManager?.getValue("j_32")}`,
-              );
-            } else if (fieldId === "ref_j_32") {
-              // console.log(`🔵 [S01] REFERENCE ENERGY LISTENER: ref_j_32 changed from ${oldValue} to ${newValue} → will update REFERENCE COLUMN E`);
-            } else {
-              // console.log(`📡 [S01] Listener triggered: ${fieldId} changed from ${oldValue} to ${newValue}`);
-            }
-
             if (fieldId === "g_32") {
               // Special handling for g_32 field changes (if needed in future)
             }

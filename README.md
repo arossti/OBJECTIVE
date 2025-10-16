@@ -1726,6 +1726,25 @@ All rights retained by the Canadian Nponprofit OpenBuilding, Inc., with support 
 
 # TODOs and Known Issues
 
+## 🔍 Debugging State Mixing Issues (Resolved Example)
+
+**Issue Resolved:** October 14, 2025 - d_12 state mixing bug
+**Symptom:** Reference mode changes in S02 caused Target model contamination (h_10 drift: 93.7 → 93.2)
+
+**Root Cause:** Section 09 had a DOM listener attached to Section 02's d_12 dropdown. When the dropdown changed in S02 Reference mode, S09's listener fired and wrote to StateManager using S09's `ModeManager.currentMode` (target), causing unprefixed `d_12` to be written alongside the correct `ref_d_12`.
+
+**Discovery Method:** Added `console.trace()` to `StateManager.setValue()` for the problematic field. Call stack revealed S09's cross-section DOM listener.
+
+**Fix:** Removed d_12 from S09's `setupEquipmentDropdownListeners()` array. S09 already had proper StateManager listeners for d_12/ref_d_12 changes.
+
+**Key Principle:** Sections should ONLY attach DOM listeners to their OWN input fields. For external dependencies, use StateManager listeners (both `fieldId` AND `ref_fieldId`).
+
+**Documentation:** Full debugging methodology and Anti-Pattern 6 documented in `OBJECTIVE 4011RF/documentation/history (completed)/4012-CHEATSHEET.md` (lines 112-202). See section "Anti-Pattern 6: Cross-Section DOM Listener Contamination" for complete troubleshooting guide.
+
+---
+
+## Known Issues
+
 - **Section 05 Checkmark Logic**: The pass/fail checkmarks in Section 05 (fields `n_39`, `n_40`, `n_41` in column M) need adjustment. Currently, they might not correctly reflect a "fail" (✗) status when their corresponding percentage values (in fields `l_39`, `l_40`, `l_41` in column L) exceed 100%. The logic should be updated so that any percentage value strictly greater than 100% (i.e., numeric value > 1.0) results in a fail (✗). This needs the simplest possible fix by adjusting the comparison in the checkmark update function.
 - **Centralize Pass/Fail Indicator Styles**: Currently, sections S09 and S12 inject their own copies of `.checkmark` and `.warning` CSS styles via `addCheckmarkStyles()` functions. This creates maintenance overhead and inconsistent styling. The improved approach is to define these styles globally in `4011-styles.css` (implemented for modern Bootstrap colors: green `#28a745` success, red `#dc3545` danger) and remove the redundant injection functions from individual sections. Sections should rely on the global CSS definitions rather than injecting duplicate styles. This consolidation improves maintainability and ensures consistent pass/fail indicator appearance across all sections.
 - **Chrome Double File Dialog for Location Import**: In Chrome, clicking the "Load Locations" button (which triggers a click on the hidden `location-excel-input` file input) results in the file selection dialog appearing twice. Safari behaves correctly, showing it once. The `selectExcelBtnClickHandler` in `4011-FileHandler.js` is confirmed to execute only once per click. This appears to be a Chrome-specific quirk with the programmatic `input.click()` event. Low priority UI bug.
@@ -2140,6 +2159,7 @@ _Assisted with AFUE integration, Excel parity calculations, cross-section coordi
 The development of OBJECTIVE TEUI 4.012 involved substantial collaboration with AI assistants. Estimating the precise environmental footprint of this contribution is complex, but in the spirit of a "Feynman-esque" guesstimate, we can derive some illustrative figures based on assumptions and publicly available data:
 
 **Development Phases:**
+
 - **Phase 1 (Jan-May 2025):** Initial v4.011 refactoring, dual-engine architecture, core sections - ~50 active computational hours
 - **Phase 2 (May-Oct 2025):** Section 13 cooling integration, g_118 cascade debugging, volume constant fixes, graphics refinements, comprehensive code quality improvements - ~125 additional active computational hours
 
@@ -2158,6 +2178,7 @@ The development of OBJECTIVE TEUI 4.012 involved substantial collaboration with 
 - **Associated Direct Water Use (data center cooling):** Approximately **43.3 Liters**
 
 **Contextual Comparison:**
+
 - This energy usage is equivalent to:
   - Running a typical refrigerator for ~6 days
   - Driving an electric vehicle ~900 km
@@ -2770,11 +2791,13 @@ When creating sections for the 4012 framework, follow these principles:
 #### Symptoms
 
 1. **h_10 (TEDI) Discrepancy**
+
    - Expected (Excel): `93.7 kWh/m²/yr`
    - Actual (App): `93.0 kWh/m²/yr`
    - Difference: `-0.7 kWh/m²/yr` (0.75% lower)
 
 2. **m_129 (Cooling Energy Demand) Discrepancy**
+
    - Expected (Excel): `10,709.00 kWh`
    - Actual (App): `8,045.10 kWh`
    - Difference: `-2,663.90 kWh` (24.9% lower) ⚠️
@@ -2787,6 +2810,7 @@ When creating sections for the 4012 framework, follow these principles:
 #### Root Cause Hypothesis
 
 Both discrepancies likely stem from **ventilation calculation issues in Section 13**:
+
 - Ventilation heat recovery calculations may have timing/sequencing issues
 - Free cooling capacity calculation (h_124, c_124) may not be capturing full Excel logic
 - Cooling energy demand (m_129) calculation in S14 depends on S13 ventilation outputs
@@ -2796,10 +2820,12 @@ The h_10 drift from 93.7 to 93.0 occurred around Sept 23, 2025, correlating with
 #### Detailed Value Comparison (Default Model)
 
 **Occupant Gains:**
+
 - k_64 Excel: `21,269.93 kWh`
 - k_64 App: Minor difference (rounding)
 
 **Ventilation/Cooling:**
+
 - d_122 (Incoming Vent): Matches Excel `15,128.68 kWh`
 - d_123 (Vent Exhaust): Matches Excel `13,464.53 kWh`
 - h_124 (Free Cooling): Matches Excel `37,322.82 kWh`

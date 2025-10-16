@@ -2456,7 +2456,10 @@ window.TEUI.SectionModules.sect03 = (function () {
       calculateAll();
 
       // 6. Apply validation tooltips to fields
-      if (window.TEUI.TooltipManager && window.TEUI.TooltipManager.initialized) {
+      if (
+        window.TEUI.TooltipManager &&
+        window.TEUI.TooltipManager.initialized
+      ) {
         setTimeout(() => {
           window.TEUI.TooltipManager.applyTooltipsToSection(sectionRows);
         }, 300);

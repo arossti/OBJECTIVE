@@ -420,9 +420,6 @@ window.TEUI.SectionModules.sect10 = (function () {
 
     // Update displayed calculated values based on current mode (Target vs Reference)
     updateCalculatedDisplayValues: function () {
-      console.log(
-        `[S10DISPLAY] updateCalculatedDisplayValues() called in ${this.currentMode} mode`,
-      );
       if (!window.TEUI?.StateManager) return;
 
       // All calculated fields that need mode-aware display updates
@@ -492,13 +489,6 @@ window.TEUI.SectionModules.sect10 = (function () {
           valueToDisplay = TargetState.getValue(fieldId);
         }
 
-        // 🔍 DEBUG: Special logging for g_80 to understand the issue
-        if (fieldId === "g_80") {
-          console.log(
-            `[S10DISPLAY] g_80 DEBUG: mode=${this.currentMode}, valueToDisplay=${valueToDisplay}`,
-          );
-        }
-
         if (valueToDisplay !== null && valueToDisplay !== undefined) {
           const element = document.querySelector(
             `[data-field-id="${fieldId}"]`,
@@ -527,9 +517,6 @@ window.TEUI.SectionModules.sect10 = (function () {
             }
 
             element.textContent = formattedValue;
-            console.log(
-              `[S10DISPLAY] Display (${this.currentMode}) ${fieldId} = ${formattedValue}`,
-            );
           }
         }
       });
@@ -2133,9 +2120,6 @@ window.TEUI.SectionModules.sect10 = (function () {
       const internalGains = getGlobalNumericValue("ref_i_71") || 0;
 
       const totalGains = solarGains + internalGains;
-      console.log(
-        `[S10REF] Utilization calc: ref_i_71=${internalGains}, ref_i_79=${solarGains}, totalGains=${totalGains}`,
-      );
 
       // Store total gains in e_80, e_81 (same as Target logic)
       setFieldValue("e_80", totalGains);
@@ -2147,7 +2131,6 @@ window.TEUI.SectionModules.sect10 = (function () {
       const utilizationMethod =
         ModeManager.getCurrentState().getValue("d_80") || "NRC 40%";
       let utilizationFactor = 0.4; // Default to 40%
-      console.log(`[S10REF] Using utilization method: ${utilizationMethod}`);
 
       if (utilizationMethod === "NRC 0%") {
         utilizationFactor = 0;
@@ -2184,9 +2167,6 @@ window.TEUI.SectionModules.sect10 = (function () {
       }
 
       const usableGains = totalGains * utilizationFactor;
-      console.log(
-        `[S10REF] Final calc: utilizationFactor=${utilizationFactor}, usableGains=${usableGains}`,
-      );
 
       // ✅ CRITICAL: Store g_80 (utilization factor percentage) and i_80 (usable gains)
       setFieldValue("g_80", utilizationFactor);
@@ -2226,10 +2206,6 @@ window.TEUI.SectionModules.sect10 = (function () {
       // ✅ Store g_81 (PHPP utilization factor) and i_81 (PHPP usable gains)
       setFieldValue("g_81", phUtilizationFactor);
       setFieldValue("i_81", phReferenceGains);
-
-      console.log(
-        `[S10REF] Complete: g_80=${utilizationFactor}, g_81=${phUtilizationFactor}, i_80=${usableGains}, i_81=${phReferenceGains}`,
-      );
     } catch (_error) {
       console.error(
         "S10: Error calculating Reference utilization factors:",

@@ -291,15 +291,6 @@ window.TEUI.SectionModules.sect12 = (function () {
         }
       });
 
-      // [S12DB] Debug g_104 display value for mode switching
-      const g104Display =
-        this.currentMode === "reference"
-          ? window.TEUI?.StateManager?.getValue("ref_g_104")
-          : window.TEUI?.StateManager?.getValue("g_104");
-      console.log(
-        `[S12DB] g_104 DISPLAY (${this.currentMode}): ${g104Display}`,
-      );
-
       console.log(
         `[Section12] Calculated display values updated for ${this.currentMode} mode`,
       );
@@ -2373,7 +2364,7 @@ window.TEUI.SectionModules.sect12 = (function () {
             "g_104",
           ].includes(fieldId)
         ) {
-          console.log(`[S12DB] STORED for S15: ref_${fieldId}=${value}`);
+          // S15 dependencies stored
         }
       }
     });
@@ -2652,7 +2643,6 @@ window.TEUI.SectionModules.sect12 = (function () {
       );
       return;
     }
-    console.log("[S12] 🚀 INITIALIZING CLIMATE LISTENERS");
     const externalDependencies = [
       // Section 11 Inputs influencing U-Values (g_101, g_102) and Areas (d_101, d_102)
       "d_85",
@@ -2744,7 +2734,6 @@ window.TEUI.SectionModules.sect12 = (function () {
         depId,
         (newValue, oldValue, eventFieldId, state) => {
           if (eventFieldId === depId) {
-            console.log(`[S12] Listener: ${depId} changed → recalc`);
             calculateAll();
           }
         },

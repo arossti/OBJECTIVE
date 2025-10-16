@@ -17,6 +17,7 @@ Excel import works perfectly and matches Excel calculations exactly.
 ## Current State Analysis
 
 ### Excel Import Flow (✅ WORKING)
+
 **File:** `4011-FileHandler.js::processImportedExcel()` (lines 104-207)
 
 ```javascript
@@ -33,7 +34,6 @@ try {
   // 4. Sync Pattern A sections (S02, S03, S04, S05, S06, S08, S15)
   //    These sections use isolated DualState and need explicit sync
   this.syncPatternASections();
-
 } finally {
   // 5. 🔓 END QUARANTINE - Unmute listeners
   window.TEUI.StateManager.unmuteListeners();
@@ -47,6 +47,7 @@ window.TEUI.SectionModules.sect03.ModeManager.refreshUI();
 ```
 
 **Key Success Factors:**
+
 - Quarantine prevents cascading calculations during import
 - All values imported before any calculations run
 - Pattern A sections explicitly synced
@@ -56,6 +57,7 @@ window.TEUI.SectionModules.sect03.ModeManager.refreshUI();
 ---
 
 ### CSV Import Flow (🔴 BROKEN)
+
 **File:** `4011-FileHandler.js::processImportedCSV()` (lines 257-364)
 
 ```javascript
@@ -84,6 +86,7 @@ this.updateStateFromImportData(importedData);
 ```
 
 **Problems Identified:**
+
 1. ❌ No `muteListeners()` / `unmuteListeners()` quarantine
 2. ❌ No `syncPatternASections()` call
 3. ❌ No `calculator.calculateAll()` call
@@ -97,6 +100,7 @@ this.updateStateFromImportData(importedData);
 CSV import successfully populates StateManager with imported values but **never triggers the calculation cascade** that propagates those values through all dependent fields and sections.
 
 Without calculations:
+
 - Calculated fields remain at default/stale values
 - Reference model not recalculated
 - Pattern A sections not synced with imported data
@@ -107,6 +111,7 @@ Without calculations:
 ## Solution Plan
 
 ### Phase 1: Add Quarantine Mechanism (CRITICAL)
+
 **File:** `4011-FileHandler.js::processImportedCSV()`
 
 Wrap import operations in quarantine:
@@ -135,6 +140,7 @@ processImportedCSV(csvString) {
 ```
 
 ### Phase 2: Trigger Post-Import Calculations (CRITICAL)
+
 **File:** `4011-FileHandler.js::processImportedCSV()`
 
 After quarantine ends, trigger calculations:
@@ -154,20 +160,18 @@ if (this.calculator && typeof this.calculator.calculateAll === "function") {
 ```
 
 ### Phase 3: Status Messages (NICE TO HAVE)
+
 Improve user feedback:
 
 ```javascript
 this.showStatus(
   `CSV import complete. ${targetCount} target and ${refCount} reference fields imported. Recalculating...`,
-  "info"
+  "info",
 );
 
 // ... after calculations ...
 
-this.showStatus(
-  `Import successful. All calculations updated.`,
-  "success"
-);
+this.showStatus(`Import successful. All calculations updated.`, "success");
 ```
 
 ---
@@ -175,6 +179,7 @@ this.showStatus(
 ## Testing Protocol
 
 ### Test Case 1: Basic Import Verification
+
 1. Export current state to CSV
 2. Modify a calculated field manually to wrong value
 3. Import the CSV
@@ -182,6 +187,7 @@ this.showStatus(
 5. **Verify:** All dependent calculations cascade properly
 
 ### Test Case 2: Reference Model Import
+
 1. Export dual-state CSV with distinct Target vs Reference values
 2. Import CSV
 3. Toggle between Target/Reference modes
@@ -189,12 +195,14 @@ this.showStatus(
 5. **Verify:** Reference model calculations match Excel import
 
 ### Test Case 3: Pattern A Section Sync
+
 1. Export CSV with S02, S03 values
 2. Import CSV
 3. **Expected:** Pattern A sections (S02, S03, etc.) show imported values
 4. **Verify:** Isolated state sections properly synced
 
 ### Test Case 4: Complex Dependencies
+
 1. Export CSV with climate data (S03: province, city)
 2. Import CSV
 3. **Expected:** Climate-dependent calculations (HDD, CDD) update correctly
@@ -230,6 +238,7 @@ this.showStatus(
 ## Success Criteria
 
 ### Target/Actual Model (✅ COMPLETE)
+
 - ✅ CSV import produces **identical results** to Excel import
 - ✅ All calculated fields update correctly (100% parity achieved)
 - ✅ Pattern A sections sync properly
@@ -237,6 +246,7 @@ this.showStatus(
 - ✅ User receives clear feedback about import success
 
 ### Reference Model (🟡 DEFERRED)
+
 - 🟡 Reference model calculations differ across App, Excel, and CSV
 - 🟡 Needs investigation in Master-Reference-Roadmap.md
 - 🟡 To be addressed in future session
@@ -246,9 +256,11 @@ this.showStatus(
 ## Implementation Summary - October 9, 2025
 
 ### ✅ Completed
+
 Successfully implemented quarantine mechanism and calculation triggers for CSV import:
 
 **Changes made to `4011-FileHandler.js::processImportedCSV()`:**
+
 ```javascript
 // 🔒 START QUARANTINE
 window.TEUI.StateManager.muteListeners();
@@ -269,7 +281,9 @@ window.TEUI.SectionModules.sect03.ModeManager.refreshUI();
 **Result:** Target/Actual model CSV import now achieves 100% parity with Excel import. All calculated fields update correctly, Pattern A sections sync properly, and complex dependencies resolve as expected.
 
 ### 🟡 Deferred
+
 Reference model state differences observed between:
+
 - Application state
 - Excel import results
 - CSV import results
@@ -277,6 +291,7 @@ Reference model state differences observed between:
 Investigation and resolution deferred to next session. Related to work documented in Master-Reference-Roadmap.md.
 
 **Next Session Plan:**
+
 1. Compare Excel codebase section-by-section with App Reference model calculations
 2. Investigate `d_13` reference standard application issues (observed in S11)
    - Current selection: OBC SB10 5.5-6 Z5 (2010)
