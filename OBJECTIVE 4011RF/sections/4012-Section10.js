@@ -131,7 +131,7 @@ window.TEUI.SectionModules.sect10 = (function () {
 
       // ✅ REFERENCE MODE OVERRIDES: Only values that should differ from Target
       // These represent building code reference values vs actual building values
-      this.state.d_73 = "5.00"; // Reference: Smaller window area
+      //this.state.d_73 = "5.00"; // Reference: Smaller window area (test, commented out for now)
       // ✅ REFERENCE ORIENTATION DEFAULTS: Match FieldDefinition defaults for 100% user flexibility
       this.state.e_73 = "Average"; // Reference: Row 73 - Average (matches FieldDefinition)
       this.state.e_74 = "North"; // Reference: Row 74 - North (matches FieldDefinition)
@@ -140,13 +140,13 @@ window.TEUI.SectionModules.sect10 = (function () {
       this.state.e_77 = "West"; // Reference: Row 77 - West (matches FieldDefinition)
       this.state.e_78 = "Skylight"; // Reference: Row 78 - Skylight (matches FieldDefinition)
 
-      // ✅ REFERENCE PERFORMANCE OVERRIDES: Better performance for Reference model
+      // ✅ REFERENCE PERFORMANCE OVERRIDES: Lower performance for Reference model represents code minimums
       this.state.f_73 = "0.35"; // Reference: Better shading factor
       this.state.h_73 = "0"; // Reference: No user adjustments
-      this.state.d_74 = "60.00"; // Reference: Smaller window area
+      //this.state.d_74 = "60.00"; // Reference: Smaller window area (test, commented out for now)
       this.state.f_74 = "0.35"; // Reference: Better shading factor
       this.state.h_74 = "0"; // Reference: No user adjustments
-      this.state.d_75 = "2.50"; // Reference: Smaller window area
+      //this.state.d_75 = "2.50"; // Reference: Smaller window area (test, commented out for now)
       this.state.f_75 = "0.35"; // Reference: Better shading factor
       this.state.h_75 = "0"; // Reference: No user adjustments
       this.state.f_76 = "0.35"; // Reference: Better shading factor
@@ -909,7 +909,7 @@ window.TEUI.SectionModules.sect10 = (function () {
         j: {
           fieldId: "j_73",
           type: "calculated",
-          value: "1.55%",
+          value: "1.55%", // DEFAULTS ANTIPATTERN if values are calculated, why do we tell them what they should be here? 
           section: "envelopeRadiantGains",
           dependencies: ["i_73", "h_79"],
         },
@@ -2098,6 +2098,32 @@ window.TEUI.SectionModules.sect10 = (function () {
       setFieldValue("k_79", coolingGains);
       setFieldValue("j_79", heatingGains > 0 ? "1" : "0");
       setFieldValue("l_79", coolingGains > 0 ? "1" : "0");
+
+      // ✅ FIX: Calculate percentages for rows 73-78 (match Target mode logic)
+      for (let i = 73; i <= 78; i++) {
+        const rowStr = i.toString();
+        const heatingGain =
+          window.TEUI.parseNumeric(
+            window.TEUI.StateManager.getValue(`ref_i_${rowStr}`),
+          ) || 0;
+        const coolingGain =
+          window.TEUI.parseNumeric(
+            window.TEUI.StateManager.getValue(`ref_k_${rowStr}`),
+          ) || 0;
+
+        // Calculate percentages (as decimals: 0.25 = 25%)
+        const heatingPercentDecimal =
+          heatingGains !== 0 ? heatingGain / heatingGains : 0;
+        const coolingPercentDecimal =
+          coolingGains !== 0 ? coolingGain / coolingGains : 0;
+
+        const jFieldId = `j_${rowStr}`;
+        const lFieldId = `l_${rowStr}`;
+
+        // Store percentage values with ref_ prefix
+        setFieldValue(jFieldId, heatingPercentDecimal);
+        setFieldValue(lFieldId, coolingPercentDecimal);
+      }
 
       // console.log(`[S10REF] Subtotals: Heat=${heatingGains.toFixed(2)}, Cool=${coolingGains.toFixed(2)}`);
     } catch (_error) {
