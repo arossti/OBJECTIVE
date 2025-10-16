@@ -1334,18 +1334,18 @@ window.TEUI.SectionModules.sect11 = (function () {
       if (isReferenceCalculation) {
         // ✅ CRITICAL FIX: Reference calculations read from S11's own ReferenceState
         if (input === "rsi") {
-          // Reference RSI: read from S11's ReferenceState (like Target does)
-          // ✅ ANTI-PATTERN FIX: Removed baselineValues fallback - fail fast if missing
-          inputValue = ReferenceState.getValue(rsiFieldId) || 0;
+          // Reference RSI: read from S11's ReferenceState and parse to number
+          const rawRSI = ReferenceState.getValue(rsiFieldId);
+          inputValue = window.TEUI.parseNumeric(rawRSI) || 0;
           rsiValue = inputValue;
           if (rsiValue <= 0) {
             uValue = Infinity;
           } else uValue = 1 / rsiValue;
         } else {
           // input === 'uvalue'
-          // ✅ CRITICAL FIX: Reference U-value: read from S11's ReferenceState (like Target does)
-          // ✅ ANTI-PATTERN FIX: Removed baselineValues fallback - fail fast if missing
-          inputValue = ReferenceState.getValue(uValueFieldId) || 0;
+          // ✅ FIX: Reference U-value - parse to number (match Target mode logic)
+          const rawUValue = ReferenceState.getValue(uValueFieldId);
+          inputValue = window.TEUI.parseNumeric(rawUValue) || 0;
           uValue = inputValue;
           if (uValue <= 0) {
             rsiValue = Infinity;

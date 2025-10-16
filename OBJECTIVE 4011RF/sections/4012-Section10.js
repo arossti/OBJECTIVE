@@ -2231,11 +2231,23 @@ window.TEUI.SectionModules.sect10 = (function () {
 
   /**
    * Store Reference results for downstream sections
+   * ✅ FIX: Publish Reference area values for S11 consumption
    */
   function storeReferenceResults() {
-    // All Reference values are already stored in StateManager with ref_ prefix
-    // This function exists for consistency with the architectural pattern
-    // console.log("[S10REF] Reference results stored for downstream sections");
+    if (!window.TEUI?.StateManager) return;
+
+    // Publish Reference area values (d_73-d_78) for S11 window/door area sync
+    const areaFields = ["d_73", "d_74", "d_75", "d_76", "d_77", "d_78"];
+    areaFields.forEach((fieldId) => {
+      const value = ReferenceState.getValue(fieldId);
+      if (value !== null && value !== undefined) {
+        window.TEUI.StateManager.setValue(
+          `ref_${fieldId}`,
+          value,
+          "calculated",
+        );
+      }
+    });
   }
 
   /**
