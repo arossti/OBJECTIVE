@@ -1369,8 +1369,9 @@ window.TEUI.SectionModules.sect11 = (function () {
         }
       }
 
-      // Update complementary value display only for Target calculations
+      // Update complementary value display for Target, store for Reference
       if (!isReferenceCalculation) {
+        // Target mode: Update DOM with converted values
         setCalculatedValue(
           uValueFieldId,
           uValue === Infinity ? "N/A" : uValue,
@@ -1380,6 +1381,17 @@ window.TEUI.SectionModules.sect11 = (function () {
           rsiFieldId,
           rsiValue === Infinity ? "N/A" : rsiValue,
           "number",
+        );
+      } else {
+        // ✅ FIX: Reference mode - store converted values to ReferenceState
+        // These need to be available for downstream sections (e.g., S12 needs U-values)
+        ReferenceState.setValue(
+          uValueFieldId,
+          uValue === Infinity ? "0" : uValue.toString(),
+        );
+        ReferenceState.setValue(
+          rsiFieldId,
+          rsiValue === Infinity ? "0" : rsiValue.toString(),
         );
       }
 
@@ -1758,7 +1770,20 @@ window.TEUI.SectionModules.sect11 = (function () {
         });
 
         // Store all Reference RSI values (f_85, f_86, etc.)
-        const rsiFields = ["f_85", "f_86", "f_87", "f_94", "f_95"];
+        // ✅ FIX: Include f_88-f_93 (calculated from U-value inputs)
+        const rsiFields = [
+          "f_85",
+          "f_86",
+          "f_87",
+          "f_88",
+          "f_89",
+          "f_90",
+          "f_91",
+          "f_92",
+          "f_93",
+          "f_94",
+          "f_95",
+        ];
         rsiFields.forEach((fieldId) => {
           const value = ReferenceState.getValue(fieldId);
           if (value !== null && value !== undefined) {
