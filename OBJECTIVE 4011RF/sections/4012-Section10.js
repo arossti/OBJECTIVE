@@ -2206,6 +2206,13 @@ window.TEUI.SectionModules.sect10 = (function () {
       // ✅ Store g_81 (PHPP utilization factor) and i_81 (PHPP usable gains)
       setFieldValue("g_81", phUtilizationFactor);
       setFieldValue("i_81", phReferenceGains);
+
+      //=====================================================================
+      // PART 3: Calculate unusable gains based on selected method (row 80)
+      //=====================================================================
+      const unusedGains = totalGains - usableGains;
+      // ✅ FIX: Calculate i_82 (Net UN-usable Htg. Gains) for Reference mode
+      setFieldValue("i_82", unusedGains);
     } catch (_error) {
       console.error(
         "S10: Error calculating Reference utilization factors:",
@@ -2218,6 +2225,7 @@ window.TEUI.SectionModules.sect10 = (function () {
       setFieldValue("e_81", 0);
       setFieldValue("g_81", 0);
       setFieldValue("i_81", 0);
+      setFieldValue("i_82", 0);
     }
   }
 
