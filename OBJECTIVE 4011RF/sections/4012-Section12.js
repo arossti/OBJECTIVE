@@ -1506,7 +1506,8 @@ window.TEUI.SectionModules.sect12 = (function () {
     // Prefer S11's sovereign state (robot fingers) to avoid reliance on StateManager storage
     function getUValueFromS11(componentId, useReference) {
       try {
-        const s11 = window.TEUI?.sect11;
+        // ✅ FIX: Access S11 via SectionModules (not compat shim which only has ModeManager)
+        const s11 = window.TEUI?.SectionModules?.sect11;
         const state = useReference ? s11?.ReferenceState : s11?.TargetState;
         if (state?.getValue) {
           const gVal = window.TEUI.parseNumeric(
@@ -1567,7 +1568,8 @@ window.TEUI.SectionModules.sect12 = (function () {
     // Fallbacks: StateManager ref_d_97/d_97, then local getNumericValue("d_97")
     let d97_tbPenaltyPercent;
     try {
-      const s11 = window.TEUI?.sect11;
+      // ✅ FIX: Access S11 via SectionModules (same as getUValueFromS11)
+      const s11 = window.TEUI?.SectionModules?.sect11;
       if (s11?.ReferenceState?.getValue && s11?.TargetState?.getValue) {
         if (useRef) {
           d97_tbPenaltyPercent = window.TEUI.parseNumeric(
