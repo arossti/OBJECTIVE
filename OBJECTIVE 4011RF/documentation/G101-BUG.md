@@ -350,6 +350,13 @@ S12 was accessing `window.TEUI.sect11` (compatibility shim with only `ModeManage
   g_101 = (SUMPRODUCT(g_85:g_95, d_85:d_95) / SUM(d_85:d_95)) × (1 + d_97/100)
   ```
 
+**Commit 169eaff**: Eliminated fallback anti-patterns
+- **Critical Issue**: Silent fallbacks could cause Reference calculations to use Target values
+- **getUValueFromS11()**: Removed try-catch fallback to unprefixed StateManager (would use Target U-values!)
+- **TB% reading**: Removed 5-level fallback chain ending with unprefixed d_97 (would use Target TB%!)
+- **Now**: Functions fail loudly (console.warn) when values missing, preserving state sovereignty
+- **Benefit**: Prevents silent cross-mode contamination during initialization or state issues
+
 ### **Verification**
 
 ✅ Reference g_101 now calculates correctly at **0.572 W/m²K**
