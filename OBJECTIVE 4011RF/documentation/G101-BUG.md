@@ -320,4 +320,51 @@ const areaFields = [
 
 ---
 
-**Next session:** Systematic investigation following Phase 1-3 above.
+## ✅ **FIXED (October 17, 2025)**
+
+### **Root Cause Identified**
+
+S12 was accessing `window.TEUI.sect11` (compatibility shim with only `ModeManager`) instead of `window.TEUI.SectionModules.sect11` (full module with `ReferenceState`/`TargetState`). This caused S12 to fall back to stale StateManager values.
+
+**Result:** Reference g_101 calculated as **0.348 W/m²K** instead of **0.572 W/m²K** because it was reading Target U-values instead of Reference U-values.
+
+### **Diagnostic Process**
+
+1. **Created debug script** ([G101-DEBUG-SCRIPT.md](G101-DEBUG-SCRIPT.md)) to trace U-values, areas, and TB%
+2. **Found discrepancy**: Manual calculation = 0.572 ✅ | S12 StateManager = 0.348 ❌
+3. **Identified**: S12 `getUValueFromS11()` was accessing wrong module path
+4. **Verified**: All U-values from S11.ReferenceState were correct in diagnostic, but S12's actual calculation used wrong values
+
+### **Fix Applied**
+
+**Commit 0934120**: Fixed module path access
+- **File**: `sections/4012-Section12.js`
+- **Line 1510**: `getUValueFromS11()` now accesses `window.TEUI.SectionModules.sect11`
+- **Line 1572**: TB% reading now accesses `window.TEUI.SectionModules.sect11`
+
+**Commit d714537**: Optimized listeners for performance
+- **Removed**: 11 RSI listeners (`ref_f_85` through `ref_f_95`)
+- **Kept**: 11 U-value listeners (`ref_g_85` through `ref_g_95`)
+- **Rationale**: S11 converts RSI→U internally, so S12 only needs final U-values per formula:
+  ```
+  g_101 = (SUMPRODUCT(g_85:g_95, d_85:d_95) / SUM(d_85:d_95)) × (1 + d_97/100)
+  ```
+
+### **Verification**
+
+✅ Reference g_101 now calculates correctly at **0.572 W/m²K**
+✅ Reduced listener count from 23 to 12 for faster response
+✅ S12 recalculates immediately on S11 U-value changes
+✅ No fallback to stale StateManager values
+
+### **Architectural Compliance**
+
+Per CHEATSHEET.md:
+- ✅ **State Sovereignty**: Reads from S11's sovereign state objects
+- ✅ **Correct Module Path**: Uses `SectionModules` not compat shim
+- ✅ **Optimized Listeners**: Only listens to direct formula dependencies
+- ✅ **Dual-Engine Pattern**: Reference and Target calculations fully isolated
+
+---
+
+**Issue resolved.** Reference model now has full parity with Target model for g_101 calculation.
