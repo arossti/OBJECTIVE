@@ -2681,7 +2681,9 @@ window.TEUI.SectionModules.sect12 = (function () {
       "j_19", // Climate Zone (for N-Factor)
       "h_21", // Capacitance Setting (for k_104)
     ];
-    // Include Reference-prefixed U/RSI to ensure Reference-only updates trigger S12
+    // ✅ OPTIMIZED: Listen only to Reference U-values (not RSI) per g_101 formula needs
+    // Formula: g_101 = (SUMPRODUCT(g_85:g_95, d_85:d_95) / SUM(d_85:d_95)) × (1 + d_97/100)
+    // We read U-values from S11.ReferenceState (sovereign), so only listen to published values for recalc trigger
     const referenceUValueDeps = [
       "ref_g_85",
       "ref_g_86",
@@ -2694,17 +2696,8 @@ window.TEUI.SectionModules.sect12 = (function () {
       "ref_g_93",
       "ref_g_94",
       "ref_g_95",
-      "ref_f_85",
-      "ref_f_86",
-      "ref_f_87",
-      "ref_f_88",
-      "ref_f_89",
-      "ref_f_90",
-      "ref_f_91",
-      "ref_f_92",
-      "ref_f_93",
-      "ref_f_94",
-      "ref_f_95",
+      // Note: ref_f_XX (RSI) listeners removed - S12 reads U-values directly from S11.ReferenceState
+      // S11 converts RSI→U internally, so we don't need to listen to both
       "ref_d_97", // Reference TB% when stored with prefix
     ];
     // Ensure both Target and Reference TB% changes trigger S12
