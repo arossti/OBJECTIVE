@@ -2257,18 +2257,36 @@ window.TEUI.SectionModules.sect10 = (function () {
 
   /**
    * Store Reference results for downstream sections
-   * ✅ FIX: Publish Reference area values for S11 consumption
+   * ✅ FIX: Publish Reference area values for S11 and S12 consumption
    */
   function storeReferenceResults() {
     if (!window.TEUI?.StateManager) return;
 
-    // Publish Reference area values (d_73-d_78) for S11 window/door area sync
-    const areaFields = ["d_73", "d_74", "d_75", "d_76", "d_77", "d_78"];
-    areaFields.forEach((fieldId) => {
-      const value = ReferenceState.getValue(fieldId);
+    // Mapping of S10 areas to S11 equivalents (window/door areas)
+    // S10: d_73-d_78 → S11: d_88-d_93
+    const s10ToS11Map = {
+      d_73: "d_88", // Doors
+      d_74: "d_89", // Window North
+      d_75: "d_90", // Window East
+      d_76: "d_91", // Window South
+      d_77: "d_92", // Window West
+      d_78: "d_93", // Skylights
+    };
+
+    // Publish Reference area values with BOTH S10 and S11 field IDs
+    // This allows S11 to sync (ref_d_73-ref_d_78) and S12 to read directly (ref_d_88-ref_d_93)
+    Object.entries(s10ToS11Map).forEach(([s10Field, s11Field]) => {
+      const value = ReferenceState.getValue(s10Field);
       if (value !== null && value !== undefined) {
+        // Publish with S10 field ID (for S11 sync compatibility)
         window.TEUI.StateManager.setValue(
-          `ref_${fieldId}`,
+          `ref_${s10Field}`,
+          value,
+          "calculated",
+        );
+        // ✅ FIX: Also publish with S11 field ID (for S12 direct reads)
+        window.TEUI.StateManager.setValue(
+          `ref_${s11Field}`,
           value,
           "calculated",
         );
