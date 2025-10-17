@@ -200,6 +200,10 @@ window.TEUI.SectionModules.sect12 = (function () {
       this.refreshUI();
       // Display-only: update UI without triggering calculations
       this.updateCalculatedDisplayValues();
+
+      // ✅ FIX: Re-evaluate conditional editability after mode switch
+      // This ensures g_109 is properly editable/locked based on mode and d_108 value
+      handleConditionalEditability();
     },
 
     // Update displayed calculated values based on current mode
