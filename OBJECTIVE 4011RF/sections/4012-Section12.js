@@ -1505,33 +1505,38 @@ window.TEUI.SectionModules.sect12 = (function () {
     // Get U-values directly where available, otherwise calculate from RSI (1/RSI)
     // Prefer S11's sovereign state (robot fingers) to avoid reliance on StateManager storage
     function getUValueFromS11(componentId, useReference) {
-      try {
-        // ✅ FIX: Access S11 via SectionModules (not compat shim which only has ModeManager)
-        const s11 = window.TEUI?.SectionModules?.sect11;
-        const state = useReference ? s11?.ReferenceState : s11?.TargetState;
-        if (state?.getValue) {
-          const gVal = window.TEUI.parseNumeric(
-            state.getValue(`g_${componentId}`),
-          );
-          if (!isNaN(gVal) && isFinite(gVal) && gVal > 0) return gVal;
-          const fVal = window.TEUI.parseNumeric(
-            state.getValue(`f_${componentId}`),
-          );
-          if (!isNaN(fVal) && isFinite(fVal) && fVal > 0) return 1 / fVal;
-        }
-      } catch (e) {
-        // fall through to global fallback
+      // ✅ STRICT: Read from S11 sovereign state without fallbacks per CHEATSHEET anti-pattern guidance
+      const s11 = window.TEUI?.SectionModules?.sect11;
+
+      if (!s11) {
+        console.warn(
+          `[S12] S11 module not loaded for component ${componentId} - recalc will occur when S11 initializes`
+        );
+        return 0; // Return 0 until S11 loads (listeners will trigger recalc)
       }
-      // Fallback to global StateManager values
-      const gGlobal = window.TEUI.parseNumeric(
-        getGlobalNumericValue(`g_${componentId}`),
-      );
-      if (!isNaN(gGlobal) && isFinite(gGlobal) && gGlobal > 0) return gGlobal;
-      const fGlobal = window.TEUI.parseNumeric(
-        getGlobalNumericValue(`f_${componentId}`),
-      );
-      if (!isNaN(fGlobal) && isFinite(fGlobal) && fGlobal > 0)
-        return 1 / fGlobal;
+
+      const state = useReference ? s11.ReferenceState : s11.TargetState;
+      if (!state?.getValue) {
+        console.error(
+          `[S12] CRITICAL: S11 ${useReference ? "Reference" : "Target"}State missing for g_${componentId}`
+        );
+        return 0;
+      }
+
+      // Try U-value first (g_XX)
+      const gVal = window.TEUI.parseNumeric(state.getValue(`g_${componentId}`));
+      if (!isNaN(gVal) && isFinite(gVal) && gVal > 0) {
+        return gVal;
+      }
+
+      // Try RSI conversion (f_XX → 1/RSI)
+      const fVal = window.TEUI.parseNumeric(state.getValue(`f_${componentId}`));
+      if (!isNaN(fVal) && isFinite(fVal) && fVal > 0) {
+        return 1 / fVal;
+      }
+
+      // NO FALLBACK to StateManager - missing value indicates initialization timing or data issue
+      // Listeners ensure recalc when values become available
       return 0;
     }
 
@@ -1563,44 +1568,30 @@ window.TEUI.SectionModules.sect12 = (function () {
     const d94 = parseFloat(getGlobalNumericValue("d_94"));
     const d95 = parseFloat(getGlobalNumericValue("d_95"));
 
-    // ✅ CRITICAL: Choose TB% (d_97) by calculation pass, NOT S11's UI mode
+    // ✅ STRICT: Read TB% from S11 sovereign state without fallbacks
     // Reference pass → S11.ReferenceState.d_97; Target pass → S11.TargetState.d_97
-    // Fallbacks: StateManager ref_d_97/d_97, then local getNumericValue("d_97")
-    let d97_tbPenaltyPercent;
-    try {
-      // ✅ FIX: Access S11 via SectionModules (same as getUValueFromS11)
-      const s11 = window.TEUI?.SectionModules?.sect11;
-      if (s11?.ReferenceState?.getValue && s11?.TargetState?.getValue) {
-        if (useRef) {
-          d97_tbPenaltyPercent = window.TEUI.parseNumeric(
-            s11.ReferenceState.getValue("d_97"),
-          );
-          if (isNaN(d97_tbPenaltyPercent)) {
-            d97_tbPenaltyPercent = window.TEUI.parseNumeric(
-              getGlobalNumericValue("ref_d_97"),
-            );
-          }
-        } else {
-          d97_tbPenaltyPercent = window.TEUI.parseNumeric(
-            s11.TargetState.getValue("d_97"),
-          );
-          if (isNaN(d97_tbPenaltyPercent)) {
-            d97_tbPenaltyPercent = window.TEUI.parseNumeric(
-              getGlobalNumericValue("d_97"),
-            );
-          }
-        }
+    let d97_tbPenaltyPercent = 50; // Default only if S11 not loaded yet
+
+    const s11 = window.TEUI?.SectionModules?.sect11;
+    if (s11?.ReferenceState?.getValue && s11?.TargetState?.getValue) {
+      const stateValue = window.TEUI.parseNumeric(
+        useRef
+          ? s11.ReferenceState.getValue("d_97")
+          : s11.TargetState.getValue("d_97")
+      );
+
+      if (!isNaN(stateValue) && isFinite(stateValue)) {
+        d97_tbPenaltyPercent = stateValue;
       } else {
-        d97_tbPenaltyPercent = window.TEUI.parseNumeric(
-          useRef
-            ? getGlobalNumericValue("ref_d_97")
-            : getGlobalNumericValue("d_97"),
+        console.warn(
+          `[S12] TB% missing from S11 ${useRef ? "Reference" : "Target"}State, using default 50%`
         );
       }
-    } catch (e) {
-      d97_tbPenaltyPercent = window.TEUI.parseNumeric(getNumericValue("d_97"));
+    } else {
+      console.warn(
+        `[S12] S11 module not loaded for TB%, using default 50% - recalc will occur when S11 initializes`
+      );
     }
-    if (isNaN(d97_tbPenaltyPercent)) d97_tbPenaltyPercent = 50;
 
     // IMPORTANT: d_97 comes from Section 11's slider which stores percentage as a whole number (e.g., 20 for 20%)
     // We must divide by 100 to get the decimal factor (0.2) before using in calculations
