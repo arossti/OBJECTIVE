@@ -148,6 +148,84 @@ grep "addListener.*ref_g_" sections/4012-Section12.js
 
 Expected: S12 should have listeners for S11's U-value changes to trigger recalculation.
 
+### Phase 2.5: Eliminate Silent Failure Fallbacks (CRITICAL)
+
+**Problem:** S12's `getUValueFromS11()` function has fallback logic that masks failures:
+
+```javascript
+// Current implementation (ANTI-PATTERN per CHEATSHEET)
+function getUValueFromS11(componentId, useReference) {
+  try {
+    const s11 = window.TEUI?.SectionModules?.sect11;
+    const state = useReference ? s11?.ReferenceState : s11?.TargetState;
+    if (state?.getValue) {
+      const gVal = window.TEUI.parseNumeric(state.getValue(`g_${componentId}`));
+      if (!isNaN(gVal) && isFinite(gVal) && gVal > 0) return gVal;
+      // ... try RSI conversion ...
+    }
+  } catch (e) {
+    // fall through to global fallback ← MASKS ERRORS
+  }
+  // Fallback to global StateManager values ← SILENT FAILURE
+  const gGlobal = window.TEUI.parseNumeric(getGlobalNumericValue(`g_${componentId}`));
+  if (!isNaN(gGlobal) && isFinite(gGlobal) && gGlobal > 0) return gGlobal;
+  // ... more fallbacks ...
+  return 0; // ← MASKS MISSING DATA
+}
+```
+
+**Why This Is Bad (per CHEATSHEET):**
+1. **Hides state update failures** - If S11's state isn't updating, fallback reads stale StateManager values
+2. **Prevents dynamic calculations** - Fallback values are static, don't respond to user edits
+3. **Masks architectural issues** - Silent failures prevent discovering root causes
+4. **Violates state sovereignty** - Cross-section reads should fail loudly when state is unavailable
+
+**Recommended Pattern (Fail-Fast):**
+
+```javascript
+// ✅ STRICT: Fail loudly when S11 state is unavailable
+function getUValueFromS11(componentId, useReference) {
+  const s11 = window.TEUI?.SectionModules?.sect11;
+  if (!s11) {
+    console.error(`[S12] CRITICAL: S11 module not available`);
+    return null; // Let caller handle missing dependency
+  }
+
+  const state = useReference ? s11.ReferenceState : s11.TargetState;
+  if (!state?.getValue) {
+    console.error(`[S12] CRITICAL: S11 ${useReference ? 'Reference' : 'Target'}State not available`);
+    return null;
+  }
+
+  // Try U-value first
+  const gVal = window.TEUI.parseNumeric(state.getValue(`g_${componentId}`));
+  if (!isNaN(gVal) && isFinite(gVal) && gVal > 0) return gVal;
+
+  // Try RSI conversion
+  const fVal = window.TEUI.parseNumeric(state.getValue(`f_${componentId}`));
+  if (!isNaN(fVal) && isFinite(fVal) && fVal > 0) return 1 / fVal;
+
+  // ❌ NO FALLBACK - Missing value is a bug that needs fixing
+  console.warn(`[S12] Missing U-value for component ${componentId} in ${useReference ? 'Reference' : 'Target'} mode`);
+  return null;
+}
+
+// In calculateCombinedUValue():
+const g85 = getUValueFromS11("85", useRef);
+if (g85 === null) {
+  console.error(`[S12] Cannot calculate g_101: missing g_85 from S11`);
+  return; // Don't calculate with incomplete data
+}
+```
+
+**Benefits of Fail-Fast:**
+1. **Immediate error detection** - Missing state produces clear console errors
+2. **Forces proper fixes** - Can't mask architectural issues with fallbacks
+3. **Dynamic calculations** - Only live state values are used
+4. **State sovereignty** - Respects CHEATSHEET principle of sovereign state reads
+
+**Implementation Priority:** HIGH - Should be done BEFORE fixing the g_101 calculation bug, as fallbacks currently mask the real issue.
+
 ### Phase 3: Trace Calculation Flow
 
 **Add strategic logging to S11:**
