@@ -15,6 +15,11 @@ if (!s11) console.error("❌ S11 module not found!");
 if (!s13) console.error("❌ S13 module not found!");
 if (!cooling) console.error("❌ Cooling module not found!");
 
+console.log("\n🎯 MODE MANAGER STATUS\n");
+console.log(`S03 ModeManager.currentMode: ${s03?.ModeManager?.currentMode}`);
+console.log(`S08 ModeManager.currentMode: ${s08?.ModeManager?.currentMode}`);
+console.log(`Global reference mode active: ${document.body.classList.contains('reference-mode')}`);
+
 console.log("\n📊 PART 1: CAPACITANCE (h_21) DATA FLOW\n");
 const h_21_target = sm?.getValue("h_21");
 const h_21_ref = sm?.getValue("ref_h_21");
