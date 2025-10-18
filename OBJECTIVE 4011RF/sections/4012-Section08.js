@@ -390,6 +390,14 @@ window.TEUI.SectionModules.sect08 = (function () {
       dependencies.forEach((dep) => {
         sm.addListener(dep, calculateAll);
       });
+
+      // ✅ FIX: Add listener for the reference RH% slider (i_59)
+      // This bridges the global FieldManager update to the local ReferenceState,
+      // ensuring that changes to the slider in reference mode are captured.
+      sm.addListener("ref_i_59", (newValue) => {
+        ReferenceState.setValue("i_59", newValue);
+        console.log(`S08 ReferenceState: Synced i_59 = ${newValue} from global StateManager (ref_i_59)`);
+      });
     }
   }
 

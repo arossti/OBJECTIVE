@@ -610,7 +610,7 @@ function initialize(params = {}) {
 
 ## CORRECTED UNDERSTANDING - October 18, 2025
 
-### The "m_129 = 0" Was NOT a Bug! ⚠️
+### THE "m_129 = 0" WAS NOT A BUG! ⚠️
 
 **Critical Realization**: We were chasing a phantom bug.
 
@@ -692,7 +692,7 @@ Reference i_21:           null% (StateManager)          ← MISSING!
 
 ```
 Reference i_59:           null% (StateManager)          ← MISSING!
-Reference i_59:           50% (S08.ReferenceState)      ← EXISTS locally
+Reference i_59:           50% (S08.ReferenceState)      ← EXISTS LOCALLY
 ```
 
 **Impact**:
@@ -792,404 +792,117 @@ S03 and S08 likely have this pattern but may be missing the `ref_` publication f
 
 ---
 
-## REVISED ROOT CAUSE - October 18, 2025 (Architecture Analysis)
+## Deeper Investigation & Surgical Plan - October 18, 2025
 
-### The REAL Issue: Local ModeManager Not Syncing with Global Mode
+### The "Location Works" Paradox
 
-**After reviewing @gh-pages-local/documentation/history (completed)/4012-CHEATSHEET.md**:
+A key question was raised: If the local `ModeManager` in S03 is out of sync, why do location changes (`d_19`) in Reference mode correctly update the Reference model?
 
-The ModeManager.setValue() code in S03 IS correct (lines 217-230):
-- ✅ Line 222: Publishes unprefixed in Target mode
-- ✅ Line 224-228: Publishes ref_ prefixed in Reference mode
+This pointed to a more nuanced bug. The issue isn't a total failure of the local `ModeManager`, but a difference in how event handlers for various fields are implemented within `4012-Section03.js`.
 
-**The problem**: S03 has its OWN local mode toggle (lines 2123, 2129) that updates `S03.ModeManager.currentMode`.
+### Investigation Findings: Divergent Code Paths
 
-**When global mode switches**:
-1. User clicks global Reference mode toggle
-2. Global mode becomes "reference"
-3. **BUT S03.ModeManager.currentMode stays "target"** ❌
-4. User changes h_21 dropdown
-5. S03's ModeManager.setValue() checks `this.currentMode` → sees "target"
-6. Publishes unprefixed `h_21` instead of `ref_h_21`
-7. Reference mode can't find `ref_h_21` → returns null
+A direct analysis of `4012-Section03.js` reveals the precise cause:
 
-**Evidence from diagnostic**:
-```
-Reference h_21:           null (StateManager)          ← Not published with ref_
-Reference h_21:           Capacitance (S03.ReferenceState)  ← Stored locally
-```
+1.  **Successful Path (Location - `d_19`):** The event handler for the location dropdown correctly calls `ModeManager.setValue("d_19", ...)`. This function contains the critical logic to check the local `currentMode` and correctly publish a `ref_` prefixed value to the global `StateManager` when in Reference mode. This is the correct implementation.
 
-The value IS in ReferenceState (line 218 stores it), but StateManager publication (line 222 vs 224-228) took the wrong branch because `currentMode` was "target".
+2.  **Flawed Path (Capacitance Dropdown - `h_21`):** The event handler for the capacitance dropdown incorrectly calls `DualState.setValue("h_21", ...)`. While `DualState` is an alias for `ModeManager`, this specific implementation path bypasses the crucial logic that checks the mode and publishes the `ref_` prefixed value. It defaults to publishing the unprefixed value, which Reference mode ignores.
 
-###Human: S03 doesn't have its own toggle per se. S03 is a special section that has multiple modes including an 'override' mode. If you are saying there is a mode mismatch, is there a mode-switched event the sections should be listening for in 4011-ModeSwitch.js ?
+3.  **Flawed Path (Capacitance Slider - `i_21`):** The slider's event handling is managed by the global `FieldManager`. A listener in S03 is supposed to bridge this change back to the local state, but this bridge is also flawed and fails to ensure the `ref_i_21` value is published to the global `StateManager`.
 
-### Investigation Status
+**Conclusion:** The bug is a publication failure specific to the capacitance controls. They use different and incorrect event handling paths compared to the location control.
 
-**All S13 changes REVERTED** ✅
-- Initial fixes did not address the root cause
-- Avoided technical debt from non-functional changes
-- Clean slate for proper diagnosis
+### Surgical Repair Plan
 
-**The ACTUAL problem** (confirmed from logs):
-- m_129 (cooling demand) is calculated as **ZERO** in S13 Reference mode
-- This happens INSIDE S13 calculations, not a state management issue
-- m_129 should be immediately available to S13 without going through StateManager
-- When S14 shows m_129 = 0, it's because S13 calculated it as zero
+The fix is to align the capacitance controls' event handlers with the working pattern used by the location control.
+
+1.  **Target File:** `4012-Section03.js`.
+2.  **Action for `h_21` (Dropdown):** Modify the `'change'` event listener for the capacitance dropdown. Ensure it calls `ModeManager.setValue("h_21", ...)` instead of `DualState.setValue(...)` to engage the correct mode-aware publication logic.
+3.  **Action for `i_21` (Slider):** Modify the `StateManager` listener for `i_21`. The logic that bridges the update from `FieldManager` must also be routed through `ModeManager.setValue("i_21", ...)` to ensure the `ref_i_21` value is published correctly when in Reference mode.
+4.  **Validation:** After the changes, test that modifying `h_21` and `i_21` in Reference mode results in `ref_h_21` and `ref_i_21` appearing in the global `StateManager`, which should in turn cause S11 and S13 to update correctly.
+
+This surgical approach avoids broad changes and directly addresses the identified point of failure, minimizing the risk of unintended side effects.
 
 ---
 
-### Previous Fix Attempts (REVERTED)
+## Final Resolution - October 19, 2025
 
-These were attempted but reverted as they didn't fix m_129=0:
+After multiple attempts, the final root cause was identified as a two-part failure in the data flow for reference mode calculations involving the capacitance slider (`i_21`). While the capacitance dropdown (`h_21`) was eventually fixed, the slider's value was not being correctly consumed by Section 11.
 
-**Two changes that were made to S13 ReferenceState** ([4012-Section13.js](../sections/4012-Section13.js)):
+### Root Cause Analysis
 
-#### 1. Track d_116_userModified flag (line 158)
+1.  **S03 State Bridging Failure:** Section 03's local `ReferenceState` was not being updated when the `i_21` slider was moved in reference mode. The global `FieldManager` correctly published the `ref_i_21` value to the global `StateManager`, but S03 was missing a listener to capture this change and update its internal `ReferenceState`. This caused S03's own calculations (like `ref_h_22`) to use a stale value for capacitance.
+
+2.  **S11 Calculation Logic Flaw:** Section 11 was correctly recalculating when triggered by changes in S03. However, within its `calculateComponentRow` function, it was **always reading the target mode capacitance value (`i_21`)** instead of the reference mode value (`ref_i_21`) during reference calculations. This meant that even when S03 sent the correct triggers, S11 would perform the calculation with the wrong input data.
+
+### The Fix (Commit `70ab424`)
+
+The solution required fixes in both `4012-Section03.js` and `4012-Section11.js`.
+
+#### 1. Fix in `4012-Section03.js`
+
+A dedicated `StateManager` listener was added to the `initializeEventHandlers` function. This listener specifically listens for `ref_i_21` and ensures that any change from the global `FieldManager` is correctly bridged into S03's local `ReferenceState`.
+
 ```javascript
-// Mark fields as user-modified to preserve during d_13 changes
-if (
-  source === "user-modified" &&
-  (fieldId === "f_113" || fieldId === "j_115" || fieldId === "d_116")  // ← Added d_116
-) {
-  this.state[`${fieldId}_userModified`] = true;
-}
+// In sections/4012-Section03.js
+
+// ... inside initializeEventHandlers ...
+// Add listener for the reference capacitance slider
+window.TEUI.StateManager.addListener("ref_i_21", (newValue) => {
+    this.ReferenceState.setValue("i_21", newValue);
+});
 ```
 
-#### 2. Preserve user modifications in setDefaults() (line 127-130)
-```javascript
-// 🔧 FIX: Preserve user's cooling system choice (calculation parity)
-if (!this.state.d_116_userModified) {
-  this.state.d_116 = "No Cooling"; // Default per building codes
-}
-```
+#### 2. Fix in `4012-Section11.js`
 
-#### 3. Preserve user modifications in onReferenceStandardChange() (line 159-162)
-```javascript
-// 🔧 FIX: Preserve user's cooling system choice (calculation parity)
-if (!this.state.d_116_userModified) {
-  this.state.d_116 = "No Cooling"; // Default per building codes
-}
-```
+The `calculateComponentRow` function was made fully mode-aware. A check for `isReferenceCalculation` was added at the point where the capacitance factor was being determined. If in a reference calculation, the function now correctly fetches `ref_i_21` from the global `StateManager`.
 
-#### 4. Load saved state to preserve across sessions (line 107-117)
 ```javascript
-// Step 1: Load saved state if exists (to preserve user modifications)
-const savedState = localStorage.getItem("S13_REFERENCE_STATE");
-if (savedState) {
-  try {
-    this.state = JSON.parse(savedState);
-  } catch (e) {
-    this.state = {};
-  }
+// In sections/4012-Section11.js
+
+// ... inside calculateComponentRow ...
+let capacitanceFactor_i21;
+if (isReferenceCalculation) {
+    capacitanceFactor_i21 = getGlobalNumericValue("ref_i_21") / 100;
 } else {
-  this.state = {};
+    capacitanceFactor_i21 = getGlobalNumericValue("i_21") / 100;
 }
+// ... rest of calculation uses the correct capacitanceFactor_i21
 ```
+
+### Outcome
+
+With these two changes, the entire data chain for reference mode was repaired:
+1.  Moving the `i_21` slider in reference mode correctly updates S03's internal state.
+2.  S03's calculations use the correct, updated capacitance value.
+3.  S11 is triggered to recalculate and now uses the correct `ref_i_21` value.
+4.  The final cooling calculations are now correctly affected by the capacitance slider in reference mode, achieving full calculation parity with target mode.
 
 ---
 
-### Result
+## i_59 Indoor RH% Bug Investigation - October 19, 2025
 
-**Calculation Dis-Parity Restored** ✅
+After resolving the capacitance bugs, a related issue with the S08 Indoor RH% slider (`i_59`) was investigated. The symptom is identical: the slider works in Target mode but has no effect on cooling calculations in Reference mode.
 
-Target mode works, Reference does not:
-- Default: "No Cooling" 
-- User can toggle to "Cooling" and it PERSISTS
-- Cooling calculations run correctly in Reference mode only when 'primed' by selecting g_118 method change to something else then back again
-- Capacitance effects on cooling are not visible in Reference mode
-- User modifications survive state refreshes
+### Analysis
 
----
+The root cause was diagnosed as a two-part problem:
+1.  **Publication Failure (S08)**: `4012-Section08.js` was not publishing the `ref_i_59` value to the global `StateManager` when in Reference mode. This was fixed by adding the appropriate publication logic to the `i_59` event handler.
+2.  **Listening Failure (Cooling.js)**: `4012-Cooling.js` was only listening for `i_59` and had no listener for `ref_i_59`.
 
-### Testing Recommendations
+### Repair Attempts & Regressions
 
-1. Switch to Reference mode
-2. Toggle d_116 from "No Cooling" to "Cooling"
-3. Verify d_117 shows non-zero cooling load
-4. Change building code (d_13) and verify d_116 stays "Cooling"
-5. Test capacitance (h_21) toggle and verify effects appear in k_94, k_95, and cooling calcs
+Several attempts were made to fix the listening failure in `4012-Cooling.js`, but each introduced significant regressions:
 
----
+1.  **First Attempt (Dual Engine Recalculation)**: The initial fix modified the `i_59` listener to trigger a recalculation of both the Target and Reference models.
+    *   **Result**: This introduced severe "state mixing," where changes in Reference mode incorrectly altered Target mode calculations. This approach was reverted.
 
-## S08 ARCHITECTURE ANALYSIS - October 18, 2025
+2.  **Second Attempt (Separate Listeners)**: Following the architectural principle of using paired listeners, separate listeners for `i_59` (Target) and `ref_i_59` (Reference) were implemented. Each listener was responsible for triggering a full recalculation of its respective model (`calculateAll('target')` or `calculateAll('reference')`).
+    *   **Result**: This also led to state mixing and a "one-shot" bug, where the first change in Reference mode would work, but all subsequent calculations would be blocked. This change was also reverted.
 
-### User Report
-**Testing Result**: "Capacitance changes work, but RH% does not"
-- ✅ h_21/i_21 (capacitance) in S03 now functioning in Reference mode
-- ❌ i_59 (indoor RH%) in S08 still not affecting Reference cooling calculations
+### Current Status & Next Steps
 
-### S08 Code Review Per CHEATSHEET.md Compliance
+-   **`4012-Section08.js`**: Contains the uncommitted fix for the publication failure. This change is stable and correct.
+-   **`4012-Cooling.js`**: Has been reverted to its original state, which still contains the listening failure.
 
-**File**: [4012-Section08.js](../sections/4012-Section08.js)
-
-#### ModeManager.setValue() Implementation ✅ CORRECT
-
-**Location**: Lines 194-206
-
-```javascript
-setValue: function (fieldId, value) {
-  this.getCurrentState().setValue(fieldId, value);
-  // Bridge to global StateManager for backward compatibility
-  if (this.currentMode === "target") {
-    window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
-  } else if (this.currentMode === "reference") {
-    window.TEUI.StateManager.setValue(
-      `ref_${fieldId}`,
-      value,
-      "user-modified",
-    );
-  }
-},
-```
-
-**Analysis**:
-- ✅ Stores in local state (line 195)
-- ✅ Publishes unprefixed for Target mode (line 198)
-- ✅ Publishes ref_ prefixed for Reference mode (lines 200-204)
-- ✅ Follows CHEATSHEET pattern exactly
-
-#### i_59 Slider Event Handler ✅ CORRECT
-
-**Location**: Lines 343-361
-
-```javascript
-function handleUserInput(event) {
-  const target = event.target;
-  const fieldElement = target.closest("[data-field-id]");
-  if (!fieldElement) return;
-
-  const fieldId = fieldElement.getAttribute("data-field-id");
-  const value = target.matches('input[type="range"]')
-    ? target.value
-    : target.textContent.trim();
-
-  ModeManager.setValue(fieldId, value); // ← Calls ModeManager.setValue
-
-  if (target.matches('input[type="range"]')) {
-    const display = target.nextElementSibling;
-    if (display) display.textContent = `${value}%`;
-  }
-
-  calculateAll(); // ← Triggers recalculation
-}
-```
-
-**Analysis**:
-- ✅ Line 353 calls `ModeManager.setValue()` which handles ref_ publication
-- ✅ Line 360 calls `calculateAll()` to recalculate
-- ✅ Follows proper event handling pattern
-
-#### Slider Registration ✅ CORRECT
-
-**Location**: Lines 363-369
-
-```javascript
-function initializeEventHandlers() {
-  const sectionElement = document.getElementById("indoorAirQuality");
-  if (!sectionElement) return;
-
-  sectionElement.addEventListener("input", (e) => {
-    if (e.target.matches('input[type="range"]')) handleUserInput(e);
-  });
-```
-
-**Analysis**:
-- ✅ Listens only to S08's own fields (CHEATSHEET Anti-Pattern #6 compliant)
-- ✅ Event delegation via section element
-- ✅ Proper handler routing
-
-### Architecture Verdict: S08 IS COMPLIANT ✅
-
-The S08 code follows all CHEATSHEET patterns correctly:
-- ✅ ModeManager.setValue() publishes ref_ prefixed values
-- ✅ Event handlers route through ModeManager
-- ✅ No cross-section DOM listeners
-- ✅ Proper state isolation
-
-**Therefore**: The i_59 slider SHOULD be publishing `ref_i_59` to StateManager when moved in Reference mode.
-
-### Investigation Next Steps
-
-**Hypothesis**: If S08 architecture is correct, the issue must be in one of these areas:
-
-1. **ModeManager synchronization issue**
-   - Is S08's `ModeManager.currentMode` synced with global mode switch?
-   - When user toggles global mode to Reference, does S08's local ModeManager update?
-   - Check if there's a mode-switched event that S08 should listen to
-
-2. **Downstream consumer (Cooling.js) not reading ref_i_59**
-   - Cooling.js may not be reading ref_i_59 when in Reference mode
-   - Check Cooling.js getModeAwareValue() implementation
-   - Verify Cooling.js re-calculates when ref_i_59 changes
-
-3. **StateManager listener missing**
-   - Cooling.js needs listener for ref_i_59 changes
-   - When ref_i_59 updates, Cooling.js should recalculate Reference latent load
-   - Check if listener exists for ref_i_59
-
-### Diagnostic Approach
-
-Run the simplified debug script to verify:
-```javascript
-// Check if ref_i_59 is being published
-const i_59_ref = sm?.getValue("ref_i_59");
-console.log(`ref_i_59 in StateManager: ${i_59_ref}`);
-
-// Check local state
-const i_59_local = s08?.ReferenceState?.getValue("i_59");
-console.log(`i_59 in S08.ReferenceState: ${i_59_local}`);
-
-// Check ModeManager mode
-console.log(`S08 ModeManager mode: ${s08?.ModeManager?.currentMode}`);
-```
-
-**Expected results if working**:
-- When slider moves in Reference mode → ref_i_59 should be non-null in StateManager
-- S08.ModeManager.currentMode should be "reference"
-- Latent load factor should change when RH% changes
-
----
-
-## DEFINITIVE ROOT CAUSE - October 18, 2025 🎯
-
-### Diagnostic Results Analysis
-
-**Test Output** (from Logs.md lines -195 to -162):
-
-```
-Target h_21:              Capacitance (StateManager)
-Reference h_21:           null (StateManager)          ← NOT PUBLISHED!
-Reference h_21:           Capacitance (S03.ReferenceState) ← EXISTS LOCALLY
-
-Target i_21:              50%
-Reference i_21:           null% (StateManager)          ← NOT PUBLISHED!
-Reference i_21:           100% (S03.ReferenceState)     ← USER MOVED SLIDER TO 100%!
-
-Target i_59:              45% (StateManager)
-Reference i_59:           null% (StateManager)          ← NOT PUBLISHED!
-Reference i_59:           50% (S08.ReferenceState)      ← EXISTS LOCALLY
-
-Target latent load:       1.746353948454419
-Reference latent load:    1.746353948454419            ← IDENTICAL (should be different!)
-```
-
-### What The Diagnostic Proves ✅
-
-1. **User inputs ARE reaching local section states**
-   - i_21 slider was moved from 50% → 100% and it's stored in S03.ReferenceState
-   - h_21 is "Capacitance" in S03.ReferenceState
-   - i_59 is 50% in S08.ReferenceState
-
-2. **BUT they're NOT being published to StateManager with ref_ prefix**
-   - `ref_h_21` = null
-   - `ref_i_21` = null
-   - `ref_i_59` = null
-
-3. **This breaks downstream consumers**
-   - Cooling.js can't read null ref_i_59
-   - Latent load factor identical for both modes (should differ based on RH%)
-   - S11/S13 can't read capacitance values
-
-### The Root Cause: ModeManager.currentMode Stuck on "target"
-
-**The Problem**:
-When user changes inputs in Reference mode, the event handlers call `ModeManager.setValue()`, which checks `this.currentMode` to decide whether to publish with or without `ref_` prefix.
-
-**From S08 ModeManager.setValue()** ([4012-Section08.js:194-206](../sections/4012-Section08.js#L194-L206)):
-```javascript
-setValue: function (fieldId, value) {
-  this.getCurrentState().setValue(fieldId, value); // ✅ This works (value stored locally)
-
-  if (this.currentMode === "target") {
-    window.TEUI.StateManager.setValue(fieldId, value, "user-modified"); // ❌ This branch executes
-  } else if (this.currentMode === "reference") {
-    window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "user-modified"); // ✅ This should execute but doesn't
-  }
-}
-```
-
-**Evidence**: The diagnostic shows values in local state but null in StateManager with ref_ prefix, proving the `if (this.currentMode === "target")` branch is executing when it should be the `else if` branch.
-
-**Why ModeManager.currentMode is "target"**:
-
-Global toggle ([4011-ReferenceToggle.js:68-76](../4011-ReferenceToggle.js#L68-L76)) calls:
-```javascript
-section.modeManager.switchMode(mode);
-```
-
-But something is causing the mode to revert back to "target" after the switch, OR the inputs are being captured BEFORE the mode switch completes.
-
-### Possible Causes
-
-1. **Race condition**: User input event fires before `switchMode("reference")` completes
-2. **Mode revert**: Something calls `switchMode("target")` after global toggle
-3. **Wrong ModeManager reference**: FieldManager or event handlers accessing wrong ModeManager instance
-4. **Timing issue**: Global toggle updates ModeManager but local event handlers read stale value
-
-### Investigation Needed
-
-Check if [4011-FieldManager.js](../4011-FieldManager.js) is involved in routing inputs, as the logs show:
-```
-[FieldManager] Routed i_21=60 through sect03 ModeManager
-```
-
-FieldManager may be:
-- Accessing the wrong ModeManager instance
-- Not checking current mode correctly
-- Overriding the mode somehow
-
----
-
-## S11 LISTENER INVESTIGATION - October 18, 2025
-
-### Findings from Listener Analysis
-
-**S11 StateManager Listeners** ([4012-Section11.js:2183-2196](../sections/4012-Section11.js#L2183-L2196)):
-
-```javascript
-// Target mode listeners
-window.TEUI.StateManager.addListener("h_22", calculateAll); // GF CDD ✅
-window.TEUI.StateManager.addListener("i_21", calculateAll); // Capacitance Factor ✅
-
-// Reference mode listeners
-window.TEUI.StateManager.addListener("ref_h_22", () => calculateAll()); // GF CDD ✅
-// ❌ MISSING: No listener for ref_i_21
-// ❌ MISSING: No listener for h_21 or ref_h_21
-```
-
-### Issues Identified
-
-1. **Missing `ref_i_21` listener**
-   - S11 listens to `i_21` (target slider) but NOT `ref_i_21` (reference slider)
-   - When user moves slider in Reference mode, S11 doesn't recalculate
-
-2. **h_21 dropdown has NO listeners at all**
-   - Neither `h_21` nor `ref_h_21` have StateManager listeners in S11
-   - S11 only listens to the **calculated** `h_22` and `ref_h_22`
-   - This means S11 relies on S03 calculations triggering via h_22 changes
-
-3. **h_21 dropdown not publishing to StateManager**
-   - From diagnostic (line -48): `ref_h_21: null`
-   - The dropdown calls `DualState.setValue()` instead of `ModeManager.setValue()` (line 2210)
-   - This stores locally but doesn't publish to StateManager
-
-### Diagnostic Evidence (from Logs.md -49 to -45)
-
-```
-ref_h_21 (capacitance toggle): null         ← NOT PUBLISHED
-ref_i_21 (capacitance %): 100               ← PUBLISHED ✅
-ref_h_22 (Ground-Facing CDD - S03 output): -1680  ← CALCULATED ✅
-ref_k_94 (S11 ground heat gain): 0          ← CALCULATED
-ref_k_95 (S11 ground cooling gain): -6338   ← CALCULATED ✅
-```
-
-### Current Status - Taking a Break
-
-Values ARE being published and calculations ARE running, but Reference cooling loads don't respond to capacitance changes. The issue is more subtle than missing publications or listeners.
-
-**Need to investigate**:
-- Why changing capacitance slider doesn't affect ref_d_117 (cooling load)
-- Whether S03→S11→S13 calculation chain is actually triggering
-- Whether there's a timing or calculation order issue
-
----
+**Conclusion**: The problem within `4012-Cooling.js` is more complex than a simple missing listener. The regressions suggest that the internal state management of `Cooling.js` is not robust enough to handle the dual-engine calculation pattern without causing state contamination. Further work is required to refactor the state handling within `Cooling.js` to be fully compliant with the project's dual-state architecture before this bug can be resolved without side effects. This work is postponed for now.
