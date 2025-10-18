@@ -20,12 +20,13 @@ console.log(`S03 ModeManager.currentMode: ${s03?.ModeManager?.currentMode}`);
 console.log(`S08 ModeManager.currentMode: ${s08?.ModeManager?.currentMode}`);
 console.log(`Global reference mode active: ${document.body.classList.contains('reference-mode')}`);
 
-console.log("\n🔬 TESTING S03 ModeManager.setValue() DIRECTLY\n");
-console.log("Before test - ref_i_21 in StateManager:", sm?.getValue("ref_i_21"));
-console.log("Calling: s03.ModeManager.setValue('i_21', '999', 'test')");
-s03?.ModeManager?.setValue('i_21', '999', 'test');
-console.log("After test - ref_i_21 in StateManager:", sm?.getValue("ref_i_21"));
-console.log("After test - i_21 in S03.ReferenceState:", s03?.ReferenceState?.getValue("i_21"));
+console.log("\n🔬 CAPACITANCE DATA FLOW SNAPSHOT\n");
+console.log("ref_h_21 (capacitance toggle):", sm?.getValue("ref_h_21"));
+console.log("ref_i_21 (capacitance %):", sm?.getValue("ref_i_21"));
+console.log("ref_h_22 (Ground-Facing CDD - S03 output):", sm?.getValue("ref_h_22"));
+console.log("ref_k_94 (S11 ground heat gain):", sm?.getValue("ref_k_94"));
+console.log("ref_k_95 (S11 ground cooling gain):", sm?.getValue("ref_k_95"));
+console.log("\nNOW CHANGE THE CAPACITANCE SLIDER AND RUN AGAIN TO SEE IF THESE VALUES UPDATE");
 
 console.log("\n📊 PART 1: CAPACITANCE (h_21) DATA FLOW\n");
 const h_21_target = sm?.getValue("h_21");
