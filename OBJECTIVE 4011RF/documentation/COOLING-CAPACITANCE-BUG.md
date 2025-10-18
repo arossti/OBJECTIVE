@@ -1139,3 +1139,57 @@ FieldManager may be:
 - Overriding the mode somehow
 
 ---
+
+## S11 LISTENER INVESTIGATION - October 18, 2025
+
+### Findings from Listener Analysis
+
+**S11 StateManager Listeners** ([4012-Section11.js:2183-2196](../sections/4012-Section11.js#L2183-L2196)):
+
+```javascript
+// Target mode listeners
+window.TEUI.StateManager.addListener("h_22", calculateAll); // GF CDD ✅
+window.TEUI.StateManager.addListener("i_21", calculateAll); // Capacitance Factor ✅
+
+// Reference mode listeners
+window.TEUI.StateManager.addListener("ref_h_22", () => calculateAll()); // GF CDD ✅
+// ❌ MISSING: No listener for ref_i_21
+// ❌ MISSING: No listener for h_21 or ref_h_21
+```
+
+### Issues Identified
+
+1. **Missing `ref_i_21` listener**
+   - S11 listens to `i_21` (target slider) but NOT `ref_i_21` (reference slider)
+   - When user moves slider in Reference mode, S11 doesn't recalculate
+
+2. **h_21 dropdown has NO listeners at all**
+   - Neither `h_21` nor `ref_h_21` have StateManager listeners in S11
+   - S11 only listens to the **calculated** `h_22` and `ref_h_22`
+   - This means S11 relies on S03 calculations triggering via h_22 changes
+
+3. **h_21 dropdown not publishing to StateManager**
+   - From diagnostic (line -48): `ref_h_21: null`
+   - The dropdown calls `DualState.setValue()` instead of `ModeManager.setValue()` (line 2210)
+   - This stores locally but doesn't publish to StateManager
+
+### Diagnostic Evidence (from Logs.md -49 to -45)
+
+```
+ref_h_21 (capacitance toggle): null         ← NOT PUBLISHED
+ref_i_21 (capacitance %): 100               ← PUBLISHED ✅
+ref_h_22 (Ground-Facing CDD - S03 output): -1680  ← CALCULATED ✅
+ref_k_94 (S11 ground heat gain): 0          ← CALCULATED
+ref_k_95 (S11 ground cooling gain): -6338   ← CALCULATED ✅
+```
+
+### Current Status - Taking a Break
+
+Values ARE being published and calculations ARE running, but Reference cooling loads don't respond to capacitance changes. The issue is more subtle than missing publications or listeners.
+
+**Need to investigate**:
+- Why changing capacitance slider doesn't affect ref_d_117 (cooling load)
+- Whether S03→S11→S13 calculation chain is actually triggering
+- Whether there's a timing or calculation order issue
+
+---
