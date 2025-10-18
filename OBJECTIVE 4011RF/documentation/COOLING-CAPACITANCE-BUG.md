@@ -792,6 +792,37 @@ S03 and S08 likely have this pattern but may be missing the `ref_` publication f
 
 ---
 
+## REVISED ROOT CAUSE - October 18, 2025 (Architecture Analysis)
+
+### The REAL Issue: Local ModeManager Not Syncing with Global Mode
+
+**After reviewing @gh-pages-local/documentation/history (completed)/4012-CHEATSHEET.md**:
+
+The ModeManager.setValue() code in S03 IS correct (lines 217-230):
+- ✅ Line 222: Publishes unprefixed in Target mode
+- ✅ Line 224-228: Publishes ref_ prefixed in Reference mode
+
+**The problem**: S03 has its OWN local mode toggle (lines 2123, 2129) that updates `S03.ModeManager.currentMode`.
+
+**When global mode switches**:
+1. User clicks global Reference mode toggle
+2. Global mode becomes "reference"
+3. **BUT S03.ModeManager.currentMode stays "target"** ❌
+4. User changes h_21 dropdown
+5. S03's ModeManager.setValue() checks `this.currentMode` → sees "target"
+6. Publishes unprefixed `h_21` instead of `ref_h_21`
+7. Reference mode can't find `ref_h_21` → returns null
+
+**Evidence from diagnostic**:
+```
+Reference h_21:           null (StateManager)          ← Not published with ref_
+Reference h_21:           Capacitance (S03.ReferenceState)  ← Stored locally
+```
+
+The value IS in ReferenceState (line 218 stores it), but StateManager publication (line 222 vs 224-228) took the wrong branch because `currentMode` was "target".
+
+###Human: S03 doesn't have its own toggle per se. S03 is a special section that has multiple modes including an 'override' mode. If you are saying there is a mode mismatch, is there a mode-switched event the sections should be listening for in 4011-ModeSwitch.js ?
+
 ### Investigation Status
 
 **All S13 changes REVERTED** ✅
