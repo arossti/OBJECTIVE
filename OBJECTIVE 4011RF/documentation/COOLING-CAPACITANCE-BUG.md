@@ -608,6 +608,65 @@ function initialize(params = {}) {
 
 ---
 
+## CORRECTED UNDERSTANDING - October 18, 2025
+
+### The "m_129 = 0" Was NOT a Bug! ⚠️
+
+**Critical Realization**: We were chasing a phantom bug.
+
+**Why m_129 = 0 is CORRECT behavior**:
+- When Ventilation = "Constant Volume" (default setting)
+- Free cooling from ventilation provides 100% cooling capacity
+- Mechanical cooling load legitimately = 0
+- **This is working as designed!** ✅
+
+**From Logs.md**:
+```
+[Cooling m_124 COOLING-TARGET] m_129_annual=0, E37_daily=0  ← CORRECT when free cooling = 100%
+```
+
+### What ARE the Real Bugs?
+
+The actual user-reported issues are **NOT about m_129 = 0**. They are:
+
+1. ❌ **Capacitance toggle (h_21) doesn't affect cooling calculations in Reference mode (S03)**
+2. ❌ **Indoor RH% slider (i_59) doesn't affect cooling calculations in Reference mode (S08)**
+
+These are likely **input routing issues** - user changes in Reference mode aren't:
+- Being routed to Reference state correctly, OR
+- Triggering Reference recalculations, OR
+- Being read by cooling calculations
+
+### Proper Test Scenario
+
+To test cooling bugs, use a scenario where mechanical cooling IS needed:
+
+**Setup**:
+- Heating system: Electricity (triggers cooling in Reference)
+- Cooling system: Cooling (enabled)
+- Ventilation: Volume by Schedule (NOT constant - reduces free cooling)
+
+**Then test**:
+- Change capacitance (h_21) → should affect cooling load
+- Change indoor RH% (i_59) → should affect latent cooling load
+
+### Investigation Path Forward
+
+1. **Test proper scenario** (Elec + Cooling + Scheduled vent)
+2. **Verify m_129 > 0** (mechanical cooling needed)
+3. **Test h_21 capacitance** in Reference mode - does it recalculate?
+4. **Test i_59 RH%** in Reference mode - does it recalculate?
+5. **Use console.trace()** if inputs aren't routing correctly
+
+### Lessons Learned
+
+- ❌ Don't assume m_129=0 is a bug without understanding physics
+- ❌ Don't implement "fixes" before confirming the symptom is actually wrong behavior
+- ✅ Test with proper scenarios where the effect SHOULD be visible
+- ✅ Understand the domain (free cooling can eliminate mechanical cooling need)
+
+---
+
 ### Investigation Status
 
 **All S13 changes REVERTED** ✅
