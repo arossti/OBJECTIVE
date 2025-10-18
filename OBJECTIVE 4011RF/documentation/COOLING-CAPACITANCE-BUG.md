@@ -164,10 +164,9 @@ if (coolingSystemType === "No Cooling") {
 The issue is NOT in S03 or S11. Both sections work perfectly. The problem is in **S13's ReferenceState initialization**.
 
 **Why this matters**:
-- Building codes (OBC, NBC) specify Reference buildings have **no mechanical cooling**
-- This is architecturally correct for code compliance
-- BUT it prevents testing cooling scenarios in Reference mode
-- It also means capacitance effects on cooling cannot be observed in Reference mode
+- Users need to test Cooling/No Cooling scenarios in the Reference model
+- This bug prevents testing cooling scenarios in Reference mode
+- It also means capacitance effects or indoor RH% (i_59)set in S08 on cooling cannot be observed in Reference mode
 
 #### Capacitance Toggle Issue (h_21)
 The capacitance toggle DOES work, but its effects cannot be seen in Reference mode because:
@@ -270,6 +269,345 @@ The issue is MORE COMPLEX than initially diagnosed:
 
 ---
 
+## Debugging Strategy: console.trace() Approach
+
+**Date:** October 18, 2025
+
+### Relevance of d_12 State Mixing Bug Debugging Approach
+
+The d_12 bug debugging approach (documented in [d_12-STATE-MIXING-DIAGNOSTIC-REPORT.md](history (completed)/d_12-STATE-MIXING-DIAGNOSTIC-REPORT.md)) used `console.trace()` to capture call stacks when mysterious state writes occurred.
+
+**d_12 Bug Pattern:**
+- Symptom: Unprefixed `d_12` being written when only `ref_d_12` should be written
+- Mystery: Couldn't find WHERE the write was coming from
+- Solution: Added `console.trace()` to StateManager.setValue() to capture full call stack
+- Result: Revealed the "ghost writer" by showing exact function call chain
+
+**Our m_129=0 Bug Pattern:**
+- Symptom: m_129 calculates as 0 when triggered by d_116, but correctly when triggered by g_118
+- Mystery: Can't find WHY m_129 calculation returns 0 in d_116 path
+- Both paths trigger cooling calculations, but produce different results
+
+### Applicability Assessment: ✅ HIGHLY RELEVANT
+
+**Similarities:**
+1. **Mystery behavior**: Both bugs involve "something" happening (or not happening) with unclear origin
+2. **Different code paths**: d_12 had multiple handlers; m_129 has d_116 vs g_118 trigger paths
+3. **Logs show symptom but not cause**: Both show the RESULT (unprefixed write / m_129=0) but not the WHY
+
+**Key Difference:**
+- d_12 bug: Needed to find WHO was calling a function
+- m_129 bug: Need to understand WHY a calculation returns 0
+
+### Proposed Debugging Approach
+
+Add strategic `console.trace()` calls to trace the m_129 calculation path:
+
+#### 1. Trace m_129 Calculation Origin
+```javascript
+// In S13 where m_129 is calculated
+if (m_129 === 0 || m_129_annual === 0) {
+  console.log(`[DEBUG m_129] Calculated as ZERO: m_129=${m_129}, m_129_annual=${m_129_annual}`);
+  console.trace("Call stack when m_129=0:");
+}
+```
+
+#### 2. Trace Critical Input Values
+```javascript
+// Where cooling demand inputs are gathered
+console.log(`[DEBUG m_129 INPUTS] mode=${mode}, coolingSystemType=${coolingSystemType}`);
+console.log(`[DEBUG m_129 INPUTS] S11 values: k_94=${k_94}, k_95=${k_95}`);
+console.log(`[DEBUG m_129 INPUTS] Climate: CDD=${CDD}, capacitance=${capacitanceFactor}`);
+if (someValueIsZeroOrMissing) {
+  console.trace("Call stack when critical input is missing:");
+}
+```
+
+#### 3. Compare d_116 vs g_118 Paths
+```javascript
+// In d_116 handler
+console.log(`[DEBUG TRIGGER] d_116 changed to: ${value}`);
+console.trace("d_116 trigger path:");
+
+// In g_118 handler
+console.log(`[DEBUG TRIGGER] g_118 changed to: ${value}`);
+console.trace("g_118 trigger path:");
+```
+
+### Expected Insights
+
+This approach should reveal:
+
+1. **Call Stack Differences**: Why g_118 path has m_129>0 but d_116 path has m_129=0
+2. **Calculation Order**: Whether m_129 is calculated before needed inputs are ready
+3. **Missing Dependencies**: Which upstream values are 0/undefined in d_116 path but available in g_118 path
+4. **Listener Chain**: Which recalculations fire in g_118 path but not d_116 path
+
+### Implementation Strategy
+
+1. **Add traces to S13 m_129 calculation** - Capture when it returns 0
+2. **Add traces to d_116 and g_118 handlers** - Compare trigger paths
+3. **Test both scenarios**:
+   - Toggle d_116: "No Cooling" → "Cooling" (captures m_129=0 path)
+   - Change g_118: Any value change (captures m_129>0 path)
+4. **Compare stack traces** - Identify where paths diverge
+
+### Success Criteria
+
+When we see the stack traces, we should be able to answer:
+- What functions are called in g_118 path that aren't called in d_116 path?
+- Are there intermediate calculation steps that d_116 path skips?
+- Does m_129 calculation depend on values that g_118 updates but d_116 doesn't?
+
+---
+
+## ROOT CAUSE IDENTIFIED - October 18, 2025
+
+### THE ACTUAL ROOT CAUSE: Cooling.js Initialization Flaw ⚠️
+
+**Target vs Reference Calculation Parity Violation**
+
+After tracing why Target mode works perfectly but Reference mode fails, the root cause is found in **Cooling.js initialization**:
+
+**Location**: [4012-Cooling.js:693-747](../4012-Cooling.js#L693-L747)
+
+```javascript
+function initialize(params = {}) {
+  // Try to get values from StateManager if available
+  if (typeof window.TEUI.StateManager !== "undefined") {
+    // ❌ BUG: Reads ONLY unprefixed values (Target mode)
+    const coolingSetpoint = window.TEUI.StateManager.getValue("h_24"); // NO ref_ prefix
+    state.coolingSetTemp = coolingSetpoint ? parseFloat(coolingSetpoint) : 24;
+
+    const cdd = window.TEUI.StateManager.getValue("d_21"); // NO ref_ prefix
+    state.coolingDegreeDays = cdd ? parseFloat(cdd) : 196;
+
+    const volume = window.TEUI.StateManager.getValue("d_105"); // NO ref_ prefix
+    state.buildingVolume = volume ? parseFloat(volume.toString().replace(/,/g, "")) : 8000;
+
+    const area = window.TEUI.StateManager.getValue("h_15"); // NO ref_ prefix
+    state.buildingArea = area ? parseFloat(area.toString().replace(/,/g, "")) : 1427.2;
+
+    const indoorRH = window.TEUI.StateManager.getValue("i_59"); // NO ref_ prefix
+    state.indoorRH = indoorRH ? parseFloat(indoorRH) / 100 : 0.45;
+  }
+
+  // ❌ BUG: Only calculates Target mode on initialization
+  calculateAll("target");
+
+  state.initialized = true;
+}
+```
+
+### Why Target Mode Works Perfectly
+
+**Target mode initialization flow:**
+1. App loads → StateManager populated with S02/S03/S08/S12 values
+2. Cooling.js `initialize()` runs → reads unprefixed values ✅
+3. Calls `calculateAll("target")` → populates Target cooling values ✅
+4. User toggles d_116 → S13 calls `CoolingCalculations.calculateAll("target")` ✅
+5. Cooling.js reads fresh values via `getModeAwareValue()` (no prefix) ✅
+6. **Everything works because Target values were initialized and exist**
+
+### Why Reference Mode Fails
+
+**Reference mode "cold start" flow:**
+1. App loads → StateManager populated with **unprefixed** values only
+2. Cooling.js `initialize()` runs → reads unprefixed values (Target)
+3. Calls `calculateAll("target")` → **NEVER calls with "reference"** ❌
+4. User switches to Reference mode → Changes d_116 to "Cooling"
+5. S13 calls `CoolingCalculations.calculateAll("reference")`
+6. Cooling.js tries to read `ref_h_24`, `ref_d_21`, `ref_d_105`, `ref_h_15`, `ref_i_59`
+7. **ALL RETURN NULL - Reference values were NEVER initialized** ❌
+8. Falls back to defaults or 0 → m_129 = 0 ❌
+
+**After g_118 "priming":**
+1. g_118 change triggers `Calculator.calculateAll()`
+2. **Full cascade runs S02 → S03 → S08 → S12**
+3. These sections publish `ref_` prefixed values to StateManager ✅
+4. NOW when Cooling.js calls `getModeAwareValue()`, `ref_*` values exist ✅
+5. m_129 calculates correctly ✅
+
+### The Smoking Gun (Secondary Issue)
+
+**Location**: [4012-Section13.js:2234-2244](../sections/4012-Section13.js#L2234-L2244)
+
+```javascript
+// 🔧 FIX (Oct 7, 2025): Force complete calculator cascade when g_118 changes
+// This ensures cooling calculations get proper climate/volume/area values
+// which are initialized during full Calculator.calculateAll() but not S13-only calcs
+if (fieldId === "g_118") {
+  setTimeout(() => {
+    if (window.TEUI?.Calculator?.calculateAll) {
+      window.TEUI.Calculator.calculateAll();  // ← THIS IS THE "PRIMING"!
+    }
+  }, 50); // Small delay ensures S13 values published first
+}
+```
+
+### What This Reveals
+
+**g_118 "priming" works because**:
+- g_118 change calls `calculateAll()` (local S13 calculations)
+- THEN calls `window.TEUI.Calculator.calculateAll()` (FULL cascade across ALL sections)
+- The full cascade populates upstream values (from S03/S08/S11) that m_129 needs
+- Those values persist in StateManager, making subsequent changes work
+
+**d_116 fails because**:
+- d_116 change calls `calculateAll()` (local S13 calculations only)
+- Does NOT call `Calculator.calculateAll()` (no full cascade)
+- Upstream dependencies (climate data, building volume, area, humidity) aren't ready
+- m_129 calculation reads zeros/nulls from StateManager → returns 0
+
+### The Dependency Chain
+
+m_129 (cooling demand) depends on values calculated in **other sections**:
+
+1. **4012-Cooling.js** needs:
+   - `d_105` (building volume) from S12
+   - `h_15` (building area) from S02
+   - `d_21` (CDD) from S03
+   - `h_24` (cooling setpoint) from S03
+   - `i_59` (indoor RH%) from S08
+
+2. **Without full cascade**:
+   - These values are null/0 in Cooling.js state
+   - Latent load factor = 0
+   - Free cooling limit = 0
+   - m_129 = 0
+
+3. **With full cascade** (g_118 path):
+   - Calculator.calculateAll() runs S02 → S03 → S08 → S12 → S13
+   - All upstream values populate correctly
+   - Cooling.js gets valid inputs
+   - m_129 calculates correctly
+
+### Why "Laggy" After Priming
+
+After g_118 priming, the values exist in StateManager state. But:
+- Changes to capacitance (h_21) or humidity (i_59) only trigger their local section
+- Those sections publish to StateManager
+- But Cooling.js doesn't recalculate unless triggered
+- Values appear "laggy" because the dependency chain is incomplete
+
+### The Fix (Surgical Approach)
+
+**Option 1: Add Calculator.calculateAll() to d_116 handler** ⚠️ RISKY
+- Copy the g_118 pattern to d_116
+- Could cause performance issues (full cascade on every cooling toggle)
+- May have side effects we haven't discovered
+
+**Option 2: Add proper dependency listeners to Cooling.js** ✅ RECOMMENDED
+- Cooling.js should listen for changes to its dependencies
+- When h_15, d_21, h_24, i_59, etc. change → recalculate
+- More targeted, less risky
+- Follows proper dependency management pattern
+
+**Option 3: Ensure Calculator.calculateAll() runs on app load** ✅ REQUIRED
+- Verify full cascade runs during initialization
+- Ensures all values populated before user interactions
+- Prevents the "need to prime" issue on first use
+
+### CALCULATION PARITY FIX: Ensure Reference Values Are Initialized
+
+The proper fix that achieves **calculation parity with Target mode** requires ensuring Reference values exist in StateManager before Cooling.js needs them.
+
+#### Option 1: Ensure Calculator.calculateAll() Runs on App Initialization ✅ RECOMMENDED
+
+**Why g_118 "priming" works**: It triggers `Calculator.calculateAll()` which runs the full cascade S02→S03→S08→S12, populating ALL `ref_*` values.
+
+**The Fix**: Ensure this cascade happens **BEFORE** user interactions, not as a workaround.
+
+**Code Change**: [4011-Calculator.js](../4011-Calculator.js) or initialization sequence
+
+Verify that on app load:
+1. Calculator.calculateAll() runs (it does - see line 519)
+2. It calculates **BOTH** Target AND Reference models
+3. All sections publish ref_* values to StateManager
+4. **THEN** Cooling.js initializes
+
+**Current Issue**: Cooling.js might initialize before Calculator runs the full cascade.
+
+**Test**: Check initialization sequence in console logs:
+```
+[Calculator] Running calculateAll...
+[Section02] Publishing ref_h_15...
+[Section03] Publishing ref_d_21, ref_h_24...
+[Section08] Publishing ref_i_59...
+[Section12] Publishing ref_d_105...
+[Cooling] Initializing...  ← Should come AFTER ref_ values exist
+```
+
+#### Option 2: Add Calculator.calculateAll() to d_116 Handler (Workaround)
+
+**This is a WORKAROUND, not the root fix**. It papers over the initialization problem.
+
+**Code Change**: [4012-Section13.js:2234-2244](../sections/4012-Section13.js#L2234-L2244)
+
+```javascript
+// 🔧 FIX (Oct 7, 2025): Force complete calculator cascade when g_118 changes
+if (fieldId === "g_118") {
+  setTimeout(() => {
+    if (window.TEUI?.Calculator?.calculateAll) {
+      window.TEUI.Calculator.calculateAll();
+    }
+  }, 50);
+}
+
+// 🔧 WORKAROUND (Oct 18, 2025): Apply same cascade to d_116
+// NOTE: This is a workaround for Cooling.js initialization issue
+// Proper fix is to ensure ref_ values exist before Cooling.js initializes
+if (fieldId === "d_116") {
+  setTimeout(() => {
+    if (window.TEUI?.Calculator?.calculateAll) {
+      window.TEUI.Calculator.calculateAll();
+    }
+  }, 50);
+}
+```
+
+**Why this is a workaround:**
+- ❌ Triggers full cascade on every d_116 change (performance hit)
+- ❌ Doesn't fix the root cause (initialization order)
+- ❌ Doesn't achieve calculation parity (different code paths)
+- ❌ Still has "laggy" behavior for h_21, i_59 changes
+
+#### Option 3: Fix Cooling.js to Not Require Pre-initialization ✅ ARCHITECTURAL FIX
+
+**The Target Way**: Target mode doesn't need values pre-initialized because unprefixed values always exist in StateManager.
+
+**Make Reference mode work the same way**:
+
+**Code Change**: [4012-Cooling.js:693-747](../4012-Cooling.js#L693-L747)
+
+Remove initialization dependency on StateManager values - let `calculateAll(mode)` read fresh values each time:
+
+```javascript
+function initialize(params = {}) {
+  // ❌ REMOVE: Don't pre-load values during init
+  // Let calculateAll() read fresh values mode-aware each time
+
+  // Register with StateManager
+  registerWithStateManager();
+
+  // ✅ NEW: Run initial calculations for BOTH modes
+  calculateAll("target");   // Initialize Target cooling values
+  calculateAll("reference"); // Initialize Reference cooling values
+
+  state.initialized = true;
+}
+```
+
+**Why This Achieves Parity:**
+1. ✅ Both modes initialized equally
+2. ✅ No dependency on pre-existing ref_ values
+3. ✅ calculateAll() always reads fresh via getModeAwareValue()
+4. ✅ Same code path for both modes
+5. ✅ No workarounds needed in S13
+6. ✅ Matches Target mode architecture exactly
+
+---
+
 ### Investigation Status
 
 **All S13 changes REVERTED** ✅
@@ -337,14 +675,14 @@ if (savedState) {
 
 ### Result
 
-**Calculation Parity Restored** ✅
+**Calculation Dis-Parity Restored** ✅
 
-Now Reference mode works EXACTLY like Target mode:
-- Default: "No Cooling" (per building codes)
+Target mode works, Reference does not:
+- Default: "No Cooling" 
 - User can toggle to "Cooling" and it PERSISTS
-- Cooling calculations run correctly in Reference mode
-- Capacitance effects on cooling are now visible in Reference mode
-- User modifications survive state refreshes and building code changes
+- Cooling calculations run correctly in Reference mode only when 'primed' by selecting g_118 method change to something else then back again
+- Capacitance effects on cooling are not visible in Reference mode
+- User modifications survive state refreshes
 
 ---
 
