@@ -910,3 +910,142 @@ Target mode works, Reference does not:
 5. Test capacitance (h_21) toggle and verify effects appear in k_94, k_95, and cooling calcs
 
 ---
+
+## S08 ARCHITECTURE ANALYSIS - October 18, 2025
+
+### User Report
+**Testing Result**: "Capacitance changes work, but RH% does not"
+- ✅ h_21/i_21 (capacitance) in S03 now functioning in Reference mode
+- ❌ i_59 (indoor RH%) in S08 still not affecting Reference cooling calculations
+
+### S08 Code Review Per CHEATSHEET.md Compliance
+
+**File**: [4012-Section08.js](../sections/4012-Section08.js)
+
+#### ModeManager.setValue() Implementation ✅ CORRECT
+
+**Location**: Lines 194-206
+
+```javascript
+setValue: function (fieldId, value) {
+  this.getCurrentState().setValue(fieldId, value);
+  // Bridge to global StateManager for backward compatibility
+  if (this.currentMode === "target") {
+    window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
+  } else if (this.currentMode === "reference") {
+    window.TEUI.StateManager.setValue(
+      `ref_${fieldId}`,
+      value,
+      "user-modified",
+    );
+  }
+},
+```
+
+**Analysis**:
+- ✅ Stores in local state (line 195)
+- ✅ Publishes unprefixed for Target mode (line 198)
+- ✅ Publishes ref_ prefixed for Reference mode (lines 200-204)
+- ✅ Follows CHEATSHEET pattern exactly
+
+#### i_59 Slider Event Handler ✅ CORRECT
+
+**Location**: Lines 343-361
+
+```javascript
+function handleUserInput(event) {
+  const target = event.target;
+  const fieldElement = target.closest("[data-field-id]");
+  if (!fieldElement) return;
+
+  const fieldId = fieldElement.getAttribute("data-field-id");
+  const value = target.matches('input[type="range"]')
+    ? target.value
+    : target.textContent.trim();
+
+  ModeManager.setValue(fieldId, value); // ← Calls ModeManager.setValue
+
+  if (target.matches('input[type="range"]')) {
+    const display = target.nextElementSibling;
+    if (display) display.textContent = `${value}%`;
+  }
+
+  calculateAll(); // ← Triggers recalculation
+}
+```
+
+**Analysis**:
+- ✅ Line 353 calls `ModeManager.setValue()` which handles ref_ publication
+- ✅ Line 360 calls `calculateAll()` to recalculate
+- ✅ Follows proper event handling pattern
+
+#### Slider Registration ✅ CORRECT
+
+**Location**: Lines 363-369
+
+```javascript
+function initializeEventHandlers() {
+  const sectionElement = document.getElementById("indoorAirQuality");
+  if (!sectionElement) return;
+
+  sectionElement.addEventListener("input", (e) => {
+    if (e.target.matches('input[type="range"]')) handleUserInput(e);
+  });
+```
+
+**Analysis**:
+- ✅ Listens only to S08's own fields (CHEATSHEET Anti-Pattern #6 compliant)
+- ✅ Event delegation via section element
+- ✅ Proper handler routing
+
+### Architecture Verdict: S08 IS COMPLIANT ✅
+
+The S08 code follows all CHEATSHEET patterns correctly:
+- ✅ ModeManager.setValue() publishes ref_ prefixed values
+- ✅ Event handlers route through ModeManager
+- ✅ No cross-section DOM listeners
+- ✅ Proper state isolation
+
+**Therefore**: The i_59 slider SHOULD be publishing `ref_i_59` to StateManager when moved in Reference mode.
+
+### Investigation Next Steps
+
+**Hypothesis**: If S08 architecture is correct, the issue must be in one of these areas:
+
+1. **ModeManager synchronization issue**
+   - Is S08's `ModeManager.currentMode` synced with global mode switch?
+   - When user toggles global mode to Reference, does S08's local ModeManager update?
+   - Check if there's a mode-switched event that S08 should listen to
+
+2. **Downstream consumer (Cooling.js) not reading ref_i_59**
+   - Cooling.js may not be reading ref_i_59 when in Reference mode
+   - Check Cooling.js getModeAwareValue() implementation
+   - Verify Cooling.js re-calculates when ref_i_59 changes
+
+3. **StateManager listener missing**
+   - Cooling.js needs listener for ref_i_59 changes
+   - When ref_i_59 updates, Cooling.js should recalculate Reference latent load
+   - Check if listener exists for ref_i_59
+
+### Diagnostic Approach
+
+Run the simplified debug script to verify:
+```javascript
+// Check if ref_i_59 is being published
+const i_59_ref = sm?.getValue("ref_i_59");
+console.log(`ref_i_59 in StateManager: ${i_59_ref}`);
+
+// Check local state
+const i_59_local = s08?.ReferenceState?.getValue("i_59");
+console.log(`i_59 in S08.ReferenceState: ${i_59_local}`);
+
+// Check ModeManager mode
+console.log(`S08 ModeManager mode: ${s08?.ModeManager?.currentMode}`);
+```
+
+**Expected results if working**:
+- When slider moves in Reference mode → ref_i_59 should be non-null in StateManager
+- S08.ModeManager.currentMode should be "reference"
+- Latent load factor should change when RH% changes
+
+---
