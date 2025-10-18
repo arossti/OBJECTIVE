@@ -2207,11 +2207,11 @@ window.TEUI.SectionModules.sect03 = (function () {
       newCapacitanceDropdown.addEventListener("change", function () {
         const selectedCapacitance = this.value;
         console.log("S03: Capacitance setting changed:", selectedCapacitance);
-        DualState.setValue("h_21", selectedCapacitance, "user");
+        ModeManager.setValue("h_21", selectedCapacitance, "user");
 
         // If "Static" is chosen, force the percentage to 0
         if (selectedCapacitance === "Static") {
-          DualState.setValue("i_21", "0", "system");
+          ModeManager.setValue("i_21", "0", "system");
           ModeManager.refreshUI(); // Refresh UI to show the slider reset to 0
         }
 
@@ -2305,11 +2305,26 @@ window.TEUI.SectionModules.sect03 = (function () {
       // ✅ CRITICAL: Bridge FieldManager slider updates to DualState
       window.TEUI.StateManager.addListener("i_21", function (newValue) {
         // When FieldManager updates StateManager, also update DualState for isolation
-        DualState.setValue("i_21", newValue, "user");
-        calculateAll(); // Recalculate everything as capacitance affects GF CDD
-        console.log(
-          `S03: Capacitance slider updated via FieldManager - bridged to DualState: ${newValue}%`,
-        );
+        // This listener handles TARGET mode slider changes.
+        if (ModeManager.currentMode === "target") {
+          ModeManager.setValue("i_21", newValue, "user");
+          calculateAll(); // Recalculate everything as capacitance affects GF CDD
+          console.log(
+            `S03: TARGET slider updated via FieldManager - bridged to DualState: ${newValue}%`,
+          );
+        }
+      });
+
+      // ✅ FINAL FIX: Add a dedicated listener for REFERENCE mode slider changes.
+      window.TEUI.StateManager.addListener("ref_i_21", function (newValue) {
+        // This listener handles REFERENCE mode slider changes.
+        if (ModeManager.currentMode === "reference") {
+          ModeManager.setValue("i_21", newValue, "user");
+          calculateAll(); // Recalculate everything as capacitance affects GF CDD
+          console.log(
+            `S03: REFERENCE slider updated via FieldManager - bridged to DualState: ${newValue}%`,
+          );
+        }
       });
 
       // ✅ CRITICAL: Bridge capacitance dropdown (h_21) updates to DualState

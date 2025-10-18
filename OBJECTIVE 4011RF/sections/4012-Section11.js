@@ -1443,7 +1443,12 @@ window.TEUI.SectionModules.sect11 = (function () {
         }
 
         // Get value from i_21 (assume it's stored as percentage, e.g., 50 for 50%)
-        let capacitanceFactor_i21 = getGlobalNumericValue("i_21");
+        let capacitanceFactor_i21;
+        if (isReferenceCalculation) {
+          capacitanceFactor_i21 = getGlobalNumericValue("ref_i_21");
+        } else {
+          capacitanceFactor_i21 = getGlobalNumericValue("i_21");
+        }
         // Convert percentage to decimal, fallback to 0.5 (50%) if input is invalid or missing
         capacitanceFactor_i21 = capacitanceFactor_i21 / 100;
         if (isNaN(capacitanceFactor_i21) || capacitanceFactor_i21 === 0) {
@@ -2193,7 +2198,12 @@ window.TEUI.SectionModules.sect11 = (function () {
       window.TEUI.StateManager.addListener("ref_h_22", () => calculateAll());
       window.TEUI.StateManager.addListener("ref_d_22", () => calculateAll());
 
+      // Listen for S03 Capacitance changes (Target and Reference)
+      window.TEUI.StateManager.addListener("h_21", calculateAll); // Capacitance Type
+      window.TEUI.StateManager.addListener("ref_h_21", calculateAll);
       window.TEUI.StateManager.addListener("i_21", calculateAll); // Capacitance Factor (affects ground gain)
+      window.TEUI.StateManager.addListener("ref_i_21", calculateAll); // ✅ ADDED
+
       window.TEUI.StateManager.addListener("d_97", (val, _old, _id, src) => {
         console.log(
           `[S11] Listener: d_97 changed → recalculating (src=${src})`,
