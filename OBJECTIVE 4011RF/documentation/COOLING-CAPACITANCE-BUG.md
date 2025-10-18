@@ -667,6 +667,131 @@ To test cooling bugs, use a scenario where mechanical cooling IS needed:
 
 ---
 
+## ROOT CAUSES IDENTIFIED - October 18, 2025 ✅
+
+### Diagnostic Results from COOLING-REF-DEBUG-SCRIPT.md
+
+**Test Scenario**: Electricity heating + Cooling enabled + Scheduled ventilation
+
+**Findings**:
+
+#### ❌ ISSUE 1: S03 not publishing ref_h_21 to StateManager
+
+```
+Reference h_21:           null (StateManager)          ← MISSING!
+Reference h_21:           Capacitance (S03.ReferenceState)  ← EXISTS locally
+Reference i_21:           null% (StateManager)          ← MISSING!
+```
+
+**Impact**:
+- Capacitance value stored locally in S03 but not accessible to downstream sections
+- ref_h_22 (Ground-Facing CDD) calculation uses stale/default values
+- S11 ground-facing heat gains (k_95) identical for both modes despite different capacitance settings
+
+#### ❌ ISSUE 2: S08 not publishing ref_i_59 to StateManager
+
+```
+Reference i_59:           null% (StateManager)          ← MISSING!
+Reference i_59:           50% (S08.ReferenceState)      ← EXISTS locally
+```
+
+**Impact**:
+- Indoor RH% stored locally in S08 but not accessible to Cooling.js
+- Latent load factor identical for both modes despite different RH%
+- Cooling.js reads stale/default RH% value
+
+**Evidence**:
+```
+Target latent load:       1.746353948454419 (factor)
+Reference latent load:    1.746353948454419 (factor)  ← IDENTICAL despite different RH%!
+```
+
+### The Fix: StateManager Publication
+
+Both S03 and S08 need to publish user-modified Reference inputs to StateManager with `ref_` prefix.
+
+#### Fix 1: S03 Capacitance Publication
+
+**File**: `4012-Section03.js`
+
+S03 needs to publish when capacitance changes in Reference mode:
+
+```javascript
+// When h_21 changes in Reference mode
+if (isReferenceCalculation || ModeManager.currentMode === "reference") {
+  // Publish to StateManager for downstream sections
+  window.TEUI.StateManager.setValue("ref_h_21", h_21_value, "user-modified");
+
+  // If capacitance slider (i_21) also changed
+  window.TEUI.StateManager.setValue("ref_i_21", i_21_value, "user-modified");
+}
+```
+
+**What to look for**:
+- Find where h_21 dropdown handler publishes to StateManager
+- Check if it publishes BOTH unprefixed (Target) AND ref_ prefixed (Reference)
+- Add ref_ publication if missing
+
+#### Fix 2: S08 Indoor RH% Publication
+
+**File**: `4012-Section08.js`
+
+S08 needs to publish when indoor RH% changes in Reference mode:
+
+```javascript
+// When i_59 changes in Reference mode
+if (isReferenceCalculation || ModeManager.currentMode === "reference") {
+  // Publish to StateManager for Cooling.js and other downstream sections
+  window.TEUI.StateManager.setValue("ref_i_59", i_59_value, "user-modified");
+}
+```
+
+**What to look for**:
+- Find where i_59 slider handler publishes to StateManager
+- Check if it publishes with ref_ prefix in Reference mode
+- Add ref_ publication if missing
+
+### Expected Behavior After Fix
+
+**After fixing S03 publication**:
+- Changing h_21 from Static → Capacitance in Reference mode
+- Should update ref_h_22 (Ground-Facing CDD)
+- Should update ref_k_95 (S11 ground-facing cooling)
+- Should affect ref_d_129 and ref_m_129 (cooling demand)
+
+**After fixing S08 publication**:
+- Changing i_59 slider in Reference mode
+- Should update ref_cooling_latentLoadFactor
+- Should affect ref_d_129 and ref_m_129 (cooling demand)
+
+### Pattern: User Input Publication
+
+This follows the established pattern from other sections:
+
+**Dual-Engine Pattern**: User inputs must be published TWICE:
+1. **Unprefixed** for Target mode (always)
+2. **ref_ prefixed** for Reference mode (when in Reference mode or for Reference calculations)
+
+**Example from other sections** (S02, S09, S11):
+```javascript
+// Dropdown change handler
+element.addEventListener("change", function() {
+  const value = this.value;
+
+  // Target mode publication
+  StateManager.setValue(fieldId, value, "user-modified");
+
+  // Reference mode publication (if in Reference mode)
+  if (ModeManager.currentMode === "reference") {
+    StateManager.setValue(`ref_${fieldId}`, value, "user-modified");
+  }
+});
+```
+
+S03 and S08 likely have this pattern but may be missing the `ref_` publication for these specific fields.
+
+---
+
 ### Investigation Status
 
 **All S13 changes REVERTED** ✅
