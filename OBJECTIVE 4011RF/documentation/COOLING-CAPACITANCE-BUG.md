@@ -1049,3 +1049,93 @@ console.log(`S08 ModeManager mode: ${s08?.ModeManager?.currentMode}`);
 - Latent load factor should change when RH% changes
 
 ---
+
+## DEFINITIVE ROOT CAUSE - October 18, 2025 🎯
+
+### Diagnostic Results Analysis
+
+**Test Output** (from Logs.md lines -195 to -162):
+
+```
+Target h_21:              Capacitance (StateManager)
+Reference h_21:           null (StateManager)          ← NOT PUBLISHED!
+Reference h_21:           Capacitance (S03.ReferenceState) ← EXISTS LOCALLY
+
+Target i_21:              50%
+Reference i_21:           null% (StateManager)          ← NOT PUBLISHED!
+Reference i_21:           100% (S03.ReferenceState)     ← USER MOVED SLIDER TO 100%!
+
+Target i_59:              45% (StateManager)
+Reference i_59:           null% (StateManager)          ← NOT PUBLISHED!
+Reference i_59:           50% (S08.ReferenceState)      ← EXISTS LOCALLY
+
+Target latent load:       1.746353948454419
+Reference latent load:    1.746353948454419            ← IDENTICAL (should be different!)
+```
+
+### What The Diagnostic Proves ✅
+
+1. **User inputs ARE reaching local section states**
+   - i_21 slider was moved from 50% → 100% and it's stored in S03.ReferenceState
+   - h_21 is "Capacitance" in S03.ReferenceState
+   - i_59 is 50% in S08.ReferenceState
+
+2. **BUT they're NOT being published to StateManager with ref_ prefix**
+   - `ref_h_21` = null
+   - `ref_i_21` = null
+   - `ref_i_59` = null
+
+3. **This breaks downstream consumers**
+   - Cooling.js can't read null ref_i_59
+   - Latent load factor identical for both modes (should differ based on RH%)
+   - S11/S13 can't read capacitance values
+
+### The Root Cause: ModeManager.currentMode Stuck on "target"
+
+**The Problem**:
+When user changes inputs in Reference mode, the event handlers call `ModeManager.setValue()`, which checks `this.currentMode` to decide whether to publish with or without `ref_` prefix.
+
+**From S08 ModeManager.setValue()** ([4012-Section08.js:194-206](../sections/4012-Section08.js#L194-L206)):
+```javascript
+setValue: function (fieldId, value) {
+  this.getCurrentState().setValue(fieldId, value); // ✅ This works (value stored locally)
+
+  if (this.currentMode === "target") {
+    window.TEUI.StateManager.setValue(fieldId, value, "user-modified"); // ❌ This branch executes
+  } else if (this.currentMode === "reference") {
+    window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "user-modified"); // ✅ This should execute but doesn't
+  }
+}
+```
+
+**Evidence**: The diagnostic shows values in local state but null in StateManager with ref_ prefix, proving the `if (this.currentMode === "target")` branch is executing when it should be the `else if` branch.
+
+**Why ModeManager.currentMode is "target"**:
+
+Global toggle ([4011-ReferenceToggle.js:68-76](../4011-ReferenceToggle.js#L68-L76)) calls:
+```javascript
+section.modeManager.switchMode(mode);
+```
+
+But something is causing the mode to revert back to "target" after the switch, OR the inputs are being captured BEFORE the mode switch completes.
+
+### Possible Causes
+
+1. **Race condition**: User input event fires before `switchMode("reference")` completes
+2. **Mode revert**: Something calls `switchMode("target")` after global toggle
+3. **Wrong ModeManager reference**: FieldManager or event handlers accessing wrong ModeManager instance
+4. **Timing issue**: Global toggle updates ModeManager but local event handlers read stale value
+
+### Investigation Needed
+
+Check if [4011-FieldManager.js](../4011-FieldManager.js) is involved in routing inputs, as the logs show:
+```
+[FieldManager] Routed i_21=60 through sect03 ModeManager
+```
+
+FieldManager may be:
+- Accessing the wrong ModeManager instance
+- Not checking current mode correctly
+- Overriding the mode somehow
+
+---
