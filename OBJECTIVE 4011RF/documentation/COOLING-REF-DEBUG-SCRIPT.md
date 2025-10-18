@@ -20,6 +20,13 @@ console.log(`S03 ModeManager.currentMode: ${s03?.ModeManager?.currentMode}`);
 console.log(`S08 ModeManager.currentMode: ${s08?.ModeManager?.currentMode}`);
 console.log(`Global reference mode active: ${document.body.classList.contains('reference-mode')}`);
 
+console.log("\n🔬 TESTING S03 ModeManager.setValue() DIRECTLY\n");
+console.log("Before test - ref_i_21 in StateManager:", sm?.getValue("ref_i_21"));
+console.log("Calling: s03.ModeManager.setValue('i_21', '999', 'test')");
+s03?.ModeManager?.setValue('i_21', '999', 'test');
+console.log("After test - ref_i_21 in StateManager:", sm?.getValue("ref_i_21"));
+console.log("After test - i_21 in S03.ReferenceState:", s03?.ReferenceState?.getValue("i_21"));
+
 console.log("\n📊 PART 1: CAPACITANCE (h_21) DATA FLOW\n");
 const h_21_target = sm?.getValue("h_21");
 const h_21_ref = sm?.getValue("ref_h_21");
