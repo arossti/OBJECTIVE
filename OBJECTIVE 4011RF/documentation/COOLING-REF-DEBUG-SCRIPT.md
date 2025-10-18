@@ -1,15 +1,11 @@
 // ============================================================================
 // REFERENCE MODE COOLING DIAGNOSTIC
 // ============================================================================
-// Tests whether capacitance (h_21) and indoor RH% (i_59) affect Reference cooling
-// Traces the full data flow from S03/S08 inputs → Cooling.js → S13 outputs
+// Paste this entire script into the browser console to diagnose Reference mode
+// cooling calculation issues with capacitance (h_21) and indoor RH% (i_59)
 // ============================================================================
 
 console.log("\n=== REFERENCE MODE COOLING DIAGNOSTIC ===\n");
-
-// ============================================================================
-// SETUP: Get required modules
-// ============================================================================
 
 const sm = window.TEUI?.StateManager;
 const s03 = window.TEUI?.SectionModules?.sect03;
