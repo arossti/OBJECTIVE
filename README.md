@@ -21,7 +21,7 @@ Objective TEUI 4.012 Framework - Next Generation Architecture
 1. **Single Logic, Dual Output**
 
    ```javascript
-   // Every calculation returns both Target and Reference values
+   // Every calculation returns both Target and Reference values (engines always run concurrently)
    function calculateHeatLoss(inputs) {
      const calc = (area, rsi, hdd) => (area * hdd * 24) / (rsi * 1000);
 
@@ -41,9 +41,9 @@ Objective TEUI 4.012 Framework - Next Generation Architecture
    ```javascript
    state = {
      inputs: {
-       geometry: {}, // Shared between models
+       geometry: {}, // Can be shared between models
        target: {}, // User design values
-       reference: {}, // Code minimum values
+       reference: {}, // Code minimum values or parallel test model
      },
      outputs: {
        target: {}, // Calculated target results
@@ -61,15 +61,8 @@ Objective TEUI 4.012 Framework - Next Generation Architecture
 
 - **Least Verbose**: Every line of code must justify its existence
 - **Robust**: Pure functions with explicit error handling
-- **Strict**: No implicit dependencies or hidden state
+- **Strict**: No implicit dependencies or hidden state or fallbacks
 - **Performant**: Target sub-100ms full recalculation
-
-### Migration Status
-
-- ✅ **Proof of Concept**: `4012-S11.js` demonstrates envelope calculations
-- ✅ **State Manager**: `4012-SM.js` shows simplified state management
-- 🔄 **Section 03**: First full section for migration (climate calculations)
-- 📋 **Section 04**: Marked "in transition" in IT-DEPENDS branch
 
 ---
 
@@ -107,12 +100,7 @@ A specialized adaptation of the TEUI 4011 codebase to create the **2024 Ontario 
 
 - **Phase 6**: Additional OBC sections (3.03, 3.04, etc.)
 - **Phase 7**: Form validation and data export
-- **Phase 8**: Import/export compatibility with Excel template
-
----
-
-## 📜 PROJECT HISTORY
-
+- **Phase 8**: Import/export compatibility with Excel template and geometry export to OBJECTIVE
 ### The Journey to v4.012
 
 The TEUI calculator has undergone significant architectural evolution:
@@ -161,13 +149,11 @@ The v4.012 framework represents a return to first principles:
 
 ### Legacy Support
 
-The v4.011 codebase remains as:
+The OBJECTIVE 4011RF codebase remains as:
 
 - A working reference implementation
 - Source of business logic and calculations
 - Stable fallback during v4.012 development
-
-For the GitHub Pages demo, consider using a commit from the **SSv2 branch** before the IT-DEPENDS complexity was introduced - this represents the most stable, production-ready version of v4.011.
 
 ---
 
@@ -188,7 +174,7 @@ This is a **static energy modeller** equivalent to our Excel worksheets that run
 - **🟢 REPORT Model**: User's design values (equipment efficiency, envelope performance, etc.)
 - **🔵 REFERENCE Model**: Code minimum values (from building standard selected at `d_13`)
 
-**Same geometry, different performance values. That's it.**
+**Same geometry (but can devite), different performance values. That's it.**
 
 #### **Core Requirements**
 
@@ -257,7 +243,7 @@ function calculateApplicationModel() {
 
 ### **🔧 FUTURE: IT-DEPENDS DEPENDENCY-ORDERED ARCHITECTURE**
 
-**Current Status**: Traffic Cop V2 architecture is successfully implemented and working. The IT-DEPENDS approach represents **future architectural improvements** planned for v4.012 to optimize dependency-ordered calculations for cross-section integration while preserving section-internal calculation efficiency.
+**Current Status**: Traffic Cop V2 architecture is successfully implemented and working. The IT-DEPENDS approach represents **future architectural improvements** planned for v4.012 to optimize dependency-ordered calculations for cross-section integration while preserving section-internal calculation efficiency. ORCHESTRATOR.js SUPERCEDES THIS, TO BE REVISED
 
 #### **✅ HYBRID IT-DEPENDS ARCHITECTURE (The Working Solution)**
 
@@ -300,20 +286,7 @@ function handleFieldBlur(event) {
 
 **✅ PATTERN A DUAL-STATE SECTIONS (Production Ready):**
 
-- **S01**: Pattern A dual-state with Reference System integration
-- **S05**: Pattern A dual-state architecture implemented
-- **S08**: Pattern A dual-state architecture implemented
-- **S09**: Pattern A dual-state architecture implemented
-- **S10**: Pattern A dual-state architecture implemented
-- **S11**: Pattern A dual-state architecture implemented
-
-**🔄 SECTIONS READY FOR PATTERN A MIGRATION:**
-
-- **S02-S04, S06-S07, S12-S15**: Traditional calculateAll() systems, candidates for Pattern A conversion
-
-**📋 FUTURE IT-DEPENDS OPTIMIZATION:**
-
-All sections are candidates for future IT-DEPENDS dependency-ordered calculations as part of v4.012 framework improvements.
+**🔄 ALL SECTIONS COMOLETED PATTERN A MIGRATION:**
 
 #### **🚀 CURRENT DEPENDENCY FLOW (Traffic Cop V2)**
 
@@ -679,7 +652,7 @@ Understanding these patterns will help avoid common pitfalls and produce more ma
 
 ### CRITICAL: Pattern A Dual-State Architecture (Current Standard)
 
-**Current Architecture**: The TEUI calculator now uses **Pattern A: Self-Contained State Objects** which eliminates cross-state contamination through complete state isolation.
+**Current Architecture**: The TEUI calculator now uses **Pattern A: Self-Contained State Objects** which eliminates cross-state contamination through complete state isolation. CHECK THAT ALL SECTIONS NOW USE THIS
 
 **Pattern A Benefits**: Each section maintains its own `TargetState` and `ReferenceState` objects, managed by a `ModeManager` facade. This ensures that Reference and Target calculations run independently with separate data sources.
 
@@ -770,11 +743,11 @@ Understanding these patterns will help avoid common pitfalls and produce more ma
    };
    ```
 
-**✅ Pattern A Status**: Currently implemented in S03, S08, S09, S10, S11 with complete state isolation and no cross-contamination.
+**✅ Pattern A Status**: Currently implemented in S03, S08, S09, S10, S11 with complete state isolation and no cross-contamination (AUDIT OTHER SECTIONS).
 
 **Advantages Over Previous Approaches**: Complete state isolation, no mode-dependent helpers, cleaner architecture, easier maintenance, and elimination of timing-related calculation issues.
 
-**Why This Matters**: Proper state separation ensures Reference calculations use Reference standard values (e.g., HSPF=7.1, ventilation=8.33 ACH) while Target calculations use user's design values (e.g., HSPF=12.5, ventilation=14.00 ACH), preventing the "mirroring" issue where both columns show identical values.
+**Why This Matters**: Proper state separation ensures Reference calculations use Reference standard values (e.g., HSPF=7.1, ventilation=8.33 ACH) while Target calculations use user's design values (e.g., HSPF=12.5, ventilation=14.00 ACH), preventing the "mirroring" issue where both fields show identical values.
 
 ### REQUIRED: StateManager Implementation Pattern for Cross-Section Functions
 
@@ -1582,9 +1555,9 @@ The **mitigated cooling energy demand** (`m_129`) is then calculated as:
 
 It's important to note that if the combined benefits from free cooling and ventilation recovery (`h_124 + d_123`) exceed the unmitigated load (`d_129`), the calculated `m_129` could become negative. While this reflects a scenario where passive strategies effectively eliminate active cooling needs, a negative load isn't physically meaningful for calculating the energy consumption of an active cooling system. Therefore, for determining the **cooling system's electrical load** (`d_117`), we clamp the `m_129` value at a minimum of zero before dividing by the cooling system's Coefficient of Performance (COPcool). This ensures the model accurately reflects that a cooling system cannot have negative energy consumption.
 
-This methodology allows us to simulate a more 'optimised' cooling solution, reflecting how well-designed buildings can significantly reduce or even eliminate active cooling needs through intelligent use of ventilation and passive strategies.
+This methodology allows us to simulate a more 'optimised' cooling solution, reflecting how well-designed buildings can significantly reduce or even eliminate active cooling needs through intelligent use of overnight ventilation when appropriate (outdoor humidity < indoor humidity) and passive strategies.
 
-It is important to understand that this detailed cooling strategy is intended to demonstrate an 'optimal' cooling design scenario. This scenario assumes good architectural practices, including passive design elements that facilitate effective night-time cooling, destratification, and efficient ventilation. For comparative purposes, we also provide simpler 'Peak' cooling load calculation methods. These alternative methods do not rely on the complex psychrometric and free cooling equations detailed above and can be found in Section 15 at fields `h_138` (Peak Sensible Cooling Load) and `h_139` (Peak Latent Cooling Load), corresponding to cells H138 and H139 in our Excel reference model. These 'Peak' values offer a more conventional calculation for designers who may not be incorporating the full suite of passive strategies assumed in our 'optimal' approach.
+It is important to understand that this detailed cooling strategy is intended to demonstrate an 'optimal' cooling design scenario. This scenario assumes good architectural practices, including passive design elements that facilitate effective night-time cooling, destratification, physical shading of windows by orientation, and efficient ventilation. For comparative purposes, we also provide simpler 'Peak' cooling load calculation methods. These alternative methods do not rely on the complex psychrometric and free cooling equations detailed above and can be found in Section 15 at fields `h_138` (Peak Sensible Cooling Load) and `h_139` (Peak Latent Cooling Load), corresponding to cells H138 and H139 in our Excel reference model. These 'Peak' values offer a more conventional calculation for designers who may not be incorporating the full suite of passive strategies assumed in our 'optimal' approach.
 
 **Section 13 Cooling Calculation Revisions (Ventilation Method Impact - 2024-08-01 / 2024-08-02):**
 
@@ -1610,15 +1583,15 @@ The UI follows these key principles:
 
 ## 6. Future Integration Plans
 
-### Sankey Diagram Integration (Section 16)
+### Sankey Diagram Integration (Section 16) COMPLETED
 
-The planned Sankey diagram will:
+The Sankey diagram:
 
-- Visualize energy flows between building systems
-- Update dynamically based on calculator values
-- Provide interactive elements for exploring relationships
-- Connect to the StateManager for real-time updates
-- Implement using D3.js visualization library
+- Visualizes energy flows between building systems
+- Updates dynamically based on calculator values
+- Provides interactive elements for exploring relationships
+- Connects to the StateManager for real-time updates
+- Implemented using D3.js visualization library
 
 ### Dependency Diagram (Section 17)
 
@@ -1630,8 +1603,9 @@ The dependency visualization will:
 - Provide interactive filtering of dependency chains
 - Visualize the impact of changing specific inputs
 - Visual summary of key formulas used (including novel ones unique to OBJECTIVE ie. Twb from RH%13h00 LST & Tdb)
+ - Equation map in palettes a desired pending feature
 
-Both visualization sections are currently in the planning phase and will be implemented after verification of the core calculation sections is complete.
+Both visualization sections are currently in the complete.
 
 ## 7. Verification and Testing Process
 
@@ -1747,22 +1721,12 @@ All rights retained by the Canadian Nponprofit OpenBuilding, Inc., with support 
 
 - **Section 05 Checkmark Logic**: The pass/fail checkmarks in Section 05 (fields `n_39`, `n_40`, `n_41` in column M) need adjustment. Currently, they might not correctly reflect a "fail" (✗) status when their corresponding percentage values (in fields `l_39`, `l_40`, `l_41` in column L) exceed 100%. The logic should be updated so that any percentage value strictly greater than 100% (i.e., numeric value > 1.0) results in a fail (✗). This needs the simplest possible fix by adjusting the comparison in the checkmark update function.
 - **Centralize Pass/Fail Indicator Styles**: Currently, sections S09 and S12 inject their own copies of `.checkmark` and `.warning` CSS styles via `addCheckmarkStyles()` functions. This creates maintenance overhead and inconsistent styling. The improved approach is to define these styles globally in `4011-styles.css` (implemented for modern Bootstrap colors: green `#28a745` success, red `#dc3545` danger) and remove the redundant injection functions from individual sections. Sections should rely on the global CSS definitions rather than injecting duplicate styles. This consolidation improves maintainability and ensures consistent pass/fail indicator appearance across all sections.
-- **Chrome Double File Dialog for Location Import**: In Chrome, clicking the "Load Locations" button (which triggers a click on the hidden `location-excel-input` file input) results in the file selection dialog appearing twice. Safari behaves correctly, showing it once. The `selectExcelBtnClickHandler` in `4011-FileHandler.js` is confirmed to execute only once per click. This appears to be a Chrome-specific quirk with the programmatic `input.click()` event. Low priority UI bug.
-- **S16 Sankey Emissions Scaling for Gas/Oil**: In Section 16 (Sankey Diagram), when "emissions" mode is active, the displayed Scope 1 emissions for gas or oil heating/DHW appear to be 1000x higher than the expected kgCO2e/yr values (e.g., 6,000 kgCO2e/yr from underlying data might display as 6,000,000 kgCO2e/yr in the Sankey tooltip). Electricity (Scope 2) emissions display correctly. The Sankey sources heating emissions from S13 (`f_114`) and DHW emissions from S07 (`k_49`), both of which appear to be calculated in kgCO2e/yr. Section 16 correctly multiplies these kg values by 1000 to get grams for link values, and tooltips divide by 1000 to display kg. The root cause of the 1000x inflation for gas/oil in the final Sankey display needs further investigation, possibly in the data integrity of `f_114` or `k_49` as retrieved by S16 specifically in gas/oil scenarios, or a subtle issue in how these are aggregated or processed before the final display conversion in the tooltip for Scope 1.
+- **S16 Sankey Emissions Scaling for Gas/Oil**: In Section 16 (Sankey Diagram), need to refresh 2x to get tooltip values to populate in emissions (no problem in energy view)
 - **S17 Dependency Graph Fullscreen UI Issues**: In Section 17, when using the fullscreen mode for the dependency graph:
   - The floating info panel (displaying node details) has a fixed `max-height` and `overflow-y: auto`, causing its content to scroll even when ample screen space is available. This panel should ideally expand to show all content without scrolling in fullscreen.
   - When exiting fullscreen mode, the floating controls (search, filters, layout buttons) remain visible, incorrectly overlaying the standard section view. These controls should only be visible in fullscreen and hide upon exit.
   - The `toggleFullscreen()` method in `4011-Dependency.js` needs review, particularly how it manages the creation, styling, and visibility of the `floatingControls` and `floatingInfoPanel` elements across fullscreen enter/exit events, potentially by using a more robust `fullscreenchange` event listener that handles both states consistently.
-- **Calculation Flow Dependency on File Load Order**: Incorrect total energy use calculations can occur if a building data file is loaded _before_ a weather file. The calculation flow should be robust and based on data availability in `StateManager` and defined dependencies, not the user's file loading sequence. This may require investigating `Calculator.js` and `SectionIntegrator.js` to ensure calculations (e.g., those dependent on climate data from Section 03) are correctly deferred or re-triggered when all necessary precedent data becomes available, regardless of load order, to maintain parity with Excel methods.
-- **S01 Reference TEUI (e_10) Initial Display Glitch**: After a project file import (following weather data import), the initial display of the Reference TEUI in Section 01 (e_10) can show an extremely high or incorrect value. This value corrects itself after any subsequent UI interaction that triggers a recalculation. This is likely due to a race condition where the full chain of reference model calculations (S15 -> S04 -> S01) doesn't complete before e_10 is first rendered. **Note**: This issue may be resolved by migrating remaining sections to Pattern A dual-state architecture, which eliminates the complex global state synchronization that causes these timing issues.
 - **Dynamic Reference Calculations on d_13 Change**: When the reference standard dropdown (d_13) is changed by the user, the Reference TEUI (e_10 in Section 01) does not update dynamically. Furthermore, when entering Reference Mode after a d_13 change, the UI for input fields may not reflect the new standard on the first toggle, though they might on a subsequent toggle. However, calculated reference values (like e_10) often remain incorrect for the new standard even after the UI inputs appear correct in Reference Mode. **Note**: This issue should be resolved by migrating remaining sections to Pattern A dual-state architecture, where each section's `ReferenceState` object handles dynamic reference standard changes independently.
-- **S01 Reference TEUI (e_10) Initial Load Timing Issue (PRIORITY: Document & Defer)**:
-  - **Issue**: On default page load, Section 01 displays incorrect Reference TEUI values (e.g., 287799.6 instead of ~201.7 kWh/m²/yr) that correct themselves after UI interactions or Reference Mode toggles.
-  - **Root Cause**: Timing issue in dual-engine initialization sequence. Reference Mode appears to toggle ON/OFF during initialization (visible in logs), causing Reference data to load then immediately discard.
-  - **Workaround**: Any UI interaction (Reference Mode toggle, field edit) triggers correct recalculation.
-  - **Impact**: Cosmetic only - calculations are correct after any user interaction. Imports work correctly from initial load.
-  - **Investigation Time**: 18+ hours invested with architectural improvements made but core timing issue persists.
-  - **Strategic Decision**: Document as known issue and focus on section-by-section validation and "traffic cop" calculation sequencing improvements. The underlying timing/sequencing improvements across all sections will likely resolve this naturally.
   - **Future Resolution**: Implement proper calculation sequencing system (eliminate setTimeout delays, establish deterministic dependency ordering) as outlined in v4.012 architectural improvements.
 
 ### Future Architectural Improvements for v4.012
