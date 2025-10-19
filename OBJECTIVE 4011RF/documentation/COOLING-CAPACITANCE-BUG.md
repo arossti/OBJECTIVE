@@ -906,3 +906,136 @@ Several attempts were made to fix the listening failure in `4012-Cooling.js`, bu
 -   **`4012-Cooling.js`**: Has been reverted to its original state, which still contains the listening failure.
 
 **Conclusion**: The problem within `4012-Cooling.js` is more complex than a simple missing listener. The regressions suggest that the internal state management of `Cooling.js` is not robust enough to handle the dual-engine calculation pattern without causing state contamination. Further work is required to refactor the state handling within `Cooling.js` to be fully compliant with the project's dual-state architecture before this bug can be resolved without side effects. This work is postponed for now.
+
+---
+
+## Fresh Investigation - October 19, 2025 (Evening Session)
+
+After deploying the capacitance fix (commit `70ab424`) to gh-pages and resolving deployment script issues, we returned to investigate the `i_59` (Indoor RH%) bug with fresh perspective.
+
+### Key Discoveries
+
+#### 1. S08 Publication Works Correctly ✅
+
+**Test Results** (from Logs.md):
+```
+Target (i_59): 45
+Reference (ref_i_59): 62
+✅ SUCCESS: 'ref_i_59' is present in the StateManager.
+```
+
+**Finding**: S08's ModeManager.setValue() publishes `ref_i_59` correctly when S08 is in Reference mode. The architecture is sound.
+
+**Code verified** ([4012-Section08.js:194-206](../sections/4012-Section08.js#L194-L206)):
+- Slider event handler calls `ModeManager.setValue(fieldId, value)` ✅
+- ModeManager checks `currentMode` and publishes with `ref_` prefix when in Reference mode ✅
+- No architectural changes needed ✅
+
+#### 2. Cooling.js Mode Awareness Works ✅
+
+**Code verified** ([4012-Cooling.js:464](../4012-Cooling.js#L464)):
+- S13 calls `CoolingCalculations.calculateAll("reference")` when in Reference mode
+- Cooling.js sets `state.currentMode = mode` based on parameter
+- `getModeAwareValue()` reads with `ref_` prefix when in Reference mode
+
+#### 3. The Real Problem: Cooling.js Mode Stuck in Target 🔴
+
+**Critical Log Evidence** (Logs.md line -5):
+```
+Current Mode: target  ← WRONG! Should be "reference"
+Internal Indoor RH: 0.45  ← Reading target i_59, not ref_i_59
+```
+
+**Despite:**
+- S08 being in Reference mode
+- S13 being in Reference mode
+- ref_i_59 = 62 in StateManager
+
+**Cooling.js is executing in Target mode!**
+
+#### 4. Suspicious Calculation Flow
+
+**Log sequence** (Logs.md lines -43 to -31):
+```
+[FieldManager] Routed i_59=47 through sect08 ModeManager
+[Multiple clock events]
+S08 ReferenceState: Synced i_59 = 45 from global StateManager (ref_i_59)
+[Cooling] 🚀 Starting cooling calculations (mode=reference)...
+[Cooling] 📊 Publishing results with prefix="ref_" (mode=reference)
+```
+
+**Then immediately** (lines -24 to -20):
+```
+[Cooling] 🚀 Starting cooling calculations (mode=target)...
+[Cooling] 📊 Publishing results with prefix="" (mode=target)
+```
+
+**Observation**: Cooling.js runs TWICE - once in Reference mode, then again in Target mode. The Target calculation may be overwriting the Reference results!
+
+### Working Theory
+
+**Hypothesis**: When the i_59 slider changes:
+
+1. ✅ S08 publishes `ref_i_59` correctly
+2. ✅ S13 Reference calculations trigger
+3. ✅ Cooling.js calculates in Reference mode
+4. ❌ **Something triggers a second Target calculation**
+5. ❌ Target calculation overwrites/interferes with Reference results
+6. ❌ User sees no change because Target values dominate
+
+**Possible causes**:
+- A StateManager listener triggering both Target and Reference recalculations
+- S13 calling Cooling.js twice (once for each mode) during the same update cycle
+- Cross-section listener contamination (Anti-Pattern #6)
+- FieldManager routing causing dual triggers
+
+### Workplan for Tomorrow
+
+#### Phase 1: Identify Dual Calculation Trigger
+1. **Add console.trace() to Cooling.js calculateAll()**
+   - Location: Line 461 (start of calculateAll)
+   - Log the call stack to see WHO is calling Cooling.js in each mode
+   - Identify if there's a listener causing dual triggers
+
+2. **Check S13's calculation flow**
+   - Review where S13 calls `CoolingCalculations.calculateAll()`
+   - Verify it's not being called for both modes during same cycle
+   - Check if S13 has listeners that might trigger Target recalculation
+
+3. **Audit StateManager listeners**
+   - Search for listeners on `i_59` and `ref_i_59`
+   - Identify which sections listen and what they trigger
+   - Look for listeners that call calculateAll() without mode awareness
+
+#### Phase 2: Implement Targeted Fix
+Based on Phase 1 findings, likely solutions:
+
+**Option A: If dual trigger from S13**
+- Ensure S13 only calls Cooling.js once per user interaction
+- May need to debounce or sequence calculations properly
+
+**Option B: If listener contamination**
+- Remove or fix listeners causing cross-mode triggering
+- Follow CHEATSHEET Anti-Pattern #6 guidance
+- Ensure listeners are mode-specific
+
+**Option C: If Cooling.js state persistence**
+- Ensure Cooling.js fully resets state between mode calculations
+- May need to isolate Target and Reference state more strictly
+
+#### Phase 3: Validation
+1. Move i_59 slider in Reference mode
+2. Verify only ONE Cooling.js calculation runs (in Reference mode)
+3. Verify ref_d_117 (cooling load) changes appropriately
+4. Test that higher RH% → lower latent load → lower total cooling load
+5. Verify Target mode still works correctly
+
+### Expected Outcome
+
+When working:
+- Moving i_59 slider with S08/S13 in Reference mode
+- Should trigger ONE Cooling.js calculation in Reference mode
+- `ref_d_117` should update to reflect new latent load
+- Higher RH% (e.g., 62%) should show LOWER cooling load than lower RH% (e.g., 45%)
+
+---
