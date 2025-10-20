@@ -1034,8 +1034,119 @@ Based on Phase 1 findings, likely solutions:
 
 When working:
 - Moving i_59 slider with S08/S13 in Reference mode
-- Should trigger ONE Cooling.js calculation in Reference mode
 - `ref_d_117` should update to reflect new latent load
-- Higher RH% (e.g., 62%) should show LOWER cooling load than lower RH% (e.g., 45%)
+- Higher ALLOWABLE RH% (e.g., 70%) should show LOWER cooling load than lower RH% (e.g., 45%)
+  - Higher allowable RH% means occupants tolerate more humidity
+  - Less latent cooling required
+  - Total cooling load decreases
+
+---
+
+## Diagnostic Results - October 20, 2025
+
+After running diagnostics with console.trace() and i_59 value logging, we confirmed the following:
+
+### ✅ What IS Working
+
+1. **S08 Publication** ✅
+   - S08 correctly publishes `ref_i_59` to StateManager when in Reference mode
+   - Confirmed: `ref_i_59 = 77` in StateManager (Logs.md line -93)
+   - ModeManager.setValue() architecture is sound
+
+2. **Cooling.js Mode Awareness** ✅
+   - Cooling.js correctly reads `ref_i_59` when in Reference mode
+   - Confirmed: `mode=reference, i_59_value=77, will use indoorRH=0.77` (Logs.md line -93)
+   - getModeAwareValue() is working correctly
+
+3. **Dual-Engine Pattern** ✅
+   - Both Target and Reference calculations run as designed (not a bug)
+   - Reference calculation uses ref_i_59 (77%)
+   - Target calculation uses i_59 (45%)
+   - No state mixing - each engine reads its own values
+
+4. **Different Calculation Results** ✅
+   - Reference m_129: 15,402 kWh
+   - Target m_129: 10,679 kWh
+   - Values ARE different, calculations ARE running
+
+5. **S13 calculateCoolingSystem()** ✅
+   - Returns d_117 value for both Target and Reference (line 2521)
+   - Reference results stored via storeReferenceResults() (lines 3264, 3277-3285)
+   - Should publish ref_d_117 to StateManager
+
+### ❌ What Is NOT Working
+
+**SYMPTOM**: `ref_d_117` (Reference cooling load) does not change when `ref_i_59` changes
+
+**Expected**: Moving i_59 slider from 45% → 77% should DECREASE ref_d_117 (less latent cooling needed)
+
+**Actual**: ref_d_117 remains unchanged regardless of ref_i_59 value
+
+### 🔍 What We Still Don't Know
+
+**Critical Unknown**: Does ref_d_117 actually get published to StateManager?
+
+We confirmed:
+- ✅ Cooling.js reads ref_i_59 correctly
+- ✅ S13 calculateCoolingSystem() calculates d_117 value
+- ✅ S13 returns d_117 in coolingResults object
+- ✅ storeReferenceResults() should publish it as ref_d_117
+
+**But we have NOT confirmed**:
+- ❓ Does ref_d_117 actually appear in StateManager?
+- ❓ If yes, is the UI reading and displaying it?
+- ❓ If no, where in the chain does it fail to publish?
+
+### 🤔 Theories (Unconfirmed)
+
+**Theory A: d_117 calculation doesn't use i_59**
+- Cooling.js calculates latent load using i_59
+- But d_117 might be calculated from m_129 (mitigated cooling demand)
+- If m_129 doesn't change with i_59, then d_117 won't change either
+- Need to trace: Does i_59 → latent load → d_129 → m_129 → d_117?
+
+**Theory B: Publication failure**
+- calculateCoolingSystem() returns d_117
+- But storeReferenceResults() might not be receiving it correctly
+- Or the publication loop might skip it
+
+**Theory C: UI display issue**
+- ref_d_117 IS published and updated
+- But the UI field doesn't refresh/display the new value
+- Less likely given capacitance fix works fine
+
+### 📋 Next Investigation Steps
+
+1. **Add diagnostic to confirm StateManager publication**
+   ```javascript
+   // In S13 storeReferenceResults(), after line 3285
+   console.log(`[S13] 🔍 Published ref_d_117 =`, allResults.d_117);
+   ```
+
+2. **Check if d_117 calculation depends on i_59**
+   - Review COOLING-TARGET-VARIABLES.json
+   - Trace the formula chain: i_59 → latent load → cooling demand → d_117
+   - Confirm that changing i_59 SHOULD change d_117
+
+3. **Verify m_129 changes with i_59**
+   - Check if ref_m_129 changes when ref_i_59 changes
+   - m_129 is the cooling demand that feeds into d_117 calculation
+   - If m_129 doesn't change, d_117 won't change
+
+4. **Simplify the problem**
+   - Instead of chasing through S13 hall of mirrors
+   - Ask: What Excel formula calculates d_117?
+   - Does that formula include i_59 (directly or indirectly)?
+   - If not, this might be a fundamental calculation gap
+
+### 🎯 Current Status
+
+**We are NOT closer to solving this yet** because we have confirmed the architecture works (publication, mode-awareness, dual-engine) but haven't identified:
+
+1. WHERE the calculation chain breaks (if at all)
+2. WHETHER d_117 is even supposed to change with i_59
+3. WHAT the actual formula dependencies are
+
+**Next session should focus on**: Understanding the FORMULA, not the architecture. Use COOLING-TARGET-VARIABLES.json to trace the dependency chain from i_59 to d_117.
 
 ---
