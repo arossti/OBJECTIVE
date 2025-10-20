@@ -131,7 +131,7 @@ window.TEUI.SectionModules.sect10 = (function () {
 
       // ✅ REFERENCE MODE OVERRIDES: Only values that should differ from Target
       // These represent building code reference values vs actual building values
-      this.state.d_73 = "5.00"; // Reference: Smaller window area
+      //this.state.d_73 = "5.00"; // Reference: Smaller window area (test, commented out for now)
       // ✅ REFERENCE ORIENTATION DEFAULTS: Match FieldDefinition defaults for 100% user flexibility
       this.state.e_73 = "Average"; // Reference: Row 73 - Average (matches FieldDefinition)
       this.state.e_74 = "North"; // Reference: Row 74 - North (matches FieldDefinition)
@@ -140,13 +140,13 @@ window.TEUI.SectionModules.sect10 = (function () {
       this.state.e_77 = "West"; // Reference: Row 77 - West (matches FieldDefinition)
       this.state.e_78 = "Skylight"; // Reference: Row 78 - Skylight (matches FieldDefinition)
 
-      // ✅ REFERENCE PERFORMANCE OVERRIDES: Better performance for Reference model
+      // ✅ REFERENCE PERFORMANCE OVERRIDES: Lower performance for Reference model represents code minimums
       this.state.f_73 = "0.35"; // Reference: Better shading factor
       this.state.h_73 = "0"; // Reference: No user adjustments
-      this.state.d_74 = "60.00"; // Reference: Smaller window area
+      //this.state.d_74 = "60.00"; // Reference: Smaller window area (test, commented out for now)
       this.state.f_74 = "0.35"; // Reference: Better shading factor
       this.state.h_74 = "0"; // Reference: No user adjustments
-      this.state.d_75 = "2.50"; // Reference: Smaller window area
+      //this.state.d_75 = "2.50"; // Reference: Smaller window area (test, commented out for now)
       this.state.f_75 = "0.35"; // Reference: Better shading factor
       this.state.h_75 = "0"; // Reference: No user adjustments
       this.state.f_76 = "0.35"; // Reference: Better shading factor
@@ -420,9 +420,6 @@ window.TEUI.SectionModules.sect10 = (function () {
 
     // Update displayed calculated values based on current mode (Target vs Reference)
     updateCalculatedDisplayValues: function () {
-      console.log(
-        `[S10DISPLAY] updateCalculatedDisplayValues() called in ${this.currentMode} mode`,
-      );
       if (!window.TEUI?.StateManager) return;
 
       // All calculated fields that need mode-aware display updates
@@ -492,13 +489,6 @@ window.TEUI.SectionModules.sect10 = (function () {
           valueToDisplay = TargetState.getValue(fieldId);
         }
 
-        // 🔍 DEBUG: Special logging for g_80 to understand the issue
-        if (fieldId === "g_80") {
-          console.log(
-            `[S10DISPLAY] g_80 DEBUG: mode=${this.currentMode}, valueToDisplay=${valueToDisplay}`,
-          );
-        }
-
         if (valueToDisplay !== null && valueToDisplay !== undefined) {
           const element = document.querySelector(
             `[data-field-id="${fieldId}"]`,
@@ -527,9 +517,6 @@ window.TEUI.SectionModules.sect10 = (function () {
             }
 
             element.textContent = formattedValue;
-            console.log(
-              `[S10DISPLAY] Display (${this.currentMode}) ${fieldId} = ${formattedValue}`,
-            );
           }
         }
       });
@@ -922,7 +909,7 @@ window.TEUI.SectionModules.sect10 = (function () {
         j: {
           fieldId: "j_73",
           type: "calculated",
-          value: "1.55%",
+          value: "1.55%", // DEFAULTS ANTIPATTERN if values are calculated, why do we tell them what they should be here? 
           section: "envelopeRadiantGains",
           dependencies: ["i_73", "h_79"],
         },
@@ -2112,6 +2099,32 @@ window.TEUI.SectionModules.sect10 = (function () {
       setFieldValue("j_79", heatingGains > 0 ? "1" : "0");
       setFieldValue("l_79", coolingGains > 0 ? "1" : "0");
 
+      // ✅ FIX: Calculate percentages for rows 73-78 (match Target mode logic)
+      for (let i = 73; i <= 78; i++) {
+        const rowStr = i.toString();
+        const heatingGain =
+          window.TEUI.parseNumeric(
+            window.TEUI.StateManager.getValue(`ref_i_${rowStr}`),
+          ) || 0;
+        const coolingGain =
+          window.TEUI.parseNumeric(
+            window.TEUI.StateManager.getValue(`ref_k_${rowStr}`),
+          ) || 0;
+
+        // Calculate percentages (as decimals: 0.25 = 25%)
+        const heatingPercentDecimal =
+          heatingGains !== 0 ? heatingGain / heatingGains : 0;
+        const coolingPercentDecimal =
+          coolingGains !== 0 ? coolingGain / coolingGains : 0;
+
+        const jFieldId = `j_${rowStr}`;
+        const lFieldId = `l_${rowStr}`;
+
+        // Store percentage values with ref_ prefix
+        setFieldValue(jFieldId, heatingPercentDecimal);
+        setFieldValue(lFieldId, coolingPercentDecimal);
+      }
+
       // console.log(`[S10REF] Subtotals: Heat=${heatingGains.toFixed(2)}, Cool=${coolingGains.toFixed(2)}`);
     } catch (_error) {
       console.error("S10: Error calculating Reference subtotals:", _error);
@@ -2133,9 +2146,6 @@ window.TEUI.SectionModules.sect10 = (function () {
       const internalGains = getGlobalNumericValue("ref_i_71") || 0;
 
       const totalGains = solarGains + internalGains;
-      console.log(
-        `[S10REF] Utilization calc: ref_i_71=${internalGains}, ref_i_79=${solarGains}, totalGains=${totalGains}`,
-      );
 
       // Store total gains in e_80, e_81 (same as Target logic)
       setFieldValue("e_80", totalGains);
@@ -2147,7 +2157,6 @@ window.TEUI.SectionModules.sect10 = (function () {
       const utilizationMethod =
         ModeManager.getCurrentState().getValue("d_80") || "NRC 40%";
       let utilizationFactor = 0.4; // Default to 40%
-      console.log(`[S10REF] Using utilization method: ${utilizationMethod}`);
 
       if (utilizationMethod === "NRC 0%") {
         utilizationFactor = 0;
@@ -2184,9 +2193,6 @@ window.TEUI.SectionModules.sect10 = (function () {
       }
 
       const usableGains = totalGains * utilizationFactor;
-      console.log(
-        `[S10REF] Final calc: utilizationFactor=${utilizationFactor}, usableGains=${usableGains}`,
-      );
 
       // ✅ CRITICAL: Store g_80 (utilization factor percentage) and i_80 (usable gains)
       setFieldValue("g_80", utilizationFactor);
@@ -2227,9 +2233,12 @@ window.TEUI.SectionModules.sect10 = (function () {
       setFieldValue("g_81", phUtilizationFactor);
       setFieldValue("i_81", phReferenceGains);
 
-      console.log(
-        `[S10REF] Complete: g_80=${utilizationFactor}, g_81=${phUtilizationFactor}, i_80=${usableGains}, i_81=${phReferenceGains}`,
-      );
+      //=====================================================================
+      // PART 3: Calculate unusable gains based on selected method (row 80)
+      //=====================================================================
+      const unusedGains = totalGains - usableGains;
+      // ✅ FIX: Calculate i_82 (Net UN-usable Htg. Gains) for Reference mode
+      setFieldValue("i_82", unusedGains);
     } catch (_error) {
       console.error(
         "S10: Error calculating Reference utilization factors:",
@@ -2242,16 +2251,47 @@ window.TEUI.SectionModules.sect10 = (function () {
       setFieldValue("e_81", 0);
       setFieldValue("g_81", 0);
       setFieldValue("i_81", 0);
+      setFieldValue("i_82", 0);
     }
   }
 
   /**
    * Store Reference results for downstream sections
+   * ✅ FIX: Publish Reference area values for S11 and S12 consumption
    */
   function storeReferenceResults() {
-    // All Reference values are already stored in StateManager with ref_ prefix
-    // This function exists for consistency with the architectural pattern
-    // console.log("[S10REF] Reference results stored for downstream sections");
+    if (!window.TEUI?.StateManager) return;
+
+    // Mapping of S10 areas to S11 equivalents (window/door areas)
+    // S10: d_73-d_78 → S11: d_88-d_93
+    const s10ToS11Map = {
+      d_73: "d_88", // Doors
+      d_74: "d_89", // Window North
+      d_75: "d_90", // Window East
+      d_76: "d_91", // Window South
+      d_77: "d_92", // Window West
+      d_78: "d_93", // Skylights
+    };
+
+    // Publish Reference area values with BOTH S10 and S11 field IDs
+    // This allows S11 to sync (ref_d_73-ref_d_78) and S12 to read directly (ref_d_88-ref_d_93)
+    Object.entries(s10ToS11Map).forEach(([s10Field, s11Field]) => {
+      const value = ReferenceState.getValue(s10Field);
+      if (value !== null && value !== undefined) {
+        // Publish with S10 field ID (for S11 sync compatibility)
+        window.TEUI.StateManager.setValue(
+          `ref_${s10Field}`,
+          value,
+          "calculated",
+        );
+        // ✅ FIX: Also publish with S11 field ID (for S12 direct reads)
+        window.TEUI.StateManager.setValue(
+          `ref_${s11Field}`,
+          value,
+          "calculated",
+        );
+      }
+    });
   }
 
   /**

@@ -200,6 +200,10 @@ window.TEUI.SectionModules.sect12 = (function () {
       this.refreshUI();
       // Display-only: update UI without triggering calculations
       this.updateCalculatedDisplayValues();
+
+      // ✅ FIX: Re-evaluate conditional editability after mode switch
+      // This ensures g_109 is properly editable/locked based on mode and d_108 value
+      handleConditionalEditability();
     },
 
     // Update displayed calculated values based on current mode
@@ -290,15 +294,6 @@ window.TEUI.SectionModules.sect12 = (function () {
           }
         }
       });
-
-      // [S12DB] Debug g_104 display value for mode switching
-      const g104Display =
-        this.currentMode === "reference"
-          ? window.TEUI?.StateManager?.getValue("ref_g_104")
-          : window.TEUI?.StateManager?.getValue("g_104");
-      console.log(
-        `[S12DB] g_104 DISPLAY (${this.currentMode}): ${g104Display}`,
-      );
 
       console.log(
         `[Section12] Calculated display values updated for ${this.currentMode} mode`,
@@ -1514,32 +1509,38 @@ window.TEUI.SectionModules.sect12 = (function () {
     // Get U-values directly where available, otherwise calculate from RSI (1/RSI)
     // Prefer S11's sovereign state (robot fingers) to avoid reliance on StateManager storage
     function getUValueFromS11(componentId, useReference) {
-      try {
-        const s11 = window.TEUI?.sect11;
-        const state = useReference ? s11?.ReferenceState : s11?.TargetState;
-        if (state?.getValue) {
-          const gVal = window.TEUI.parseNumeric(
-            state.getValue(`g_${componentId}`),
-          );
-          if (!isNaN(gVal) && isFinite(gVal) && gVal > 0) return gVal;
-          const fVal = window.TEUI.parseNumeric(
-            state.getValue(`f_${componentId}`),
-          );
-          if (!isNaN(fVal) && isFinite(fVal) && fVal > 0) return 1 / fVal;
-        }
-      } catch (e) {
-        // fall through to global fallback
+      // ✅ STRICT: Read from S11 sovereign state without fallbacks per CHEATSHEET anti-pattern guidance
+      const s11 = window.TEUI?.SectionModules?.sect11;
+
+      if (!s11) {
+        console.warn(
+          `[S12] S11 module not loaded for component ${componentId} - recalc will occur when S11 initializes`
+        );
+        return 0; // Return 0 until S11 loads (listeners will trigger recalc)
       }
-      // Fallback to global StateManager values
-      const gGlobal = window.TEUI.parseNumeric(
-        getGlobalNumericValue(`g_${componentId}`),
-      );
-      if (!isNaN(gGlobal) && isFinite(gGlobal) && gGlobal > 0) return gGlobal;
-      const fGlobal = window.TEUI.parseNumeric(
-        getGlobalNumericValue(`f_${componentId}`),
-      );
-      if (!isNaN(fGlobal) && isFinite(fGlobal) && fGlobal > 0)
-        return 1 / fGlobal;
+
+      const state = useReference ? s11.ReferenceState : s11.TargetState;
+      if (!state?.getValue) {
+        console.error(
+          `[S12] CRITICAL: S11 ${useReference ? "Reference" : "Target"}State missing for g_${componentId}`
+        );
+        return 0;
+      }
+
+      // Try U-value first (g_XX)
+      const gVal = window.TEUI.parseNumeric(state.getValue(`g_${componentId}`));
+      if (!isNaN(gVal) && isFinite(gVal) && gVal > 0) {
+        return gVal;
+      }
+
+      // Try RSI conversion (f_XX → 1/RSI)
+      const fVal = window.TEUI.parseNumeric(state.getValue(`f_${componentId}`));
+      if (!isNaN(fVal) && isFinite(fVal) && fVal > 0) {
+        return 1 / fVal;
+      }
+
+      // NO FALLBACK to StateManager - missing value indicates initialization timing or data issue
+      // Listeners ensure recalc when values become available
       return 0;
     }
 
@@ -1571,43 +1572,30 @@ window.TEUI.SectionModules.sect12 = (function () {
     const d94 = parseFloat(getGlobalNumericValue("d_94"));
     const d95 = parseFloat(getGlobalNumericValue("d_95"));
 
-    // ✅ CRITICAL: Choose TB% (d_97) by calculation pass, NOT S11's UI mode
+    // ✅ STRICT: Read TB% from S11 sovereign state without fallbacks
     // Reference pass → S11.ReferenceState.d_97; Target pass → S11.TargetState.d_97
-    // Fallbacks: StateManager ref_d_97/d_97, then local getNumericValue("d_97")
-    let d97_tbPenaltyPercent;
-    try {
-      const s11 = window.TEUI?.sect11;
-      if (s11?.ReferenceState?.getValue && s11?.TargetState?.getValue) {
-        if (useRef) {
-          d97_tbPenaltyPercent = window.TEUI.parseNumeric(
-            s11.ReferenceState.getValue("d_97"),
-          );
-          if (isNaN(d97_tbPenaltyPercent)) {
-            d97_tbPenaltyPercent = window.TEUI.parseNumeric(
-              getGlobalNumericValue("ref_d_97"),
-            );
-          }
-        } else {
-          d97_tbPenaltyPercent = window.TEUI.parseNumeric(
-            s11.TargetState.getValue("d_97"),
-          );
-          if (isNaN(d97_tbPenaltyPercent)) {
-            d97_tbPenaltyPercent = window.TEUI.parseNumeric(
-              getGlobalNumericValue("d_97"),
-            );
-          }
-        }
+    let d97_tbPenaltyPercent = 50; // Default only if S11 not loaded yet
+
+    const s11 = window.TEUI?.SectionModules?.sect11;
+    if (s11?.ReferenceState?.getValue && s11?.TargetState?.getValue) {
+      const stateValue = window.TEUI.parseNumeric(
+        useRef
+          ? s11.ReferenceState.getValue("d_97")
+          : s11.TargetState.getValue("d_97")
+      );
+
+      if (!isNaN(stateValue) && isFinite(stateValue)) {
+        d97_tbPenaltyPercent = stateValue;
       } else {
-        d97_tbPenaltyPercent = window.TEUI.parseNumeric(
-          useRef
-            ? getGlobalNumericValue("ref_d_97")
-            : getGlobalNumericValue("d_97"),
+        console.warn(
+          `[S12] TB% missing from S11 ${useRef ? "Reference" : "Target"}State, using default 50%`
         );
       }
-    } catch (e) {
-      d97_tbPenaltyPercent = window.TEUI.parseNumeric(getNumericValue("d_97"));
+    } else {
+      console.warn(
+        `[S12] S11 module not loaded for TB%, using default 50% - recalc will occur when S11 initializes`
+      );
     }
-    if (isNaN(d97_tbPenaltyPercent)) d97_tbPenaltyPercent = 50;
 
     // IMPORTANT: d_97 comes from Section 11's slider which stores percentage as a whole number (e.g., 20 for 20%)
     // We must divide by 100 to get the decimal factor (0.2) before using in calculations
@@ -2373,7 +2361,7 @@ window.TEUI.SectionModules.sect12 = (function () {
             "g_104",
           ].includes(fieldId)
         ) {
-          console.log(`[S12DB] STORED for S15: ref_${fieldId}=${value}`);
+          // S15 dependencies stored
         }
       }
     });
@@ -2554,13 +2542,23 @@ window.TEUI.SectionModules.sect12 = (function () {
       g109Cell.classList.remove("disabled-input", "ghosted");
       g109Cell.style.backgroundColor = "#f0f8ff";
       g109Cell.style.color = "#000";
-      // If the cell is empty or N/A when switching to Measured, set it to a sensible default.
+
+      // ✅ FIX: Read from current state instead of hardcoding Target default
+      const currentValue = ModeManager.getValue("g_109");
+
+      // If the cell is empty or N/A when switching to Measured, restore from state or use mode-specific default
       if (
         !g109Cell.textContent.trim() ||
         g109Cell.textContent.trim() === "N/A"
       ) {
-        g109Cell.textContent = "1.50";
-        ModeManager.setValue("g_109", "1.50", "calculated");
+        // Use value from state, or fallback to mode-specific default (1.50 Target, 2.00 Reference)
+        const displayValue = currentValue || (ModeManager.currentMode === "reference" ? "2.00" : "1.50");
+        g109Cell.textContent = displayValue;
+
+        // Only setValue if we're using a fallback (not already in state)
+        if (!currentValue) {
+          ModeManager.setValue("g_109", displayValue, "calculated");
+        }
       }
     } else {
       g109Cell.setAttribute("contenteditable", "false");
@@ -2652,7 +2650,6 @@ window.TEUI.SectionModules.sect12 = (function () {
       );
       return;
     }
-    console.log("[S12] 🚀 INITIALIZING CLIMATE LISTENERS");
     const externalDependencies = [
       // Section 11 Inputs influencing U-Values (g_101, g_102) and Areas (d_101, d_102)
       "d_85",
@@ -2689,7 +2686,9 @@ window.TEUI.SectionModules.sect12 = (function () {
       "j_19", // Climate Zone (for N-Factor)
       "h_21", // Capacitance Setting (for k_104)
     ];
-    // Include Reference-prefixed U/RSI to ensure Reference-only updates trigger S12
+    // ✅ OPTIMIZED: Listen only to Reference U-values (not RSI) per g_101 formula needs
+    // Formula: g_101 = (SUMPRODUCT(g_85:g_95, d_85:d_95) / SUM(d_85:d_95)) × (1 + d_97/100)
+    // We read U-values from S11.ReferenceState (sovereign), so only listen to published values for recalc trigger
     const referenceUValueDeps = [
       "ref_g_85",
       "ref_g_86",
@@ -2702,17 +2701,8 @@ window.TEUI.SectionModules.sect12 = (function () {
       "ref_g_93",
       "ref_g_94",
       "ref_g_95",
-      "ref_f_85",
-      "ref_f_86",
-      "ref_f_87",
-      "ref_f_88",
-      "ref_f_89",
-      "ref_f_90",
-      "ref_f_91",
-      "ref_f_92",
-      "ref_f_93",
-      "ref_f_94",
-      "ref_f_95",
+      // Note: ref_f_XX (RSI) listeners removed - S12 reads U-values directly from S11.ReferenceState
+      // S11 converts RSI→U internally, so we don't need to listen to both
       "ref_d_97", // Reference TB% when stored with prefix
     ];
     // Ensure both Target and Reference TB% changes trigger S12
@@ -2744,7 +2734,6 @@ window.TEUI.SectionModules.sect12 = (function () {
         depId,
         (newValue, oldValue, eventFieldId, state) => {
           if (eventFieldId === depId) {
-            console.log(`[S12] Listener: ${depId} changed → recalc`);
             calculateAll();
           }
         },

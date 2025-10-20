@@ -5,6 +5,7 @@
 This guide explains how to add Excel validation tooltips to any section of the TEUI app. The tooltip system uses a **centralized architecture** where all tooltip data is managed in one place.
 
 **Architecture:** Single Source of Truth Pattern
+
 - **Tooltip Data:** `4011-TooltipManager.js` (central repository)
 - **Field Flags:** Section files (e.g., `4012-Section02.js`)
 - **Rendering:** Automatic via TooltipManager
@@ -28,6 +29,7 @@ python3 extract-validation.py "/path/to/TEUIv3042.xlsx" --comprehensive
 This generates `data/validation-tooltips.json` with all tooltips.
 
 **Comprehensive extraction completed** (Oct 8, 2025):
+
 - ✅ Scanned rows 12-145, columns A-P
 - ✅ Found 107 total tooltips from Excel
 - ✅ Mapped 104 tooltips to field_ids
@@ -49,21 +51,24 @@ This generates `data/validation-tooltips.json` with all tooltips.
 const VALIDATION_TOOLTIPS = {
   // ... existing tooltips ...
 
-  "your_field_id": {
-    "cell": "D99",  // Excel cell reference
-    "title": "Tooltip Title from Excel",
-    "message": "Tooltip message from Excel Data Validation_x000a_Use _x000a_ for newlines"
+  your_field_id: {
+    cell: "D99", // Excel cell reference
+    title: "Tooltip Title from Excel",
+    message:
+      "Tooltip message from Excel Data Validation_x000a_Use _x000a_ for newlines",
   },
 };
 ```
 
 **Important Notes:**
+
 - Use your app's field ID (e.g., `d_99`, `h_42`) as the key
 - Copy title/message exactly from Excel Data Validation
 - Keep `_x000a_` for newlines (automatically converted to `<br>`)
 - Add comma after each entry (except the last one)
 
 **Example from existing data:**
+
 ```javascript
 "h_14": {
   "cell": "H14",
@@ -81,6 +86,7 @@ const VALIDATION_TOOLTIPS = {
 **Find your field definitions** in the `sectionRows` object and add `tooltip: true`:
 
 **Before:**
+
 ```javascript
 h: {
   fieldId: "h_99",
@@ -91,6 +97,7 @@ h: {
 ```
 
 **After:**
+
 ```javascript
 h: {
   fieldId: "h_99",
@@ -138,12 +145,14 @@ function onSectionRendered() {
 ### Single Source of Truth (Current Implementation) ✅
 
 **Advantages:**
+
 - ✅ One place to update all tooltips
 - ✅ Easy to regenerate from Excel (just re-run script)
 - ✅ No duplication across section files
 - ✅ Consistent tooltip behavior app-wide
 
 **Structure:**
+
 ```
 4011-TooltipManager.js (CENTRAL DATA)
     ↓
@@ -169,6 +178,7 @@ h: {
 ```
 
 **Why not?**
+
 - ❌ Can't regenerate from Excel easily
 - ❌ Data duplicated across sections
 - ❌ Hard to maintain consistency
@@ -210,10 +220,10 @@ h: {
 const VALIDATION_TOOLTIPS = {
   // ... existing tooltips ...
 
-  "your_missing_field": {
-    "cell": "D42",
-    "title": "Title from Excel",
-    "message": "Message from Excel_x000a_Second line here"
+  your_missing_field: {
+    cell: "D42",
+    title: "Title from Excel",
+    message: "Message from Excel_x000a_Second line here",
   },
 
   // ... more tooltips ...
@@ -260,15 +270,15 @@ const VALIDATION_TOOLTIPS = {
   // ... existing S02-S07 tooltips ...
 
   // Section 08 tooltips
-  "d_61": {
-    "cell": "D61",
-    "title": "Wall Assembly Type",
-    "message": "Select the primary wall construction type..."
+  d_61: {
+    cell: "D61",
+    title: "Wall Assembly Type",
+    message: "Select the primary wall construction type...",
   },
-  "d_62": {
-    "cell": "D62",
-    "title": "RSI Value",
-    "message": "Enter the effective thermal resistance..."
+  d_62: {
+    cell: "D62",
+    title: "RSI Value",
+    message: "Enter the effective thermal resistance...",
   },
   // ... more S08 fields ...
 };
@@ -340,15 +350,19 @@ Refresh browser, hover over Section 08 fields, tooltips should appear.
 **Common issues:**
 
 1. **Element not found**
+
    ```
    [TooltipManager] Element not found for field: d_61
    ```
+
    - Solution: Field may not be rendered yet. Increase timeout from 300ms to 500ms.
 
 2. **No tooltip data**
+
    ```
    [TooltipManager] No tooltip data for field: d_61
    ```
+
    - Solution: Add field to `VALIDATION_TOOLTIPS` in TooltipManager.js
 
 3. **Tooltip doesn't show on hover**
@@ -373,21 +387,23 @@ Then manually add any new tooltips to `4011-TooltipManager.js`.
 
 ## Coverage Status
 
-| Section | Fields with Tooltips | Total Fields | Status | Notes |
-|---------|---------------------|--------------|--------|-------|
-| S02 - Building Info | 13 | 13 | ✅ 100% | Complete - deployed |
-| S03 - Climate | 6 | 6 | ✅ 100% | Complete - deployed |
-| S04 - Energy | 0 | ~10 | ⏳ Available | Tooltips in manager, need flags |
-| S05 - Emissions | 0 | ~3 | ⏳ Available | Tooltips in manager, need flags |
-| S06 - Renewable | 0 | ~2 | ⏳ Available | Tooltips in manager, need flags |
-| S07 - Water | 0 | ~8 | ⏳ Available | Tooltips in manager, need flags |
-| S08+ Envelope | 0 | ~30 | ⏳ Available | Tooltips in manager, need flags |
+| Section             | Fields with Tooltips | Total Fields | Status       | Notes                           |
+| ------------------- | -------------------- | ------------ | ------------ | ------------------------------- |
+| S02 - Building Info | 13                   | 13           | ✅ 100%      | Complete - deployed             |
+| S03 - Climate       | 6                    | 6            | ✅ 100%      | Complete - deployed             |
+| S04 - Energy        | 0                    | ~10          | ⏳ Available | Tooltips in manager, need flags |
+| S05 - Emissions     | 0                    | ~3           | ⏳ Available | Tooltips in manager, need flags |
+| S06 - Renewable     | 0                    | ~2           | ⏳ Available | Tooltips in manager, need flags |
+| S07 - Water         | 0                    | ~8           | ⏳ Available | Tooltips in manager, need flags |
+| S08+ Envelope       | 0                    | ~30          | ⏳ Available | Tooltips in manager, need flags |
 
 **Completed Sections:**
+
 - ✅ **S02** - 13 fields (d_12-16, h_12-17, l_12-16, i_16-17)
 - ✅ **S03** - 6 fields (d_19, h_19-21, i_21, m_19)
 
 **Ready for Implementation** (tooltips already extracted):
+
 - ⏳ **S04** - Energy fields (d_27-32, h_35, l_27-33)
 - ⏳ **S05** - Emissions (d_39, i_41)
 - ⏳ **S06** - Renewable (m_43)

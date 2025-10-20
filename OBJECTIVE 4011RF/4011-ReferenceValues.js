@@ -190,7 +190,7 @@ TEUI.ReferenceValues = {
     f_85: "5.30", // Min. Permissible RSI
     f_86: "4.10", // Min. Permissible RSI
     f_87: "6.60", // Min. Permissible RSI
-    g_88: "2.560", // Min. Permissible U-Value
+    g_88: "1.990", // Min. Permissible U-Value
     g_89: "2.560", // Min. Permissible U-Value
     g_90: "2.560", // Min. Permissible U-Value
     g_91: "2.560", // Min. Permissible U-Value

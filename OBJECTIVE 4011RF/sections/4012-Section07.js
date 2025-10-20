@@ -905,7 +905,9 @@ window.TEUI.SectionModules.sect07 = (function () {
     let gasVolume = 0;
     let oilVolume = 0;
     if (systemType === "Gas") {
-      const conversionFactor = 10.3321;
+      // ✅ Excel parity: E51=J52*(1-D53)/(0.0373*277.7778*K52)
+      // 0.0373 GJ/m³ × 277.7778 kWh/GJ = 10.357 kWh/m³
+      const conversionFactor = 0.0373 * 277.7778;
       gasVolume =
         afue > 0 ? netDemandAfterRecovery / (conversionFactor * afue) : 0;
       console.log(

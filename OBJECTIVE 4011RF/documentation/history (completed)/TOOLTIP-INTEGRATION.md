@@ -15,13 +15,15 @@ Add to `index.html` (after TEUI namespace is initialized):
   // Load validation tooltips from extracted JSON
   window.TEUI = window.TEUI || {};
 
-  fetch('data/validation-tooltips.json')
-    .then(response => response.json())
-    .then(data => {
+  fetch("data/validation-tooltips.json")
+    .then((response) => response.json())
+    .then((data) => {
       window.TEUI.ValidationTooltips = data;
       console.log(`✅ Loaded ${Object.keys(data).length} validation tooltips`);
     })
-    .catch(err => console.warn('⚠️ Could not load validation tooltips:', err));
+    .catch((err) =>
+      console.warn("⚠️ Could not load validation tooltips:", err),
+    );
 </script>
 ```
 
@@ -32,6 +34,7 @@ Add to `index.html` (after TEUI namespace is initialized):
 In your section files (e.g., `4012-Section02.js`), add `tooltip: true` flag to fields that should display tooltips:
 
 ### Before:
+
 ```javascript
 d: {
   fieldId: "d_12",
@@ -44,6 +47,7 @@ d: {
 ```
 
 ### After:
+
 ```javascript
 d: {
   fieldId: "d_12",
@@ -81,9 +85,9 @@ Modify your field rendering functions to automatically apply tooltips when the `
 
 ```javascript
 function createDropdownField(cellConfig) {
-  const select = document.createElement('select');
+  const select = document.createElement("select");
   select.id = cellConfig.fieldId;
-  select.className = 'form-select';
+  select.className = "form-select";
 
   // ... add options ...
 
@@ -100,10 +104,10 @@ function createDropdownField(cellConfig) {
 
 ```javascript
 function createTextInput(cellConfig) {
-  const input = document.createElement('input');
-  input.type = 'text';
+  const input = document.createElement("input");
+  input.type = "text";
   input.id = cellConfig.fieldId;
-  input.className = 'form-control';
+  input.className = "form-control";
 
   // Apply tooltip if flagged
   if (cellConfig.tooltip) {
@@ -133,7 +137,7 @@ function applyTooltipToElement(element, fieldId, tooltipConfig) {
   // Use custom tooltip or load from JSON
   if (tooltipConfig === true) {
     tooltipData = window.TEUI.ValidationTooltips?.[fieldId];
-  } else if (typeof tooltipConfig === 'object') {
+  } else if (typeof tooltipConfig === "object") {
     tooltipData = tooltipConfig;
   }
 
@@ -143,24 +147,24 @@ function applyTooltipToElement(element, fieldId, tooltipConfig) {
   }
 
   // Clean Excel newlines (_x000a_ → <br>)
-  const cleanMessage = (tooltipData.message || '')
-    .replace(/_x000a_/g, '<br>')
+  const cleanMessage = (tooltipData.message || "")
+    .replace(/_x000a_/g, "<br>")
     .trim();
 
   if (!cleanMessage) return;
 
   // Apply Bootstrap popover
-  element.setAttribute('data-bs-toggle', 'popover');
-  element.setAttribute('data-bs-trigger', 'hover focus');
-  element.setAttribute('data-bs-placement', 'top');
-  element.setAttribute('data-bs-html', 'true');
-  element.setAttribute('data-bs-title', tooltipData.title || 'Info');
-  element.setAttribute('data-bs-content', cleanMessage);
+  element.setAttribute("data-bs-toggle", "popover");
+  element.setAttribute("data-bs-trigger", "hover focus");
+  element.setAttribute("data-bs-placement", "top");
+  element.setAttribute("data-bs-html", "true");
+  element.setAttribute("data-bs-title", tooltipData.title || "Info");
+  element.setAttribute("data-bs-content", cleanMessage);
 
   // Initialize Bootstrap popover
   new bootstrap.Popover(element, {
     delay: { show: 500, hide: 100 },
-    container: 'body'
+    container: "body",
   });
 }
 ```
@@ -177,9 +181,9 @@ function initializeSection02() {
 
   // Initialize all Bootstrap popovers
   const popoverTriggerList = [].slice.call(
-    document.querySelectorAll('[data-bs-toggle="popover"]')
+    document.querySelectorAll('[data-bs-toggle="popover"]'),
   );
-  popoverTriggerList.map(popoverTriggerEl => {
+  popoverTriggerList.map((popoverTriggerEl) => {
     return new bootstrap.Popover(popoverTriggerEl);
   });
 }
@@ -248,13 +252,13 @@ function renderCell(cellConfig, columnKey) {
   let cellElement;
 
   switch (cellConfig.type) {
-    case 'dropdown':
+    case "dropdown":
       cellElement = createDropdownField(cellConfig);
       break;
-    case 'text':
+    case "text":
       cellElement = createTextInput(cellConfig);
       break;
-    case 'year_slider':
+    case "year_slider":
       cellElement = createSlider(cellConfig);
       break;
     // ... other types ...
@@ -283,7 +287,7 @@ Add to your CSS file for better tooltip appearance:
 }
 
 .popover-header {
-  background-color: #4A96BA;
+  background-color: #4a96ba;
   color: white;
   font-weight: 600;
 }
@@ -310,8 +314,8 @@ For fields where hover on the input isn't intuitive, add an info icon:
 
 ```javascript
 function createFieldWithInfoIcon(cellConfig) {
-  const container = document.createElement('div');
-  container.className = 'd-flex align-items-center gap-1';
+  const container = document.createElement("div");
+  container.className = "d-flex align-items-center gap-1";
 
   // Create the input field
   const input = createInputField(cellConfig);
@@ -319,18 +323,22 @@ function createFieldWithInfoIcon(cellConfig) {
 
   // Add info icon if tooltip exists
   if (cellConfig.tooltip) {
-    const tooltipData = cellConfig.tooltip === true
-      ? window.TEUI.ValidationTooltips?.[cellConfig.fieldId]
-      : cellConfig.tooltip;
+    const tooltipData =
+      cellConfig.tooltip === true
+        ? window.TEUI.ValidationTooltips?.[cellConfig.fieldId]
+        : cellConfig.tooltip;
 
     if (tooltipData) {
-      const icon = document.createElement('i');
-      icon.className = 'bi bi-info-circle-fill text-primary';
-      icon.style.cursor = 'pointer';
-      icon.setAttribute('data-bs-toggle', 'popover');
-      icon.setAttribute('data-bs-html', 'true');
-      icon.setAttribute('data-bs-title', tooltipData.title);
-      icon.setAttribute('data-bs-content', tooltipData.message.replace(/_x000a_/g, '<br>'));
+      const icon = document.createElement("i");
+      icon.className = "bi bi-info-circle-fill text-primary";
+      icon.style.cursor = "pointer";
+      icon.setAttribute("data-bs-toggle", "popover");
+      icon.setAttribute("data-bs-html", "true");
+      icon.setAttribute("data-bs-title", tooltipData.title);
+      icon.setAttribute(
+        "data-bs-content",
+        tooltipData.message.replace(/_x000a_/g, "<br>"),
+      );
 
       new bootstrap.Popover(icon);
       container.appendChild(icon);
@@ -360,6 +368,7 @@ function createFieldWithInfoIcon(cellConfig) {
 Fields ready for `tooltip: true` flag:
 
 **Section 02:**
+
 - `d_12` - Major Occupancy
 - `d_13` - Reference Standard
 - `d_14` - Actual/Target Use
@@ -373,9 +382,11 @@ Fields ready for `tooltip: true` flag:
 - `l_12`, `l_13`, `l_14`, `l_15`, `l_16` - Energy costs
 
 **Section 03:**
+
 - `d_19`, `h_19`, `h_20`, `h_21`, `i_21`, `m_19` - Climate fields
 
 **Section 04-07:**
+
 - See [validation-tooltips.json](../data/validation-tooltips.json) for complete list
 
 ---
