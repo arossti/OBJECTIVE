@@ -459,6 +459,7 @@ window.TEUI.CoolingCalculations = (function () {
 
     state.calculating = true;
     console.log(`[Cooling] 🚀 Starting cooling calculations (mode=${mode})...`);
+    console.trace(`[Cooling] 🔍 TRACE: Who called calculateAll("${mode}")?`);
 
     // Store current mode for mode-aware reads/writes
     state.currentMode = mode;
