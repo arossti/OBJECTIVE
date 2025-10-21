@@ -236,4 +236,4 @@ Bug is fixed when:
 **Priority**: Medium (works after priming, not blocking)
 **Date Created**: 2025-01-21
 **Last Updated**: 2025-01-21
-**Clean Baseline Commit**: `0d39fa1` - "📝 docs: Add S12-DEBUG.md - k_104 Reference mode display bug"
+**Clean Baseline Commit**: `e575b6c` - "📝 docs: Add S12-DEBUG.md - k_104 Reference mode display bug"
