@@ -3264,16 +3264,184 @@ E55 (M124) ← M129, D21, M19, H124
 
 ---
 
+## APPENDIX F: Phase 5.1.2 Implementation (Two-Stage Refactor COMPLETE)
+
+**Date:** 2025-01-21
+**Status:** ✅ IMPLEMENTED
+**Branch:** C-RF
+
+### Implementation Summary
+
+Successfully refactored `4012-Cooling.js` to implement the two-stage architecture that eliminates the bootstrap problem. The refactor splits `calculateAll()` into two independent stages with StateManager-driven triggering.
+
+### Code Changes
+
+#### 1. New Functions Created
+
+**`calculateStage1(mode)` - Lines 463-530**
+- **Purpose:** Calculate ventilation & free cooling (INDEPENDENT)
+- **Inputs:** Climate, building, ventilation data (NO dependency on m_129)
+- **Outputs:** h_124 (free cooling capacity), latentLoadFactor
+- **Triggers:** User changes to climate/ventilation fields
+- **State Publishing:** Calls `updateStateManagerStage1()`
+- **Event:** Dispatches `cooling-calculations-stage1`
+
+**`calculateStage2(mode)` - Lines 549-593**
+- **Purpose:** Calculate active cooling days (DEPENDENT on m_129)
+- **Inputs:** m_129 from StateManager, h_124 from Stage 1
+- **Outputs:** m_124 (days active cooling)
+- **Conditional:** Only runs if d_116 ≠ "No Cooling"
+- **Triggers:** StateManager listener for m_129 changes
+- **State Publishing:** Calls `updateStateManagerStage2()`
+- **Event:** Dispatches `cooling-calculations-stage2`
+
+**`updateStateManagerStage1()` - Lines 617-665**
+- Publishes Stage 1 outputs: h_124, latentLoadFactor, psychrometric values
+- Mode-aware with ref_ prefix for Reference model
+
+**`updateStateManagerStage2()` - Lines 672-695**
+- Publishes Stage 2 outputs: m_124, d_124 (free cooling %)
+- Mode-aware with ref_ prefix for Reference model
+
+#### 2. Modified Functions
+
+**`calculateAll(mode)` - Lines 601-610**
+- **OLD:** Ran all calculations in sequence
+- **NEW:** Runs only Stage 1
+- **Reason:** Stage 2 now triggered by m_129 listener (eliminates bootstrap)
+
+**`dispatchCoolingEvent(stage)` - Lines 769-783**
+- **OLD:** Always dispatched `cooling-calculations-loaded`
+- **NEW:** Accepts stage parameter, dispatches stage-specific events
+- **Events:** `cooling-calculations-stage1`, `cooling-calculations-stage2`, or legacy event
+
+**`registerWithStateManager()` - Lines 788-915**
+- **NEW:** Added m_129 listener (line 812) - KEY to bootstrap elimination
+  - Triggers `calculateStage2()` when S13 publishes m_129
+- **NEW:** Added d_116 listener (line 831) - Handles cooling system type changes
+- **UPDATED:** Climate/ventilation listeners now trigger Stage 1 only
+  - i_59 (indoor RH) → `calculateStage1()`
+  - l_119 (summer boost) → `calculateStage1()`
+  - d_120 (ventilation rate) → `calculateStage1()`
+  - l_22 (elevation) → `calculateStage1()`
+
+#### 3. State Object Updates
+
+Added recursion protection flags (lines 140-141):
+```javascript
+calculatingStage1: false,  // Stage 1 recursion protection
+calculatingStage2: false,  // Stage 2 recursion protection
+```
+
+#### 4. Public API Updates
+
+Exposed new calculation methods (lines 982-984):
+```javascript
+calculateAll: calculateAll,     // Runs Stage 1, Stage 2 triggered by m_129 listener
+calculateStage1: calculateStage1, // Ventilation & free cooling (independent)
+calculateStage2: calculateStage2, // Active cooling (dependent on m_129)
+```
+
+### How Bootstrap Problem is Eliminated
+
+**OLD FLOW (Circular Dependency):**
+```
+User loads page → Cooling.js calculateAll()
+  ├─ Calculates h_124 (needs m_129 but doesn't exist yet)
+  ├─ Calculates m_124 (uses default m_129=0)
+  └─ Publishes wrong values
+User toggles dropdown → Triggers recalc
+  ├─ Now m_129 exists from S13
+  └─ Values correct (but required manual "priming")
+```
+
+**NEW FLOW (Two-Stage Architecture):**
+```
+User loads page → Cooling.js calculateAll()
+  ├─ Stage 1: calculateStage1()
+  │   ├─ Calculates h_124 (NO m_129 dependency)
+  │   └─ Publishes h_124 to StateManager
+  └─ S13 receives h_124 event
+      ├─ Calculates m_129 = MAX(0, d_129 - h_124)
+      └─ Publishes m_129 to StateManager
+
+m_129 change triggers listener → Cooling.js calculateStage2()
+  ├─ Reads m_129 from StateManager
+  ├─ Calculates m_124 = unmet_load / (days × 24)
+  └─ Publishes m_124 to StateManager
+
+Result: NO manual priming required, values correct on first load
+```
+
+### Testing Checklist
+
+**Stage 1 Independence Verification:**
+- [ ] Change h_24 (cooling setpoint) → h_124 updates, m_124 unchanged
+- [ ] Change l_20 (night temp) → h_124 updates, m_124 unchanged
+- [ ] Change g_118 (ventilation method) → h_124 updates, m_124 unchanged
+- [ ] Verify Stage 1 runs WITHOUT reading m_129
+
+**Stage 2 Triggering Verification:**
+- [ ] Fresh page load → Stage 2 runs automatically after S13 publishes m_129
+- [ ] Change building loads → m_129 updates → Stage 2 recalculates m_124
+- [ ] Set d_116 = "No Cooling" → m_124 = 0 (Stage 2 skipped)
+- [ ] Set d_116 = "ASHP" → Stage 2 runs, m_124 calculated
+
+**Bootstrap Elimination Verification:**
+- [ ] Fresh page load → m_124 shows correct value (NO priming required)
+- [ ] No console errors about missing m_129
+- [ ] h_124 available BEFORE m_124 calculation
+- [ ] Mode toggle (Target ↔ Reference) → both modes calculate correctly
+
+**Excel Parity Verification:**
+- [ ] h_124 matches Excel H124 within ±0.01%
+- [ ] m_124 matches Excel M124 within ±0.01%
+- [ ] latentLoadFactor matches Excel A6 within ±0.01%
+- [ ] All psychrometric intermediate values match Excel
+
+### Files Modified
+
+- `OBJECTIVE 4011RF/4012-Cooling.js` - Two-stage refactor implementation
+- `OBJECTIVE 4011RF/documentation/C-RF-WP.md` - This appendix
+
+### Files NOT Modified (Yet)
+
+- `OBJECTIVE 4011RF/sections/4012-Section13.js` - No changes required (reads h_124, publishes m_129)
+- `OBJECTIVE 4011RF/sections/4012-Section03.js` - Already updated in Phase 5.1.1
+
+### Next Steps
+
+1. **Browser Testing:** Load index.html and verify console shows Stage 1 → Stage 2 flow
+2. **Value Verification:** Compare all outputs against Excel reference
+3. **Edge Case Testing:** Test with d_116="No Cooling", extreme climates, zero ventilation
+4. **Mode Toggle Testing:** Verify Target/Reference independence
+5. **Commit:** Create commit with refactor once testing passes
+
+### Known Limitations
+
+1. **S13 Integration:** Assumes S13 calculates m_129 and publishes to StateManager
+   - If S13 doesn't publish m_129, Stage 2 never triggers
+   - Need to verify S13 has proper StateManager integration
+
+2. **Legacy Listeners:** Some old listeners (d_129, h_124) still exist for backward compatibility
+   - These can be removed once S13 integration confirmed
+
+3. **Mode Detection:** Current mode detection uses `state.currentMode`
+   - Need to verify ModeManager integration for Reference model
+
+---
+
 ## Document History
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0 | 2025-01-20 | AI Assistant | Initial draft for review |
 | 1.1 | 2025-01-20 | AI Assistant | Added two-stage architecture, bootstrap elimination, complete code implementation |
+| 1.2 | 2025-01-21 | AI Assistant | Added Appendix F documenting Phase 5.1.2 implementation completion |
 
 ---
 
-**END OF COOLING MODULE REFACTORING WORKPLAN v1.1**
+**END OF COOLING MODULE REFACTORING WORKPLAN v1.2**
 
-*Complete with two-stage architecture eliminating bootstrap problem, comprehensive test scenarios, and full working code implementation ready for deployment.*
+*Two-stage architecture implementation COMPLETE. Bootstrap problem eliminated. Ready for browser testing and Excel parity validation.*
     

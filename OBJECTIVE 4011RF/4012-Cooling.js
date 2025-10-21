@@ -136,7 +136,9 @@ window.TEUI.CoolingCalculations = (function () {
 
     // Misc state
     initialized: false,
-    calculating: false, // Recursion protection
+    calculating: false, // Recursion protection (legacy)
+    calculatingStage1: false, // Stage 1 recursion protection
+    calculatingStage2: false, // Stage 2 recursion protection
   };
 
   /**
@@ -446,27 +448,37 @@ window.TEUI.CoolingCalculations = (function () {
   }
 
   /**
-   * Calculate all values needed for cooling calculations
+   * ============================================================================
+   * STAGE 1: Ventilation & Free Cooling (INDEPENDENT)
+   * ============================================================================
+   * Calculates free cooling capacity and latent load factor based ONLY on:
+   * - Climate data (temperatures, humidity, degree days)
+   * - Building geometry (volume, area)
+   * - Ventilation settings (rates, methods, boost factors)
+   *
+   * CRITICAL: This stage has ZERO dependency on m_129 or d_116
+   * This eliminates the bootstrap problem by breaking the circular dependency
+   *
+   * Outputs: h_124 (free cooling capacity), latentLoadFactor
    * @param {string} mode - "target" or "reference" to determine which state values to use
    */
-  function calculateAll(mode = "target") {
+  function calculateStage1(mode = "target") {
     // Recursion protection
-    if (state.calculating) {
+    if (state.calculatingStage1) {
       console.log(
-        `[Cooling] ⚠️ Already calculating (mode=${mode}) - skipping to prevent recursion`,
+        `[Cooling Stage 1] ⚠️ Already calculating (mode=${mode}) - skipping to prevent recursion`,
       );
       return;
     }
 
-    state.calculating = true;
-    console.log(`[Cooling] 🚀 Starting cooling calculations (mode=${mode})...`);
-    console.trace(`[Cooling] 🔍 TRACE: Who called calculateAll("${mode}")?`);
+    state.calculatingStage1 = true;
+    console.log(`[Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=${mode})...`);
 
     // Store current mode for mode-aware reads/writes
     state.currentMode = mode;
 
     try {
-      // Read fresh values from StateManager before calculating - now MODE-AWARE!
+      // Read fresh values from StateManager before calculating - MODE-AWARE!
       const h_24 = getModeAwareValue("h_24", "24");
       state.coolingSetTemp = h_24 ? parseFloat(h_24) : 24;
 
@@ -504,28 +516,191 @@ window.TEUI.CoolingCalculations = (function () {
       // Step 4: Calculate latent load factor (now has humidityRatioDifference available)
       state.latentLoadFactor = calculateLatentLoadFactor();
 
-      // Calculate free cooling limit
+      // Step 5: Calculate free cooling limit (h_124)
       calculateFreeCoolingLimit();
 
-      // Calculate days of active cooling required
-      calculateDaysActiveCooling();
+      // 📊 STATEMANAGER: Publish Stage 1 results
+      updateStateManagerStage1();
 
-      // Calculate CED values (moved from S14/S13 for tight cooling integration)
+      // Dispatch event to notify S13 that Stage 1 cooling calculations are ready
+      dispatchCoolingEvent("stage1");
 
-      // 📊 STATEMANAGER: Publish results like any other section
-      updateStateManager();
-
-      // Dispatch event to notify S13 that cooling calculations are ready
-      dispatchCoolingEvent();
+      console.log(`[Cooling Stage 1] ✅ Complete: h_124=${state.freeCoolingLimit.toFixed(2)} kWh/yr, latentLoadFactor=${state.latentLoadFactor.toFixed(3)}`);
     } finally {
-      state.calculating = false;
+      state.calculatingStage1 = false;
     }
   }
 
   /**
-   * 📊 STATEMANAGER INTEGRATION: Publish calculated cooling values (like any section)
+   * ============================================================================
+   * STAGE 2: Active Cooling System (DEPENDENT & CONDITIONAL)
+   * ============================================================================
+   * Calculates days of active cooling required (m_124) based on:
+   * - m_129 (mitigated cooling load from S13)
+   * - h_124 (free cooling capacity from Stage 1)
+   *
+   * CRITICAL CONDITIONS:
+   * 1. Only runs if d_116 ≠ "No Cooling"
+   * 2. Only runs AFTER S13 has calculated m_129
+   *
+   * This breaks the circular dependency by running AFTER m_129 is known
+   *
+   * Outputs: m_124 (days active cooling required)
+   * @param {string} mode - "target" or "reference" to determine which state values to use
+   */
+  function calculateStage2(mode = "target") {
+    // Recursion protection
+    if (state.calculatingStage2) {
+      console.log(
+        `[Cooling Stage 2] ⚠️ Already calculating (mode=${mode}) - skipping to prevent recursion`,
+      );
+      return;
+    }
+
+    // CRITICAL: Check if active cooling system exists
+    const d_116 = getModeAwareValue("d_116", "No Cooling");
+    if (d_116 === "No Cooling") {
+      console.log(`[Cooling Stage 2] ⏭️ Skipping - No active cooling system (d_116="${d_116}")`);
+      // Set m_124 to 0 since no active cooling
+      state.daysActiveCooling = 0;
+      const prefix = mode === "reference" ? "ref_" : "";
+      window.TEUI?.StateManager?.setValue(
+        `${prefix}cooling_m_124`,
+        "0",
+        "calculated"
+      );
+      return;
+    }
+
+    state.calculatingStage2 = true;
+    console.log(`[Cooling Stage 2] 🚀 Starting active cooling calculations (mode=${mode})...`);
+
+    // Store current mode for mode-aware reads/writes
+    state.currentMode = mode;
+
+    try {
+      // Calculate days of active cooling required (reads m_129 from StateManager)
+      calculateDaysActiveCooling();
+
+      // 📊 STATEMANAGER: Publish Stage 2 results
+      updateStateManagerStage2();
+
+      // Dispatch event to notify S13 that Stage 2 cooling calculations are ready
+      dispatchCoolingEvent("stage2");
+
+      console.log(`[Cooling Stage 2] ✅ Complete: m_124=${state.daysActiveCooling.toFixed(2)} days`);
+    } finally {
+      state.calculatingStage2 = false;
+    }
+  }
+
+  /**
+   * Main calculation orchestrator - NOW calls Stage 1 only
+   * Stage 2 is triggered by StateManager listener when m_129 changes
+   * This eliminates the bootstrap problem by breaking the circular dependency
+   * @param {string} mode - "target" or "reference" to determine which state values to use
+   */
+  function calculateAll(mode = "target") {
+    console.log(`[Cooling] 🚀 calculateAll("${mode}") → Running Stage 1 only`);
+    console.trace(`[Cooling] 🔍 TRACE: Who called calculateAll("${mode}")?`);
+
+    // Run Stage 1 (independent calculations)
+    calculateStage1(mode);
+
+    // Stage 2 will be triggered by StateManager listener when m_129 changes
+    // This eliminates the bootstrap problem
+  }
+
+  /**
+   * 📊 STATEMANAGER INTEGRATION - STAGE 1: Publish ventilation & free cooling results
+   * Stage 1 publishes ONLY values that can be calculated WITHOUT m_129 dependency
+   * This includes: h_124, latentLoadFactor, and all psychrometric intermediate values
+   */
+  function updateStateManagerStage1() {
+    if (typeof window.TEUI.StateManager === "undefined") return;
+
+    const sm = window.TEUI.StateManager;
+
+    // ✅ MODE-AWARE: Add prefix for Reference mode
+    const prefix = state.currentMode === "reference" ? "ref_" : "";
+    console.log(
+      `[Cooling Stage 1] 📊 Publishing results with prefix="${prefix}" (mode=${state.currentMode})`,
+    );
+
+    // STAGE 1 OUTPUTS: Free cooling capacity and latent load factor
+    sm.setValue(
+      `${prefix}cooling_h_124`,
+      state.freeCoolingLimit.toString(),
+      "calculated",
+    ); // Free Cooling Capacity (h_124)
+
+    sm.setValue(
+      `${prefix}cooling_latentLoadFactor`,
+      (state.latentLoadFactor || 0).toString(),
+      "calculated",
+    ); // Latent Load Factor
+
+    // Intermediate psychrometric calculations for S13 integration
+    sm.setValue(
+      `${prefix}cooling_wetBulbTemperature`,
+      (state.wetBulbTemperature || 0).toString(),
+      "calculated",
+    ); // Wet Bulb Temp
+
+    sm.setValue(
+      `${prefix}cooling_atmosphericPressure`,
+      state.atmPressure.toString(),
+      "calculated",
+    ); // Atmospheric pressure
+
+    sm.setValue(
+      `${prefix}cooling_partialPressure`,
+      state.partialPressure.toString(),
+      "calculated",
+    ); // Partial pressure
+
+    sm.setValue(
+      `${prefix}cooling_humidityRatio`,
+      state.humidityRatioDifference.toString(),
+      "calculated",
+    ); // Humidity ratio difference
+  }
+
+  /**
+   * 📊 STATEMANAGER INTEGRATION - STAGE 2: Publish active cooling results
+   * Stage 2 publishes values that DEPEND on m_129 from S13
+   * This includes: m_124 (days active cooling) and d_124 (free cooling percentage)
+   */
+  function updateStateManagerStage2() {
+    if (typeof window.TEUI.StateManager === "undefined") return;
+
+    const sm = window.TEUI.StateManager;
+
+    // ✅ MODE-AWARE: Add prefix for Reference mode
+    const prefix = state.currentMode === "reference" ? "ref_" : "";
+    console.log(
+      `[Cooling Stage 2] 📊 Publishing results with prefix="${prefix}" (mode=${state.currentMode})`,
+    );
+
+    // STAGE 2 OUTPUTS: Active cooling days and free cooling percentage
+    sm.setValue(
+      `${prefix}cooling_m_124`,
+      state.daysActiveCooling.toString(),
+      "calculated",
+    ); // Days Active Cooling (m_124)
+
+    sm.setValue(
+      `${prefix}cooling_d_124`,
+      ((state.freeCoolingLimit / state.coolingLoad) * 100).toString(),
+      "calculated",
+    ); // Free Cooling %
+  }
+
+  /**
+   * 📊 STATEMANAGER INTEGRATION: Publish calculated cooling values (LEGACY - kept for compatibility)
    * S13 reads these values from StateManager for display and further calculations
    * Now MODE-AWARE to support both Target and Reference models
+   * NOTE: This is being phased out in favor of Stage 1 and Stage 2 functions
    */
   function updateStateManager() {
     if (typeof window.TEUI.StateManager === "undefined") return;
@@ -591,10 +766,14 @@ window.TEUI.CoolingCalculations = (function () {
 
   /**
    * Dispatch a custom event to notify other modules that cooling calculations are ready
+   * @param {string} stage - Optional stage identifier ("stage1", "stage2", or undefined for legacy)
    */
-  function dispatchCoolingEvent() {
-    const event = new CustomEvent("cooling-calculations-loaded", {
+  function dispatchCoolingEvent(stage) {
+    const eventName = stage ? `cooling-calculations-${stage}` : "cooling-calculations-loaded";
+
+    const event = new CustomEvent(eventName, {
       detail: {
+        stage: stage || "all",
         latentLoadFactor: state.latentLoadFactor,
         freeCoolingLimit: state.freeCoolingLimit,
         daysActiveCooling: state.daysActiveCooling,
@@ -602,6 +781,7 @@ window.TEUI.CoolingCalculations = (function () {
     });
 
     document.dispatchEvent(event);
+    console.log(`[Cooling] 📢 Dispatched event: ${eventName}`);
   }
 
   /**
@@ -622,7 +802,54 @@ window.TEUI.CoolingCalculations = (function () {
     sm.registerDependency("i_59", "cooling_latentLoadFactor"); // Indoor RH% from S08 affects latent load
     sm.registerDependency("m_19", "cooling_daysActiveCooling"); // Cooling season days affects active cooling calculation
 
-    // Listen for cooling load updates
+    // ============================================================================
+    // CRITICAL: m_129 listener triggers Stage 2 (solves bootstrap problem)
+    // ============================================================================
+    // This is the KEY to eliminating the bootstrap problem:
+    // - Stage 1 runs independently, calculates h_124
+    // - S13 uses h_124 to calculate m_129
+    // - This listener triggers Stage 2 when m_129 is ready
+    // - Stage 2 calculates m_124 using m_129
+    console.log(`[Cooling] 🔗 Registering m_129 listener to trigger Stage 2 (Target mode)`);
+    sm.addListener("m_129", function (newValue) {
+      console.log(
+        `[Cooling] 🎯 m_129 changed: ${newValue} → triggering Stage 2 for TARGET mode`,
+      );
+      state.coolingLoad = parseFloat(newValue.replace(/,/g, "")) || 0;
+
+      // Trigger Stage 2 for Target mode only (m_129 is Target-specific)
+      calculateStage2("target");
+    });
+
+    // Listen for ref_m_129 (Reference mode mitigated cooling load)
+    console.log(`[Cooling] 🔗 Registering ref_m_129 listener to trigger Stage 2 (Reference mode)`);
+    sm.addListener("ref_m_129", function (newValue) {
+      console.log(
+        `[Cooling] 🎯 ref_m_129 changed: ${newValue} → triggering Stage 2 for REFERENCE mode`,
+      );
+
+      // Trigger Stage 2 for Reference mode
+      calculateStage2("reference");
+    });
+
+    // ============================================================================
+    // Listen for d_116 (cooling system type) changes
+    // ============================================================================
+    // If user changes from "No Cooling" to an active system, trigger Stage 2
+    // If user changes to "No Cooling", skip Stage 2
+    console.log(`[Cooling] 🔗 Registering d_116 listener for cooling system changes`);
+    sm.addListener("d_116", function (newValue) {
+      console.log(
+        `[Cooling] 🌡️ Cooling system changed: d_116="${newValue}" → triggering Stage 2 for both modes`,
+      );
+
+      // ✅ DUAL-ENGINE: Trigger Stage 2 for BOTH modes
+      // (it will check d_116 internally and skip if "No Cooling")
+      calculateStage2("target");
+      calculateStage2("reference");
+    });
+
+    // Listen for cooling load updates (legacy - now handled by m_129 listener)
     sm.addListener("d_129", function (newValue) {
       // Update cooling load and recalculate
       state.coolingLoad = parseFloat(newValue.replace(/,/g, "")) || 0;
@@ -639,9 +866,10 @@ window.TEUI.CoolingCalculations = (function () {
         `[Cooling] 🌡️ Indoor RH% changed: i_59=${newValue}% → updating latent load calculations`,
       );
       state.indoorRH = parseFloat(newValue) / 100; // Convert percentage to decimal
-      calculateLatentLoadFactor(); // Recalculate latent load factor
-      calculateFreeCoolingLimit(); // Recalculate free cooling with new latent load
-      updateStateManager(); // 📊 STATEMANAGER: Publish updated cooling calculations
+
+      // ✅ DUAL-ENGINE: Indoor RH affects Stage 1 calculations for BOTH modes
+      calculateStage1("target");
+      calculateStage1("reference");
     });
 
     // D117/L114 now calculated by S13, not Cooling.js - listeners removed
@@ -661,31 +889,37 @@ window.TEUI.CoolingCalculations = (function () {
     // This ensures m_124 updates when ventilation parameters change
     sm.addListener("l_119", function (newValue) {
       console.log(
-        `[Cooling] Summer boost changed: l_119=${newValue} → recalculating m_124 with new ventilation rate`,
+        `[Cooling] Summer boost changed: l_119=${newValue} → recalculating free cooling for both modes`,
       );
-      calculateDaysActiveCooling(); // Recalculate m_124 with new l_119 boost factor
-      updateStateManager(); // Publish updated cooling_m_124 to StateManager
+
+      // ✅ DUAL-ENGINE: Summer boost affects Stage 1 (free cooling capacity) for BOTH modes
+      calculateStage1("target");
+      calculateStage1("reference");
     });
 
     // ✅ FIX: Listen for d_120 (base ventilation rate) changes
     // This ensures m_124 updates when base ventilation rate changes
     sm.addListener("d_120", function (newValue) {
       console.log(
-        `[Cooling] Base ventilation rate changed: d_120=${newValue} → recalculating m_124`,
+        `[Cooling] Base ventilation rate changed: d_120=${newValue} → recalculating free cooling for both modes`,
       );
-      calculateDaysActiveCooling(); // Recalculate m_124 with new base ventilation rate
-      updateStateManager(); // Publish updated cooling_m_124 to StateManager
+
+      // ✅ DUAL-ENGINE: Base ventilation affects Stage 1 (free cooling capacity) for BOTH modes
+      calculateStage1("target");
+      calculateStage1("reference");
     });
 
     // ✅ FIX: Listen for l_22 (elevation) changes from S03 location selection
     // This ensures atmospheric pressure updates when location changes
     sm.addListener("l_22", function (newValue) {
       console.log(
-        `[Cooling] Elevation changed: l_22=${newValue}m → updating atmospheric pressure`,
+        `[Cooling] Elevation changed: l_22=${newValue}m → updating atmospheric pressure for both modes`,
       );
       updateAtmosphericPressure(); // Recalculate atmospheric pressure
-      // Atmospheric pressure affects humidity calculations, so recalculate everything
-      calculateAll();
+
+      // ✅ DUAL-ENGINE: Atmospheric pressure affects humidity calculations in Stage 1 for BOTH modes
+      calculateStage1("target");
+      calculateStage1("reference");
     });
   }
 
@@ -737,6 +971,15 @@ window.TEUI.CoolingCalculations = (function () {
         state.coolingLoad = parseFloat(coolingLoad.replace(/,/g, ""));
       }
 
+      // ✅ TWO-STAGE ARCHITECTURE: Initialize cooling_m_124 to 0 for both modes
+      // This prevents S13 errors before Stage 2 runs
+      // Stage 2 will update these values when m_129 becomes available
+      window.TEUI.StateManager.setValue("cooling_m_124", "0", "calculated");
+      window.TEUI.StateManager.setValue("ref_cooling_m_124", "0", "calculated");
+      console.log(
+        "[Cooling] 🔧 Initialized cooling_m_124=0 for both modes (will be updated by Stage 2)",
+      );
+
       // Register with StateManager
       registerWithStateManager();
     }
@@ -754,7 +997,9 @@ window.TEUI.CoolingCalculations = (function () {
     initialize: initialize,
 
     // Calculation methods
-    calculateAll: calculateAll,
+    calculateAll: calculateAll, // Runs Stage 1, Stage 2 triggered by m_129 listener
+    calculateStage1: calculateStage1, // Ventilation & free cooling (independent)
+    calculateStage2: calculateStage2, // Active cooling (dependent on m_129)
 
     // Getters for calculated values
     getLatentLoadFactor: function () {
@@ -782,7 +1027,7 @@ window.TEUI.CoolingCalculations = (function () {
     },
 
     // 📊 STATEMANAGER METHODS: Standard section integration pattern
-    calculateAll: calculateAll, // Trigger full calculation cycle
+    // (calculateAll already defined above)
 
     // Method to recalculate cooling (standard section pattern) - now MODE-AWARE!
     recalculate: function (mode = "target") {
