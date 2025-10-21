@@ -2050,6 +2050,232 @@ where E52 = E50 - E51
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0 | 2025-01-20 | AI Assistant | Initial draft for review |
+| 1.1 | 2025-10-21 | AI Assistant | Clarifications and risk resolutions from user review |
+
+---
+
+## Appendix D: Clarifications and Resolutions (v1.1 - 2025-10-21)
+
+### D.1 Climate Fields Implementation (l_20, l_21, l_23)
+
+**RESOLVED - User Guidance:**
+
+**Location in S03:**
+- Row 20: l_20 (Summer Night °C) - Yellow highlighted cell for value
+- Row 21: l_21 (Summer RH%) - Yellow highlighted cell for value
+- Row 22: l_22 (Elevation) - Already exists
+- Row 23: l_23 (Seasonal outdoor RH%) - To be added
+
+**UI Structure:**
+- Column J: Text IDs (j_20, j_21, j_23)
+- Column K: Description text
+- Yellow cells: Input values
+- Status: **Locked for now** (use default values), user-editable in future
+- Future enhancement: Link to climate data API if available
+
+**Default Values:**
+- l_20: 20.43°C (Night-time outdoor temp)
+- l_21: 55.85% (Cooling season mean RH at 15h00 LST)
+- l_23: 70.0% (Seasonal outdoor RH - nighttime assumption)
+
+### D.2 Stage 2 Calculation Location
+
+**RESOLVED - Option B Confirmed:**
+
+**Decision:** Stage 1 in Cooling.js, Stage 2 in S13
+
+**Rationale:**
+- S13 already performs substantial calculations (not merely UI layer)
+- S13 owns mechanical system calculations
+- Architectural clarity: Cooling.js = free cooling physics, S13 = mechanical systems
+- S13 reads d_129 (from gains) and h_124 (from Cooling.js)
+- S13 calculates m_129 = MAX(0, d_129 - h_124) and publishes to StateManager
+
+**Implementation:**
+- Cooling.js provides helper function `calculateStage2MechanicalCooling()`
+- S13 can call this helper OR implement calculation directly
+- Either approach acceptable - user to decide during implementation
+
+### D.3 Bootstrap Problem Validation
+
+**CONFIRMED - Real Issue:**
+
+**User Experience:**
+> "We often need to 'prime' values to complete calculation flow by changing ventilation method or switching the 'Cooling' and 'No Cooling' toggle on and off to get the calculations to complete (i.e., g_118 'priming')."
+
+**Current Problematic Pattern:**
+- Circular dependency: h_124 depends on m_129, m_129 depends on h_124
+- Requires manual "priming" by toggling g_118 dropdown or d_116 toggle
+- Calculations don't complete on first navigation to S13
+- Known issue from previous dual-engine refactors
+
+**Solution Validated:**
+- Two-stage independent calculation architecture eliminates this completely
+- Stage 1 calculates h_124 WITHOUT any cooling load inputs
+- Stage 2 calculates m_129 FROM h_124 (one-way dependency)
+- No priming required - single-pass calculation
+
+### D.4 Naming Conventions
+
+**RESOLVED:**
+
+**Internal Code:**
+- Use descriptive names: `freeCoolingCapacity`, `mechanicalCoolingRequired`, `latentLoadFactor`
+- Clear function names: `calculateLatentLoadFactor()`, `calculateFreeCoolingCapacity()`
+- Meaningful variable names for readability
+
+**StateManager Interface:**
+- Use Excel-style keys: `h_124`, `m_129`, `d_129`, `cooling_latentLoadFactor`
+- Mode prefix: `ref_h_124`, `ref_m_129` for Reference mode
+- Maintains consistency with existing StateManager architecture
+
+### D.5 Risk Assessment - Psychrometric Calculations
+
+**RESOLVED - Calculations Are Proven:**
+
+#### Wet Bulb Formula
+**Status:** ✅ **Validated and Approved**
+
+**Formula:**
+```javascript
+wetBulb = Tdb - (Tdb - (Tdb - (100 - RH)/5)) * (0.1 + 0.9 * (RH / 100))
+```
+
+**User Confirmation:**
+> "Our wet bulb formula is reliable, it is a linear derivation of an advanced formula developed by others we do not have copyright for, so we made our own, it tracks within 2% of the curvilinear empirical gene fitting match from others, so we will use it!"
+
+**Accuracy:** Within 2% of empirical psychrometric standards
+**Action:** Use as-is, no changes required
+
+#### Humidity Ratio Constant (0.62198)
+
+**Status:** ✅ **Confirmed Correct**
+
+**Source:** Verified in both:
+- [4012-Cooling.js:231-240](OBJECTIVE 4011RF/4012-Cooling.js#L231-L240)
+- [COOLING-TARGET-VARIABLES.json:115-120](OBJECTIVE 4011RF/documentation/COOLING-TARGET-VARIABLES.json#L115-L120)
+
+**Excel Reference:** A61, A62 formulas use `0.62198 * pressure / (atmPressure - pressure)`
+
+**Physical Meaning:** Ratio of molecular masses (water vapor 18.015 / dry air 28.97 ≈ 0.62198)
+
+**Action:** Use 0.62198 (not 0.622 approximation)
+
+#### Excel Parity
+
+**Status:** ✅ **Already Exists - Cleanup Only**
+
+**User Guidance:**
+> "Our calculation parity is already consistent with Excel, we just need to clean up these sections (S13 and Cooling.js) and not completely reinvent how we calculate!"
+
+**Scope of Work:**
+- **NOT** re-engineering psychrometric calculations
+- **NOT** changing mathematical formulas
+- **YES** eliminating bootstrap problem (architectural fix)
+- **YES** simplifying code structure and reducing complexity
+- **YES** improving maintainability for future developers
+
+**This is a MAJOR CLEANUP, not a re-engineering of the math.**
+
+### D.6 Target/Reference Independence
+
+**RESOLVED - Complete Separation Required:**
+
+**User Guidance:**
+> "For reference modelling, state contamination/mixing has been a REAL problem, better to have complete independence than share intermediate values. Climate data may use different locations, so no, don't cache. Treat Target and Reference buildings as if they are 100% independent, this is how we eliminated state mixing."
+
+**Implementation Rules:**
+1. **NO** caching of intermediate psychrometric values between Target and Reference
+2. **NO** shared calculation results
+3. **ALWAYS** calculate both modes completely independently
+4. **ALWAYS** apply mode prefix (`ref_`) to all StateManager keys
+5. Climate data may differ (different locations for Target vs Reference)
+6. Building parameters may differ
+7. Complete independence prevents state contamination
+
+**Rationale:** Lessons learned from previous dual-engine refactoring efforts
+
+### D.7 Elevation Handling
+
+**RESOLVED - Clamp to Zero:**
+
+**User Guidance:**
+> "We can clamp elevation to 0m, so anything less behaves predictably."
+
+**Implementation:**
+```javascript
+// Clamp elevation to 0m minimum (sea level)
+const elevation_m = Math.max(0, inputs.elevation);
+
+// Atmospheric pressure (elevation-adjusted)
+const atmPressure_Pa = 101325 * Math.exp(-elevation_m / 8434);
+```
+
+**Edge Cases:**
+- Below sea level (e.g., Death Valley): Clamp to 0m, use 101325 Pa
+- Sea level: elevation = 0, pressure = 101325 Pa ✅
+- High altitude (e.g., 2000m Calgary): Pressure reduces correctly ✅
+- Extreme altitude (>5000m): May produce unusual results but physically accurate
+
+**Validation Range:** 0m to 5000m (covers all Canadian locations)
+
+### D.8 Scope Clarification
+
+**CRITICAL UNDERSTANDING:**
+
+This refactor addresses **TWO specific problems**:
+
+1. **Bootstrap Problem (Architectural):**
+   - Circular dependency between h_124 and m_129
+   - Requires manual "priming" to complete calculations
+   - Solution: Two-stage independent calculation sequence
+
+2. **Code Complexity (Maintainability):**
+   - Current 4012-Cooling.js is difficult to understand and modify
+   - Complex calculation flow obscures logic
+   - Solution: Simplified structure with clear calculation stages
+
+**What This Refactor IS:**
+- ✅ Architectural cleanup (two-stage design)
+- ✅ Code simplification (reduce complexity)
+- ✅ Documentation improvement (clear calculation flow)
+- ✅ Maintainability enhancement (easier for future developers/AI)
+
+**What This Refactor IS NOT:**
+- ❌ Re-engineering psychrometric mathematics
+- ❌ Changing calculation formulas or constants
+- ❌ Improving Excel parity (already exists)
+- ❌ Adding new features (monthly binning comes later)
+
+**Success Criteria:**
+- Bootstrap problem eliminated (no priming required)
+- Code is clearer and more maintainable
+- Excel parity maintained (100% match within ±0.01%)
+- All existing functionality preserved
+
+### D.9 Implementation Confidence
+
+**APPROVED TO PROCEED:**
+
+**Quality Assessment:** 9/10 (Excellent production-ready workplan)
+
+**Feasibility:** HIGH (Implementation is straightforward with clear guidance)
+
+**Time Estimate:** 9-15 hours (across multiple sessions)
+
+**Risk Level:** LOW-MEDIUM (Excellent rollback strategy, comprehensive tests)
+
+**Next Steps:**
+1. ✅ Document clarifications (this appendix)
+2. ✅ Commit updated workplan with backup files
+3. → Begin Phase 5.1.1: Add climate fields to S03
+4. → Implement Stage 1 (Cooling.js - independent)
+5. → Validate Stage 1 against Excel
+6. → Implement Stage 2 (S13 - dependent)
+7. → Validate complete system
+8. → Deploy and archive old module
+
+**User Approval:** Ready to begin implementation
 
 ---
 
