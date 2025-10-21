@@ -68,12 +68,12 @@ window.TEUI.SectionModules.sect08 = (function () {
           defaults[fieldId] = fields[fieldId].defaultValue;
         }
       }
-      // Apply Reference-specific overrides
+      // Apply Reference-specific overrides - IS THIS CAUSING PROBLEMS??
       defaults["d_56"] = "150";
       defaults["d_57"] = "1000";
       defaults["d_58"] = "400";
-      defaults["d_59"] = "30";
-      defaults["i_59"] = "50";
+      defaults["d_59"] = "45";
+      defaults["i_59"] = "45";
       this.state = defaults;
     },
     /**

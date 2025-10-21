@@ -208,6 +208,7 @@ window.TEUI.CoolingCalculations = (function () {
     const i_59_value = window.TEUI.parseNumeric(
       getModeAwareValue("i_59", "45"),
     );
+    console.log(`[Cooling] 🔍 i_59 READ: mode=${state.currentMode}, i_59_value=${i_59_value}, will use indoorRH=${i_59_value ? i_59_value / 100 : 0.45}`);
     state.indoorRH = i_59_value ? i_59_value / 100 : 0.45; // Convert percentage to decimal, default 45%
     const partialPressureIndoor = pSatIndoor * state.indoorRH; // A52: Indoor RH% from S08 i_59
 

@@ -107,16 +107,16 @@ window.TEUI.SectionModules.sect13 = (function () {
       // Step 1: Initialize empty (values come from field definitions via getFieldDefault)
       this.state = {};
 
-      // Step 2: Apply Reference-specific overrides from building codes
-      this.state.d_113 = "Electricity";
+      // Step 2: Apply Reference-specific overrides set to run on initialization (note e_10 value 287.0 as of 2025.10.20, where excel is 196.6)
+      this.state.d_113 = "Heatpump";
       this.state.f_113 = referenceValues.f_113 || "7.1";
-      this.state.d_116 = "No Cooling";
+      this.state.d_116 = "Cooling";
       this.state.d_118 = referenceValues.d_118 || "81";
       this.state.d_119 = referenceValues.d_119 || "8.33";
-      this.state.g_118 = "Volume Constant";
+      this.state.g_118 = "Volume by Schedule";
       this.state.j_115 = referenceValues.j_115 || "0.90";
       this.state.j_116 = referenceValues.j_116 || "2.66";
-      this.state.l_118 = referenceValues.l_118 || "3.50";
+      this.state.l_118 = referenceValues.l_118 || "3.50"; // ACH gets over-written by ReferenceValues.js (expected)
     },
     // MANDATORY: Include onReferenceStandardChange for d_13 changes
     onReferenceStandardChange: function () {
