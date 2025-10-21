@@ -2279,6 +2279,215 @@ This refactor addresses **TWO specific problems**:
 
 ---
 
+## Appendix E: Current Implementation Analysis (2025-10-21)
+
+### E.1 Current Cooling.js Architecture Analysis
+
+**File:** 4012-Cooling.js (33K)
+**Status:** Functional but contains bootstrap problem
+
+#### Current Calculation Flow
+
+**Main Function:** `calculateAll(mode)` (lines 452-523)
+
+**Execution Order:**
+1. Read inputs from StateManager (lines 469-488)
+2. `calculateWetBulbTemperature()` (line 496)
+3. `calculateAtmosphericValues()` (line 499)
+4. `calculateHumidityRatios()` (line 502)
+5. `calculateLatentLoadFactor()` (line 505) → outputs A6
+6. `calculateFreeCoolingLimit()` (line 508) → outputs **h_124**
+7. `calculateDaysActiveCooling()` (line 511) → outputs **m_124** ⚠️ **BOOTSTRAP PROBLEM**
+8. `updateStateManager()` (line 516) → publishes all results
+9. `dispatchCoolingEvent()` (line 519)
+
+#### Bootstrap Problem Identified
+
+**Location:** `calculateDaysActiveCooling()` line 328-329
+
+```javascript
+const m_129_annual = window.TEUI.parseNumeric(getModeAwareValue("m_129", "0")) || 0;
+```
+
+**The Circular Dependency:**
+1. Cooling.js calculates **h_124** (free cooling capacity)
+2. Cooling.js tries to read **m_129** to calculate m_124
+3. BUT m_129 is calculated in **S13** using h_124: `m_129 = MAX(0, d_129 - h_124 - d_123)`
+4. S13 depends on Cooling.js h_124
+5. Cooling.js depends on S13 m_129
+6. **Circular dependency!** ⚠️
+
+**Current Workaround:** Users must "prime" calculations by:
+- Toggling g_118 (ventilation method) dropdown
+- Toggling d_116 (cooling system) dropdown
+- This forces multiple calculation passes until values stabilize
+
+#### Current S13 Integration
+
+**File:** 4012-Section13.js (126K)
+
+**m_129 Calculation:** `calculateCEDMitigated()` (lines 2815-2849)
+
+```javascript
+// Excel formula: M129 = MAX(0, D129 - H124 - D123)
+const cedMitigated = Math.max(0, d129 - h124 - d123);
+```
+
+**Where:**
+- `d129` = CED Unmitigated (total cooling load from gains)
+- `h124` = Free cooling capacity (from Cooling.js)
+- `d123` = Vent energy recovered (from S13)
+
+**Note:** This formula is correct and should NOT be changed. The issue is purely architectural.
+
+### E.2 Two-Stage Architecture Design
+
+#### User Requirements (2025-10-21)
+
+**User Clarification:**
+> "We need to imagine a user may change g_118 (Ventilation method) or l_118 (Volumetric Ventilation Rate in ACH), so the system would first calculate impacts on ventilation and free cooling (first pass) and then calculate the latent aspects required of the active cooling system (second pass) IF Cooling is set at d_116. IF 'No Cooling' is set, then it can skip the second pass."
+
+**Key Insights:**
+1. Cooling.js can calculate m_124 (it's a "cooling thing")
+2. m_124 should just be displayed in S13 row 124 (like h_124)
+3. Stage 1 runs on ventilation/climate changes
+4. Stage 2 is conditional on d_116 ≠ "No Cooling"
+5. DO NOT change the math - only fix the ordering/architecture
+
+#### STAGE 1: Ventilation & Free Cooling (Independent)
+
+**Triggers:**
+- Changes to g_118 (ventilation method)
+- Changes to l_118 (volumetric ventilation rate ACH)
+- Changes to l_119 (summer boost)
+- Changes to climate data (l_20, l_21, h_24, d_21, etc.)
+- Changes to building geometry (d_105, h_15)
+- Changes to indoor conditions (i_59)
+
+**Functions (from current calculateAll):**
+1. `calculateWetBulbTemperature()` - Psychrometric baseline
+2. `calculateAtmosphericValues()` - Pressure calculations
+3. `calculateHumidityRatios()` - Indoor/outdoor humidity differential
+4. `calculateLatentLoadFactor()` - Latent cooling multiplier (Excel A6)
+5. `calculateFreeCoolingLimit()` - Free cooling capacity (Excel A33 × M19 → **h_124**)
+
+**Inputs Required:**
+- Climate: h_24, d_21, l_20, l_21, l_22
+- Building: d_105, h_15
+- Ventilation: h_120, d_120, g_118, l_119, k_120
+- Indoor: i_59
+
+**Outputs Published to StateManager:**
+- `cooling_latentLoadFactor` → used by S13 as i_122
+- `cooling_h_124` → used by S13 as h_124 and for m_129 calculation
+- Various intermediate psychrometric values
+
+**Critical:** Stage 1 has **ZERO dependency** on m_129 or d_116
+
+#### STAGE 2: Active Cooling System (Dependent & Conditional)
+
+**Condition:**
+```javascript
+const d_116 = getModeAwareValue("d_116", "No Cooling");
+if (d_116 === "No Cooling") {
+  // Skip Stage 2 - no active cooling system installed
+  return;
+}
+```
+
+**Triggers:**
+- m_129 value changes in StateManager (calculated by S13)
+- Only runs AFTER Stage 1 completes AND S13 calculates m_129
+
+**Functions:**
+1. `calculateDaysActiveCooling()` - Days active cooling required (Excel E55 → **m_124**)
+
+**Inputs Required:**
+- m_129 (from S13) - mitigated cooling load = MAX(0, d_129 - h_124 - d_123)
+- h_124 (from Stage 1) - free cooling capacity
+- d_21 (CDD)
+- m_19 (cooling season days)
+
+**Outputs Published to StateManager:**
+- `cooling_m_124` → displayed in S13 row 124 (m_124 cell)
+
+**Critical:** Stage 2 runs AFTER S13 calculates m_129, breaking the circular dependency
+
+#### Calculation Sequence (Bootstrap Eliminated)
+
+**One-Way Data Flow:**
+
+```
+User changes g_118 or l_119
+    ↓
+[STAGE 1: Cooling.js]
+  - Calculate latentLoadFactor
+  - Calculate h_124 (free cooling capacity)
+  - Publish to StateManager
+    ↓
+[S13: calculateCEDMitigated]
+  - Reads h_124 from StateManager
+  - Reads d_129 (from gains calculations)
+  - Reads d_123 (vent energy recovered)
+  - Calculates: m_129 = MAX(0, d_129 - h_124 - d_123)
+  - Publishes m_129 to StateManager
+    ↓
+[STAGE 2: Cooling.js] (conditional on d_116)
+  - StateManager listener detects m_129 change
+  - Reads m_129 from StateManager
+  - Calculates m_124 (days active cooling)
+  - Publishes m_124 to StateManager
+    ↓
+[S13: Display]
+  - Shows h_124 in row 124 column H
+  - Shows m_124 in row 124 column M
+```
+
+**No circular dependency!** Each stage depends only on previous stage outputs.
+
+### E.3 Implementation Strategy
+
+#### What Changes:
+1. ✅ Split `calculateAll()` into `calculateStage1()` and `calculateStage2()`
+2. ✅ Move m_124 calculation from main flow to conditional Stage 2
+3. ✅ Add StateManager listener for m_129 to trigger Stage 2
+4. ✅ Add d_116 check before running Stage 2
+
+#### What Stays the Same:
+1. ❌ DO NOT change psychrometric formulas (wet bulb, humidity ratio, etc.)
+2. ❌ DO NOT change S13 m_129 calculation: `MAX(0, d_129 - h_124 - d_123)`
+3. ❌ DO NOT change Excel parity calculations
+4. ❌ DO NOT change constants (0.62198, physics values, etc.)
+
+#### Success Criteria:
+1. ✅ User can change g_118 without "priming"
+2. ✅ First navigation to S13 shows correct values (no iteration needed)
+3. ✅ Stage 1 completes without reading m_129
+4. ✅ Stage 2 only runs if d_116 ≠ "No Cooling"
+5. ✅ Excel parity maintained (100% match within ±0.01%)
+
+### E.4 Testing Plan
+
+#### Bootstrap Elimination Test:
+1. Clear localStorage (fresh state)
+2. Load calculator
+3. Enter building/climate data
+4. Navigate to S13
+5. **Verify:** All cooling values appear correctly on first visit
+6. **Verify:** No need to toggle g_118 or d_116
+7. Change g_118 value
+8. **Verify:** h_124 updates immediately, m_129 follows, m_124 updates last
+9. Set d_116 = "No Cooling"
+10. **Verify:** Stage 2 skips, m_124 not calculated
+
+#### Excel Parity Test:
+1. Use COOLING-TARGET.csv test case (Alexandria, ON)
+2. Compare Stage 1 outputs (h_124, latentLoadFactor) to Excel
+3. Compare Stage 2 outputs (m_124) to Excel
+4. **Pass:** All values within ±0.01%
+
+---
+
 ## Appendix C: Critical Questions for Resolution Before Implementation
 
 ### Context from User (2025-01-20)
