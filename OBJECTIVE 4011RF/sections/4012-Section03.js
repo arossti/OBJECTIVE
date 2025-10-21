@@ -762,8 +762,8 @@ window.TEUI.SectionModules.sect03 = (function () {
         // NEW: Summer Night Temperature field (l_20) - Cooling Refactor Phase 5.1.1
         // Replaces: j_20 "HDD Reference Lookup" and k "HDD - Energy Star"
         // TODO: Add tooltips with links to HDD/CDD reference resources later
-        j: { content: "Summer Night ºC", classes: ["label-main"] },
-        k: { content: "", classes: [] }, // Empty cell
+        j: { content: "L.2.0", classes: ["label-prefix"] },
+        k: { content: "Summer Night ºC", classes: ["label-main"] },
         l: {
           fieldId: "l_20",
           type: "editable",
@@ -818,8 +818,8 @@ window.TEUI.SectionModules.sect03 = (function () {
         // NEW: Summer RH% field (l_21) - Cooling Refactor Phase 5.1.1
         // Replaces: j_21 "CDD Reference Lookup" and k "CDD - Energy Star"
         // TODO: Add tooltips with links to HDD/CDD reference resources later
-        j: { content: "Summer RH%", classes: ["label-main"] },
-        k: { content: "", classes: [] }, // Empty cell
+        j: { content: "L.2.2", classes: ["label-prefix"] },
+        k: { content: "Summer RH%", classes: ["label-main"] },
         l: {
           fieldId: "l_21",
           type: "editable",
