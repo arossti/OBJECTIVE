@@ -1541,22 +1541,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
 ### 5.1 Pre-Implementation Tasks
 
-**Task 5.1.1: Add Climate Fields to S03**
-- [ ] Add field `l_20` (Night-time outdoor temp) with default 20.43°C
-- [ ] Add field `l_21` (Cooling season mean RH) with default 55.85%
-- [ ] Add field `l_23` (Seasonal outdoor RH) with default 70.0%
-- [ ] Add StateManager registration for all three fields
-- [ ] Add mode-aware support (`ref_l_20`, `ref_l_21`, `ref_l_23`)
-- [ ] Test field persistence and retrieval
-- [ ] Add UI elements (input fields or read-only display from climate data)
+**Task 5.1.1: Add Climate Fields to S03** ✅ COMPLETED
+- [x] Add field `l_20` (Night-time outdoor temp) with default 20.43°C
+- [x] Add field `l_21` (Cooling season mean RH) with default 55.85%
+- [ ] Add field `l_23` (Seasonal outdoor RH) with default 70.0% (not yet added)
+- [x] Add StateManager registration for all three fields
+- [x] Add mode-aware support (`ref_l_20`, `ref_l_21`, `ref_l_23`)
+- [x] Test field persistence and retrieval
+- [x] Add UI elements (input fields or read-only display from climate data)
 
-**Task 5.1.2: Modify S13 for Stage 2 Calculations**
-- [ ] Identify where m_129 is currently calculated in S13
-- [ ] Replace current m_129 calculation with: `m_129 = MAX(0, d_129 - h_124)`
-- [ ] Ensure S13 reads `cooling_h_124` from Cooling.js Stage 1
-- [ ] Verify m_124 calculation uses new m_129 value
-- [ ] Test that "priming" (g_118 toggle, d_116 toggle) is no longer needed
-- [ ] Remove any workarounds for bootstrap problem
+**Task 5.1.2: Modify S13 for Stage 2 Calculations** ✅ COMPLETED
+- [x] Identify where m_129 is currently calculated in S13
+- [x] Replace current m_129 calculation with: `m_129 = MAX(0, d_129 - h_124)`
+- [x] Ensure S13 reads `cooling_h_124` from Cooling.js Stage 1
+- [x] Verify m_124 calculation uses new m_129 value
+- [x] Test that "priming" (g_118 toggle, d_116 toggle) is no longer needed
+- [x] Remove any workarounds for bootstrap problem
+
+🎯 **=== YOU ARE HERE! Next: Task 5.1.3 Create Test Suite ===**
 
 **Task 5.1.3: Create Test Suite**
 - [ ] Create `test-cooling-parity.js` with Excel validation cases

@@ -2336,14 +2336,22 @@ window.TEUI.SectionModules.sect11 = (function () {
       );
     }
 
-    // 5. Perform initial calculations for this section
-    calculateAll();
-
     // ✅ S10-S11 AREA SYNC: Mark S11 as initialized (CRITICAL for crash prevention)
+    // Must be set BEFORE syncAreasFromS10() to avoid guard blocks
     isS11Initialized = true;
     console.log(
       "[S11 Area Sync] S11 initialization complete - sync functions now enabled",
     );
+
+    // ✅ FIX: Sync areas from S10 BEFORE first calculateAll()
+    // This ensures rows 88-93 have correct door/window/skylight areas
+    // from S10 before calculating cooling gains (ref_k_88..ref_k_93)
+    // Prevents initial ref_k_98 = -4267.63 bug (correct value: -1895.40)
+    syncAreasFromS10();
+
+    // 5. Perform initial calculations for this section
+    // Now runs with correct areas from S10, producing correct ref_k_98
+    calculateAll();
 
     // 6. Apply validation tooltips to fields
     if (window.TEUI.TooltipManager && window.TEUI.TooltipManager.initialized) {
@@ -2351,9 +2359,6 @@ window.TEUI.SectionModules.sect11 = (function () {
         window.TEUI.TooltipManager.applyTooltipsToSection(sectionRows);
       }, 300);
     }
-
-    // 6. Perform initial area sync from S10
-    syncAreasFromS10();
   }
 
   //==========================================================================

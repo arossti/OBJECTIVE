@@ -234,6 +234,117 @@ Bug is fixed when:
 ---
 **Status**: Open
 **Priority**: Medium (works after priming, not blocking)
-**Date Created**: 2025-01-21
-**Last Updated**: 2025-01-21
+**Date Created**: 2025-10-21
+**Last Updated**: 2025-10-21
 **Clean Baseline Commit**: `e575b6c` - "📝 docs: Add S12-DEBUG.md - k_104 Reference mode display bug"
+
+USER: Aha! I think I see what is happening, the Cooling Season gains are NOT appearing in the rows 88-93 of the Reference mode for the door/window/skylight objects! They are all 0! After a 'Rest' command at S11 in Reference mode. We need to MODE SWITCH to get those values to correct from 0. When these values in column K read as zeros, the initialized totals produce the value of -4,267.63 ! That is where this value is coming from. So I suspect what may be happening, is S10 is where the door/window/skylight areas are entered by the user (or read from defaults or imports), then S11 needs to rwsd those, update them in the DOM, perform calculations with them, etc. so the issue is probably S10-S11-S12 in that order, and is a failure to properly calculate the K column heatgain values to derive an accurate k_98 value!
+
+Key finding (root cause)
+On S11 initialization the code calls calculateAll() before it synchronizes door/window/skylight areas from S10.
+
+Sequence in S11.onSectionRendered():
+
+ModeManager.initialize()
+initializeEventHandlers()
+ModeManager.refreshUI()
+calculateAll() ← runs calculations while S11 still lacks d_88..d_93 area values
+isS11Initialized = true
+syncAreasFromS10() ← syncs S10 areas INTO S11 and triggers calculateAll() again
+Because calculateAll() runs before syncAreasFromS10(), the first Reference calculation (and the first write of ref_k_* values to the StateManager) uses empty/zero area values for rows 88–93, so their K (cooling gains) are zero. That produces the erroneous ref_k_98 (which then propagates and is read by S12). Later when you mode-switch (or otherwise trigger area sync), syncAreasFromS10() runs and recalculates with correct areas, and everything updates — which is why the bug disappears after the "priming" action.
+
+In short: timing/order issue — S11 calculates before it has the S10 area inputs, so ref_k_88..ref_k_93 (and therefore ref_k_98) are written as zeros initially.
+
+Evidence / code pointers
+S11.onSectionRendered() calls calculateAll() then syncAreasFromS10() (lines shown in source).
+syncAreasFromS10():
+has guards (blocks if !isS11Initialized) and only runs after isS11Initialized is set true in onSectionRendered.
+reads ref_d_73..ref_d_78 (or d_73..d_78 depending on mode) and writes them to S11 state, then does calculateAll() (so a second calculation does happen).
+calculateComponentRow() uses S11 internal state d_88..d_93 for area; if those are still empty/zero, calcHeatgain becomes 0.
+S11 publishes ref_k_98 and individual ref_k_<row> values during its Reference engine; the initial publish can contain zeros if the prior calculation used zero areas.
+Immediate non-code remedies (safe, for testing or production hot-fix)
+You can fix the current page state in the browser console without code changes:
+
+Force S11 to resync areas and recalc:
+If you want to explicitly recalc both S11 and S12:
+Or trigger a mode toggle which (by design) causes syncAreasFromS10():
+These will immediately clear the incorrect zeros and cause ref_k_98 and S12 k_104 to show the correct values.
+
+Recommended safe permanent fix (no risky refactor)
+You saw the pattern already; here are two small, low-risk options (I won't change code until you approve):
+
+Option A — reorder S11 initialization (preferred, minimal change)
+
+In S11.onSectionRendered(), call syncAreasFromS10() before the initial calculateAll() so the first calculation has correct areas:
+Move the syncAreasFromS10() call up so the order is:
+ModeManager.initialize()
+injectHeaderControls()
+initializeEventHandlers()
+ModeManager.refreshUI()
+isS11Initialized = true
+syncAreasFromS10()
+calculateAll()
+Rationale: ensures S11 has S10 area inputs before the first calculation and before the first write of ref_k_*.
+
+Option B — delay S11 initial publish of ref_k_* until after syncAreasFromS10() completes
+
+Add a guard so S11 does not write final ref_k_* outputs to StateManager until syncAreasFromS10() has completed at least once (e.g., check that d_88..d_93 are non-empty or a module flag hasSyncedAreasFromS10 is true).
+Rationale: more targeted (prevents publishing zeros) but slightly more code paths.
+Either option is small and safe; Option A is simpler and fewer conditionals.
+
+Tests to validate the fix (manual)
+Hard refresh the page.
+Initialize/import.
+Without any user interactions, go to S11 and check ref_k_88..ref_k_93 in StateManager (use console: window.TEUI.StateManager.getValue('ref_k_88'), etc.). They should be non-zero for non-zero areas.
+Go to S12 Reference mode, verify k_104 equals S11 k_98.
+If you want I can implement Option A (move sync call) and run a quick in-repo change + smoke check, but you asked for no new code until you're sure — so I'll wait for your go-ahead.
+
+Next steps (pick one)
+I can apply Option A (small code edit), run the minimal test in the browser (and update the repo), and provide the patch.
+Or you can run the quick console workaround I gave to unblock immediate testing.
+Or I can prepare a tiny unit/integration test (if you want automated confirmation) and the code patch.
+---
+
+## 🚨 CRITICAL UPDATE (Session 2) - THE REAL MYSTERY
+
+**After attempting the S11 sync reorder fix, the mystery deepens:**
+
+### What We Thought Was Wrong
+- S11 wasn't syncing door/window areas before calculating
+- This caused ref_k_98 to be wrong in StateManager
+
+### What's ACTUALLY Happening (Verified in Latest Logs)
+1. **S11 DOM shows CORRECT value** `-1895.40` in Reference mode ✅
+2. **S12 DOM shows WRONG value** `-4267.63` in Reference mode ❌  
+3. **This happens even AFTER the sync reorder fix**
+4. **S11's DOM is correct, but S12 still reads wrong value**
+
+### The Paradox
+**S11 displays the correct value `-1895.40` in its DOM, but S12 reads `-4267.63` from somewhere.**
+
+This means one of:
+1. **S11 publishes wrong value to StateManager** (even though DOM is correct)
+2. **S12 reads from wrong source** (not reading latest StateManager value)
+3. **Timing issue**: S12 reads BEFORE S11 publishes the correct value
+4. **Multiple S11 publishes**: First publish is wrong, second is correct, but S12 already cached the first
+
+### Next Investigation Required
+**Console commands to run after initialization:**
+```javascript
+// Check what S11 has internally
+window.TEUI.SectionModules.sect11.ReferenceState.getValue("k_98")
+
+// Check what S11 published to StateManager  
+window.TEUI.StateManager.getValue("ref_k_98")
+
+// Check what S12 has internally
+window.TEUI.SectionModules.sect12.ReferenceState.getValue("k_104")
+
+// Check what DOM shows
+document.querySelector('[data-field-id="k_98"]').textContent  // S11
+document.querySelector('[data-field-id="k_104"]').textContent // S12
+```
+
+**Status**: Investigation paused - developer needs break
+**Attempted Fix**: Reordered S11 initialization (sync before calculate) - **DID NOT FIX**
+**Next Step**: Determine if this is S11 publishing issue or S12 reading issue
