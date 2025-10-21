@@ -2375,20 +2375,15 @@ window.TEUI.SectionModules.sect03 = (function () {
         ? "integer"
         : "number-2dp"; // Default format
       this.textContent = window.TEUI.formatNumber(numericValue, formatType);
-      // ✅ MODE-AWARE: Update StateManager based on current mode
-      if (window.TEUI.StateManager) {
-        const key =
-          ModeManager.currentMode === "reference" ? `ref_${fieldId}` : fieldId;
-        window.TEUI.StateManager.setValue(
-          key,
-          numericValue.toString(),
-          "user-modified",
-        );
-      }
+
+      // ✅ MODE-AWARE: Update BOTH internal state (TargetState/ReferenceState) AND StateManager
+      // Use ModeManager.setValue() which handles both automatically
+      ModeManager.setValue(fieldId, numericValue.toString(), "user-modified");
+
       calculateAll(); // Recalculate after state update
     } else {
       // Revert to previous value if input is invalid
-      const previousValue = window.TEUI.StateManager?.getValue(fieldId) || "0"; // Fallback to 0
+      const previousValue = ModeManager.getValue(fieldId) || "0"; // Read from internal state
       const prevNumericValue = window.TEUI.parseNumeric(previousValue, 0);
       const formatType = Number.isInteger(prevNumericValue)
         ? "integer"
