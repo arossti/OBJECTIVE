@@ -530,8 +530,51 @@ Complete the listener chain (S10 → S11 → S13 → S04). **Rejected** because:
 
 ---
 
+## Phase 4: Import Process Investigation (Commit `409078b`)
+
+### Clarified Understanding
+
+**User Clarification**: The issue is specifically **user edits AFTER import**:
+- ✅ After Init → User Edits: Work perfectly
+- ✅ After Import → Initial Calculation: Works perfectly
+- ❌ After Import → User Edits: Broken
+
+**Key Insight**: Import itself runs `Calculator.calculateAll()` successfully. But something during the import process breaks the listener cascade for *subsequent* user interactions.
+
+### New Hypothesis: Import Corrupts Listener State
+
+The import process:
+1. Mutes listeners (`muteListeners()`)
+2. Imports values
+3. Syncs Pattern A sections (`syncPatternASections()`)
+4. Unmutes listeners (`unmuteListeners()`)
+5. Runs `Calculator.calculateAll()`
+
+**Something in steps 1-4 corrupts the listener registry or state.**
+
+### Test 6: Listener Count Before/After Import (NEEDED)
+
+**New Diagnostic**: Added listener counting to mute/unmute cycle
+
+**Test Protocol**:
+1. Hard refresh (init loads)
+2. Import Excel file
+3. Look for logs during import quarantine:
+   - `[StateManager] 📊 BEFORE MUTE: N listeners across M fields`
+   - `[StateManager] 📊 AFTER UNMUTE: N listeners across M fields`
+   - `[StateManager] 🔍 ref_i_103 has X listeners registered`
+
+**What This Reveals**:
+- If listener count changes: Import is clearing/corrupting listeners
+- If listener count stays same: Issue is elsewhere (listener state, callback corruption, etc.)
+- If ref_i_103 has 0 listeners: Import specifically breaks S10 listeners
+
+*Results pending...*
+
+---
+
 **Last Updated**: October 22, 2025
 **Assigned To**: AI Agent
 **Priority**: CRITICAL - Blocking production deployment
-**Current Commit**: `e340691` - Listener firing diagnostics
-**Status**: Root cause identified, solution proposed, ready to implement
+**Current Commit**: `409078b` - Listener count diagnostics
+**Status**: Testing import's effect on listener registry
