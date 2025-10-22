@@ -345,6 +345,120 @@ document.querySelector('[data-field-id="k_98"]').textContent  // S11
 document.querySelector('[data-field-id="k_104"]').textContent // S12
 ```
 
-**Status**: Investigation paused - developer needs break
+**Status**: ROOT CAUSE IDENTIFIED ✅
 **Attempted Fix**: Reordered S11 initialization (sync before calculate) - **DID NOT FIX**
-**Next Step**: Determine if this is S11 publishing issue or S12 reading issue
+
+---
+
+## ✅ ROOT CAUSE IDENTIFIED (After Diagnostic Testing)
+
+### The Problem
+**S11 publishes wrong `ref_k_98 = -4267.63` to StateManager during initialization and it NEVER updates.**
+
+### Why It's Wrong
+1. During initialization, `calculateAll()` runs BOTH Target and Reference calculations
+2. Reference calculation happens BEFORE `syncAreasFromS10()` has populated door/window/skylight areas
+3. Rows 88-93 have zero areas → zero cooling gains in column K
+4. Total `ref_k_98` is wrong: `-4267.63` (without cooling gains)
+5. This wrong value gets published to StateManager and **never corrects**
+
+### Why Manual Toggle "Works"
+- When you manually switch S11 to Reference mode, the DOM reads from S11's **internal ReferenceState**
+- S11's internal state is correct (areas eventually synced, calculations ran again)
+- But S11 **never re-publishes** the correct value to StateManager
+- StateManager still contains the stale wrong value from initialization
+
+### Why S12 Shows Wrong Value
+- S12 reads `ref_k_98` from **StateManager** (cross-section communication)
+- StateManager has stale `-4267.63` from S11's initial wrong publish
+- S12's calculation is correct, but uses wrong input
+- Result: `k_104 = -4267.63` instead of correct `-1895.40`
+
+### Why "Priming" Fixes It
+- Changing any S12 field triggers `calculateAll()`
+- This recalculates S12's Reference model
+- At THIS point, S11 has already re-synced areas and re-published correct `ref_k_98`
+- S12 now reads correct value from StateManager
+
+### Evidence from Diagnostic Dump
+```
+PHASE 1: Post-Initialization
+  StateManager ref_k_98: -4267.625965209389  ← WRONG, never changes
+  S11 ReferenceState k_98: undefined         ← Never populated in console (but works in UI)
+
+ALL PHASES:
+  StateManager ref_k_98: -4267.625965209389  ← Stays wrong through all mode toggles
+```
+
+### Architectural Issue
+This violates **Anti-Pattern 4** from CHEATSHEET.md:
+> "Calculation engines correctly compute values and store them in the global StateManager,
+> but fail to update the section's internal state objects (TargetState and ReferenceState)."
+
+In S11's case, it's the inverse:
+- S11's internal ReferenceState is eventually correct
+- But the value published to StateManager during initialization is wrong and never re-published
+
+---
+
+## 🎯 PROPOSED FIX
+
+### Option 1: Ensure syncAreasFromS10() happens BEFORE first calculateAll() (ALREADY ATTEMPTED)
+**Status**: Implemented but didn't work - sync still runs in Target mode only
+
+### Option 2: Force syncAreasFromS10() to sync into BOTH states during initialization ✅ RECOMMENDED
+**Why**: During initialization, currentMode is "target", so sync only populates TargetState
+**Fix**: During initialization, sync should populate both Target AND Reference states
+
+```javascript
+function syncAreasFromS10() {
+  if (!isS11Initialized) return;
+  if (isSyncingFromS10) return;
+
+  isSyncingFromS10 = true;
+  try {
+    const currentMode = ModeManager.currentMode;
+
+    // ✅ FIX: During initialization, sync into BOTH states
+    // This ensures Reference calculations have correct areas
+    const isInitialSync = (currentMode === "target" &&
+                           ReferenceState.getValue("d_88") === undefined);
+
+    Object.entries(areaSourceMap).forEach(([s11Field, s10Field]) => {
+      // Read from appropriate source
+      const targetSource = s10Field;
+      const refSource = `ref_${s10Field}`;
+
+      const targetValue = window.TEUI.StateManager.getValue(targetSource);
+      const refValue = window.TEUI.StateManager.getValue(refSource);
+
+      // Write to Target state
+      if (targetValue !== null && targetValue !== undefined) {
+        TargetState.setValue(s11Field, targetValue);
+      }
+
+      // ✅ FIX: Also write to Reference state during initial sync
+      if (isInitialSync && refValue !== null && refValue !== undefined) {
+        ReferenceState.setValue(s11Field, refValue);
+      } else if (currentMode === "reference" && refValue !== null && refValue !== undefined) {
+        ReferenceState.setValue(s11Field, refValue);
+      }
+
+      // Update DOM
+      setCalculatedValue(s11Field,
+        currentMode === "target" ? targetValue : refValue,
+        "number"
+      );
+    });
+
+    ModeManager.refreshUI();
+    calculateAll();
+  } finally {
+    isSyncingFromS10 = false;
+  }
+}
+```
+
+### Option 3: Add listener to re-publish ref_k_98 after mode switch
+**Why**: Too complex, violates "toggle is display-only" principle
+**Status**: Not recommended

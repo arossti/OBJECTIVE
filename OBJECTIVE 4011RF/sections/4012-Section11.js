@@ -1201,34 +1201,76 @@ window.TEUI.SectionModules.sect11 = (function () {
 
     try {
       const currentMode = ModeManager.currentMode; // "target" or "reference"
-      console.log(`[S11 Area Sync] Starting sync in ${currentMode} mode`);
+
+      // ✅ FIX: Detect if this is initial sync (during initialization)
+      // Check if ReferenceState areas are unpopulated - if so, sync into BOTH states
+      const isInitialSync =
+        currentMode === "target" &&
+        ReferenceState.getValue("d_88") === undefined;
+
+      if (isInitialSync) {
+        console.log(
+          `[S11 Area Sync] INITIAL SYNC - populating BOTH Target and Reference states`,
+        );
+      } else {
+        console.log(`[S11 Area Sync] Starting sync in ${currentMode} mode`);
+      }
 
       Object.entries(areaSourceMap).forEach(([s11Field, s10Field]) => {
-        // Determine source field based on mode
-        const sourceFieldId =
-          currentMode === "reference" ? `ref_${s10Field}` : s10Field;
+        // Determine source fields
+        const targetSourceField = s10Field;
+        const refSourceField = `ref_${s10Field}`;
 
         // Read from S10 via global StateManager
-        const areaValue = window.TEUI.StateManager.getValue(sourceFieldId);
+        const targetValue =
+          window.TEUI.StateManager.getValue(targetSourceField);
+        const refValue = window.TEUI.StateManager.getValue(refSourceField);
 
-        if (areaValue !== null && areaValue !== undefined) {
-          // Write to appropriate S11 state
-          if (currentMode === "target") {
-            TargetState.setValue(s11Field, areaValue);
-          } else {
-            ReferenceState.setValue(s11Field, areaValue);
+        // ✅ FIX: During initial sync, populate BOTH states
+        if (isInitialSync) {
+          // Sync Target state
+          if (targetValue !== null && targetValue !== undefined) {
+            TargetState.setValue(s11Field, targetValue);
+            console.log(
+              `[S11 Area Sync] ${s11Field} TARGET = ${targetValue}`,
+            );
           }
 
-          // Update display element - use setCalculatedValue helper
-          setCalculatedValue(s11Field, areaValue, "number");
+          // Sync Reference state (THIS IS THE FIX - ensures ref areas available for first calc)
+          if (refValue !== null && refValue !== undefined) {
+            ReferenceState.setValue(s11Field, refValue);
+            console.log(
+              `[S11 Area Sync] ${s11Field} REFERENCE = ${refValue}`,
+            );
+          }
 
-          console.log(
-            `[S11 Area Sync] ${s11Field} = ${areaValue} (from ${sourceFieldId})`,
-          );
+          // Update DOM with Target value (we're in Target mode)
+          setCalculatedValue(s11Field, targetValue, "number");
         } else {
-          console.warn(
-            `[S11 Area Sync] ${sourceFieldId} is null/undefined, skipping ${s11Field}`,
-          );
+          // Normal mode-aware sync
+          const sourceFieldId =
+            currentMode === "reference" ? refSourceField : targetSourceField;
+          const areaValue = window.TEUI.StateManager.getValue(sourceFieldId);
+
+          if (areaValue !== null && areaValue !== undefined) {
+            // Write to appropriate S11 state
+            if (currentMode === "target") {
+              TargetState.setValue(s11Field, areaValue);
+            } else {
+              ReferenceState.setValue(s11Field, areaValue);
+            }
+
+            // Update display element
+            setCalculatedValue(s11Field, areaValue, "number");
+
+            console.log(
+              `[S11 Area Sync] ${s11Field} = ${areaValue} (from ${sourceFieldId})`,
+            );
+          } else {
+            console.warn(
+              `[S11 Area Sync] ${sourceFieldId} is null/undefined, skipping ${s11Field}`,
+            );
+          }
         }
       });
 
