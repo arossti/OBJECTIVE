@@ -345,8 +345,9 @@ document.querySelector('[data-field-id="k_98"]').textContent  // S11
 document.querySelector('[data-field-id="k_104"]').textContent // S12
 ```
 
-**Status**: ROOT CAUSE IDENTIFIED ✅
-**Attempted Fix**: Reordered S11 initialization (sync before calculate) - **DID NOT FIX**
+**Status**: FIXED ✅ (with known loose ends - see below)
+**Fix Deployed**: Commit `2f64a1a` - S11 dual-state sync during initialization
+**Deployed**: gh-pages + main branch (Oct 21, 2025)
 
 ---
 
@@ -462,3 +463,109 @@ function syncAreasFromS10() {
 ### Option 3: Add listener to re-publish ref_k_98 after mode switch
 **Why**: Too complex, violates "toggle is display-only" principle
 **Status**: Not recommended
+
+---
+
+## ✅ FIX DEPLOYED (Commit 2f64a1a)
+
+### What Was Fixed
+Modified `syncAreasFromS10()` in S11 to detect initial sync and populate **BOTH TargetState AND ReferenceState** simultaneously. This ensures S11's Reference calculation has correct door/window/skylight areas on first run, producing correct `ref_k_98 = -1895.40`.
+
+### Verification
+After hard refresh + Initialize:
+- Navigate to S12
+- Switch to Reference mode
+- `k_104` shows `-1895.40` ✅ (correct, no priming needed)
+
+### Code Changes
+**File**: [4012-Section11.js:1202-1275](../sections/4012-Section11.js#L1202-L1275)
+
+```javascript
+// Detect initial sync
+const isInitialSync = currentMode === "target" && 
+                      ReferenceState.getValue("d_88") === undefined;
+
+if (isInitialSync) {
+  // Populate BOTH Target and Reference states
+  TargetState.setValue(s11Field, targetValue);
+  ReferenceState.setValue(s11Field, refValue);
+}
+```
+
+---
+
+## 🚧 KNOWN LOOSE ENDS (Post-Fix Issues)
+
+### Issue 1: State Mixing After Excel Import
+**Symptom**: After importing Excel file, changing S12's ACH value (g_109) shows incorrect behavior
+**Status**: Not yet investigated
+**Reproduces**: Import file → Change g_109 → Observe state mixing
+**Note**: Works correctly after Initialize (no import)
+
+**Hypothesis**: Import process may not be triggering dual-state sync properly, or may be populating states in wrong order.
+
+### Issue 2: Number Formatting in S12
+**Symptom**: Percentage values display as decimals (0.50 instead of 50%)
+**Fields Affected**: 
+- `l_101`, `l_102`, `l_103`, `l_104` (percentage fields)
+- Possibly others in S12
+
+**Status**: Known issue, needs formatting fix
+**Expected**: `50%` and `19%`
+**Actual**: `0.50` and `0.19`
+
+**Fix Location**: [4012-Section12.js:210-301](../sections/4012-Section12.js#L210-L301) - `updateCalculatedDisplayValues()` function
+
+**Potential Fix**:
+```javascript
+// In updateCalculatedDisplayValues(), add formatting for l_* fields
+if (fieldId.startsWith("l_")) {
+  formattedValue = window.TEUI.formatNumber(numericValue, "percent-0dp");
+}
+```
+
+---
+
+## 📋 SUGGESTED NEXT STEPS (Tomorrow AM)
+
+### Priority 1: Finish S12 Cleanup (High Value - Context Fresh)
+Since we have deep S12 context from 14+ hours debugging:
+1. **Fix number formatting** - Quick win, ~15 min
+2. **Investigate import state mixing** - 30-60 min
+3. **Test both fixes together** - 15 min
+
+**Why now**: S12 context is fresh, these are related issues, finish while we have momentum
+
+### Priority 2: Return to S13/Cooling Refactor
+Resume the original cooling/capacitance architecture work per C-RF-WP.md
+
+### Decision Point
+Should we:
+- **Option A**: Clean up S12 loose ends now (1-2 hours, finish the job)
+- **Option B**: Mark as "good enough" and return to S13 refactor
+- **Option C**: Create separate GitHub issues for loose ends, tackle later
+
+**Recommendation**: Option A - finish S12 while context is fresh, then S13 with clean slate
+
+---
+
+## 📊 Time Investment Summary
+
+**Total Time**: ~16 hours over multiple sessions
+**Approaches Tried**: 5 (listeners, orchestrator, DOM updates, reordering, dual-state sync)
+**Context Resets**: 3
+**Final Solution**: ~50 lines in one function (syncAreasFromS10)
+**ROI**: Critical bug fixed + deep architectural understanding gained
+
+**Key Learnings**:
+1. Dual-engine architecture requires both states populated before calculations
+2. Mode-aware code during initialization can cause asymmetric state population
+3. StateManager is cross-section communication, not source of truth for internal state
+4. Diagnostic protocols are essential for complex state issues
+5. Understanding architecture > clever hacks
+
+---
+
+**End of S12 Debug Documentation**
+**Last Updated**: Oct 21, 2025, 11:45 PM
+**Next Session**: Decide on loose ends vs S13 refactor priority
