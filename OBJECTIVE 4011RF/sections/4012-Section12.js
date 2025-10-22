@@ -337,9 +337,14 @@ window.TEUI.SectionModules.sect12 = (function () {
     setValue: function (fieldId, value, source = "user") {
       this.getCurrentState().setValue(fieldId, value, source);
 
-      // BRIDGE: For backward compatibility, sync Target changes to global StateManager
+      // ✅ FIX: Publish BOTH Target and Reference changes to StateManager
+      // This ensures downstream sections receive updates in both modes
       if (this.currentMode === "target") {
+        // Target mode: publish unprefixed value
         window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
+      } else if (this.currentMode === "reference") {
+        // Reference mode: publish with ref_ prefix
+        window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "user-modified");
       }
     },
     refreshUI: function () {
@@ -2817,13 +2822,21 @@ window.TEUI.SectionModules.sect12 = (function () {
       calculateAll();
     });
 
-    // ✅ MISSING: Internal field listeners to trigger calculations
-    // When user changes S12's own fields, calculations should be triggered
+    // ✅ DUAL-STATE: Internal field listeners to trigger calculations
+    // Target mode listeners (unprefixed)
     window.TEUI.StateManager.addListener("d_103", () => calculateAll()); // Stories
     window.TEUI.StateManager.addListener("g_103", () => calculateAll()); // Exposure
     window.TEUI.StateManager.addListener("d_105", () => calculateAll()); // Volume
     window.TEUI.StateManager.addListener("d_108", () => calculateAll()); // Blower door method
     window.TEUI.StateManager.addListener("g_109", () => calculateAll()); // Measured ACH50
+
+    // ✅ FIX: Reference mode listeners (ref_ prefixed)
+    // These ensure Reference mode user changes trigger full calculation chain
+    window.TEUI.StateManager.addListener("ref_d_103", () => calculateAll()); // Stories
+    window.TEUI.StateManager.addListener("ref_g_103", () => calculateAll()); // Exposure
+    window.TEUI.StateManager.addListener("ref_d_105", () => calculateAll()); // Volume
+    window.TEUI.StateManager.addListener("ref_d_108", () => calculateAll()); // Blower door method
+    window.TEUI.StateManager.addListener("ref_g_109", () => calculateAll()); // Measured ACH50
 
     s12ListenersAdded = true;
     console.log(
