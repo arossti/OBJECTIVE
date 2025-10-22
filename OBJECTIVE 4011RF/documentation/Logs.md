@@ -1,1217 +1,3 @@
- [Cooling] Free cooling calc: massFlow=42.803 kg/s, ΔT=3.6°C → 3685.68 kWh/day → 442281.23 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=442281.23 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [S10 DEBUG] Dual-engine calculations complete in target mode
- S10: Target utilization factor dependency i_97 changed.
- S10: Target listener triggered by i_98, recalculating all.
- [S10 DEBUG] calculateAll() triggered in target mode - running both engines
- [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
-calculateAll @ 4012-Cooling.js:605
-calculateReferenceModel @ 4012-Section13.js:3024
-calculateAll @ 4012-Section13.js:2966
-calculateAndRefresh @ 4012-Section13.js:1899
-(anonymous) @ 4012-Section13.js:1917
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setCalculatedValue @ 4012-Section14.js:412
-calculateValues @ 4012-Section14.js:1177
-calculateTargetModel @ 4012-Section14.js:1135
-calculateAll @ 4012-Section14.js:944
-(anonymous) @ 4012-Section14.js:1432
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setFieldValue @ 4012-Section10.js:593
-calculateUtilizationFactors @ 4012-Section10.js:2536
-calculateTargetModel @ 4012-Section10.js:1933
-calculateAll @ 4012-Section10.js:1907
-(anonymous) @ 4012-Section10.js:2806
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setValue @ 4012-Section11.js:438
-setCalculatedValue @ 4012-Section11.js:1089
-calculateTargetModel @ 4012-Section11.js:1930
-calculateAll @ 4012-Section11.js:2043
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-(anonymous) @ 4012-Section03.js:1751
-calculateTargetModel @ 4012-Section03.js:1748
-calculateAll @ 4012-Section03.js:1727
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
- [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=57.070 kg/s, ΔT=3.6°C → 4914.24 kWh/day → 589708.31 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=589708.31 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
- [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("target")?
-calculateAll @ 4012-Cooling.js:605
-calculateTargetModel @ 4012-Section13.js:3092
-calculateAll @ 4012-Section13.js:2968
-calculateAndRefresh @ 4012-Section13.js:1899
-(anonymous) @ 4012-Section13.js:1917
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setCalculatedValue @ 4012-Section14.js:412
-calculateValues @ 4012-Section14.js:1177
-calculateTargetModel @ 4012-Section14.js:1135
-calculateAll @ 4012-Section14.js:944
-(anonymous) @ 4012-Section14.js:1432
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setFieldValue @ 4012-Section10.js:593
-calculateUtilizationFactors @ 4012-Section10.js:2536
-calculateTargetModel @ 4012-Section10.js:1933
-calculateAll @ 4012-Section10.js:1907
-(anonymous) @ 4012-Section10.js:2806
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setValue @ 4012-Section11.js:438
-setCalculatedValue @ 4012-Section11.js:1089
-calculateTargetModel @ 4012-Section11.js:1930
-calculateAll @ 4012-Section11.js:2043
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-(anonymous) @ 4012-Section03.js:1751
-calculateTargetModel @ 4012-Section03.js:1748
-calculateAll @ 4012-Section03.js:1727
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
- [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=42.803 kg/s, ΔT=3.6°C → 3685.68 kWh/day → 442281.23 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=442281.23 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
-calculateAll @ 4012-Cooling.js:605
-calculateReferenceModel @ 4012-Section13.js:3024
-calculateAll @ 4012-Section13.js:2966
-calculateAndRefresh @ 4012-Section13.js:1899
-(anonymous) @ 4012-Section13.js:1917
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setCalculatedValue @ 4012-Section14.js:412
-calculateValues @ 4012-Section14.js:1177
-calculateTargetModel @ 4012-Section14.js:1135
-calculateAll @ 4012-Section14.js:944
-(anonymous) @ 4012-Section14.js:1432
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setFieldValue @ 4012-Section10.js:593
-calculateUtilizationFactors @ 4012-Section10.js:2536
-calculateTargetModel @ 4012-Section10.js:1933
-calculateAll @ 4012-Section10.js:1907
-(anonymous) @ 4012-Section10.js:2806
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setValue @ 4012-Section11.js:438
-setCalculatedValue @ 4012-Section11.js:1089
-calculateTargetModel @ 4012-Section11.js:1930
-calculateAll @ 4012-Section11.js:2043
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-(anonymous) @ 4012-Section03.js:1751
-calculateTargetModel @ 4012-Section03.js:1748
-calculateAll @ 4012-Section03.js:1727
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
- [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=57.070 kg/s, ΔT=3.6°C → 4914.24 kWh/day → 589708.31 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=589708.31 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("target")?
-calculateAll @ 4012-Cooling.js:605
-calculateTargetModel @ 4012-Section13.js:3092
-calculateAll @ 4012-Section13.js:2968
-calculateAndRefresh @ 4012-Section13.js:1899
-(anonymous) @ 4012-Section13.js:1917
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setCalculatedValue @ 4012-Section14.js:412
-calculateValues @ 4012-Section14.js:1177
-calculateTargetModel @ 4012-Section14.js:1135
-calculateAll @ 4012-Section14.js:944
-(anonymous) @ 4012-Section14.js:1432
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setFieldValue @ 4012-Section10.js:593
-calculateUtilizationFactors @ 4012-Section10.js:2536
-calculateTargetModel @ 4012-Section10.js:1933
-calculateAll @ 4012-Section10.js:1907
-(anonymous) @ 4012-Section10.js:2806
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setValue @ 4012-Section11.js:438
-setCalculatedValue @ 4012-Section11.js:1089
-calculateTargetModel @ 4012-Section11.js:1930
-calculateAll @ 4012-Section11.js:2043
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-(anonymous) @ 4012-Section03.js:1751
-calculateTargetModel @ 4012-Section03.js:1748
-calculateAll @ 4012-Section03.js:1727
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
- [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=42.803 kg/s, ΔT=3.6°C → 3685.68 kWh/day → 442281.23 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=442281.23 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
- [S10 DEBUG] Dual-engine calculations complete in target mode
- S10: Target utilization factor dependency i_98 changed.
- [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
-calculateAll @ 4012-Cooling.js:605
-calculateReferenceModel @ 4012-Section13.js:3024
-calculateAll @ 4012-Section13.js:2966
-calculateAndRefresh @ 4012-Section13.js:1899
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-(anonymous) @ 4012-Section03.js:1751
-calculateTargetModel @ 4012-Section03.js:1748
-calculateAll @ 4012-Section03.js:1727
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
- [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=57.070 kg/s, ΔT=3.6°C → 4914.24 kWh/day → 589708.31 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=589708.31 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("target")?
-calculateAll @ 4012-Cooling.js:605
-calculateTargetModel @ 4012-Section13.js:3092
-calculateAll @ 4012-Section13.js:2968
-calculateAndRefresh @ 4012-Section13.js:1899
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-(anonymous) @ 4012-Section03.js:1751
-calculateTargetModel @ 4012-Section03.js:1748
-calculateAll @ 4012-Section03.js:1727
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
- [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=42.803 kg/s, ΔT=3.6°C → 3685.68 kWh/day → 442281.23 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=442281.23 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
- [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
-calculateAll @ 4012-Cooling.js:605
-calculateReferenceModel @ 4012-Section13.js:3024
-calculateAll @ 4012-Section13.js:2966
-calculateAndRefresh @ 4012-Section13.js:1899
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-(anonymous) @ 4012-Section03.js:1751
-calculateTargetModel @ 4012-Section03.js:1748
-calculateAll @ 4012-Section03.js:1727
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
- [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=57.070 kg/s, ΔT=3.6°C → 4914.24 kWh/day → 589708.31 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=589708.31 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("target")?
-calculateAll @ 4012-Cooling.js:605
-calculateTargetModel @ 4012-Section13.js:3092
-calculateAll @ 4012-Section13.js:2968
-calculateAndRefresh @ 4012-Section13.js:1899
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-(anonymous) @ 4012-Section03.js:1751
-calculateTargetModel @ 4012-Section03.js:1748
-calculateAll @ 4012-Section03.js:1727
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
- [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=42.803 kg/s, ΔT=3.6°C → 3685.68 kWh/day → 442281.23 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=442281.23 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
- [S11] calculateAll TRIGGERED. isReferenceMode: false
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=277788.10, ref_k_97=-23528.38
- [S11] Writing ref penalty: ref_i_97=277788.10, ref_k_97=-23528.38
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
-calculateAll @ 4012-Cooling.js:605
-calculateReferenceModel @ 4012-Section13.js:3024
-calculateAll @ 4012-Section13.js:2966
-calculateAndRefresh @ 4012-Section13.js:1899
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-(anonymous) @ 4012-Section03.js:1751
-calculateTargetModel @ 4012-Section03.js:1748
-calculateAll @ 4012-Section03.js:1727
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
- [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=57.070 kg/s, ΔT=3.6°C → 4914.24 kWh/day → 589708.31 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=589708.31 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("target")?
-calculateAll @ 4012-Cooling.js:605
-calculateTargetModel @ 4012-Section13.js:3092
-calculateAll @ 4012-Section13.js:2968
-calculateAndRefresh @ 4012-Section13.js:1899
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-(anonymous) @ 4012-Section03.js:1751
-calculateTargetModel @ 4012-Section03.js:1748
-calculateAll @ 4012-Section03.js:1727
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
- [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=42.803 kg/s, ΔT=3.6°C → 3685.68 kWh/day → 442281.23 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=442281.23 kWh/yr, latentLoadFactor=1.746
- [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
- [S14 LISTENER] 🔥 d_122 changed - triggering calculateAll() + UI update
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
-calculateAll @ 4012-Cooling.js:605
-calculateReferenceModel @ 4012-Section13.js:3024
-calculateAll @ 4012-Section13.js:2966
-calculateAndRefresh @ 4012-Section13.js:1899
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-(anonymous) @ 4012-Section03.js:1751
-calculateTargetModel @ 4012-Section03.js:1748
-calculateAll @ 4012-Section03.js:1727
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
- [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=57.070 kg/s, ΔT=3.6°C → 4914.24 kWh/day → 589708.31 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=589708.31 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
- [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("target")?
-calculateAll @ 4012-Cooling.js:605
-calculateTargetModel @ 4012-Section13.js:3092
-calculateAll @ 4012-Section13.js:2968
-calculateAndRefresh @ 4012-Section13.js:1899
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-(anonymous) @ 4012-Section03.js:1751
-calculateTargetModel @ 4012-Section03.js:1748
-calculateAll @ 4012-Section03.js:1727
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
- [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=42.803 kg/s, ΔT=3.6°C → 3685.68 kWh/day → 442281.23 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=442281.23 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
- S10: Target listener triggered by j_19, recalculating all.
- [S10 DEBUG] calculateAll() triggered in target mode - running both engines
- [S10 DEBUG] Dual-engine calculations complete in target mode
- [S10 DEBUG] calculateAll() triggered in target mode - running both engines
- [S10 DEBUG] Dual-engine calculations complete in target mode
- [S10 DEBUG] calculateAll() triggered in target mode - running both engines
- [S10 DEBUG] Dual-engine calculations complete in target mode
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [S11] calculateAll TRIGGERED. isReferenceMode: false
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=277788.10, ref_k_97=-23528.38
- [S11] Writing ref penalty: ref_i_97=277788.10, ref_k_97=-23528.38
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [S11] calculateAll TRIGGERED. isReferenceMode: false
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=277788.10, ref_k_97=-23528.38
- [S11] Writing ref penalty: ref_i_97=277788.10, ref_k_97=-23528.38
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [S11] calculateAll TRIGGERED. isReferenceMode: false
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=277788.10, ref_k_97=-23528.38
- [S11] Writing ref penalty: ref_i_97=277788.10, ref_k_97=-23528.38
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] calculateAll TRIGGERED. isReferenceMode: false
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=277788.10, ref_k_97=-23528.38
- [S11] Writing ref penalty: ref_i_97=277788.10, ref_k_97=-23528.38
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S03] Target CALCULATED results stored (setpoints + derived values only - climate data already published)
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [S12] U-agg TGT: TB%=30 → g_101=0.676346, g_102=0.371429
- [S12] 🎯 TGT CLIMATE READ: d_20=3920, d_21=410
- S10: Target listener triggered by i_103, recalculating all.
- [S10 DEBUG] calculateAll() triggered in target mode - running both engines
- [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
-calculateAll @ 4012-Cooling.js:605
-calculateReferenceModel @ 4012-Section13.js:3024
-calculateAll @ 4012-Section13.js:2966
-calculateAndRefresh @ 4012-Section13.js:1899
-(anonymous) @ 4012-Section13.js:1917
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setCalculatedValue @ 4012-Section14.js:412
-calculateValues @ 4012-Section14.js:1177
-calculateTargetModel @ 4012-Section14.js:1135
-calculateAll @ 4012-Section14.js:944
-(anonymous) @ 4012-Section14.js:1432
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setFieldValue @ 4012-Section10.js:593
-calculateUtilizationFactors @ 4012-Section10.js:2536
-calculateTargetModel @ 4012-Section10.js:1933
-calculateAll @ 4012-Section10.js:1907
-(anonymous) @ 4012-Section10.js:2806
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setCalculatedValue @ 4012-Section12.js:1205
-calculateAirLeakageHeatLoss @ 4012-Section12.js:1928
-calculateTargetModel @ 4012-Section12.js:2389
-calculateTargetModel @ 4012-Section03.js:1777
-calculateAll @ 4012-Section03.js:1727
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
- [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=57.070 kg/s, ΔT=3.6°C → 4914.24 kWh/day → 589708.31 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=589708.31 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
- [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("target")?
-calculateAll @ 4012-Cooling.js:605
-calculateTargetModel @ 4012-Section13.js:3092
-calculateAll @ 4012-Section13.js:2968
-calculateAndRefresh @ 4012-Section13.js:1899
-(anonymous) @ 4012-Section13.js:1917
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setCalculatedValue @ 4012-Section14.js:412
-calculateValues @ 4012-Section14.js:1177
-calculateTargetModel @ 4012-Section14.js:1135
-calculateAll @ 4012-Section14.js:944
-(anonymous) @ 4012-Section14.js:1432
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setFieldValue @ 4012-Section10.js:593
-calculateUtilizationFactors @ 4012-Section10.js:2536
-calculateTargetModel @ 4012-Section10.js:1933
-calculateAll @ 4012-Section10.js:1907
-(anonymous) @ 4012-Section10.js:2806
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setCalculatedValue @ 4012-Section12.js:1205
-calculateAirLeakageHeatLoss @ 4012-Section12.js:1928
-calculateTargetModel @ 4012-Section12.js:2389
-calculateTargetModel @ 4012-Section03.js:1777
-calculateAll @ 4012-Section03.js:1727
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
- [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=42.803 kg/s, ΔT=3.6°C → 3685.68 kWh/day → 442281.23 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=442281.23 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
-calculateAll @ 4012-Cooling.js:605
-calculateReferenceModel @ 4012-Section13.js:3024
-calculateAll @ 4012-Section13.js:2966
-calculateAndRefresh @ 4012-Section13.js:1899
-(anonymous) @ 4012-Section13.js:1917
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setCalculatedValue @ 4012-Section14.js:412
-calculateValues @ 4012-Section14.js:1177
-calculateTargetModel @ 4012-Section14.js:1135
-calculateAll @ 4012-Section14.js:944
-(anonymous) @ 4012-Section14.js:1432
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setFieldValue @ 4012-Section10.js:593
-calculateUtilizationFactors @ 4012-Section10.js:2536
-calculateTargetModel @ 4012-Section10.js:1933
-calculateAll @ 4012-Section10.js:1907
-(anonymous) @ 4012-Section10.js:2806
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setCalculatedValue @ 4012-Section12.js:1205
-calculateAirLeakageHeatLoss @ 4012-Section12.js:1928
-calculateTargetModel @ 4012-Section12.js:2389
-calculateTargetModel @ 4012-Section03.js:1777
-calculateAll @ 4012-Section03.js:1727
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
- [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=57.070 kg/s, ΔT=3.6°C → 4914.24 kWh/day → 589708.31 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=589708.31 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("target")?
-calculateAll @ 4012-Cooling.js:605
-calculateTargetModel @ 4012-Section13.js:3092
-calculateAll @ 4012-Section13.js:2968
-calculateAndRefresh @ 4012-Section13.js:1899
-(anonymous) @ 4012-Section13.js:1917
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setCalculatedValue @ 4012-Section14.js:412
-calculateValues @ 4012-Section14.js:1177
-calculateTargetModel @ 4012-Section14.js:1135
-calculateAll @ 4012-Section14.js:944
-(anonymous) @ 4012-Section14.js:1432
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setFieldValue @ 4012-Section10.js:593
-calculateUtilizationFactors @ 4012-Section10.js:2536
-calculateTargetModel @ 4012-Section10.js:1933
-calculateAll @ 4012-Section10.js:1907
-(anonymous) @ 4012-Section10.js:2806
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setCalculatedValue @ 4012-Section12.js:1205
-calculateAirLeakageHeatLoss @ 4012-Section12.js:1928
-calculateTargetModel @ 4012-Section12.js:2389
-calculateTargetModel @ 4012-Section03.js:1777
-calculateAll @ 4012-Section03.js:1727
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
- [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=42.803 kg/s, ΔT=3.6°C → 3685.68 kWh/day → 442281.23 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=442281.23 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
- [S10 DEBUG] Dual-engine calculations complete in target mode
- S10: Target utilization factor dependency i_103 changed.
- [S12DB] TGT CLIMATE: d_20=3920, d_21=410, d_22=1960, h_22=-1680
- [S12DB] TGT h_101 calc: (3920*0.6763455491781712*24)/1000 = 63.63058926668235
- [S12DB] TGT i_101 result: 63.63058926668235 * 16633 = 1058367.5912727276
- [S12DB] TGT g_104 calc: (0.6763455491781712*16633 + 0.37142857142857144*11168)/27801.000001 = 0.5538566887752582
- [S12DB] TGT ROW104: i_101=1058367.5912727276, i_102=195127.296, i_103=608564.0435368421 → i_104=1862058.9308095698
- [S12DB] TGT ROW104: h_21="Capacitance", k_98=20823.55870129871 → k_104=20823.55870129871
- [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
-calculateAll @ 4012-Cooling.js:605
-calculateReferenceModel @ 4012-Section13.js:3024
-calculateAll @ 4012-Section13.js:2966
-calculateAndRefresh @ 4012-Section13.js:1899
-(anonymous) @ 4012-Section13.js:1908
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setCalculatedValue @ 4012-Section12.js:1205
-calculateEnvelopeTotals @ 4012-Section12.js:2198
-calculateTargetModel @ 4012-Section12.js:2400
-calculateTargetModel @ 4012-Section03.js:1777
-calculateAll @ 4012-Section03.js:1727
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
- [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=57.070 kg/s, ΔT=3.6°C → 4914.24 kWh/day → 589708.31 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=589708.31 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("target")?
-calculateAll @ 4012-Cooling.js:605
-calculateTargetModel @ 4012-Section13.js:3092
-calculateAll @ 4012-Section13.js:2968
-calculateAndRefresh @ 4012-Section13.js:1899
-(anonymous) @ 4012-Section13.js:1908
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setCalculatedValue @ 4012-Section12.js:1205
-calculateEnvelopeTotals @ 4012-Section12.js:2198
-calculateTargetModel @ 4012-Section12.js:2400
-calculateTargetModel @ 4012-Section03.js:1777
-calculateAll @ 4012-Section03.js:1727
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
- [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=42.803 kg/s, ΔT=3.6°C → 3685.68 kWh/day → 442281.23 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=442281.23 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
-calculateAll @ 4012-Cooling.js:605
-calculateReferenceModel @ 4012-Section13.js:3024
-calculateAll @ 4012-Section13.js:2966
-calculateAndRefresh @ 4012-Section13.js:1899
-(anonymous) @ 4012-Section13.js:1908
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setCalculatedValue @ 4012-Section12.js:1205
-calculateEnvelopeTotals @ 4012-Section12.js:2198
-calculateTargetModel @ 4012-Section12.js:2400
-calculateTargetModel @ 4012-Section03.js:1777
-calculateAll @ 4012-Section03.js:1727
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
- [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=57.070 kg/s, ΔT=3.6°C → 4914.24 kWh/day → 589708.31 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=589708.31 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("target")?
-calculateAll @ 4012-Cooling.js:605
-calculateTargetModel @ 4012-Section13.js:3092
-calculateAll @ 4012-Section13.js:2968
-calculateAndRefresh @ 4012-Section13.js:1899
-(anonymous) @ 4012-Section13.js:1908
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setCalculatedValue @ 4012-Section12.js:1205
-calculateEnvelopeTotals @ 4012-Section12.js:2198
-calculateTargetModel @ 4012-Section12.js:2400
-calculateTargetModel @ 4012-Section03.js:1777
-calculateAll @ 4012-Section03.js:1727
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
- [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=42.803 kg/s, ΔT=3.6°C → 3685.68 kWh/day → 442281.23 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=442281.23 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
- [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
-calculateAll @ 4012-Cooling.js:605
-calculateReferenceModel @ 4012-Section13.js:3024
-calculateAll @ 4012-Section13.js:2966
-calculateAndRefresh @ 4012-Section13.js:1899
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setCalculatedValue @ 4012-Section12.js:1205
-calculateEnvelopeTotals @ 4012-Section12.js:2204
-calculateTargetModel @ 4012-Section12.js:2400
-calculateTargetModel @ 4012-Section03.js:1777
-calculateAll @ 4012-Section03.js:1727
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
- [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=57.070 kg/s, ΔT=3.6°C → 4914.24 kWh/day → 589708.31 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=589708.31 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
- [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("target")?
-calculateAll @ 4012-Cooling.js:605
-calculateTargetModel @ 4012-Section13.js:3092
-calculateAll @ 4012-Section13.js:2968
-calculateAndRefresh @ 4012-Section13.js:1899
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setCalculatedValue @ 4012-Section12.js:1205
-calculateEnvelopeTotals @ 4012-Section12.js:2204
-calculateTargetModel @ 4012-Section12.js:2400
-calculateTargetModel @ 4012-Section03.js:1777
-calculateAll @ 4012-Section03.js:1727
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
- [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=42.803 kg/s, ΔT=3.6°C → 3685.68 kWh/day → 442281.23 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=442281.23 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
-calculateAll @ 4012-Cooling.js:605
-calculateReferenceModel @ 4012-Section13.js:3024
-calculateAll @ 4012-Section13.js:2966
-calculateAndRefresh @ 4012-Section13.js:1899
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setCalculatedValue @ 4012-Section12.js:1205
-calculateEnvelopeTotals @ 4012-Section12.js:2204
-calculateTargetModel @ 4012-Section12.js:2400
-calculateTargetModel @ 4012-Section03.js:1777
-calculateAll @ 4012-Section03.js:1727
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
- [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=57.070 kg/s, ΔT=3.6°C → 4914.24 kWh/day → 589708.31 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=589708.31 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
- [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("target")?
-calculateAll @ 4012-Cooling.js:605
-calculateTargetModel @ 4012-Section13.js:3092
-calculateAll @ 4012-Section13.js:2968
-calculateAndRefresh @ 4012-Section13.js:1899
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setCalculatedValue @ 4012-Section12.js:1205
-calculateEnvelopeTotals @ 4012-Section12.js:2204
-calculateTargetModel @ 4012-Section12.js:2400
-calculateTargetModel @ 4012-Section03.js:1777
-calculateAll @ 4012-Section03.js:1727
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
- [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=42.803 kg/s, ΔT=3.6°C → 3685.68 kWh/day → 442281.23 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=442281.23 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
- [Section12] Calculated display values updated for target mode
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [S11] calculateAll TRIGGERED. isReferenceMode: false
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=277788.10, ref_k_97=-23528.38
- [S11] Writing ref penalty: ref_i_97=277788.10, ref_k_97=-23528.38
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] calculateAll TRIGGERED. isReferenceMode: false
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=277788.10, ref_k_97=-23528.38
- [S11] Writing ref penalty: ref_i_97=277788.10, ref_k_97=-23528.38
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
-calculateAll @ 4012-Cooling.js:605
-calculateReferenceModel @ 4012-Section13.js:3024
-calculateAll @ 4012-Section13.js:2966
-(anonymous) @ 4012-Section13.js:2307
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setValue @ 4012-Section03.js:230
-setFieldValue @ 4012-Section03.js:466
-calculateGroundFacing @ 4012-Section03.js:1699
-calculateReferenceModel @ 4012-Section03.js:1816
-calculateAll @ 4012-Section03.js:1728
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
- [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=57.070 kg/s, ΔT=3.6°C → 4914.24 kWh/day → 589708.31 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=589708.31 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
- [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("target")?
-calculateAll @ 4012-Cooling.js:605
-calculateTargetModel @ 4012-Section13.js:3092
-calculateAll @ 4012-Section13.js:2968
-(anonymous) @ 4012-Section13.js:2307
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setValue @ 4012-Section03.js:230
-setFieldValue @ 4012-Section03.js:466
-calculateGroundFacing @ 4012-Section03.js:1699
-calculateReferenceModel @ 4012-Section03.js:1816
-calculateAll @ 4012-Section03.js:1728
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
- [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=42.803 kg/s, ΔT=3.6°C → 3685.68 kWh/day → 442281.23 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=442281.23 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [S11] calculateAll TRIGGERED. isReferenceMode: false
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=277788.10, ref_k_97=-23528.38
- [S11] Writing ref penalty: ref_i_97=277788.10, ref_k_97=-23528.38
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] calculateAll TRIGGERED. isReferenceMode: false
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=277788.10, ref_k_97=-23528.38
- [S11] Writing ref penalty: ref_i_97=277788.10, ref_k_97=-23528.38
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
-calculateAll @ 4012-Cooling.js:605
-calculateReferenceModel @ 4012-Section13.js:3024
-calculateAll @ 4012-Section13.js:2966
-(anonymous) @ 4012-Section13.js:2311
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setValue @ 4012-Section03.js:230
-setFieldValue @ 4012-Section03.js:466
-calculateGroundFacing @ 4012-Section03.js:1718
-calculateReferenceModel @ 4012-Section03.js:1816
-calculateAll @ 4012-Section03.js:1728
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
- [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=57.070 kg/s, ΔT=3.6°C → 4914.24 kWh/day → 589708.31 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=589708.31 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("target")?
-calculateAll @ 4012-Cooling.js:605
-calculateTargetModel @ 4012-Section13.js:3092
-calculateAll @ 4012-Section13.js:2968
-(anonymous) @ 4012-Section13.js:2311
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-setValue @ 4012-Section03.js:230
-setFieldValue @ 4012-Section03.js:466
-calculateGroundFacing @ 4012-Section03.js:1718
-calculateReferenceModel @ 4012-Section03.js:1816
-calculateAll @ 4012-Section03.js:1728
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
- [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=42.803 kg/s, ΔT=3.6°C → 3685.68 kWh/day → 442281.23 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=442281.23 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [CLOCK] 🎯 User interaction started - timing to h_10 settlement
- [S11] calculateAll TRIGGERED. isReferenceMode: false
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=247818.90, ref_k_97=-23528.38
- S10: Reference listener triggered by ref_i_98, recalculating all.
- [S10 DEBUG] calculateAll() triggered in target mode - running both engines
- [S10 DEBUG] Dual-engine calculations complete in target mode
- S10: Reference utilization factor dependency ref_i_98 changed.
- [S11] Writing ref penalty: ref_i_97=247818.90, ref_k_97=-23528.38
- S10: Reference listener triggered by ref_i_97, recalculating all.
- [S10 DEBUG] calculateAll() triggered in target mode - running both engines
- [S10 DEBUG] Dual-engine calculations complete in target mode
- S10: Reference utilization factor dependency ref_i_97 changed.
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] calculateAll TRIGGERED. isReferenceMode: false
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=247818.90, ref_k_97=-23528.38
- [S11] Writing ref penalty: ref_i_97=247818.90, ref_k_97=-23528.38
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
-calculateAll @ 4012-Cooling.js:605
-calculateReferenceModel @ 4012-Section13.js:3024
-calculateAll @ 4012-Section13.js:2966
-(anonymous) @ 4012-Section13.js:2299
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-(anonymous) @ 4012-Section03.js:1867
-storeReferenceResults @ 4012-Section03.js:1865
-calculateReferenceModel @ 4012-Section03.js:1823
-calculateAll @ 4012-Section03.js:1728
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
- [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=57.070 kg/s, ΔT=3.6°C → 4914.24 kWh/day → 589708.31 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=589708.31 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- S10: Reference listener triggered by ref_m_121, recalculating all.
- [S10 DEBUG] calculateAll() triggered in target mode - running both engines
- [S10 DEBUG] Dual-engine calculations complete in target mode
- S10: Reference utilization factor dependency ref_m_121 changed.
- [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("target")?
-calculateAll @ 4012-Cooling.js:605
-calculateTargetModel @ 4012-Section13.js:3092
-calculateAll @ 4012-Section13.js:2968
-(anonymous) @ 4012-Section13.js:2299
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-(anonymous) @ 4012-Section03.js:1867
-storeReferenceResults @ 4012-Section03.js:1865
-calculateReferenceModel @ 4012-Section03.js:1823
-calculateAll @ 4012-Section03.js:1728
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
- [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=42.803 kg/s, ΔT=3.6°C → 3685.68 kWh/day → 442281.23 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=442281.23 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
- [S11] calculateAll TRIGGERED. isReferenceMode: false
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=247818.90, ref_k_97=-14096.90
- [S11] Writing ref penalty: ref_i_97=247818.90, ref_k_97=-14096.90
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] calculateAll TRIGGERED. isReferenceMode: false
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=247818.90, ref_k_97=-14096.90
- [S11] Writing ref penalty: ref_i_97=247818.90, ref_k_97=-14096.90
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
-calculateAll @ 4012-Cooling.js:605
-calculateReferenceModel @ 4012-Section13.js:3024
-calculateAll @ 4012-Section13.js:2966
-(anonymous) @ 4012-Section13.js:2303
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-(anonymous) @ 4012-Section03.js:1867
-storeReferenceResults @ 4012-Section03.js:1865
-calculateReferenceModel @ 4012-Section03.js:1823
-calculateAll @ 4012-Section03.js:1728
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
- [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=57.070 kg/s, ΔT=3.6°C → 4914.24 kWh/day → 589708.31 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=589708.31 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [S14 LISTENER] 🔥 ref_d_122 changed - triggering calculateAll() + UI update
- [S14 LISTENER] 🔥 ref_d_122 changed - triggering calculateAll() + UI update
- [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("target")?
-calculateAll @ 4012-Cooling.js:605
-calculateTargetModel @ 4012-Section13.js:3092
-calculateAll @ 4012-Section13.js:2968
-(anonymous) @ 4012-Section13.js:2303
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-(anonymous) @ 4012-Section03.js:1867
-storeReferenceResults @ 4012-Section03.js:1865
-calculateReferenceModel @ 4012-Section03.js:1823
-calculateAll @ 4012-Section03.js:1728
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
- [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=42.803 kg/s, ΔT=3.6°C → 3685.68 kWh/day → 442281.23 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=442281.23 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
- S10: Reference listener triggered by ref_j_19, recalculating all.
- [S10 DEBUG] calculateAll() triggered in target mode - running both engines
- [S10 DEBUG] Dual-engine calculations complete in target mode
- [S11] calculateAll TRIGGERED. isReferenceMode: false
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=247818.90, ref_k_97=-14096.90
- [S11] Writing ref penalty: ref_i_97=247818.90, ref_k_97=-14096.90
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] calculateAll TRIGGERED. isReferenceMode: false
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=247818.90, ref_k_97=-14096.90
- [S11] Writing ref penalty: ref_i_97=247818.90, ref_k_97=-14096.90
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
-calculateAll @ 4012-Cooling.js:605
-calculateReferenceModel @ 4012-Section13.js:3024
-calculateAll @ 4012-Section13.js:2966
-(anonymous) @ 4012-Section13.js:2307
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-(anonymous) @ 4012-Section03.js:1867
-storeReferenceResults @ 4012-Section03.js:1865
-calculateReferenceModel @ 4012-Section03.js:1823
-calculateAll @ 4012-Section03.js:1728
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
- [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=57.070 kg/s, ΔT=3.6°C → 4914.24 kWh/day → 589708.31 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=589708.31 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- 🔄 [S05] updateCalculatedDisplayValues: mode=target
- [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
- [Cooling] 🔍 TRACE: Who called calculateAll("target")?
-calculateAll @ 4012-Cooling.js:605
-calculateTargetModel @ 4012-Section13.js:3092
-calculateAll @ 4012-Section13.js:2968
-(anonymous) @ 4012-Section13.js:2307
-(anonymous) @ 4011-StateManager.js:561
-notifyListeners @ 4011-StateManager.js:559
-setValue @ 4011-StateManager.js:429
-(anonymous) @ 4012-Section03.js:1867
-storeReferenceResults @ 4012-Section03.js:1865
-calculateReferenceModel @ 4012-Section03.js:1823
-calculateAll @ 4012-Section03.js:1728
-(anonymous) @ 4011-Calculator.js:531
-calculateAll @ 4011-Calculator.js:510
-processImportedExcel @ 4011-FileHandler.js:199
-reader.onload @ 4011-FileHandler.js:80
- [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
- [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
- [Cooling] Free cooling calc: massFlow=42.803 kg/s, ΔT=3.6°C → 3685.68 kWh/day → 442281.23 kWh/yr
- [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
- [Cooling] 📢 Dispatched event: cooling-calculations-stage1
- [Cooling Stage 1] ✅ Complete: h_124=442281.23 kWh/yr, latentLoadFactor=1.746
- [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
- [S11] calculateAll TRIGGERED. isReferenceMode: false
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=247818.90, ref_k_97=-14096.90
- [S11] Writing ref penalty: ref_i_97=247818.90, ref_k_97=-14096.90
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] calculateAll TRIGGERED. isReferenceMode: false
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=247818.90, ref_k_97=-14096.90
- [S11] Writing ref penalty: ref_i_97=247818.90, ref_k_97=-14096.90
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
- [S11] 🎯 TGT CLIMATE READ: h_22=-1680
  [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
  [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
 calculateAll @ 4012-Cooling.js:605
@@ -2175,7 +961,7 @@ reader.onload @ 4011-FileHandler.js:80
  [S12DB] REF i_101 result: 82.73517587238139 * 16633 = 1376134.1802853197
  [S12DB] REF g_104 calc: (0.8794130088475913*16633 + 0.4286076715786601*11168)/27801.000001 = 0.6983190191595318
  [S12DB] REF ROW104: i_101=1376134.1802853197, i_102=225165.91999999998, i_103=608564.0435368421 → i_104=2209864.1438221615
- [S12DB] REF ROW104: h_21="Capacitance", k_98=-28193.796108377348 → k_104=-28193.796108377348
+ [S12DB] REF ROW104: h_21="Capacitance", k_98=31621.81433962265 → k_104=31621.81433962265
  [Section12] Reference results stored with ref_ prefix for downstream sections
  [S12] U-agg TGT: TB%=30 → g_101=0.676346, g_102=0.371429
  [S12] 🎯 TGT CLIMATE READ: d_20=3920, d_21=410
@@ -2191,8 +977,8 @@ reader.onload @ 4011-FileHandler.js:80
  [S11] calculateAll TRIGGERED. isReferenceMode: false
  [S11] 🔵 REF CLIMATE READ: h_22=-1680
  [S11] 🔵 REF CLIMATE READ: h_22=-1680
- [S11] REF TB%=50% → ref_i_97=247818.90, ref_k_97=-14096.90
- [S11] Writing ref penalty: ref_i_97=247818.90, ref_k_97=-14096.90
+ [S11] REF TB%=50% → ref_i_97=533766.70, ref_k_97=15810.91
+ [S11] Writing ref penalty: ref_i_97=533766.70, ref_k_97=15810.91
  [S11] 🎯 TGT CLIMATE READ: h_22=-1680
  [S11] 🎯 TGT CLIMATE READ: h_22=-1680
  [S07] calculateEmissionsAndLosses: systemType="Gas" (TGT)
@@ -2396,101 +1182,1287 @@ reader.onload @ 4011-FileHandler.js:80
  S09: UI refreshed for target mode
  [S09] Updated calculated display values for target mode
  [FileHandler] ✅ sect09 UI refreshed
-4011-FileHandler.js:230 [FileHandler] ✅ sect10 UI refreshed
-4011-FileHandler.js:230 [FileHandler] ✅ sect11 UI refreshed
-4012-Section12.js:298 [Section12] Calculated display values updated for target mode
-4011-FileHandler.js:230 [FileHandler] ✅ sect12 UI refreshed
-4011-FileHandler.js:230 [FileHandler] ✅ sect13 UI refreshed
-4011-FileHandler.js:230 [FileHandler] ✅ sect15 UI refreshed
+ [FileHandler] ✅ sect10 UI refreshed
+ [FileHandler] ✅ sect11 UI refreshed
+ [Section12] Calculated display values updated for target mode
+ [FileHandler] ✅ sect12 UI refreshed
+ [FileHandler] ✅ sect13 UI refreshed
+ [FileHandler] ✅ sect15 UI refreshed
+ 🔍 [S01DB] updateTEUIDisplay START: e_10=341.2, h_10=159.67852622110752, useType=Utility Bills
+ 🔍 [S01] T.1 Calculation: e_6=153.6 (ref), h_6=88.9 (target) → reduction should be 42%
+ 🔍 [S01DB] UPDATING h_10: 511.4 (from j_32=5710470.347823744, area=11167)
+ 🔍 [S01] h_6 explanation: target=88.9, ref=153.6, reduction=0.42122395833333326, percent=42%
+ 🕐 [CLOCK] ⚡ CALCULATION COMPLETE: 55ms (subsequent update)
+ 🕐 [CLOCK] ⚡ USER INTERACTION COMPLETE: 55ms (interaction → h_10 settlement)
+ ✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10
+ S12 TargetState: Saved state after user-modified changed g_109 to 2
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S12] U-agg REF: TB%=50 → g_101=0.879413, g_102=0.428608
+ [S12] 🔵 REF CLIMATE READ: d_20=3920, d_21=410
+ [S12DB] REF CLIMATE: d_20=3920, d_21=410, d_22=1960, h_22=-1680
+ [S12DB] REF h_101 calc: (3920*0.8794130088475913*24)/1000 = 82.73517587238139
+ [S12DB] REF i_101 result: 82.73517587238139 * 16633 = 1376134.1802853197
+ [S12DB] REF g_104 calc: (0.8794130088475913*16633 + 0.4286076715786601*11168)/27801.000001 = 0.6983190191595318
+ [S12DB] REF ROW104: i_101=1376134.1802853197, i_102=225165.91999999998, i_103=608564.0435368421 → i_104=2209864.1438221615
+ [S12DB] REF ROW104: h_21="Capacitance", k_98=31621.81433962265 → k_104=31621.81433962265
+ [Section12] Reference results stored with ref_ prefix for downstream sections
+ [S12] U-agg TGT: TB%=30 → g_101=0.676346, g_102=0.371429
+ [S12] 🎯 TGT CLIMATE READ: d_20=3920, d_21=410
+ S10: Target listener triggered by i_103, recalculating all.
+ [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+ [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
+ [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
+calculateAll @ 4012-Cooling.js:605
+calculateReferenceModel @ 4012-Section13.js:3024
+calculateAll @ 4012-Section13.js:2966
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1917
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section14.js:412
+calculateValues @ 4012-Section14.js:1177
+calculateTargetModel @ 4012-Section14.js:1135
+calculateAll @ 4012-Section14.js:944
+(anonymous) @ 4012-Section14.js:1432
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setFieldValue @ 4012-Section10.js:593
+calculateUtilizationFactors @ 4012-Section10.js:2536
+calculateTargetModel @ 4012-Section10.js:1933
+calculateAll @ 4012-Section10.js:1907
+(anonymous) @ 4012-Section10.js:2806
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateAirLeakageHeatLoss @ 4012-Section12.js:1966
+calculateTargetModel @ 4012-Section12.js:2427
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+ [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
+ [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
+ [Cooling] Free cooling calc: massFlow=47.559 kg/s, ΔT=3.6°C → 4095.20 kWh/day → 491423.59 kWh/yr
+ [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+ [Cooling Stage 1] ✅ Complete: h_124=491423.59 kWh/yr, latentLoadFactor=1.746
+ [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
+ [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
+ [Cooling] 🔍 TRACE: Who called calculateAll("target")?
+calculateAll @ 4012-Cooling.js:605
+calculateTargetModel @ 4012-Section13.js:3092
+calculateAll @ 4012-Section13.js:2968
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1917
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section14.js:412
+calculateValues @ 4012-Section14.js:1177
+calculateTargetModel @ 4012-Section14.js:1135
+calculateAll @ 4012-Section14.js:944
+(anonymous) @ 4012-Section14.js:1432
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setFieldValue @ 4012-Section10.js:593
+calculateUtilizationFactors @ 4012-Section10.js:2536
+calculateTargetModel @ 4012-Section10.js:1933
+calculateAll @ 4012-Section10.js:1907
+(anonymous) @ 4012-Section10.js:2806
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateAirLeakageHeatLoss @ 4012-Section12.js:1966
+calculateTargetModel @ 4012-Section12.js:2427
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+ [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
+ [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
+ [Cooling] Free cooling calc: massFlow=35.669 kg/s, ΔT=3.6°C → 3071.40 kWh/day → 368567.69 kWh/yr
+ [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
+ [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+ [Cooling Stage 1] ✅ Complete: h_124=368567.69 kWh/yr, latentLoadFactor=1.746
+ [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
+ [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
+calculateAll @ 4012-Cooling.js:605
+calculateReferenceModel @ 4012-Section13.js:3024
+calculateAll @ 4012-Section13.js:2966
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1917
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section14.js:412
+calculateValues @ 4012-Section14.js:1177
+calculateTargetModel @ 4012-Section14.js:1135
+calculateAll @ 4012-Section14.js:944
+(anonymous) @ 4012-Section14.js:1432
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setFieldValue @ 4012-Section10.js:593
+calculateUtilizationFactors @ 4012-Section10.js:2536
+calculateTargetModel @ 4012-Section10.js:1933
+calculateAll @ 4012-Section10.js:1907
+(anonymous) @ 4012-Section10.js:2806
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateAirLeakageHeatLoss @ 4012-Section12.js:1966
+calculateTargetModel @ 4012-Section12.js:2427
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+ [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
+ [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
+ [Cooling] Free cooling calc: massFlow=47.559 kg/s, ΔT=3.6°C → 4095.20 kWh/day → 491423.59 kWh/yr
+ [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+ [Cooling Stage 1] ✅ Complete: h_124=491423.59 kWh/yr, latentLoadFactor=1.746
+ [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
+ [Cooling] 🔍 TRACE: Who called calculateAll("target")?
+calculateAll @ 4012-Cooling.js:605
+calculateTargetModel @ 4012-Section13.js:3092
+calculateAll @ 4012-Section13.js:2968
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1917
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section14.js:412
+calculateValues @ 4012-Section14.js:1177
+calculateTargetModel @ 4012-Section14.js:1135
+calculateAll @ 4012-Section14.js:944
+(anonymous) @ 4012-Section14.js:1432
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setFieldValue @ 4012-Section10.js:593
+calculateUtilizationFactors @ 4012-Section10.js:2536
+calculateTargetModel @ 4012-Section10.js:1933
+calculateAll @ 4012-Section10.js:1907
+(anonymous) @ 4012-Section10.js:2806
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateAirLeakageHeatLoss @ 4012-Section12.js:1966
+calculateTargetModel @ 4012-Section12.js:2427
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+ [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
+ [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
+ [Cooling] Free cooling calc: massFlow=35.669 kg/s, ΔT=3.6°C → 3071.40 kWh/day → 368567.69 kWh/yr
+ [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
+ [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+ [Cooling Stage 1] ✅ Complete: h_124=368567.69 kWh/yr, latentLoadFactor=1.746
+ [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
+ [S10 DEBUG] Dual-engine calculations complete in target mode
+ S10: Target utilization factor dependency i_103 changed.
+ [S12DB] TGT CLIMATE: d_20=3920, d_21=410, d_22=1960, h_22=-1680
+ [S12DB] TGT h_101 calc: (3920*0.6763455491781712*24)/1000 = 63.63058926668235
+ [S12DB] TGT i_101 result: 63.63058926668235 * 16633 = 1058367.5912727276
+ [S12DB] TGT g_104 calc: (0.6763455491781712*16633 + 0.37142857142857144*11168)/27801.000001 = 0.5538566887752582
+ [S12DB] TGT ROW104: i_101=1058367.5912727276, i_102=195127.296, i_103=405709.36235789466 → i_104=1659204.2496306223
+ [S12DB] TGT ROW104: h_21="Capacitance", k_98=20823.55870129871 → k_104=20823.55870129871
+ [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
+ [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
+calculateAll @ 4012-Cooling.js:605
+calculateReferenceModel @ 4012-Section13.js:3024
+calculateAll @ 4012-Section13.js:2966
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1908
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateEnvelopeTotals @ 4012-Section12.js:2236
+calculateTargetModel @ 4012-Section12.js:2438
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+ [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
+ [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
+ [Cooling] Free cooling calc: massFlow=47.559 kg/s, ΔT=3.6°C → 4095.20 kWh/day → 491423.59 kWh/yr
+ [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+ [Cooling Stage 1] ✅ Complete: h_124=491423.59 kWh/yr, latentLoadFactor=1.746
+ [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
+ [Cooling] 🔍 TRACE: Who called calculateAll("target")?
+calculateAll @ 4012-Cooling.js:605
+calculateTargetModel @ 4012-Section13.js:3092
+calculateAll @ 4012-Section13.js:2968
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1908
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateEnvelopeTotals @ 4012-Section12.js:2236
+calculateTargetModel @ 4012-Section12.js:2438
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+ [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
+ [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
+ [Cooling] Free cooling calc: massFlow=35.669 kg/s, ΔT=3.6°C → 3071.40 kWh/day → 368567.69 kWh/yr
+ [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
+ [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+ [Cooling Stage 1] ✅ Complete: h_124=368567.69 kWh/yr, latentLoadFactor=1.746
+ [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
+ [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
+calculateAll @ 4012-Cooling.js:605
+calculateReferenceModel @ 4012-Section13.js:3024
+calculateAll @ 4012-Section13.js:2966
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1908
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateEnvelopeTotals @ 4012-Section12.js:2236
+calculateTargetModel @ 4012-Section12.js:2438
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+ [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
+ [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
+ [Cooling] Free cooling calc: massFlow=47.559 kg/s, ΔT=3.6°C → 4095.20 kWh/day → 491423.59 kWh/yr
+ [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+ [Cooling Stage 1] ✅ Complete: h_124=491423.59 kWh/yr, latentLoadFactor=1.746
+ [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
+ [Cooling] 🔍 TRACE: Who called calculateAll("target")?
+calculateAll @ 4012-Cooling.js:605
+calculateTargetModel @ 4012-Section13.js:3092
+calculateAll @ 4012-Section13.js:2968
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1908
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateEnvelopeTotals @ 4012-Section12.js:2236
+calculateTargetModel @ 4012-Section12.js:2438
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+ [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
+ [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
+ [Cooling] Free cooling calc: massFlow=35.669 kg/s, ΔT=3.6°C → 3071.40 kWh/day → 368567.69 kWh/yr
+ [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
+ [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+ [Cooling Stage 1] ✅ Complete: h_124=368567.69 kWh/yr, latentLoadFactor=1.746
+ [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
+ [Section12] Calculated display values updated for target mode
+ 🔍 [S01DB] updateTEUIDisplay START: e_10=341.2, h_10=158.96520193266352, useType=Utility Bills
+ 🔍 [S01] T.1 Calculation: e_6=153.6 (ref), h_6=85.2 (target) → reduction should be 45%
+ 🔍 [S01DB] UPDATING h_10: 491.0 (from j_32=5483196.677468538, area=11167)
+ 🔍 [S01] h_6 explanation: target=85.2, ref=153.6, reduction=0.4453125, percent=45%
+ 🕐 [CLOCK] ⚡ CALCULATION COMPLETE: 137ms (subsequent update)
+ 🕐 [CLOCK] ⚡ USER INTERACTION COMPLETE: 137ms (interaction → h_10 settlement)
+ ✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10
+ S12 TargetState: Saved state after user-modified changed g_109 to 3
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S12] U-agg REF: TB%=50 → g_101=0.879413, g_102=0.428608
+ [S12] 🔵 REF CLIMATE READ: d_20=3920, d_21=410
+ [S12DB] REF CLIMATE: d_20=3920, d_21=410, d_22=1960, h_22=-1680
+ [S12DB] REF h_101 calc: (3920*0.8794130088475913*24)/1000 = 82.73517587238139
+ [S12DB] REF i_101 result: 82.73517587238139 * 16633 = 1376134.1802853197
+ [S12DB] REF g_104 calc: (0.8794130088475913*16633 + 0.4286076715786601*11168)/27801.000001 = 0.6983190191595318
+ [S12DB] REF ROW104: i_101=1376134.1802853197, i_102=225165.91999999998, i_103=608564.0435368421 → i_104=2209864.1438221615
+ [S12DB] REF ROW104: h_21="Capacitance", k_98=31621.81433962265 → k_104=31621.81433962265
+ [Section12] Reference results stored with ref_ prefix for downstream sections
+ [S12] U-agg TGT: TB%=30 → g_101=0.676346, g_102=0.371429
+ [S12] 🎯 TGT CLIMATE READ: d_20=3920, d_21=410
+ S10: Target listener triggered by i_103, recalculating all.
+ [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+ [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
+ [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
+calculateAll @ 4012-Cooling.js:605
+calculateReferenceModel @ 4012-Section13.js:3024
+calculateAll @ 4012-Section13.js:2966
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1917
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section14.js:412
+calculateValues @ 4012-Section14.js:1177
+calculateTargetModel @ 4012-Section14.js:1135
+calculateAll @ 4012-Section14.js:944
+(anonymous) @ 4012-Section14.js:1432
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setFieldValue @ 4012-Section10.js:593
+calculateUtilizationFactors @ 4012-Section10.js:2536
+calculateTargetModel @ 4012-Section10.js:1933
+calculateAll @ 4012-Section10.js:1907
+(anonymous) @ 4012-Section10.js:2806
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateAirLeakageHeatLoss @ 4012-Section12.js:1966
+calculateTargetModel @ 4012-Section12.js:2427
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+ [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
+ [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
+ [Cooling] Free cooling calc: massFlow=47.559 kg/s, ΔT=3.6°C → 4095.20 kWh/day → 491423.59 kWh/yr
+ [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+ [Cooling Stage 1] ✅ Complete: h_124=491423.59 kWh/yr, latentLoadFactor=1.746
+ [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
+ [Cooling] 🔍 TRACE: Who called calculateAll("target")?
+calculateAll @ 4012-Cooling.js:605
+calculateTargetModel @ 4012-Section13.js:3092
+calculateAll @ 4012-Section13.js:2968
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1917
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section14.js:412
+calculateValues @ 4012-Section14.js:1177
+calculateTargetModel @ 4012-Section14.js:1135
+calculateAll @ 4012-Section14.js:944
+(anonymous) @ 4012-Section14.js:1432
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setFieldValue @ 4012-Section10.js:593
+calculateUtilizationFactors @ 4012-Section10.js:2536
+calculateTargetModel @ 4012-Section10.js:1933
+calculateAll @ 4012-Section10.js:1907
+(anonymous) @ 4012-Section10.js:2806
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateAirLeakageHeatLoss @ 4012-Section12.js:1966
+calculateTargetModel @ 4012-Section12.js:2427
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+ [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
+ [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
+ [Cooling] Free cooling calc: massFlow=35.669 kg/s, ΔT=3.6°C → 3071.40 kWh/day → 368567.69 kWh/yr
+ [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
+ [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+ [Cooling Stage 1] ✅ Complete: h_124=368567.69 kWh/yr, latentLoadFactor=1.746
+ [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
+ [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
+calculateAll @ 4012-Cooling.js:605
+calculateReferenceModel @ 4012-Section13.js:3024
+calculateAll @ 4012-Section13.js:2966
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1917
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section14.js:412
+calculateValues @ 4012-Section14.js:1177
+calculateTargetModel @ 4012-Section14.js:1135
+calculateAll @ 4012-Section14.js:944
+(anonymous) @ 4012-Section14.js:1432
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setFieldValue @ 4012-Section10.js:593
+calculateUtilizationFactors @ 4012-Section10.js:2536
+calculateTargetModel @ 4012-Section10.js:1933
+calculateAll @ 4012-Section10.js:1907
+(anonymous) @ 4012-Section10.js:2806
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateAirLeakageHeatLoss @ 4012-Section12.js:1966
+calculateTargetModel @ 4012-Section12.js:2427
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+ [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
+ [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
+ [Cooling] Free cooling calc: massFlow=47.559 kg/s, ΔT=3.6°C → 4095.20 kWh/day → 491423.59 kWh/yr
+ [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+ [Cooling Stage 1] ✅ Complete: h_124=491423.59 kWh/yr, latentLoadFactor=1.746
+ [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
+ [Cooling] 🔍 TRACE: Who called calculateAll("target")?
+calculateAll @ 4012-Cooling.js:605
+calculateTargetModel @ 4012-Section13.js:3092
+calculateAll @ 4012-Section13.js:2968
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1917
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section14.js:412
+calculateValues @ 4012-Section14.js:1177
+calculateTargetModel @ 4012-Section14.js:1135
+calculateAll @ 4012-Section14.js:944
+(anonymous) @ 4012-Section14.js:1432
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setFieldValue @ 4012-Section10.js:593
+calculateUtilizationFactors @ 4012-Section10.js:2536
+calculateTargetModel @ 4012-Section10.js:1933
+calculateAll @ 4012-Section10.js:1907
+(anonymous) @ 4012-Section10.js:2806
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateAirLeakageHeatLoss @ 4012-Section12.js:1966
+calculateTargetModel @ 4012-Section12.js:2427
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+ [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
+ [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
+ [Cooling] Free cooling calc: massFlow=35.669 kg/s, ΔT=3.6°C → 3071.40 kWh/day → 368567.69 kWh/yr
+ [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
+ [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+ [Cooling Stage 1] ✅ Complete: h_124=368567.69 kWh/yr, latentLoadFactor=1.746
+ [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
+ [S10 DEBUG] Dual-engine calculations complete in target mode
+ S10: Target utilization factor dependency i_103 changed.
+ [S12DB] TGT CLIMATE: d_20=3920, d_21=410, d_22=1960, h_22=-1680
+ [S12DB] TGT h_101 calc: (3920*0.6763455491781712*24)/1000 = 63.63058926668235
+ [S12DB] TGT i_101 result: 63.63058926668235 * 16633 = 1058367.5912727276
+ [S12DB] TGT g_104 calc: (0.6763455491781712*16633 + 0.37142857142857144*11168)/27801.000001 = 0.5538566887752582
+ [S12DB] TGT ROW104: i_101=1058367.5912727276, i_102=195127.296, i_103=608564.0435368421 → i_104=1862058.9308095698
+ [S12DB] TGT ROW104: h_21="Capacitance", k_98=20823.55870129871 → k_104=20823.55870129871
+ [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
+ [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
+calculateAll @ 4012-Cooling.js:605
+calculateReferenceModel @ 4012-Section13.js:3024
+calculateAll @ 4012-Section13.js:2966
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1908
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateEnvelopeTotals @ 4012-Section12.js:2236
+calculateTargetModel @ 4012-Section12.js:2438
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+ [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
+ [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
+ [Cooling] Free cooling calc: massFlow=47.559 kg/s, ΔT=3.6°C → 4095.20 kWh/day → 491423.59 kWh/yr
+ [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+ [Cooling Stage 1] ✅ Complete: h_124=491423.59 kWh/yr, latentLoadFactor=1.746
+ [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
+ [Cooling] 🔍 TRACE: Who called calculateAll("target")?
+calculateAll @ 4012-Cooling.js:605
+calculateTargetModel @ 4012-Section13.js:3092
+calculateAll @ 4012-Section13.js:2968
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1908
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateEnvelopeTotals @ 4012-Section12.js:2236
+calculateTargetModel @ 4012-Section12.js:2438
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+ [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
+ [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
+ [Cooling] Free cooling calc: massFlow=35.669 kg/s, ΔT=3.6°C → 3071.40 kWh/day → 368567.69 kWh/yr
+ [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
+ [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+ [Cooling Stage 1] ✅ Complete: h_124=368567.69 kWh/yr, latentLoadFactor=1.746
+ [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
+ [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
+calculateAll @ 4012-Cooling.js:605
+calculateReferenceModel @ 4012-Section13.js:3024
+calculateAll @ 4012-Section13.js:2966
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1908
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateEnvelopeTotals @ 4012-Section12.js:2236
+calculateTargetModel @ 4012-Section12.js:2438
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+ [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
+ [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
+ [Cooling] Free cooling calc: massFlow=47.559 kg/s, ΔT=3.6°C → 4095.20 kWh/day → 491423.59 kWh/yr
+ [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+ [Cooling Stage 1] ✅ Complete: h_124=491423.59 kWh/yr, latentLoadFactor=1.746
+ [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
+ [Cooling] 🔍 TRACE: Who called calculateAll("target")?
+calculateAll @ 4012-Cooling.js:605
+calculateTargetModel @ 4012-Section13.js:3092
+calculateAll @ 4012-Section13.js:2968
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1908
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateEnvelopeTotals @ 4012-Section12.js:2236
+calculateTargetModel @ 4012-Section12.js:2438
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+ [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
+ [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
+ [Cooling] Free cooling calc: massFlow=35.669 kg/s, ΔT=3.6°C → 3071.40 kWh/day → 368567.69 kWh/yr
+ [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
+ [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+ [Cooling Stage 1] ✅ Complete: h_124=368567.69 kWh/yr, latentLoadFactor=1.746
+ [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
+ [Section12] Calculated display values updated for target mode
+ 🔍 [S01DB] updateTEUIDisplay START: e_10=341.2, h_10=159.67852622110752, useType=Utility Bills
+ 🔍 [S01] T.1 Calculation: e_6=153.6 (ref), h_6=88.9 (target) → reduction should be 42%
+ 🔍 [S01DB] UPDATING h_10: 511.4 (from j_32=5710470.347823744, area=11167)
+ 🔍 [S01] h_6 explanation: target=88.9, ref=153.6, reduction=0.42122395833333326, percent=42%
+ 🕐 [CLOCK] ⚡ CALCULATION COMPLETE: 155ms (subsequent update)
+ 🕐 [CLOCK] ⚡ USER INTERACTION COMPLETE: 155ms (interaction → h_10 settlement)
+ ✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10
+ S12: Switched to REFERENCE mode
+ [Section12] Calculated display values updated for reference mode
+ S12 ReferenceState: Saved state after user-modified changed g_109 to 4
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S12] U-agg REF: TB%=50 → g_101=0.879413, g_102=0.428608
+ [S12] 🔵 REF CLIMATE READ: d_20=3920, d_21=410
+ S10: Reference listener triggered by ref_i_103, recalculating all.
+ [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+ [S10 DEBUG] Dual-engine calculations complete in target mode
+ S10: Reference utilization factor dependency ref_i_103 changed.
+ [S12DB] REF CLIMATE: d_20=3920, d_21=410, d_22=1960, h_22=-1680
+ [S12DB] REF h_101 calc: (3920*0.8794130088475913*24)/1000 = 82.73517587238139
+ [S12DB] REF i_101 result: 82.73517587238139 * 16633 = 1376134.1802853197
+ [S12DB] REF g_104 calc: (0.8794130088475913*16633 + 0.4286076715786601*11168)/27801.000001 = 0.6983190191595318
+ [S12DB] REF ROW104: i_101=1376134.1802853197, i_102=225165.91999999998, i_103=811418.7247157893 → i_104=2412718.825001109
+ [S12DB] REF ROW104: h_21="Capacitance", k_98=31621.81433962265 → k_104=31621.81433962265
+ [Section12] Reference results stored with ref_ prefix for downstream sections
+ [S12] U-agg TGT: TB%=30 → g_101=0.676346, g_102=0.371429
+ [S12] 🎯 TGT CLIMATE READ: d_20=3920, d_21=410
+ [S12DB] TGT CLIMATE: d_20=3920, d_21=410, d_22=1960, h_22=-1680
+ [S12DB] TGT h_101 calc: (3920*0.6763455491781712*24)/1000 = 63.63058926668235
+ [S12DB] TGT i_101 result: 63.63058926668235 * 16633 = 1058367.5912727276
+ [S12DB] TGT g_104 calc: (0.6763455491781712*16633 + 0.37142857142857144*11168)/27801.000001 = 0.5538566887752582
+ [S12DB] TGT ROW104: i_101=1058367.5912727276, i_102=195127.296, i_103=608564.0435368421 → i_104=1862058.9308095698
+ [S12DB] TGT ROW104: h_21="Capacitance", k_98=20823.55870129871 → k_104=20823.55870129871
+ [Section12] Calculated display values updated for reference mode
+ S12 ReferenceState: Saved state after user-modified changed d_108 to PH_CLASSIC
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [FieldManager] Routed d_108=PH_CLASSIC through sect12 ModeManager
+ S12 ReferenceState: Saved state after user-modified changed d_108 to PH_CLASSIC
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S12] U-agg REF: TB%=50 → g_101=0.879413, g_102=0.428608
+ [S12] 🔵 REF CLIMATE READ: d_20=3920, d_21=410
+ S10: Reference listener triggered by ref_i_103, recalculating all.
+ [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+ [S10 DEBUG] Dual-engine calculations complete in target mode
+ S10: Reference utilization factor dependency ref_i_103 changed.
+ [S12DB] REF CLIMATE: d_20=3920, d_21=410, d_22=1960, h_22=-1680
+ [S12DB] REF h_101 calc: (3920*0.8794130088475913*24)/1000 = 82.73517587238139
+ [S12DB] REF i_101 result: 82.73517587238139 * 16633 = 1376134.1802853197
+ [S12DB] REF g_104 calc: (0.8794130088475913*16633 + 0.4286076715786601*11168)/27801.000001 = 0.6983190191595318
+ [S12DB] REF ROW104: i_101=1376134.1802853197, i_102=225165.91999999998, i_103=121712.8087073684 → i_104=1723012.908992688
+ [S12DB] REF ROW104: h_21="Capacitance", k_98=31621.81433962265 → k_104=31621.81433962265
+ [Section12] Reference results stored with ref_ prefix for downstream sections
+ [S12] U-agg TGT: TB%=30 → g_101=0.676346, g_102=0.371429
+ [S12] 🎯 TGT CLIMATE READ: d_20=3920, d_21=410
+ [S12DB] TGT CLIMATE: d_20=3920, d_21=410, d_22=1960, h_22=-1680
+ [S12DB] TGT h_101 calc: (3920*0.6763455491781712*24)/1000 = 63.63058926668235
+ [S12DB] TGT i_101 result: 63.63058926668235 * 16633 = 1058367.5912727276
+ [S12DB] TGT g_104 calc: (0.6763455491781712*16633 + 0.37142857142857144*11168)/27801.000001 = 0.5538566887752582
+ [S12DB] TGT ROW104: i_101=1058367.5912727276, i_102=195127.296, i_103=608564.0435368421 → i_104=1862058.9308095698
+ [S12DB] TGT ROW104: h_21="Capacitance", k_98=20823.55870129871 → k_104=20823.55870129871
+ [Section12] Calculated display values updated for reference mode
+ S12 ReferenceState: Saved state after user-modified changed d_108 to MEASURED
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [FieldManager] Routed d_108=MEASURED through sect12 ModeManager
+ S12 ReferenceState: Saved state after user-modified changed d_108 to MEASURED
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S12] U-agg REF: TB%=50 → g_101=0.879413, g_102=0.428608
+ [S12] 🔵 REF CLIMATE READ: d_20=3920, d_21=410
+ S10: Reference listener triggered by ref_i_103, recalculating all.
+ [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+ [S10 DEBUG] Dual-engine calculations complete in target mode
+ S10: Reference utilization factor dependency ref_i_103 changed.
+ [S12DB] REF CLIMATE: d_20=3920, d_21=410, d_22=1960, h_22=-1680
+ [S12DB] REF h_101 calc: (3920*0.8794130088475913*24)/1000 = 82.73517587238139
+ [S12DB] REF i_101 result: 82.73517587238139 * 16633 = 1376134.1802853197
+ [S12DB] REF g_104 calc: (0.8794130088475913*16633 + 0.4286076715786601*11168)/27801.000001 = 0.6983190191595318
+ [S12DB] REF ROW104: i_101=1376134.1802853197, i_102=225165.91999999998, i_103=0 → i_104=1601300.1002853196
+ [S12DB] REF ROW104: h_21="Capacitance", k_98=31621.81433962265 → k_104=31621.81433962265
+ [Section12] Reference results stored with ref_ prefix for downstream sections
+ [S12] U-agg TGT: TB%=30 → g_101=0.676346, g_102=0.371429
+ [S12] 🎯 TGT CLIMATE READ: d_20=3920, d_21=410
+ [S12DB] TGT CLIMATE: d_20=3920, d_21=410, d_22=1960, h_22=-1680
+ [S12DB] TGT h_101 calc: (3920*0.6763455491781712*24)/1000 = 63.63058926668235
+ [S12DB] TGT i_101 result: 63.63058926668235 * 16633 = 1058367.5912727276
+ [S12DB] TGT g_104 calc: (0.6763455491781712*16633 + 0.37142857142857144*11168)/27801.000001 = 0.5538566887752582
+ [S12DB] TGT ROW104: i_101=1058367.5912727276, i_102=195127.296, i_103=608564.0435368421 → i_104=1862058.9308095698
+ [S12DB] TGT ROW104: h_21="Capacitance", k_98=20823.55870129871 → k_104=20823.55870129871
+ [Section12] Calculated display values updated for reference mode
+ S12 ReferenceState: Saved state after user-modified changed g_109 to 4
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S12] U-agg REF: TB%=50 → g_101=0.879413, g_102=0.428608
+ [S12] 🔵 REF CLIMATE READ: d_20=3920, d_21=410
+ S10: Reference listener triggered by ref_i_103, recalculating all.
+ [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+ [S10 DEBUG] Dual-engine calculations complete in target mode
+ S10: Reference utilization factor dependency ref_i_103 changed.
+ [S12DB] REF CLIMATE: d_20=3920, d_21=410, d_22=1960, h_22=-1680
+ [S12DB] REF h_101 calc: (3920*0.8794130088475913*24)/1000 = 82.73517587238139
+ [S12DB] REF i_101 result: 82.73517587238139 * 16633 = 1376134.1802853197
+ [S12DB] REF g_104 calc: (0.8794130088475913*16633 + 0.4286076715786601*11168)/27801.000001 = 0.6983190191595318
+ [S12DB] REF ROW104: i_101=1376134.1802853197, i_102=225165.91999999998, i_103=811418.7247157893 → i_104=2412718.825001109
+ [S12DB] REF ROW104: h_21="Capacitance", k_98=31621.81433962265 → k_104=31621.81433962265
+ [Section12] Reference results stored with ref_ prefix for downstream sections
+ [S12] U-agg TGT: TB%=30 → g_101=0.676346, g_102=0.371429
+ [S12] 🎯 TGT CLIMATE READ: d_20=3920, d_21=410
+ [S12DB] TGT CLIMATE: d_20=3920, d_21=410, d_22=1960, h_22=-1680
+ [S12DB] TGT h_101 calc: (3920*0.6763455491781712*24)/1000 = 63.63058926668235
+ [S12DB] TGT i_101 result: 63.63058926668235 * 16633 = 1058367.5912727276
+ [S12DB] TGT g_104 calc: (0.6763455491781712*16633 + 0.37142857142857144*11168)/27801.000001 = 0.5538566887752582
+ [S12DB] TGT ROW104: i_101=1058367.5912727276, i_102=195127.296, i_103=608564.0435368421 → i_104=1862058.9308095698
+ [S12DB] TGT ROW104: h_21="Capacitance", k_98=20823.55870129871 → k_104=20823.55870129871
+ [Section12] Calculated display values updated for reference mode
+ S12: Switched to TARGET mode
+ [Section12] Calculated display values updated for target mode
+ S12 TargetState: Saved state after user-modified changed g_109 to 2
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S12] U-agg REF: TB%=50 → g_101=0.879413, g_102=0.428608
+ [S12] 🔵 REF CLIMATE READ: d_20=3920, d_21=410
+ [S12DB] REF CLIMATE: d_20=3920, d_21=410, d_22=1960, h_22=-1680
+ [S12DB] REF h_101 calc: (3920*0.8794130088475913*24)/1000 = 82.73517587238139
+ [S12DB] REF i_101 result: 82.73517587238139 * 16633 = 1376134.1802853197
+ [S12DB] REF g_104 calc: (0.8794130088475913*16633 + 0.4286076715786601*11168)/27801.000001 = 0.6983190191595318
+ [S12DB] REF ROW104: i_101=1376134.1802853197, i_102=225165.91999999998, i_103=811418.7247157893 → i_104=2412718.825001109
+ [S12DB] REF ROW104: h_21="Capacitance", k_98=31621.81433962265 → k_104=31621.81433962265
+ [Section12] Reference results stored with ref_ prefix for downstream sections
+ [S12] U-agg TGT: TB%=30 → g_101=0.676346, g_102=0.371429
+ [S12] 🎯 TGT CLIMATE READ: d_20=3920, d_21=410
+ S10: Target listener triggered by i_103, recalculating all.
+ [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+ [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
+ [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
+calculateAll @ 4012-Cooling.js:605
+calculateReferenceModel @ 4012-Section13.js:3024
+calculateAll @ 4012-Section13.js:2966
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1917
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section14.js:412
+calculateValues @ 4012-Section14.js:1177
+calculateTargetModel @ 4012-Section14.js:1135
+calculateAll @ 4012-Section14.js:944
+(anonymous) @ 4012-Section14.js:1432
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setFieldValue @ 4012-Section10.js:593
+calculateUtilizationFactors @ 4012-Section10.js:2536
+calculateTargetModel @ 4012-Section10.js:1933
+calculateAll @ 4012-Section10.js:1907
+(anonymous) @ 4012-Section10.js:2806
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateAirLeakageHeatLoss @ 4012-Section12.js:1966
+calculateTargetModel @ 4012-Section12.js:2427
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+ [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
+ [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
+ [Cooling] Free cooling calc: massFlow=47.559 kg/s, ΔT=3.6°C → 4095.20 kWh/day → 491423.59 kWh/yr
+ [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+ [Cooling Stage 1] ✅ Complete: h_124=491423.59 kWh/yr, latentLoadFactor=1.746
+ [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
+ [Cooling] 🔍 TRACE: Who called calculateAll("target")?
+calculateAll @ 4012-Cooling.js:605
+calculateTargetModel @ 4012-Section13.js:3092
+calculateAll @ 4012-Section13.js:2968
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1917
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section14.js:412
+calculateValues @ 4012-Section14.js:1177
+calculateTargetModel @ 4012-Section14.js:1135
+calculateAll @ 4012-Section14.js:944
+(anonymous) @ 4012-Section14.js:1432
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setFieldValue @ 4012-Section10.js:593
+calculateUtilizationFactors @ 4012-Section10.js:2536
+calculateTargetModel @ 4012-Section10.js:1933
+calculateAll @ 4012-Section10.js:1907
+(anonymous) @ 4012-Section10.js:2806
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateAirLeakageHeatLoss @ 4012-Section12.js:1966
+calculateTargetModel @ 4012-Section12.js:2427
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+ [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
+ [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
+ [Cooling] Free cooling calc: massFlow=35.669 kg/s, ΔT=3.6°C → 3071.40 kWh/day → 368567.69 kWh/yr
+ [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
+ [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+ [Cooling Stage 1] ✅ Complete: h_124=368567.69 kWh/yr, latentLoadFactor=1.746
+ [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
+ [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
+calculateAll @ 4012-Cooling.js:605
+calculateReferenceModel @ 4012-Section13.js:3024
+calculateAll @ 4012-Section13.js:2966
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1917
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section14.js:412
+calculateValues @ 4012-Section14.js:1177
+calculateTargetModel @ 4012-Section14.js:1135
+calculateAll @ 4012-Section14.js:944
+(anonymous) @ 4012-Section14.js:1432
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setFieldValue @ 4012-Section10.js:593
+calculateUtilizationFactors @ 4012-Section10.js:2536
+calculateTargetModel @ 4012-Section10.js:1933
+calculateAll @ 4012-Section10.js:1907
+(anonymous) @ 4012-Section10.js:2806
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateAirLeakageHeatLoss @ 4012-Section12.js:1966
+calculateTargetModel @ 4012-Section12.js:2427
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+ [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
+ [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
+ [Cooling] Free cooling calc: massFlow=47.559 kg/s, ΔT=3.6°C → 4095.20 kWh/day → 491423.59 kWh/yr
+ [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+ [Cooling Stage 1] ✅ Complete: h_124=491423.59 kWh/yr, latentLoadFactor=1.746
+ [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
+ [Cooling] 🔍 TRACE: Who called calculateAll("target")?
+calculateAll @ 4012-Cooling.js:605
+calculateTargetModel @ 4012-Section13.js:3092
+calculateAll @ 4012-Section13.js:2968
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1917
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section14.js:412
+calculateValues @ 4012-Section14.js:1177
+calculateTargetModel @ 4012-Section14.js:1135
+calculateAll @ 4012-Section14.js:944
+(anonymous) @ 4012-Section14.js:1432
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setFieldValue @ 4012-Section10.js:593
+calculateUtilizationFactors @ 4012-Section10.js:2536
+calculateTargetModel @ 4012-Section10.js:1933
+calculateAll @ 4012-Section10.js:1907
+(anonymous) @ 4012-Section10.js:2806
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateAirLeakageHeatLoss @ 4012-Section12.js:1966
+calculateTargetModel @ 4012-Section12.js:2427
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+ [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
+ [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
+ [Cooling] Free cooling calc: massFlow=35.669 kg/s, ΔT=3.6°C → 3071.40 kWh/day → 368567.69 kWh/yr
+ [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
+ [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+ [Cooling Stage 1] ✅ Complete: h_124=368567.69 kWh/yr, latentLoadFactor=1.746
+ [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
+ [S10 DEBUG] Dual-engine calculations complete in target mode
+ S10: Target utilization factor dependency i_103 changed.
+ [S12DB] TGT CLIMATE: d_20=3920, d_21=410, d_22=1960, h_22=-1680
+ [S12DB] TGT h_101 calc: (3920*0.6763455491781712*24)/1000 = 63.63058926668235
+ [S12DB] TGT i_101 result: 63.63058926668235 * 16633 = 1058367.5912727276
+ [S12DB] TGT g_104 calc: (0.6763455491781712*16633 + 0.37142857142857144*11168)/27801.000001 = 0.5538566887752582
+ [S12DB] TGT ROW104: i_101=1058367.5912727276, i_102=195127.296, i_103=405709.36235789466 → i_104=1659204.2496306223
+ [S12DB] TGT ROW104: h_21="Capacitance", k_98=20823.55870129871 → k_104=20823.55870129871
+ [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
+ [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
+calculateAll @ 4012-Cooling.js:605
+calculateReferenceModel @ 4012-Section13.js:3024
+calculateAll @ 4012-Section13.js:2966
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1908
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateEnvelopeTotals @ 4012-Section12.js:2236
+calculateTargetModel @ 4012-Section12.js:2438
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+ [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
+ [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
+ [Cooling] Free cooling calc: massFlow=47.559 kg/s, ΔT=3.6°C → 4095.20 kWh/day → 491423.59 kWh/yr
+ [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+ [Cooling Stage 1] ✅ Complete: h_124=491423.59 kWh/yr, latentLoadFactor=1.746
+ [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
+ [Cooling] 🔍 TRACE: Who called calculateAll("target")?
+calculateAll @ 4012-Cooling.js:605
+calculateTargetModel @ 4012-Section13.js:3092
+calculateAll @ 4012-Section13.js:2968
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1908
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateEnvelopeTotals @ 4012-Section12.js:2236
+calculateTargetModel @ 4012-Section12.js:2438
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+ [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
+ [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
+ [Cooling] Free cooling calc: massFlow=35.669 kg/s, ΔT=3.6°C → 3071.40 kWh/day → 368567.69 kWh/yr
+ [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
+ [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+ [Cooling Stage 1] ✅ Complete: h_124=368567.69 kWh/yr, latentLoadFactor=1.746
+ [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
+ [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
+calculateAll @ 4012-Cooling.js:605
+calculateReferenceModel @ 4012-Section13.js:3024
+calculateAll @ 4012-Section13.js:2966
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1908
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateEnvelopeTotals @ 4012-Section12.js:2236
+calculateTargetModel @ 4012-Section12.js:2438
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+ [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
+ [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
+ [Cooling] Free cooling calc: massFlow=47.559 kg/s, ΔT=3.6°C → 4095.20 kWh/day → 491423.59 kWh/yr
+ [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+ [Cooling Stage 1] ✅ Complete: h_124=491423.59 kWh/yr, latentLoadFactor=1.746
+ [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
+ [Cooling] 🔍 TRACE: Who called calculateAll("target")?
+calculateAll @ 4012-Cooling.js:605
+calculateTargetModel @ 4012-Section13.js:3092
+calculateAll @ 4012-Section13.js:2968
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1908
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateEnvelopeTotals @ 4012-Section12.js:2236
+calculateTargetModel @ 4012-Section12.js:2438
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+ [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
+ [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
+ [Cooling] Free cooling calc: massFlow=35.669 kg/s, ΔT=3.6°C → 3071.40 kWh/day → 368567.69 kWh/yr
+ [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
+ [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+ [Cooling Stage 1] ✅ Complete: h_124=368567.69 kWh/yr, latentLoadFactor=1.746
+ [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
+ [Section12] Calculated display values updated for target mode
+ 🔍 [S01DB] updateTEUIDisplay START: e_10=341.2, h_10=158.96520193266352, useType=Utility Bills
+ 🔍 [S01] T.1 Calculation: e_6=157.5 (ref), h_6=85.2 (target) → reduction should be 46%
+ 🔍 [S01DB] UPDATING h_10: 491.0 (from j_32=5483196.677468538, area=11167)
+ 🔍 [S01] h_6 explanation: target=85.2, ref=157.5, reduction=0.45904761904761904, percent=46%
+ 🕐 [CLOCK] ⚡ CALCULATION COMPLETE: 167ms (subsequent update)
+ 🕐 [CLOCK] ⚡ USER INTERACTION COMPLETE: 167ms (interaction → h_10 settlement)
+ ✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10
+ S12 TargetState: Saved state after user-modified changed g_109 to 3
+ [CLOCK] 🎯 User interaction started - timing to h_10 settlement
+ [S12] U-agg REF: TB%=50 → g_101=0.879413, g_102=0.428608
+ [S12] 🔵 REF CLIMATE READ: d_20=3920, d_21=410
+ [S12DB] REF CLIMATE: d_20=3920, d_21=410, d_22=1960, h_22=-1680
+ [S12DB] REF h_101 calc: (3920*0.8794130088475913*24)/1000 = 82.73517587238139
+ [S12DB] REF i_101 result: 82.73517587238139 * 16633 = 1376134.1802853197
+ [S12DB] REF g_104 calc: (0.8794130088475913*16633 + 0.4286076715786601*11168)/27801.000001 = 0.6983190191595318
+ [S12DB] REF ROW104: i_101=1376134.1802853197, i_102=225165.91999999998, i_103=811418.7247157893 → i_104=2412718.825001109
+ [S12DB] REF ROW104: h_21="Capacitance", k_98=31621.81433962265 → k_104=31621.81433962265
+ [Section12] Reference results stored with ref_ prefix for downstream sections
+ [S12] U-agg TGT: TB%=30 → g_101=0.676346, g_102=0.371429
+ [S12] 🎯 TGT CLIMATE READ: d_20=3920, d_21=410
+ S10: Target listener triggered by i_103, recalculating all.
+ [S10 DEBUG] calculateAll() triggered in target mode - running both engines
+ [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
+ [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
+calculateAll @ 4012-Cooling.js:605
+calculateReferenceModel @ 4012-Section13.js:3024
+calculateAll @ 4012-Section13.js:2966
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1917
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section14.js:412
+calculateValues @ 4012-Section14.js:1177
+calculateTargetModel @ 4012-Section14.js:1135
+calculateAll @ 4012-Section14.js:944
+(anonymous) @ 4012-Section14.js:1432
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setFieldValue @ 4012-Section10.js:593
+calculateUtilizationFactors @ 4012-Section10.js:2536
+calculateTargetModel @ 4012-Section10.js:1933
+calculateAll @ 4012-Section10.js:1907
+(anonymous) @ 4012-Section10.js:2806
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateAirLeakageHeatLoss @ 4012-Section12.js:1966
+calculateTargetModel @ 4012-Section12.js:2427
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+ [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
+ [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
+ [Cooling] Free cooling calc: massFlow=47.559 kg/s, ΔT=3.6°C → 4095.20 kWh/day → 491423.59 kWh/yr
+ [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+ [Cooling Stage 1] ✅ Complete: h_124=491423.59 kWh/yr, latentLoadFactor=1.746
+ [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
+ [Cooling] 🔍 TRACE: Who called calculateAll("target")?
+calculateAll @ 4012-Cooling.js:605
+calculateTargetModel @ 4012-Section13.js:3092
+calculateAll @ 4012-Section13.js:2968
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1917
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section14.js:412
+calculateValues @ 4012-Section14.js:1177
+calculateTargetModel @ 4012-Section14.js:1135
+calculateAll @ 4012-Section14.js:944
+(anonymous) @ 4012-Section14.js:1432
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setFieldValue @ 4012-Section10.js:593
+calculateUtilizationFactors @ 4012-Section10.js:2536
+calculateTargetModel @ 4012-Section10.js:1933
+calculateAll @ 4012-Section10.js:1907
+(anonymous) @ 4012-Section10.js:2806
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateAirLeakageHeatLoss @ 4012-Section12.js:1966
+calculateTargetModel @ 4012-Section12.js:2427
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+ [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
+ [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
+ [Cooling] Free cooling calc: massFlow=35.669 kg/s, ΔT=3.6°C → 3071.40 kWh/day → 368567.69 kWh/yr
+ [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
+ [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+ [Cooling Stage 1] ✅ Complete: h_124=368567.69 kWh/yr, latentLoadFactor=1.746
+ [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
+ [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
+calculateAll @ 4012-Cooling.js:605
+calculateReferenceModel @ 4012-Section13.js:3024
+calculateAll @ 4012-Section13.js:2966
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1917
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section14.js:412
+calculateValues @ 4012-Section14.js:1177
+calculateTargetModel @ 4012-Section14.js:1135
+calculateAll @ 4012-Section14.js:944
+(anonymous) @ 4012-Section14.js:1432
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setFieldValue @ 4012-Section10.js:593
+calculateUtilizationFactors @ 4012-Section10.js:2536
+calculateTargetModel @ 4012-Section10.js:1933
+calculateAll @ 4012-Section10.js:1907
+(anonymous) @ 4012-Section10.js:2806
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateAirLeakageHeatLoss @ 4012-Section12.js:1966
+calculateTargetModel @ 4012-Section12.js:2427
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+ [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
+ [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
+ [Cooling] Free cooling calc: massFlow=47.559 kg/s, ΔT=3.6°C → 4095.20 kWh/day → 491423.59 kWh/yr
+ [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+ [Cooling Stage 1] ✅ Complete: h_124=491423.59 kWh/yr, latentLoadFactor=1.746
+ [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
+ [Cooling] 🔍 TRACE: Who called calculateAll("target")?
+calculateAll @ 4012-Cooling.js:605
+calculateTargetModel @ 4012-Section13.js:3092
+calculateAll @ 4012-Section13.js:2968
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1917
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section14.js:412
+calculateValues @ 4012-Section14.js:1177
+calculateTargetModel @ 4012-Section14.js:1135
+calculateAll @ 4012-Section14.js:944
+(anonymous) @ 4012-Section14.js:1432
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setFieldValue @ 4012-Section10.js:593
+calculateUtilizationFactors @ 4012-Section10.js:2536
+calculateTargetModel @ 4012-Section10.js:1933
+calculateAll @ 4012-Section10.js:1907
+(anonymous) @ 4012-Section10.js:2806
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateAirLeakageHeatLoss @ 4012-Section12.js:1966
+calculateTargetModel @ 4012-Section12.js:2427
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+ [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
+ [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
+ [Cooling] Free cooling calc: massFlow=35.669 kg/s, ΔT=3.6°C → 3071.40 kWh/day → 368567.69 kWh/yr
+ [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
+ [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+ [Cooling Stage 1] ✅ Complete: h_124=368567.69 kWh/yr, latentLoadFactor=1.746
+ [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
+ [S10 DEBUG] Dual-engine calculations complete in target mode
+ S10: Target utilization factor dependency i_103 changed.
+ [S12DB] TGT CLIMATE: d_20=3920, d_21=410, d_22=1960, h_22=-1680
+ [S12DB] TGT h_101 calc: (3920*0.6763455491781712*24)/1000 = 63.63058926668235
+ [S12DB] TGT i_101 result: 63.63058926668235 * 16633 = 1058367.5912727276
+ [S12DB] TGT g_104 calc: (0.6763455491781712*16633 + 0.37142857142857144*11168)/27801.000001 = 0.5538566887752582
+ [S12DB] TGT ROW104: i_101=1058367.5912727276, i_102=195127.296, i_103=608564.0435368421 → i_104=1862058.9308095698
+ [S12DB] TGT ROW104: h_21="Capacitance", k_98=20823.55870129871 → k_104=20823.55870129871
+ [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
+ [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
+calculateAll @ 4012-Cooling.js:605
+calculateReferenceModel @ 4012-Section13.js:3024
+calculateAll @ 4012-Section13.js:2966
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1908
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateEnvelopeTotals @ 4012-Section12.js:2236
+calculateTargetModel @ 4012-Section12.js:2438
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+ [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
+ [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
+ [Cooling] Free cooling calc: massFlow=47.559 kg/s, ΔT=3.6°C → 4095.20 kWh/day → 491423.59 kWh/yr
+ [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
+ [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+ [Cooling Stage 1] ✅ Complete: h_124=491423.59 kWh/yr, latentLoadFactor=1.746
+ [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ 🔄 [S05] updateCalculatedDisplayValues: mode=target
+ [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
+ [Cooling] 🔍 TRACE: Who called calculateAll("target")?
+calculateAll @ 4012-Cooling.js:605
+calculateTargetModel @ 4012-Section13.js:3092
+calculateAll @ 4012-Section13.js:2968
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1908
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateEnvelopeTotals @ 4012-Section12.js:2236
+calculateTargetModel @ 4012-Section12.js:2438
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+ [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
+ [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
+ [Cooling] Free cooling calc: massFlow=35.669 kg/s, ΔT=3.6°C → 3071.40 kWh/day → 368567.69 kWh/yr
+ [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
+ [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+4012-Cooling.js:528 [Cooling Stage 1] ✅ Complete: h_124=368567.69 kWh/yr, latentLoadFactor=1.746
+4012-Section13.js:2939 [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
+4012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Cooling.js:604 [Cooling] 🚀 calculateAll("reference") → Running Stage 1 only
+4012-Cooling.js:605 [Cooling] 🔍 TRACE: Who called calculateAll("reference")?
+calculateAll @ 4012-Cooling.js:605
+calculateReferenceModel @ 4012-Section13.js:3024
+calculateAll @ 4012-Section13.js:2966
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1908
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateEnvelopeTotals @ 4012-Section12.js:2236
+calculateTargetModel @ 4012-Section12.js:2438
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+4012-Cooling.js:475 [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=reference)...
+4012-Cooling.js:213 [Cooling] 🔍 i_59 READ: mode=reference, i_59_value=45, will use indoorRH=0.45
+4012-Cooling.js:296 [Cooling] Free cooling calc: massFlow=47.559 kg/s, ΔT=3.6°C → 4095.20 kWh/day → 491423.59 kWh/yr
+4012-Cooling.js:626 [Cooling Stage 1] 📊 Publishing results with prefix="ref_" (mode=reference)
+4012-Cooling.js:784 [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+4012-Cooling.js:528 [Cooling Stage 1] ✅ Complete: h_124=491423.59 kWh/yr, latentLoadFactor=1.746
+4012-Section13.js:2939 [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=reference)
+4012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Section05.js:257 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4012-Cooling.js:604 [Cooling] 🚀 calculateAll("target") → Running Stage 1 only
+4012-Cooling.js:605 [Cooling] 🔍 TRACE: Who called calculateAll("target")?
+calculateAll @ 4012-Cooling.js:605
+calculateTargetModel @ 4012-Section13.js:3092
+calculateAll @ 4012-Section13.js:2968
+calculateAndRefresh @ 4012-Section13.js:1899
+(anonymous) @ 4012-Section13.js:1908
+(anonymous) @ 4011-StateManager.js:561
+notifyListeners @ 4011-StateManager.js:559
+setValue @ 4011-StateManager.js:429
+setCalculatedValue @ 4012-Section12.js:1243
+calculateEnvelopeTotals @ 4012-Section12.js:2236
+calculateTargetModel @ 4012-Section12.js:2438
+calculateAll @ 4012-Section12.js:2276
+handleFieldBlur @ 4012-Section12.js:2547
+handleFieldKeydown @ 4012-Section12.js:2559
+4012-Cooling.js:475 [Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=target)...
+4012-Cooling.js:213 [Cooling] 🔍 i_59 READ: mode=target, i_59_value=45, will use indoorRH=0.45
+4012-Cooling.js:296 [Cooling] Free cooling calc: massFlow=35.669 kg/s, ΔT=3.6°C → 3071.40 kWh/day → 368567.69 kWh/yr
+4012-Cooling.js:626 [Cooling Stage 1] 📊 Publishing results with prefix="" (mode=target)
+4012-Cooling.js:784 [Cooling] 📢 Dispatched event: cooling-calculations-stage1
+4012-Cooling.js:528 [Cooling Stage 1] ✅ Complete: h_124=368567.69 kWh/yr, latentLoadFactor=1.746
+4012-Section13.js:2939 [S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=target)
+4012-Section12.js:316 [Section12] Calculated display values updated for target mode
 4012-Section01.js:755 🔍 [S01DB] updateTEUIDisplay START: e_10=341.2, h_10=159.67852622110752, useType=Utility Bills
-4012-Section01.js:825 🔍 [S01] T.1 Calculation: e_6=137.5 (ref), h_6=88.9 (target) → reduction should be 35%
+4012-Section01.js:825 🔍 [S01] T.1 Calculation: e_6=157.5 (ref), h_6=88.9 (target) → reduction should be 44%
 4012-Section01.js:917 🔍 [S01DB] UPDATING h_10: 511.4 (from j_32=5710470.347823744, area=11167)
-4012-Section01.js:511 🔍 [S01] h_6 explanation: target=88.9, ref=137.5, reduction=0.35345454545454547, percent=35%
-4011-Clock.js:65 🕐 [CLOCK] ⚡ CALCULATION COMPLETE: 94ms (subsequent update)
-4011-Clock.js:161 🕐 [CLOCK] ⚡ USER INTERACTION COMPLETE: 95ms (interaction → h_10 settlement)
+4012-Section01.js:511 🔍 [S01] h_6 explanation: target=88.9, ref=157.5, reduction=0.4355555555555555, percent=44%
+4011-Clock.js:65 🕐 [CLOCK] ⚡ CALCULATION COMPLETE: 155ms (subsequent update)
+4011-Clock.js:161 🕐 [CLOCK] ⚡ USER INTERACTION COMPLETE: 155ms (interaction → h_10 settlement)
 4012-Section01.js:1221 ✅ [S01] CALCULATION CHAIN COMPLETE - All values finalized including h_10
-4012-Section11.js:396 S11: Switched to REFERENCE mode
-4012-Section11.js:1216 [S11 Area Sync] Starting sync in reference mode
-4012-Section11.js:1266 [S11 Area Sync] d_88 = 0 (from ref_d_73)
-4012-Section11.js:1266 [S11 Area Sync] d_89 = 914 (from ref_d_74)
-4012-Section11.js:1266 [S11 Area Sync] d_90 = 846 (from ref_d_75)
-4012-Section11.js:1266 [S11 Area Sync] d_91 = 845 (from ref_d_76)
-4012-Section11.js:1266 [S11 Area Sync] d_92 = 120 (from ref_d_77)
-4012-Section11.js:1266 [S11 Area Sync] d_93 = 0 (from ref_d_78)
-4012-Section11.js:1278 [S11 Area Sync] Refreshing UI...
-4012-Section11.js:1282 [S11 Area Sync] Triggering recalculation...
-4012-Section11.js:2037 [S11] calculateAll TRIGGERED. isReferenceMode: false
-4012-Section11.js:1504 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1504 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1576 [S11] REF TB%=50% → ref_i_97=533766.70, ref_k_97=15810.91
-4012-Section10.js:2812 S10: Reference listener triggered by ref_i_98, recalculating all.
-4012-Section10.js:1902 [S10 DEBUG] calculateAll() triggered in target mode - running both engines
-4012-Section10.js:1910 [S10 DEBUG] Dual-engine calculations complete in target mode
-4012-Section10.js:2833 S10: Reference utilization factor dependency ref_i_98 changed.
-4012-Section11.js:1760 [S11] Writing ref penalty: ref_i_97=533766.70, ref_k_97=15810.91
-4012-Section10.js:2812 S10: Reference listener triggered by ref_i_97, recalculating all.
-4012-Section10.js:1902 [S10 DEBUG] calculateAll() triggered in target mode - running both engines
-4012-Section10.js:1910 [S10 DEBUG] Dual-engine calculations complete in target mode
-4012-Section10.js:2833 S10: Reference utilization factor dependency ref_i_97 changed.
-4012-Section11.js:1509 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1509 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1285 [S11 Area Sync] Sync completed successfully
-4012-Section11.js:2037 [S11] calculateAll TRIGGERED. isReferenceMode: false
-4012-Section11.js:1504 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1504 [S11] 🔵 REF CLIMATE READ: h_22=-1680
-4012-Section11.js:1576 [S11] REF TB%=50% → ref_i_97=533766.70, ref_k_97=15810.91
-4012-Section11.js:1760 [S11] Writing ref penalty: ref_i_97=533766.70, ref_k_97=15810.91
-4012-Section11.js:1509 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section11.js:1509 [S11] 🎯 TGT CLIMATE READ: h_22=-1680
-4012-Section12.js:198 S12: Switched to REFERENCE mode
-4012-Section12.js:298 [Section12] Calculated display values updated for reference mode
-4012-Section12.js:167 S12 ReferenceState: Saved state after user-modified changed d_103 to 1.5
-4011-FieldManager.js:208 [FieldManager] Routed d_103=1.5 through sect12 ModeManager
-4012-Section12.js:167 S12 ReferenceState: Saved state after user-modified changed d_103 to 1.5
-4012-Section12.js:1625 [S12] U-agg REF: TB%=50 → g_101=0.879413, g_102=0.428608
-4012-Section12.js:1895 [S12] 🔵 REF CLIMATE READ: d_20=3920, d_21=410
-4012-Section10.js:2812 S10: Reference listener triggered by ref_i_103, recalculating all.
-4012-Section10.js:1902 [S10 DEBUG] calculateAll() triggered in target mode - running both engines
-4012-Section10.js:1910 [S10 DEBUG] Dual-engine calculations complete in target mode
-4012-Section10.js:2833 S10: Reference utilization factor dependency ref_i_103 changed.
-4012-Section12.js:1969 [S12DB] REF CLIMATE: d_20=3920, d_21=410, d_22=1960, h_22=-1680
-4012-Section12.js:1997 [S12DB] REF h_101 calc: (3920*0.8794130088475913*24)/1000 = 82.73517587238139
-4012-Section12.js:2000 [S12DB] REF i_101 result: 82.73517587238139 * 16633 = 1376134.1802853197
-4012-Section12.js:2152 [S12DB] REF g_104 calc: (0.8794130088475913*16633 + 0.4286076715786601*11168)/27801.000001 = 0.6983190191595318
-4012-Section12.js:2176 [S12DB] REF ROW104: i_101=1376134.1802853197, i_102=225165.91999999998, i_103=539593.4519360001 → i_104=2140893.5522213196
-4012-Section12.js:2179 [S12DB] REF ROW104: h_21="Capacitance", k_98=31621.81433962265 → k_104=31621.81433962265
-4012-Section12.js:2369 [Section12] Reference results stored with ref_ prefix for downstream sections
-4012-Section12.js:1625 [S12] U-agg TGT: TB%=30 → g_101=0.676346, g_102=0.371429
-4012-Section12.js:1902 [S12] 🎯 TGT CLIMATE READ: d_20=3920, d_21=410
-4012-Section12.js:1980 [S12DB] TGT CLIMATE: d_20=3920, d_21=410, d_22=1960, h_22=-1680
-4012-Section12.js:2004 [S12DB] TGT h_101 calc: (3920*0.6763455491781712*24)/1000 = 63.63058926668235
-4012-Section12.js:2007 [S12DB] TGT i_101 result: 63.63058926668235 * 16633 = 1058367.5912727276
-4012-Section12.js:2156 [S12DB] TGT g_104 calc: (0.6763455491781712*16633 + 0.37142857142857144*11168)/27801.000001 = 0.5538566887752582
-4012-Section12.js:2183 [S12DB] TGT ROW104: i_101=1058367.5912727276, i_102=195127.296, i_103=608564.0435368421 → i_104=1862058.9308095698
-4012-Section12.js:2186 [S12DB] TGT ROW104: h_21="Capacitance", k_98=20823.55870129871 → k_104=20823.55870129871
-4012-Section12.js:298 [Section12] Calculated display values updated for reference mode
-4012-Section12.js:167 S12 ReferenceState: Saved state after user-modified changed d_103 to 2
-4011-FieldManager.js:208 [FieldManager] Routed d_103=2 through sect12 ModeManager
-4012-Section12.js:167 S12 ReferenceState: Saved state after user-modified changed d_103 to 2
-4012-Section12.js:1625 [S12] U-agg REF: TB%=50 → g_101=0.879413, g_102=0.428608
-4012-Section12.js:1895 [S12] 🔵 REF CLIMATE READ: d_20=3920, d_21=410
-4012-Section10.js:2812 S10: Reference listener triggered by ref_i_103, recalculating all.
-4012-Section10.js:1902 [S10 DEBUG] calculateAll() triggered in target mode - running both engines
-4012-Section10.js:1910 [S10 DEBUG] Dual-engine calculations complete in target mode
-4012-Section10.js:2833 S10: Reference utilization factor dependency ref_i_103 changed.
-4012-Section12.js:1969 [S12DB] REF CLIMATE: d_20=3920, d_21=410, d_22=1960, h_22=-1680
-4012-Section12.js:1997 [S12DB] REF h_101 calc: (3920*0.8794130088475913*24)/1000 = 82.73517587238139
-4012-Section12.js:2000 [S12DB] REF i_101 result: 82.73517587238139 * 16633 = 1376134.1802853197
-4012-Section12.js:2152 [S12DB] REF g_104 calc: (0.8794130088475913*16633 + 0.4286076715786601*11168)/27801.000001 = 0.6983190191595318
-4012-Section12.js:2176 [S12DB] REF ROW104: i_101=1376134.1802853197, i_102=225165.91999999998, i_103=608564.0435368421 → i_104=2209864.1438221615
-4012-Section12.js:2179 [S12DB] REF ROW104: h_21="Capacitance", k_98=31621.81433962265 → k_104=31621.81433962265
-4012-Section12.js:2369 [Section12] Reference results stored with ref_ prefix for downstream sections
-4012-Section12.js:1625 [S12] U-agg TGT: TB%=30 → g_101=0.676346, g_102=0.371429
-4012-Section12.js:1902 [S12] 🎯 TGT CLIMATE READ: d_20=3920, d_21=410
-4012-Section12.js:1980 [S12DB] TGT CLIMATE: d_20=3920, d_21=410, d_22=1960, h_22=-1680
-4012-Section12.js:2004 [S12DB] TGT h_101 calc: (3920*0.6763455491781712*24)/1000 = 63.63058926668235
-4012-Section12.js:2007 [S12DB] TGT i_101 result: 63.63058926668235 * 16633 = 1058367.5912727276
-4012-Section12.js:2156 [S12DB] TGT g_104 calc: (0.6763455491781712*16633 + 0.37142857142857144*11168)/27801.000001 = 0.5538566887752582
-4012-Section12.js:2183 [S12DB] TGT ROW104: i_101=1058367.5912727276, i_102=195127.296, i_103=608564.0435368421 → i_104=1862058.9308095698
-4012-Section12.js:2186 [S12DB] TGT ROW104: h_21="Capacitance", k_98=20823.55870129871 → k_104=20823.55870129871
-4012-Section12.js:298 [Section12] Calculated display values updated for reference mode
