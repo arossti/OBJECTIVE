@@ -368,21 +368,165 @@ S10: Reference listener triggered by ref_i_103, recalculating all.
 
 **New Logging Added**: StateManager.notifyListeners() now logs when listeners fire for `ref_d_103`, `ref_i_103`, `ref_g_103`.
 
-### Test 5: POST-IMPORT WITH LISTENER DIAGNOSTICS (NEEDED)
+### Test 5: POST-IMPORT WITH LISTENER DIAGNOSTICS (COMPLETED ❌)
 
+**Date**: October 22, 2025
 **Test Protocol**: Same as Test 3 (import, then edit d_103 in Reference mode)
 
-**What to Look For**:
-1. `[CALC-FLOW] 🔔 Firing N listeners for ref_d_103` - Does ref_d_103 have listeners?
-2. `[CALC-FLOW] 🔔 Firing N listeners for ref_i_103` - Does ref_i_103 have listeners?
-3. If listener count is 0, listeners aren't registered
-4. If listener count > 0 but cascade stops, something in the listener chain breaks
+**Result**: e_10 remains 910.8 ❌
 
-**Expected**:
-- After init: Listeners fire, cascade works
-- After import: Either (A) listeners missing or (B) listeners fire but don't cascade
+**CRITICAL FINDING**: **Listeners ARE registered and firing!**
 
-*Results pending...*
+**Evidence from Logs**:
+```
+[CALC-FLOW] 🔔 Firing 4 listeners for ref_i_103
+S10: Reference listener triggered by ref_i_103, recalculating all.
+[S10 DEBUG] calculateAll() triggered in target mode - running both engines
+[S10 DEBUG] Dual-engine calculations complete in target mode
+[S12 DIAG] ========== calculateAll END ==========
+```
+
+**Analysis**:
+1. ✅ **4 listeners registered** for ref_i_103
+2. ✅ **Listeners fire** after import (not muted)
+3. ✅ **S10 runs** both engines
+4. ❌ **Cascade stops** - No S13, S14, S04, S01
+
+**The Problem**: S10's listener fires and S10 calculates, but **nothing downstream runs**.
+
+Investigation shows:
+- S04 listens to: S13 (d_113, h_115, f_115), S15 (d_136), S06, S07, S08, S09, S02
+- S04 does **NOT** listen to S10 outputs directly
+- The cascade must go: S10 → ??? → S13 → S04 → S01
+
+**Working Theory**: The architecture expects `Calculator.calculateAll()` to run the full cascade, not individual section listeners. After init, something triggers `Calculator.calculateAll()`, but after import it doesn't.
+
+---
+
+## Root Cause & Solution
+
+### The Problem (Confirmed)
+
+**Incomplete Listener Cascade**:
+- S12 → S10 works (S10 listener fires)
+- S10 → S11 → S13 → S04 → S01 **BREAKS** (no listeners connect these)
+
+**Why It Works After Init**:
+- During init, `Calculator.calculateAll()` runs the full ordered sequence
+- This populates all values correctly
+- Subsequent user edits work because all values are already "primed"
+
+**Why It Breaks After Import**:
+- Import runs `Calculator.calculateAll()` once
+- But when user edits S12, only S12's local `calculateAll()` runs
+- S10 listener fires, but S10's outputs don't trigger downstream cascade
+- S11, S13, S14, S04, S01 never recalculate with new S10 area values
+
+### The S13 Pattern (Working Example)
+
+S13 correctly handles this with `g_118` (Ventilation Method):
+
+```javascript
+// 4012-Section13.js:2237-2244
+if (fieldId === "g_118") {
+  setTimeout(() => {
+    if (window.TEUI?.Calculator?.calculateAll) {
+      window.TEUI.Calculator.calculateAll();
+    }
+  }, 50); // Small delay ensures S13 values published first
+}
+```
+
+**Why this works**: S13 knows that ventilation changes affect many downstream sections, so it triggers the full `Calculator.calculateAll()` cascade.
+
+### Proposed Solution
+
+**Apply the S13 pattern to S10 and S12**:
+
+#### Fix 1: S10's calculateAll() should trigger full cascade
+
+```javascript
+// 4012-Section10.js:1900
+function calculateAll() {
+  console.log(`[S10 DEBUG] calculateAll() triggered in ${ModeManager.currentMode} mode - running both engines`);
+
+  calculateTargetModel(); // Calculate Target model values
+  calculateReferenceModel(); // Calculate Reference model values
+
+  console.log(`[S10 DEBUG] Dual-engine calculations complete in ${ModeManager.currentMode} mode`);
+
+  // ✅ FIX: S10 exports door/window/skylight areas to S11
+  // When areas change, must trigger full cascade (S11 → S12 → S13 → ... → S01)
+  // Pattern from S13's g_118 handling
+  setTimeout(() => {
+    if (window.TEUI?.Calculator?.calculateAll) {
+      window.TEUI.Calculator.calculateAll();
+    }
+  }, 50);
+}
+```
+
+#### Fix 2: S12's handleFieldBlur() should trigger full cascade
+
+```javascript
+// 4012-Section12.js:2544
+function handleFieldBlur(event) {
+  const field = event.target;
+  const fieldId = field.getAttribute("data-field-id");
+  if (!fieldId) return;
+
+  const numValue = window.TEUI.parseNumeric(field.textContent);
+  if (!isNaN(numValue) && isFinite(numValue)) {
+    const formattedValue = window.TEUI.formatNumber(numValue, "number-2dp");
+    field.textContent = formattedValue;
+
+    console.log(`[S12 DIAG] handleFieldBlur: ${fieldId} = ${numValue} (mode=${ModeManager.currentMode})`);
+
+    // ✅ DUAL-STATE: Store value using ModeManager
+    ModeManager.setValue(fieldId, String(numValue), "user-modified");
+
+    console.log(`[S12 DIAG] Calling calculateAll() after user edit...`);
+
+    // ✅ FIX: Call Calculator.calculateAll() instead of local calculateAll()
+    // S12 volume/surface changes affect S13 (mechanical loads), S14 (TEDI), S04 (totals), S01 (display)
+    // Must trigger full cascade, not just S12's engines
+    if (window.TEUI?.Calculator?.calculateAll) {
+      window.TEUI.Calculator.calculateAll();
+    } else {
+      // Fallback to local if Calculator not available
+      calculateAll();
+    }
+
+    console.log(`[S12 DIAG] calculateAll() completed`);
+  }
+}
+```
+
+### Why This Fixes The Issue
+
+1. **After Init**: Works as before (Calculator.calculateAll runs during init)
+2. **After Import**: User edits now trigger full cascade
+   - S12 user edit → `Calculator.calculateAll()` → Full ordered sequence
+   - S10 listener fires → `Calculator.calculateAll()` → Full ordered sequence
+3. **Consistent with CHEATSHEET**: Sections run both engines, then trigger cascade when needed
+
+### Trade-offs
+
+**Pros**:
+- Fixes Reference mode regression
+- Follows S13's proven pattern
+- Ensures consistency between init and post-import behavior
+
+**Cons**:
+- May cause duplicate calculations (Calculator runs all sections, including ones that just ran)
+- Performance impact (acceptable for correctness)
+
+### Alternative Considered
+
+Complete the listener chain (S10 → S11 → S13 → S04). **Rejected** because:
+- Complex to implement correctly
+- Risk of breaking existing working patterns
+- S13 pattern is already proven and simpler
 
 ---
 
@@ -390,4 +534,4 @@ S10: Reference listener triggered by ref_i_103, recalculating all.
 **Assigned To**: AI Agent
 **Priority**: CRITICAL - Blocking production deployment
 **Current Commit**: `e340691` - Listener firing diagnostics
-**Status**: Tests 1-4 completed, Test 5 needed to check listener registration
+**Status**: Root cause identified, solution proposed, ready to implement
