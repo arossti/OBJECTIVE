@@ -2822,21 +2822,10 @@ window.TEUI.SectionModules.sect12 = (function () {
       calculateAll();
     });
 
-    // ✅ DUAL-STATE: Internal field listeners to trigger calculations
-    // Target mode listeners (unprefixed)
-    window.TEUI.StateManager.addListener("d_103", () => calculateAll()); // Stories
-    window.TEUI.StateManager.addListener("g_103", () => calculateAll()); // Exposure
-    window.TEUI.StateManager.addListener("d_105", () => calculateAll()); // Volume
-    window.TEUI.StateManager.addListener("d_108", () => calculateAll()); // Blower door method
-    window.TEUI.StateManager.addListener("g_109", () => calculateAll()); // Measured ACH50
-
-    // ✅ FIX: Reference mode listeners (ref_ prefixed)
-    // These ensure Reference mode user changes trigger full calculation chain
-    window.TEUI.StateManager.addListener("ref_d_103", () => calculateAll()); // Stories
-    window.TEUI.StateManager.addListener("ref_g_103", () => calculateAll()); // Exposure
-    window.TEUI.StateManager.addListener("ref_d_105", () => calculateAll()); // Volume
-    window.TEUI.StateManager.addListener("ref_d_108", () => calculateAll()); // Blower door method
-    window.TEUI.StateManager.addListener("ref_g_109", () => calculateAll()); // Measured ACH50
+    // ✅ S07 PATTERN: NO listeners for S12's own input fields
+    // User edits call handleFieldBlur → ModeManager.setValue → calculateAll
+    // ModeManager.setValue publishes to StateManager (both ref_ and unprefixed)
+    // No need for listeners to create double calculations
 
     s12ListenersAdded = true;
     console.log(
