@@ -341,13 +341,10 @@ window.TEUI.SectionModules.sect12 = (function () {
       // This ensures downstream sections receive updates in both modes
       if (this.currentMode === "target") {
         // Target mode: publish unprefixed value
-        console.log(`[S12 DIAG] setValue in TARGET mode: ${fieldId} = ${value} (source=${source})`);
         window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
       } else if (this.currentMode === "reference") {
         // Reference mode: publish with ref_ prefix
-        console.log(`[S12 DIAG] setValue in REFERENCE mode: ref_${fieldId} = ${value} (source=${source})`);
         window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "user-modified");
-        console.log(`[S12 DIAG] ✅ Published ref_${fieldId} to StateManager`);
       }
     },
     refreshUI: function () {
@@ -2274,17 +2271,12 @@ window.TEUI.SectionModules.sect12 = (function () {
   }
 
   function calculateAll() {
-    console.log(`[S12 DIAG] ========== calculateAll START (mode=${ModeManager.currentMode}) ==========`);
-
     // ✅ DUAL-ENGINE: Always run BOTH engines as per DUAL-STATE-CHEATSHEET mandate
-    console.log(`[S12 DIAG] Running Reference engine...`);
     calculateReferenceModel(); // Reads ReferenceState → stores ref_ prefixed
-    console.log(`[S12 DIAG] Running Target engine...`);
     calculateTargetModel(); // Reads TargetState → stores unprefixed
 
     // ✅ S11 PATTERN: Re-write Reference values after all calculations to prevent overwrites
     if (window.TEUI?.StateManager && lastReferenceResults) {
-      console.log(`[S12 DIAG] Re-publishing ${Object.keys(lastReferenceResults).length} Reference results...`);
       Object.entries(lastReferenceResults).forEach(([fieldId, value]) => {
         window.TEUI.StateManager.setValue(
           `ref_${fieldId}`,
@@ -2292,10 +2284,9 @@ window.TEUI.SectionModules.sect12 = (function () {
           "calculated",
         );
       });
-      console.log(`[S12 DIAG] ✅ Reference results re-published to StateManager`);
     }
 
-    console.log(`[S12 DIAG] ========== calculateAll END ==========`);
+    // console.log(`[S12DEBUG] Dual-engine calculations complete`);
     // Always refresh displayed calculated values after a calculation pass
     ModeManager.updateCalculatedDisplayValues?.();
   }
@@ -2551,14 +2542,9 @@ window.TEUI.SectionModules.sect12 = (function () {
       const formattedValue = window.TEUI.formatNumber(numValue, "number-2dp");
       field.textContent = formattedValue;
 
-      console.log(`[S12 DIAG] handleFieldBlur: ${fieldId} = ${numValue} (mode=${ModeManager.currentMode})`);
-
       // ✅ DUAL-STATE: Store value using ModeManager
       ModeManager.setValue(fieldId, String(numValue), "user-modified");
-
-      console.log(`[S12 DIAG] Calling calculateAll() after user edit...`);
       calculateAll();
-      console.log(`[S12 DIAG] calculateAll() completed`);
     }
   }
 

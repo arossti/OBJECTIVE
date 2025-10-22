@@ -768,9 +768,6 @@ window.TEUI.SectionModules.sect01 = (function () {
     const refEmissions = getGlobalNumericValue("ref_k_32") || 0; // From S04 Reference
     const refEmbodiedCarbon = getGlobalNumericValue("ref_i_39") || 0; // From S05 Reference
 
-    // 🔍 CALC-FLOW DIAGNOSTIC: Track what S01 receives from S04
-    console.log(`[CALC-FLOW] 📊 S01.updateTEUIDisplay() reading ref_j_32=${refEnergy}, ref_h_15=${referenceArea}`);
-
     // Target values from upstream sections (S04, S05)
     const targetEnergy = getGlobalNumericValue("j_32") || 0; // From S04 Target
     const targetEmissions = getGlobalNumericValue("k_32") || 0; // From S04 Target

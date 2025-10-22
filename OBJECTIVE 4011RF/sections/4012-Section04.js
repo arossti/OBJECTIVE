@@ -1135,9 +1135,6 @@ window.TEUI.SectionModules.sect04 = (function () {
   }
 
   function calculateAll() {
-    // 🔍 CALC-FLOW DIAGNOSTIC: Track S04 execution
-    console.log(`[CALC-FLOW] 📊 S04.calculateAll() START (mode=${ModeManager.currentMode})`);
-
     const originalMode = ModeManager.currentMode;
 
     // Target calculations
@@ -1165,10 +1162,6 @@ window.TEUI.SectionModules.sect04 = (function () {
     calculateRow35(); // Uses ref_d_14, ref_h_15
 
     ModeManager.currentMode = originalMode;
-
-    // 🔍 CALC-FLOW DIAGNOSTIC: Track S04 completion and key outputs
-    const ref_j_32 = window.TEUI.StateManager?.getValue("ref_j_32");
-    console.log(`[CALC-FLOW] 🏁 S04.calculateAll() END (ref_j_32=${ref_j_32})`);
   }
 
   function getFieldDefault(fieldId) {

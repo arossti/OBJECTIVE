@@ -556,13 +556,6 @@ TEUI.StateManager = (function () {
     if (!listeners.has(fieldId)) {
       return;
     }
-
-    // 🔍 CALC-FLOW DIAGNOSTIC: Track listener firing for key Reference fields
-    if (fieldId.startsWith("ref_") && ["ref_d_103", "ref_i_103", "ref_g_103"].includes(fieldId)) {
-      const listenerCount = listeners.get(fieldId).size;
-      console.log(`[CALC-FLOW] 🔔 Firing ${listenerCount} listeners for ${fieldId}`);
-    }
-
     listeners.get(fieldId).forEach((callback) => {
       try {
         callback(newValue, oldValue, fieldId, state);
@@ -1826,13 +1819,6 @@ TEUI.StateManager = (function () {
   function muteListeners() {
     listenersActive = false;
     console.log("[StateManager] 🔒 Listeners MUTED (import quarantine active)");
-
-    // 🔍 DIAGNOSTIC: Count listeners before muting
-    let totalListeners = 0;
-    listeners.forEach((callbackSet) => {
-      totalListeners += callbackSet.size;
-    });
-    console.log(`[StateManager] 📊 BEFORE MUTE: ${totalListeners} listeners across ${listeners.size} fields`);
   }
 
   /**
@@ -1844,20 +1830,6 @@ TEUI.StateManager = (function () {
     console.log(
       "[StateManager] 🔓 Listeners UNMUTED (import quarantine ended)",
     );
-
-    // 🔍 DIAGNOSTIC: Verify listeners still registered after unmuting
-    let totalListeners = 0;
-    listeners.forEach((callbackSet) => {
-      totalListeners += callbackSet.size;
-    });
-    console.log(`[StateManager] 📊 AFTER UNMUTE: ${totalListeners} listeners across ${listeners.size} fields`);
-
-    // Check specifically for ref_i_103 listeners
-    if (listeners.has("ref_i_103")) {
-      console.log(`[StateManager] 🔍 ref_i_103 has ${listeners.get("ref_i_103").size} listeners registered`);
-    } else {
-      console.log(`[StateManager] ⚠️ ref_i_103 has NO listeners!`);
-    }
   }
 
   // Public API

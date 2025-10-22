@@ -2958,9 +2958,6 @@ window.TEUI.SectionModules.sect13 = (function () {
    * ✅ INCLUDES S11 PERSISTENCE PATTERN: Prevents Reference value race conditions
    */
   function calculateAll() {
-    // 🔍 CALC-FLOW DIAGNOSTIC: Track S13 execution
-    console.log(`[CALC-FLOW] 📊 S13.calculateAll() START (mode=${ModeManager.currentMode})`);
-
     // Prevent race conditions from mode changes during calculation
     const modeAtCalculationStart = ModeManager.currentMode;
 
@@ -2979,9 +2976,6 @@ window.TEUI.SectionModules.sect13 = (function () {
         const shouldRewrite = modeAtCalculationStart === "reference";
 
         if (shouldRewrite) {
-          // 🔍 CALC-FLOW DIAGNOSTIC: Track Reference result publishing
-          console.log(`[CALC-FLOW] 📤 S13 re-publishing ${Object.keys(lastReferenceResults).length} Reference results...`);
-
           Object.entries(lastReferenceResults).forEach(([fieldId, value]) => {
             if (value !== null && value !== undefined) {
               window.TEUI.StateManager.setValue(
@@ -2991,14 +2985,9 @@ window.TEUI.SectionModules.sect13 = (function () {
               );
             }
           });
-
-          console.log(`[CALC-FLOW] ✅ S13 Reference results published to StateManager`);
         } else {
         }
       }
-
-      // 🔍 CALC-FLOW DIAGNOSTIC: Track S13 completion
-      console.log(`[CALC-FLOW] 🏁 S13.calculateAll() END`);
     } catch (error) {
       console.error("[Section13] ❌ ERROR in calculateAll:", error);
     }
