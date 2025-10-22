@@ -283,22 +283,55 @@ S12's behavior is **identical** in both scenarios:
 
 ---
 
-### Test 3: POST-IMPORT WITH EXPANDED LOGGING (Pending)
+### Test 3: POST-IMPORT WITH EXPANDED LOGGING (COMPLETED ❌)
+
+**Date**: October 22, 2025
+**Test Protocol**: Same as Test 2
+
+**Result**: e_10 remains 910.8 ❌ (NO propagation!)
+
+**CRITICAL FINDING**: `Calculator.calculateAll()` does NOT run!
+
+**Evidence from Logs**:
+- ✅ S12 logs show: `[S12 DIAG] calculateAll START/END`
+- ✅ S12 publishes 34 Reference results to StateManager
+- ✅ S10 listener fires: "S10: Reference listener triggered by ref_i_103"
+- ❌ **NO `[CALC-FLOW]` logs from Calculator.calculateAll()**
+- ❌ **NO `[CALC-FLOW]` logs from S13, S14, S04, S01**
+
+**Analysis**:
+S12's `handleFieldBlur` calls `calculateAll()` which is S12's **local** function, NOT `Calculator.calculateAll()`. According to CHEATSHEET.md, this is correct architecture - sections call their own `calculateAll()`, and downstream propagation happens through StateManager listeners.
+
+**The Problem**:
+- S12 publishes `ref_i_103` → S10 listener fires ✅
+- But S10's recalculation doesn't cascade further
+- S13, S14, S04, S01 never run
+- No full system recalculation happens
+
+**Key Question**: Why did Test 1 work if Calculator.calculateAll() wasn't called then either?
+
+**Hypothesis**: After init, cascading StateManager listeners worked correctly. After import, something breaks the listener cascade.
+
+---
+
+### Test 4: PRE-IMPORT WITH LOGGING (NEEDED)
+
+**Objective**: Verify if `Calculator.calculateAll()` runs during Test 1 scenario
 
 **Test Protocol**:
-1. Hard refresh page
-2. Import Excel file
-3. Navigate to S12
-4. Switch to Reference mode
-5. Change d_103 from 2 to 1.5
-6. Observe console for `[CALC-FLOW]` logs
-7. Check if e_10 updates
+1. Hard refresh page (initialization will run)
+2. Navigate to S12
+3. Switch to Reference mode
+4. Change d_103 from 1 to 1.5
+5. Observe console for `[CALC-FLOW]` logs
+6. Check if e_10 updates (it should: 287.0 → 289.9)
 
-**Expected Behavior**:
-- After init: Full chain executes, e_10 updates ✅
-- After import: Full chain executes but e_10 doesn't update ❌
+**Key Questions**:
+1. Does `Calculator.calculateAll()` run during user edit after init?
+2. Do we see the full cascade: Calculator → S12 → S13 → S14 → S04 → S01?
+3. Or does it work through cascading StateManager listeners without Calculator?
 
-**Key Question**: At which point in the chain do the values stop propagating?
+**This will tell us**: Whether the bug is "Calculator not running" or "listeners broken after import"
 
 *Results pending...*
 
@@ -308,3 +341,4 @@ S12's behavior is **identical** in both scenarios:
 **Assigned To**: AI Agent
 **Priority**: CRITICAL - Blocking production deployment
 **Current Commit**: `ccc5fe0` - Expanded diagnostic logging
+**Status**: Test 3 completed, Test 4 needed to understand init behavior
