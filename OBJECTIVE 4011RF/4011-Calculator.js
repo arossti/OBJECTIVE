@@ -479,6 +479,9 @@ TEUI.Calculator = (function () {
    * Recalculate all values
    */
   function calculateAll() {
+    // 🔍 CALC-FLOW DIAGNOSTIC: Track Calculator.calculateAll() execution
+    console.log("[CALC-FLOW] 🎯 Calculator.calculateAll() START");
+
     // Start performance timing
     if (window.TEUI?.Clock?.markCalculationStart) {
       window.TEUI.Clock.markCalculationStart();
@@ -528,7 +531,14 @@ TEUI.Calculator = (function () {
         const sectionModule = window.TEUI.SectionModules?.[sectionKey];
         if (sectionModule && typeof sectionModule.calculateAll === "function") {
           try {
+            // 🔍 CALC-FLOW DIAGNOSTIC: Track key sections in the chain
+            if (["sect12", "sect13", "sect14", "sect04", "sect01"].includes(sectionKey)) {
+              console.log(`[CALC-FLOW] 🔄 Running ${sectionKey}.calculateAll()...`);
+            }
             sectionModule.calculateAll();
+            if (["sect12", "sect13", "sect14", "sect04", "sect01"].includes(sectionKey)) {
+              console.log(`[CALC-FLOW] ✅ ${sectionKey}.calculateAll() completed`);
+            }
           } catch (error) {
             console.error(`Error calculating section ${sectionKey}:`, error);
           }
@@ -537,6 +547,9 @@ TEUI.Calculator = (function () {
         }
       }
     });
+
+    // 🔍 CALC-FLOW DIAGNOSTIC: Track Calculator.calculateAll() completion
+    console.log("[CALC-FLOW] 🏁 Calculator.calculateAll() END");
 
     // Note: Performance timing ends in S01 after h_10 finalization
     // Clock.markCalculationEnd() called from Section01.runAllCalculations()
