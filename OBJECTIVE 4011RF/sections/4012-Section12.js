@@ -368,9 +368,22 @@ window.TEUI.SectionModules.sect12 = (function () {
         if (dropdown) {
           dropdown.value = stateValue; // Simple and direct - like working sections
         } else if (element.hasAttribute("contenteditable")) {
-          element.textContent = stateValue;
+          // ✅ FIX: Format numeric values to 2dp for consistency
+          const numericValue = window.TEUI.parseNumeric(stateValue);
+          if (!isNaN(numericValue) && (fieldId === "g_109" || fieldId === "d_105")) {
+            element.textContent = window.TEUI.formatNumber(
+              numericValue,
+              "number-2dp",
+            );
+          } else {
+            element.textContent = stateValue;
+          }
         }
       });
+
+      // ✅ FIX: Re-evaluate conditional editability after refreshing UI
+      // This ensures g_109 is properly editable when d_108="MEASURED" after import
+      handleConditionalEditability();
     },
   };
 
@@ -2572,12 +2585,22 @@ window.TEUI.SectionModules.sect12 = (function () {
         g109Cell.textContent.trim() === "N/A"
       ) {
         // Use value from state, or fallback to mode-specific default (1.50 Target, 2.00 Reference)
-        const displayValue = currentValue || (ModeManager.currentMode === "reference" ? "2.00" : "1.50");
+        const rawValue = currentValue || (ModeManager.currentMode === "reference" ? "2.00" : "1.50");
+
+        // ✅ FIX: Format to 2dp for consistency
+        const numericValue = window.TEUI.parseNumeric(rawValue);
+        const displayValue = window.TEUI.formatNumber(numericValue, "number-2dp");
         g109Cell.textContent = displayValue;
 
         // Only setValue if we're using a fallback (not already in state)
         if (!currentValue) {
-          ModeManager.setValue("g_109", displayValue, "calculated");
+          ModeManager.setValue("g_109", rawValue, "calculated");
+        }
+      } else {
+        // ✅ FIX: Even if cell has content, ensure it's formatted to 2dp
+        const numericValue = window.TEUI.parseNumeric(g109Cell.textContent);
+        if (!isNaN(numericValue)) {
+          g109Cell.textContent = window.TEUI.formatNumber(numericValue, "number-2dp");
         }
       }
     } else {
