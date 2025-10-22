@@ -1202,15 +1202,22 @@ window.TEUI.SectionModules.sect11 = (function () {
     try {
       const currentMode = ModeManager.currentMode; // "target" or "reference"
 
-      // ✅ FIX: Detect if this is initial sync (during initialization)
-      // Check if ReferenceState areas are unpopulated - if so, sync into BOTH states
-      const isInitialSync =
-        currentMode === "target" &&
-        ReferenceState.getValue("d_88") === undefined;
+      // ✅ FIX: Detect if this is initial/import sync requiring dual-state population
+      // Check if ReferenceState areas are unpopulated OR don't match StateManager
+      // This handles BOTH initialization (undefined) AND import (stale values)
+      const refArea_d88 = ReferenceState.getValue("d_88");
+      const stateManager_refArea = window.TEUI.StateManager.getValue("ref_d_73");
 
-      if (isInitialSync) {
+      const needsDualSync =
+        currentMode === "target" &&
+        (refArea_d88 === undefined || refArea_d88 !== stateManager_refArea);
+
+      if (needsDualSync) {
         console.log(
-          `[S11 Area Sync] INITIAL SYNC - populating BOTH Target and Reference states`,
+          `[S11 Area Sync] DUAL-STATE SYNC - populating BOTH Target and Reference states`,
+        );
+        console.log(
+          `[S11 Area Sync] Reason: d_88=${refArea_d88}, ref_d_73 in StateManager=${stateManager_refArea}`,
         );
       } else {
         console.log(`[S11 Area Sync] Starting sync in ${currentMode} mode`);
@@ -1226,8 +1233,8 @@ window.TEUI.SectionModules.sect11 = (function () {
           window.TEUI.StateManager.getValue(targetSourceField);
         const refValue = window.TEUI.StateManager.getValue(refSourceField);
 
-        // ✅ FIX: During initial sync, populate BOTH states
-        if (isInitialSync) {
+        // ✅ FIX: During dual-state sync, populate BOTH states
+        if (needsDualSync) {
           // Sync Target state
           if (targetValue !== null && targetValue !== undefined) {
             TargetState.setValue(s11Field, targetValue);
