@@ -556,6 +556,13 @@ TEUI.StateManager = (function () {
     if (!listeners.has(fieldId)) {
       return;
     }
+
+    // 🔍 CALC-FLOW DIAGNOSTIC: Track listener firing for key Reference fields
+    if (fieldId.startsWith("ref_") && ["ref_d_103", "ref_i_103", "ref_g_103"].includes(fieldId)) {
+      const listenerCount = listeners.get(fieldId).size;
+      console.log(`[CALC-FLOW] 🔔 Firing ${listenerCount} listeners for ${fieldId}`);
+    }
+
     listeners.get(fieldId).forEach((callback) => {
       try {
         callback(newValue, oldValue, fieldId, state);
