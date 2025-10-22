@@ -211,11 +211,94 @@ When user changes a value in Reference mode (after init OR after import):
 
 ---
 
-### Test 2: POST-IMPORT (Awaiting Results)
+### Test 2: POST-IMPORT (BROKEN ❌)
 
+**Date**: October 22, 2025
 **Test**: Same as Test 1, but after Excel file import instead of initialization
 
-**Expected**: S12 internal flow should match Test 1, but downstream propagation will fail
+**Initial State**: e_10 = 910.8
+**After Change**: Changed d_103 from 2 to 1.5 in Reference mode
+**Result**: e_10 remains 910.8 ❌ (NO propagation!)
+
+**S12 Diagnostic Logs**: IDENTICAL to Test 1! ✅
+
+**Critical Finding**:
+S12's behavior is **identical** in both scenarios:
+- ✅ Publishes `ref_d_103` to StateManager
+- ✅ Runs both engines (Reference + Target)
+- ✅ Re-publishes 34 Reference results to StateManager
+
+**The Problem is DOWNSTREAM**: Other sections (S13, S14, S04, S01) are not responding to S12's published values after import.
+
+---
+
+## Phase 2: Expanded Diagnostic Logging (Commit `ccc5fe0`)
+
+**Objective**: Track the full calculation chain to identify where propagation breaks after import.
+
+**New Logging Added**:
+
+### Calculator.js (4011-Calculator.js)
+```
+[CALC-FLOW] 🎯 Calculator.calculateAll() START
+[CALC-FLOW] 🔄 Running sect12.calculateAll()...
+[CALC-FLOW] ✅ sect12.calculateAll() completed
+[CALC-FLOW] 🔄 Running sect13.calculateAll()...
+[CALC-FLOW] ✅ sect13.calculateAll() completed
+[CALC-FLOW] 🔄 Running sect14.calculateAll()...
+[CALC-FLOW] ✅ sect14.calculateAll() completed
+[CALC-FLOW] 🔄 Running sect04.calculateAll()...
+[CALC-FLOW] ✅ sect04.calculateAll() completed
+[CALC-FLOW] 🔄 Running sect01.calculateAll()...
+[CALC-FLOW] ✅ sect01.calculateAll() completed
+[CALC-FLOW] 🏁 Calculator.calculateAll() END
+```
+
+### Section 13 (4012-Section13.js)
+```
+[CALC-FLOW] 📊 S13.calculateAll() START (mode=reference)
+[CALC-FLOW] 📤 S13 re-publishing N Reference results...
+[CALC-FLOW] ✅ S13 Reference results published to StateManager
+[CALC-FLOW] 🏁 S13.calculateAll() END
+```
+
+### Section 04 (4012-Section04.js)
+```
+[CALC-FLOW] 📊 S04.calculateAll() START (mode=reference)
+[CALC-FLOW] 🏁 S04.calculateAll() END (ref_j_32=VALUE)
+```
+
+### Section 01 (4012-Section01.js)
+```
+[CALC-FLOW] 📊 S01.updateTEUIDisplay() reading ref_j_32=VALUE, ref_h_15=VALUE
+```
+
+**What to Look For in Test 3**:
+1. Does `Calculator.calculateAll()` run after S12 user edit?
+2. Do all sections (S13, S14, S04, S01) execute?
+3. Does S13 re-publish Reference results in Reference mode?
+4. What is the `ref_j_32` value at S04 output?
+5. What `ref_j_32` value does S01 read?
+6. Are the values flowing through the chain, or stuck somewhere?
+
+---
+
+### Test 3: POST-IMPORT WITH EXPANDED LOGGING (Pending)
+
+**Test Protocol**:
+1. Hard refresh page
+2. Import Excel file
+3. Navigate to S12
+4. Switch to Reference mode
+5. Change d_103 from 2 to 1.5
+6. Observe console for `[CALC-FLOW]` logs
+7. Check if e_10 updates
+
+**Expected Behavior**:
+- After init: Full chain executes, e_10 updates ✅
+- After import: Full chain executes but e_10 doesn't update ❌
+
+**Key Question**: At which point in the chain do the values stop propagating?
 
 *Results pending...*
 
@@ -224,3 +307,4 @@ When user changes a value in Reference mode (after init OR after import):
 **Last Updated**: October 22, 2025
 **Assigned To**: AI Agent
 **Priority**: CRITICAL - Blocking production deployment
+**Current Commit**: `ccc5fe0` - Expanded diagnostic logging
