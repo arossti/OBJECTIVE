@@ -552,24 +552,48 @@ The import process:
 
 **Something in steps 1-4 corrupts the listener registry or state.**
 
-### Test 6: Listener Count Before/After Import (NEEDED)
+### Test 6: Listener Count Before/After Import (COMPLETED ✅❌)
 
-**New Diagnostic**: Added listener counting to mute/unmute cycle
+**Date**: October 22, 2025
+**Test Protocol**: Import file, check listener counts, then edit d_103
 
-**Test Protocol**:
-1. Hard refresh (init loads)
-2. Import Excel file
-3. Look for logs during import quarantine:
-   - `[StateManager] 📊 BEFORE MUTE: N listeners across M fields`
-   - `[StateManager] 📊 AFTER UNMUTE: N listeners across M fields`
-   - `[StateManager] 🔍 ref_i_103 has X listeners registered`
+**CRITICAL FINDING**: **Listeners are INTACT - the problem is elsewhere!**
 
-**What This Reveals**:
-- If listener count changes: Import is clearing/corrupting listeners
-- If listener count stays same: Issue is elsewhere (listener state, callback corruption, etc.)
-- If ref_i_103 has 0 listeners: Import specifically breaks S10 listeners
+**Evidence from Logs**:
+```
+[StateManager] 📊 BEFORE MUTE: 658 listeners across 211 fields
+[StateManager] 📊 AFTER UNMUTE: 658 listeners across 211 fields
+[StateManager] 🔍 ref_i_103 has 4 listeners registered
+[CALC-FLOW] 🔔 Firing 4 listeners for ref_i_103
+S10: Reference listener triggered by ref_i_103, recalculating all.
+[S10 DEBUG] calculateAll() triggered in target mode - running both engines
+[S10 DEBUG] Dual-engine calculations complete in target mode
+```
 
-*Results pending...*
+**Analysis**:
+1. ✅ **658 listeners survive import perfectly** (no corruption)
+2. ✅ **ref_i_103 has 4 listeners** after unmute
+3. ✅ **Listeners fire** correctly after user edit
+4. ✅ **S10 runs** both engines
+5. ❌ **Cascade still stops** - no S13, S14, S04, S01
+
+**BREAKTHROUGH OBSERVATION**:
+S10's debug log says `triggered in target mode` even though we're editing in Reference mode. S10 runs both engines, but it may not be **publishing** Reference results to StateManager after import!
+
+**Hypothesis Shift**: The issue isn't listener registry corruption. The issue is that **S10's Reference engine results aren't being published to StateManager** after import, so downstream listeners have nothing to respond to.
+
+---
+
+## The Real Culprit: S10
+
+**Investigation Focus**: S10 is the break point in the cascade.
+
+After import, when S10's listener fires and S10 runs:
+- ✅ S10.calculateAll() executes
+- ✅ Both engines run (Target + Reference)
+- ❌ **Reference results don't propagate downstream**
+
+**Next Step**: Narrow diagnostic focus to S10's Reference result publishing mechanism. Something about import state prevents S10 from publishing ref_d_73, ref_d_74, etc. to StateManager.
 
 ---
 
@@ -577,4 +601,4 @@ The import process:
 **Assigned To**: AI Agent
 **Priority**: CRITICAL - Blocking production deployment
 **Current Commit**: `409078b` - Listener count diagnostics
-**Status**: Testing import's effect on listener registry
+**Status**: Listeners proven intact, narrowing focus to S10 Reference publishing
