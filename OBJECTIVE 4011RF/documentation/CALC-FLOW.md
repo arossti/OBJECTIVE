@@ -314,24 +314,73 @@ S12's `handleFieldBlur` calls `calculateAll()` which is S12's **local** function
 
 ---
 
-### Test 4: PRE-IMPORT WITH LOGGING (NEEDED)
+### Test 4: PRE-IMPORT WITH LOGGING (COMPLETED ✅)
 
+**Date**: October 22, 2025
 **Objective**: Verify if `Calculator.calculateAll()` runs during Test 1 scenario
 
-**Test Protocol**:
-1. Hard refresh page (initialization will run)
-2. Navigate to S12
-3. Switch to Reference mode
-4. Change d_103 from 1 to 1.5
-5. Observe console for `[CALC-FLOW]` logs
-6. Check if e_10 updates (it should: 287.0 → 289.9)
+**Test Protocol**: Same as Test 1, with diagnostic logging enabled
 
-**Key Questions**:
-1. Does `Calculator.calculateAll()` run during user edit after init?
-2. Do we see the full cascade: Calculator → S12 → S13 → S14 → S04 → S01?
-3. Or does it work through cascading StateManager listeners without Calculator?
+**Result**: e_10 updates correctly: 287.0 → 289.9 ✅
 
-**This will tell us**: Whether the bug is "Calculator not running" or "listeners broken after import"
+**CRITICAL FINDING**: Cascading StateManager listeners work after init!
+
+**Evidence from Logs**:
+```
+[S12 DIAG] ========== calculateAll START ==========
+S10: Reference listener triggered by ref_i_103, recalculating all.
+[S10 DEBUG] calculateAll() triggered...
+[CALC-FLOW] 📊 S04.calculateAll() START (mode=target)
+[CALC-FLOW] 🏁 S04.calculateAll() END (ref_j_32=413763.1686081366)
+[CALC-FLOW] 📊 S01.updateTEUIDisplay() reading ref_j_32=413763.1686081366
+```
+
+**Analysis**:
+1. ✅ S12 publishes ref_i_103
+2. ✅ S10 listener fires synchronously
+3. ✅ **Cascade continues to S04** (something S10 publishes triggers S04)
+4. ✅ **Cascade reaches S01** (which reads ref_j_32 from S04)
+5. ✅ e_10 updates correctly
+
+**The Architecture (CONFIRMED)**:
+- Sections call their **own** `calculateAll()` (not Calculator.calculateAll)
+- Cascading **StateManager listeners** propagate changes synchronously
+- Chain: S12 → S10 → ... → S04 → S01 (via listeners)
+
+**Comparison: Test 3 vs Test 4**
+
+| Step | Test 4 (After Init) ✅ | Test 3 (After Import) ❌ |
+|------|----------------------|-------------------------|
+| S12 publishes ref_i_103 | ✅ Yes | ✅ Yes |
+| S10 listener fires | ✅ Yes | ✅ Yes |
+| S10.calculateAll() runs | ✅ Yes | ✅ Yes |
+| **Cascade to S04** | ✅ **YES** | ❌ **NO** |
+| **Cascade to S01** | ✅ **YES** | ❌ **NO** |
+| e_10 updates | ✅ Yes | ❌ No |
+
+**THE BUG**: After import, the listener cascade **stops at S10**. Something S10 publishes should trigger downstream sections (S04, S01), but those listeners don't fire after import.
+
+---
+
+## Phase 3: Listener Firing Diagnostics (Commit `e340691`)
+
+**Objective**: Determine if listeners are registered and firing after import.
+
+**New Logging Added**: StateManager.notifyListeners() now logs when listeners fire for `ref_d_103`, `ref_i_103`, `ref_g_103`.
+
+### Test 5: POST-IMPORT WITH LISTENER DIAGNOSTICS (NEEDED)
+
+**Test Protocol**: Same as Test 3 (import, then edit d_103 in Reference mode)
+
+**What to Look For**:
+1. `[CALC-FLOW] 🔔 Firing N listeners for ref_d_103` - Does ref_d_103 have listeners?
+2. `[CALC-FLOW] 🔔 Firing N listeners for ref_i_103` - Does ref_i_103 have listeners?
+3. If listener count is 0, listeners aren't registered
+4. If listener count > 0 but cascade stops, something in the listener chain breaks
+
+**Expected**:
+- After init: Listeners fire, cascade works
+- After import: Either (A) listeners missing or (B) listeners fire but don't cascade
 
 *Results pending...*
 
@@ -340,5 +389,5 @@ S12's `handleFieldBlur` calls `calculateAll()` which is S12's **local** function
 **Last Updated**: October 22, 2025
 **Assigned To**: AI Agent
 **Priority**: CRITICAL - Blocking production deployment
-**Current Commit**: `ccc5fe0` - Expanded diagnostic logging
-**Status**: Test 3 completed, Test 4 needed to understand init behavior
+**Current Commit**: `e340691` - Listener firing diagnostics
+**Status**: Tests 1-4 completed, Test 5 needed to check listener registration
