@@ -1340,8 +1340,10 @@ window.TEUI.SectionModules.sect11 = (function () {
     // Listen for Reference mode changes
     s10AreaFields.forEach((fieldId) => {
       window.TEUI.StateManager.addListener(`ref_${fieldId}`, (newValue) => {
-        // GUARD: Only fire if Reference mode active
-        if (ModeManager.currentMode !== "reference") return;
+        // ✅ MODE GUARD REMOVED: In dual-state architecture, sections have independent modes.
+        // S12 can be in Reference mode while S11 is in Target mode. When S12 publishes
+        // ref_i_103, S10 fires and publishes ref_d_73-78. S11 must respond regardless of
+        // its current mode - the dual-engine architecture ensures both engines run anyway.
         // GUARD: Only fire if S11 initialized
         if (!isS11Initialized) return;
 

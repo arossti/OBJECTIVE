@@ -597,8 +597,97 @@ After import, when S10's listener fires and S10 runs:
 
 ---
 
+## Test 7: S10 Reference Publishing Diagnostics (COMPLETED ✅)
+
+**Date**: October 22, 2025
+**Test Protocol**: Import file, then edit d_103 in S12 Reference mode, check S10 diagnostics
+
+**CRITICAL BREAKTHROUGH**: **S10 IS publishing Reference values perfectly!**
+
+**Evidence from Logs**:
+```
+S10: Reference listener triggered by ref_i_103, recalculating all.
+[S10 DEBUG] calculateAll() triggered in target mode - running both engines
+[S10 DIAG] 🔄 storeReferenceResults() called
+[S10 DIAG] ✅ Published 6 Reference area values to StateManager
+[S10 DEBUG] Dual-engine calculations complete in target mode
+```
+
+**Analysis**:
+1. ✅ S10.calculateAll() executes when ref_i_103 changes
+2. ✅ storeReferenceResults() IS called
+3. ✅ **All 6 Reference area values** (ref_d_73-78, ref_d_88-93) are published to StateManager
+4. ❌ **Downstream cascade still doesn't happen**
+
+**THE REAL BUG DISCOVERED**: S10 is publishing ref_d_73-78 correctly, but **S11's Reference area listeners aren't firing**!
+
+### Root Cause: Mode Guard in S11 Listeners
+
+**File**: `4012-Section11.js:1342-1352`
+
+```javascript
+// Listen for Reference mode changes
+s10AreaFields.forEach((fieldId) => {
+  window.TEUI.StateManager.addListener(`ref_${fieldId}`, (newValue) => {
+    // GUARD: Only fire if Reference mode active
+    if (ModeManager.currentMode !== "reference") return;  // ❌ BUG!
+
+    console.log(`[S11 Listener] ref_${fieldId} changed to ${newValue} (Reference mode)`);
+    debouncedSyncAreasFromS10();
+  });
+});
+```
+
+**The Problem**:
+- S12 is in Reference mode (its own ModeManager)
+- S12 publishes ref_i_103 → S10 listener fires ✅
+- S10 publishes ref_d_73-78 to StateManager ✅
+- **S11 is still in Target mode** (each section has independent mode state)
+- S11's listener guard checks `if (ModeManager.currentMode !== "reference") return;`
+- **Guard blocks the listener from firing** ❌
+- Cascade stops at S11
+
+**Architectural Insight**: Pattern A sections have **independent mode states**. S12 can be in Reference mode while S11 is in Target mode. The listener guard incorrectly assumes that if `ref_*` values are changing, S11 must also be in Reference mode - this is FALSE in the dual-state architecture!
+
+### The Fix
+
+**Remove the mode guard from S11's Reference area listeners**. The listeners should fire whenever ref_d_73-78 values change, regardless of S11's current mode. The dual-engine architecture ensures both engines run anyway, so mode guards on listeners are unnecessary and harmful.
+
+```javascript
+// Listen for Reference mode changes
+s10AreaFields.forEach((fieldId) => {
+  window.TEUI.StateManager.addListener(`ref_${fieldId}`, (newValue) => {
+    // ✅ REMOVED MODE GUARD - listeners should fire regardless of S11's mode
+    // GUARD: Only fire if S11 initialized
+    if (!isS11Initialized) return;
+
+    console.log(
+      `[S11 Listener] ref_${fieldId} changed to ${newValue} (Reference mode)`,
+    );
+    debouncedSyncAreasFromS10();
+  });
+});
+```
+
+**Why This Fixes It**:
+1. When S10 publishes ref_d_73-78 (from any section's Reference edit)
+2. S11 listeners fire regardless of S11's current mode
+3. S11 syncs area values and runs calculateAll() (both engines)
+4. S11 publishes results → cascade continues to S13 → S14 → S04 → S01
+5. Full Reference cascade works after import ✅
+
+**Why the Same Guard on Target Listeners is OK**:
+Target mode listeners have the guard `if (ModeManager.currentMode !== "target") return;` which is fine because:
+- Target is the default mode for all sections at init
+- User edits in one section's Target mode won't affect other sections in Target mode
+- The architecture expects Target mode to be globally consistent
+
+But **Reference mode is section-specific** - one section can be in Reference mode while others are in Target mode, so Reference listeners must NOT have mode guards.
+
+---
+
 **Last Updated**: October 22, 2025
 **Assigned To**: AI Agent
 **Priority**: CRITICAL - Blocking production deployment
-**Current Commit**: `409078b` - Listener count diagnostics
-**Status**: Listeners proven intact, narrowing focus to S10 Reference publishing
+**Current Commit**: `a9ae25a` - S10 Reference publishing diagnostics
+**Status**: ✅ ROOT CAUSE IDENTIFIED - Mode guard blocking S11 Reference listeners
