@@ -174,6 +174,53 @@ When user changes a value in Reference mode (after init OR after import):
 
 ---
 
+## Test Results
+
+### Test 1: INITIALIZATION BASELINE (Working ✅)
+
+**Date**: October 22, 2025
+**Test**: Change d_103 (Stories) from 1 to 1.5 in Reference mode after initialization
+
+**Initial State**: e_10 = 287.0
+**After Change**: e_10 = 289.9 ✅ (Updated correctly!)
+**Target h_10**: No change (correct - only Reference engine should update)
+
+**S12 Diagnostic Logs (Key Events)**:
+```
+[S12 DIAG] setValue in REFERENCE mode: ref_d_103 = 1.5 (source=user-modified)
+[S12 DIAG] ✅ Published ref_d_103 to StateManager
+[S12 DIAG] setValue in REFERENCE mode: ref_d_103 = 1.5 (source=user-modified)
+[S12 DIAG] ✅ Published ref_d_103 to StateManager
+[S12 DIAG] ========== calculateAll START (mode=reference) ==========
+[S12 DIAG] Running Reference engine...
+[S12 DIAG] Running Target engine...
+[S12 DIAG] Re-publishing 34 Reference results...
+[S12 DIAG] ✅ Reference results re-published to StateManager
+[S12 DIAG] ========== calculateAll END ==========
+```
+
+**Analysis**:
+1. ✅ `ref_d_103` published to StateManager (appears twice - likely dropdown change event)
+2. ✅ `calculateAll()` runs in reference mode
+3. ✅ Both engines execute (dual-engine architecture working)
+4. ✅ 34 Reference results re-published to StateManager
+5. ✅ **Downstream propagation works** - e_10 updates from 287.0 → 289.9
+6. ✅ Target values unaffected (h_10 no change)
+
+**Conclusion**: After initialization, Reference mode calculation flow works perfectly. All values publish correctly and downstream sections respond to changes.
+
+---
+
+### Test 2: POST-IMPORT (Awaiting Results)
+
+**Test**: Same as Test 1, but after Excel file import instead of initialization
+
+**Expected**: S12 internal flow should match Test 1, but downstream propagation will fail
+
+*Results pending...*
+
+---
+
 **Last Updated**: October 22, 2025
 **Assigned To**: AI Agent
 **Priority**: CRITICAL - Blocking production deployment
