@@ -2260,7 +2260,13 @@ window.TEUI.SectionModules.sect10 = (function () {
    * ✅ FIX: Publish Reference area values for S11 and S12 consumption
    */
   function storeReferenceResults() {
-    if (!window.TEUI?.StateManager) return;
+    // 🔍 S10 DIAG: Track if storeReferenceResults is called
+    console.log("[S10 DIAG] 🔄 storeReferenceResults() called");
+
+    if (!window.TEUI?.StateManager) {
+      console.log("[S10 DIAG] ⚠️ StateManager not available!");
+      return;
+    }
 
     // Mapping of S10 areas to S11 equivalents (window/door areas)
     // S10: d_73-d_78 → S11: d_88-d_93
@@ -2272,6 +2278,9 @@ window.TEUI.SectionModules.sect10 = (function () {
       d_77: "d_92", // Window West
       d_78: "d_93", // Skylights
     };
+
+    // 🔍 S10 DIAG: Track how many values we're publishing
+    let publishedCount = 0;
 
     // Publish Reference area values with BOTH S10 and S11 field IDs
     // This allows S11 to sync (ref_d_73-ref_d_78) and S12 to read directly (ref_d_88-ref_d_93)
@@ -2290,8 +2299,12 @@ window.TEUI.SectionModules.sect10 = (function () {
           value,
           "calculated",
         );
+        publishedCount++;
       }
     });
+
+    // 🔍 S10 DIAG: Report how many Reference area values were published
+    console.log(`[S10 DIAG] ✅ Published ${publishedCount} Reference area values to StateManager`);
   }
 
   /**
