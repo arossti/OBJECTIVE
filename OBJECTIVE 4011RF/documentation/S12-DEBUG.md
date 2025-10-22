@@ -494,58 +494,47 @@ if (isInitialSync) {
 
 ---
 
-## 🚧 KNOWN LOOSE ENDS (Post-Fix Issues)
+## ✅ RESOLVED ISSUES (Post-Primary Fix)
 
 ### Issue 1: State Mixing After Excel Import
-**Symptom**: After importing Excel file, changing S12's ACH value (g_109) shows incorrect behavior
-**Status**: Not yet investigated
-**Reproduces**: Import file → Change g_109 → Observe state mixing
-**Note**: Works correctly after Initialize (no import)
+**Symptom**: After importing Excel file, `ref_k_104` showed `-28193.80` instead of correct `31,621.81`
+**Status**: ✅ FIXED (Commit `9ed2538`)
+**Root Cause**: Import process populated ReferenceState before `syncAreasFromS10()`, causing detection logic to fail
+**Solution**: Extended dual-state sync detection to compare internal state against StateManager (handles both initialization AND import cases)
 
-**Hypothesis**: Import process may not be triggering dual-state sync properly, or may be populating states in wrong order.
+**Fix Details**: Enhanced `syncAreasFromS10()` detection logic in [4012-Section11.js:1205-1224](../sections/4012-Section11.js#L1205-L1224)
+```javascript
+const refArea_d88 = ReferenceState.getValue("d_88");
+const stateManager_refArea = window.TEUI.StateManager.getValue("ref_d_73");
+
+const needsDualSync = currentMode === "target" &&
+  (refArea_d88 === undefined || refArea_d88 !== stateManager_refArea);
+```
 
 ### Issue 2: Number Formatting in S12
-**Symptom**: Percentage values display as decimals (0.50 instead of 50%)
-**Fields Affected**: 
-- `l_101`, `l_102`, `l_103`, `l_104` (percentage fields)
-- Possibly others in S12
+**Symptom**: Percentage values potentially displaying as decimals (0.50 instead of 50%)
+**Status**: ✅ FIXED (Commit TBD)
+**Root Cause**: `updateCalculatedDisplayValues()` used `"percent-0dp"` for all `l_*` fields, but `l_101`, `l_102`, `l_103` require `"percent-2dp"` to match calculation precision
+**Solution**: Differentiated percentage formatting to match precision set in `setCalculatedValue()`
 
-**Status**: Known issue, needs formatting fix
-**Expected**: `50%` and `19%`
-**Actual**: `0.50` and `0.19`
-
-**Fix Location**: [4012-Section12.js:210-301](../sections/4012-Section12.js#L210-L301) - `updateCalculatedDisplayValues()` function
-
-**Potential Fix**:
-```javascript
-// In updateCalculatedDisplayValues(), add formatting for l_* fields
-if (fieldId.startsWith("l_")) {
-  formattedValue = window.TEUI.formatNumber(numericValue, "percent-0dp");
-}
-```
+**Fix Details**: Updated [4012-Section12.js:281-293](../sections/4012-Section12.js#L281-L293)
+- `l_101`, `l_102`, `l_103` → `"percent-2dp"` (e.g., "65.57%")
+- `l_104`, `l_107`, `l_109`, `l_110` → `"percent-0dp"` (e.g., "100%")
 
 ---
 
-## 📋 SUGGESTED NEXT STEPS (Tomorrow AM)
+## 📋 NEXT STEPS
 
-### Priority 1: Finish S12 Cleanup (High Value - Context Fresh)
-Since we have deep S12 context from 14+ hours debugging:
-1. **Fix number formatting** - Quick win, ~15 min
-2. **Investigate import state mixing** - 30-60 min
-3. **Test both fixes together** - 15 min
+### ✅ S12 Debugging Complete
+All known issues resolved:
+1. ✅ Primary bug: k_104 initialization display (Commit `2f64a1a`)
+2. ✅ Import case: ref_k_104 after Excel import (Commit `9ed2538`)
+3. ✅ Formatting: Percentage fields display precision (Commit TBD)
 
-**Why now**: S12 context is fresh, these are related issues, finish while we have momentum
+### Priority: Return to S13/Cooling Refactor
+Resume the original cooling/capacitance architecture work per [C-RF-WP.md](./C-RF-WP.md)
 
-### Priority 2: Return to S13/Cooling Refactor
-Resume the original cooling/capacitance architecture work per C-RF-WP.md
-
-### Decision Point
-Should we:
-- **Option A**: Clean up S12 loose ends now (1-2 hours, finish the job)
-- **Option B**: Mark as "good enough" and return to S13 refactor
-- **Option C**: Create separate GitHub issues for loose ends, tackle later
-
-**Recommendation**: Option A - finish S12 while context is fresh, then S13 with clean slate
+**Status**: S12 work complete - clean slate for S13 refactor
 
 ---
 

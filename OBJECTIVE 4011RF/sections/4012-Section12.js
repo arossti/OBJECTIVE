@@ -278,10 +278,28 @@ window.TEUI.SectionModules.sect12 = (function () {
                   fieldId === "g_104")
               ) {
                 formattedValue = formatNumber(numericValue, "W/m2");
-              } else if (fieldId.startsWith("l_")) {
+              } else if (
+                fieldId === "g_105" ||
+                fieldId === "i_105" ||
+                fieldId === "d_107"
+              ) {
+                // Volume/Area ratio, Area/Volume ratio, and WWR as percentages with 2dp
                 formattedValue = window.TEUI.formatNumber(
                   numericValue,
-                  "percent-0dp",
+                  "percent-2dp",
+                );
+              } else if (fieldId.startsWith("l_")) {
+                // Match the precision used in setCalculatedValue()
+                // l_101, l_102, l_103 use 2dp, l_104+ use 0dp
+                const percentFormat =
+                  fieldId === "l_101" ||
+                  fieldId === "l_102" ||
+                  fieldId === "l_103"
+                    ? "percent-2dp"
+                    : "percent-0dp";
+                formattedValue = window.TEUI.formatNumber(
+                  numericValue,
+                  percentFormat,
                 );
               } else {
                 formattedValue = window.TEUI.formatNumber(
@@ -1154,6 +1172,8 @@ window.TEUI.SectionModules.sect12 = (function () {
       determinedFormatType = "integer"; // Zone number
     } else if (fieldId === "d_107") {
       determinedFormatType = "percent-2dp"; // WWR % with 2dp
+    } else if (fieldId === "g_105" || fieldId === "i_105") {
+      determinedFormatType = "percent-2dp"; // Volume/Area and Area/Volume ratios as percentages
     } else if (
       fieldId === "l_101" ||
       fieldId === "l_102" ||
@@ -1474,13 +1494,13 @@ window.TEUI.SectionModules.sect12 = (function () {
     setCalculatedValue(
       "g_105",
       g105_volAreaRatio,
-      "number-2dp",
+      "percent-2dp",
       isReferenceCalculation,
     );
     setCalculatedValue(
       "i_105",
       i105_areaVolRatio,
-      "number-2dp",
+      "percent-2dp",
       isReferenceCalculation,
     );
     // ✅ FIX: Publish d_105 (Conditioned Volume) for Reference mode
