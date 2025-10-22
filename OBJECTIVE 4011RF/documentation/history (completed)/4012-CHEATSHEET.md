@@ -208,6 +208,91 @@ if (fieldId === "d_12" || fieldId === "ref_d_12") {
 - **DOM listeners** = Section's OWN input fields only
 - **StateManager listeners** = External dependencies from other sections
 
+### Anti-Pattern 7: Self-Listening to Own Input Fields ⚠️ CRITICAL
+
+**Discovered:** October 22, 2025 (S12 Reference mode calculation flow bug)
+
+**Description:** A section adds StateManager listeners for its **own input fields** (both unprefixed and ref_ prefixed), causing double calculations that interfere with the normal calculation flow.
+
+**Symptom:** Reference mode user edits in a section don't flow through to downstream sections. Changes only propagate when switching back to Target mode (the "catch-up" effect).
+
+**Example Bug:**
+
+```javascript
+// ❌ WRONG: S12 listening to its OWN input fields
+function addStateManagerListeners() {
+  // External dependencies - ✅ CORRECT
+  window.TEUI.StateManager.addListener("d_20", () => calculateAll()); // From S03
+  window.TEUI.StateManager.addListener("ref_d_20", () => calculateAll());
+
+  // Own input fields - ❌ WRONG - Creates double calculation!
+  window.TEUI.StateManager.addListener("g_109", () => calculateAll());
+  window.TEUI.StateManager.addListener("ref_g_109", () => calculateAll());
+}
+```
+
+**The Problem Chain:**
+
+1. User edits `g_109` in Reference mode
+2. `handleFieldBlur` → `ModeManager.setValue("g_109", value)`
+3. `ModeManager.setValue` publishes `ref_g_109` to StateManager ✅
+4. `handleFieldBlur` → `calculateAll()` (runs both engines) ✅
+5. ❌ **Listener fires** → `calculateAll()` runs AGAIN (double calculation!)
+6. Second calculation interferes with normal flow, disrupts downstream propagation
+
+**The Correct Pattern (S07/S11):**
+
+✅ **NO StateManager listeners for section's own input fields**
+✅ **User edits trigger calculations directly via handleFieldBlur**
+
+```javascript
+// ✅ CORRECT: S07 pattern
+function handleEditableBlur(event) {
+  const fieldId = this.getAttribute("data-field-id");
+  const value = this.textContent.trim();
+
+  // Publishes to StateManager (ref_e_49 if in Reference mode)
+  ModeManager.setValue(fieldId, value, "user-modified");
+
+  // Single calculateAll() - no listener interference
+  calculateAll();
+}
+
+// ✅ CORRECT: Only listen to EXTERNAL dependencies
+function addStateManagerListeners() {
+  // Listen to other sections' outputs
+  window.TEUI.StateManager.addListener("d_20", () => calculateAll()); // From S03
+  window.TEUI.StateManager.addListener("ref_d_20", () => calculateAll());
+
+  // NO listeners for own fields (e_49, d_49, etc.)
+}
+```
+
+**Why This Works:**
+
+- User edit → `ModeManager.setValue` → publishes to StateManager
+- User edit → `calculateAll()` runs once (both engines)
+- Both engines recalculate, publish results to StateManager
+- Downstream sections' listeners see the result changes and recalculate
+- Clean, single-pass calculation flow
+
+**Debugging This Issue:**
+
+When Reference mode changes don't flow downstream:
+
+1. Check if section has listeners for its own input fields
+2. Remove those listeners - user edits already call `calculateAll()`
+3. Keep `ModeManager.setValue()` publishing to StateManager (critical!)
+4. Verify `handleFieldBlur` calls `calculateAll()` directly
+
+**Key Distinction:**
+
+- **Own Input Fields**: User edits → direct `calculateAll()` call, NO listeners needed
+- **External Dependencies**: Listen to StateManager for other sections' outputs
+- **Both Need**: `ModeManager.setValue()` must publish to StateManager for cross-section communication
+
+**Fixed in S12:** Commit `38da9c6` removed self-listeners, Reference mode now works correctly.
+
 ---
 
 ## 🏛️ **DEFAULTS IMPLEMENTATION PATTERN (CRITICAL)**

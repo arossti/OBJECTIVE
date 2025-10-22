@@ -1,7 +1,13 @@
-# S12 Reference Mode Display Bug - k_104 Field
+# ✅ S12 Debug Session - COMPLETE
 
-## Bug Summary
-S12's `k_104` field shows incorrect value `-4267.63` in Reference mode on initialization/import, even though S11's `ref_k_98` shows the correct value `-1895.40` in the DOM when S11 is switched to Reference mode.
+**Status**: All bugs resolved and production ready
+**Date Completed**: October 22, 2025
+**Fix Commits**: `5b7952f`, `26ec240`, `38da9c6`
+
+---
+
+## Original Bug Summary
+S12's `k_104` field showed incorrect value `-4267.63` in Reference mode on initialization/import, even though S11's `ref_k_98` showed the correct value `-1895.40` in the DOM when S11 was switched to Reference mode.
 
 ## Symptoms
 1. **Initial State (after hard refresh or file import)**:
@@ -494,11 +500,15 @@ if (isInitialSync) {
 
 ---
 
-## ✅ RESOLVED ISSUES (Post-Primary Fix)
+## ✅ ALL ISSUES RESOLVED - PRODUCTION READY
 
-### Issue 1: State Mixing After Excel Import
+### Primary Fix (Commit `2f64a1a`): k_104 Initialization Display
+**Symptom**: S12's `k_104` showed `-4267.63` instead of correct `-1895.40` on initialization
+**Root Cause**: ReferenceState areas were undefined on initialization, S12 used stale Target area values
+**Solution**: Enhanced S11's `syncAreasFromS10()` to detect initialization and populate BOTH states simultaneously
+
+### Issue 1 (Commit `9ed2538`): Excel Import State Mixing
 **Symptom**: After importing Excel file, `ref_k_104` showed `-28193.80` instead of correct `31,621.81`
-**Status**: ✅ FIXED (Commit `9ed2538`)
 **Root Cause**: Import process populated ReferenceState before `syncAreasFromS10()`, causing detection logic to fail
 **Solution**: Extended dual-state sync detection to compare internal state against StateManager (handles both initialization AND import cases)
 
@@ -511,30 +521,61 @@ const needsDualSync = currentMode === "target" &&
   (refArea_d88 === undefined || refArea_d88 !== stateManager_refArea);
 ```
 
-### Issue 2: Number Formatting in S12
-**Symptom**: Percentage values potentially displaying as decimals (0.50 instead of 50%)
-**Status**: ✅ FIXED (Commit TBD)
-**Root Cause**: `updateCalculatedDisplayValues()` used `"percent-0dp"` for all `l_*` fields, but `l_101`, `l_102`, `l_103` require `"percent-2dp"` to match calculation precision
-**Solution**: Differentiated percentage formatting to match precision set in `setCalculatedValue()`
+### Issue 2 (Commit `5b7952f`): Percentage Formatting
+**Symptom**: Percentage values displaying as decimals (0.33 instead of 33.06%)
+**Root Cause**: `updateCalculatedDisplayValues()` and `setCalculatedValue()` format determination didn't specify percentage formats for `g_105`, `i_105`, `d_107`
+**Solution**: Added percentage formatting with proper decimal precision
 
-**Fix Details**: Updated [4012-Section12.js:281-293](../sections/4012-Section12.js#L281-L293)
+**Fix Details**: Updated [4012-Section12.js](../sections/4012-Section12.js)
+- `g_105`, `i_105`, `d_107` → `"percent-2dp"` (e.g., "33.06%")
 - `l_101`, `l_102`, `l_103` → `"percent-2dp"` (e.g., "65.57%")
 - `l_104`, `l_107`, `l_109`, `l_110` → `"percent-0dp"` (e.g., "100%")
 
+### Issue 3 (Commit `26ec240`): g_109 Not Editable After Import
+**Symptom**: After importing Excel file with `d_108="MEASURED"` and `g_109=3`, the field displayed "3" (not "3.00") and was not editable without toggling d_108
+**Root Cause**: `refreshUI()` didn't format numeric fields to 2dp and didn't call `handleConditionalEditability()`
+**Solution**: Enhanced `refreshUI()` and `handleConditionalEditability()` to format and enable editing
+
+**Fix Details**: Updated [4012-Section12.js](../sections/4012-Section12.js)
+- `refreshUI()` now formats g_109 and d_105 to 2dp and calls `handleConditionalEditability()`
+- `handleConditionalEditability()` ensures 2dp formatting when setting values
+
+### Issue 4 (Commit `38da9c6`): Reference Mode Changes Not Flowing Downstream ⭐
+**Symptom**: Reference mode user edits in S12 (e.g., `ref_g_109`) didn't flow through full calculation chain to downstream sections. Changes only propagated when switching back to Target mode (the "catch-up" effect)
+**Root Cause**: S12 had StateManager listeners for its OWN input fields, causing double calculations that interfered with normal flow
+**Solution**: Removed self-listeners, following S07/S11 pattern where user edits trigger calculations directly
+
+**Fix Details**: Removed listeners at [4012-Section12.js:2825-2839](../sections/4012-Section12.js#L2825-L2839)
+- Kept `ModeManager.setValue()` publishing `ref_*` values to StateManager ✅
+- Removed listeners for own fields (`g_109`, `ref_g_109`, etc.) ✅
+- User edits now flow: `handleFieldBlur` → `ModeManager.setValue` → `calculateAll()` (single pass)
+
+**Key Learning**: Sections should ONLY add StateManager listeners for EXTERNAL dependencies from other sections, NOT for their own input fields. Added as **Anti-Pattern 7** to CHEATSHEET.md.
+
 ---
 
-## 📋 NEXT STEPS
+## 📊 Final Summary
 
-### ✅ S12 Debugging Complete
-All known issues resolved:
-1. ✅ Primary bug: k_104 initialization display (Commit `2f64a1a`)
-2. ✅ Import case: ref_k_104 after Excel import (Commit `9ed2538`)
-3. ✅ Formatting: Percentage fields display precision (Commit TBD)
+**Total Commits**: 4 fix commits + 1 documentation update
+**Total Time**: ~18 hours over multiple sessions
+**Lines Changed**: ~150 lines across S11, S12, and documentation
+**Final State**: ✅ Production ready, all bugs resolved
+
+**Fix Sequence**:
+1. `2f64a1a` - k_104 initialization display
+2. `9ed2538` - Excel import state mixing
+3. `5b7952f` - Percentage formatting
+4. `26ec240` - g_109 editability after import
+5. `38da9c6` - Reference mode calculation flow
+
+**Documentation Updated**:
+- Added Anti-Pattern 7 to CHEATSHEET.md (self-listening)
+- Moved S12-DEBUG.md to history (completed)
 
 ### Priority: Return to S13/Cooling Refactor
 Resume the original cooling/capacitance architecture work per [C-RF-WP.md](./C-RF-WP.md)
 
-**Status**: S12 work complete - clean slate for S13 refactor
+**Status**: S12 work complete - clean slate for S13 refactor ✅
 
 ---
 
