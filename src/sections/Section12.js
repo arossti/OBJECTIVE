@@ -278,10 +278,28 @@ window.TEUI.SectionModules.sect12 = (function () {
                   fieldId === "g_104")
               ) {
                 formattedValue = formatNumber(numericValue, "W/m2");
-              } else if (fieldId.startsWith("l_")) {
+              } else if (
+                fieldId === "g_105" ||
+                fieldId === "i_105" ||
+                fieldId === "d_107"
+              ) {
+                // Volume/Area ratio, Area/Volume ratio, and WWR as percentages with 2dp
                 formattedValue = window.TEUI.formatNumber(
                   numericValue,
-                  "percent-0dp",
+                  "percent-2dp",
+                );
+              } else if (fieldId.startsWith("l_")) {
+                // Match the precision used in setCalculatedValue()
+                // l_101, l_102, l_103 use 2dp, l_104+ use 0dp
+                const percentFormat =
+                  fieldId === "l_101" ||
+                  fieldId === "l_102" ||
+                  fieldId === "l_103"
+                    ? "percent-2dp"
+                    : "percent-0dp";
+                formattedValue = window.TEUI.formatNumber(
+                  numericValue,
+                  percentFormat,
                 );
               } else {
                 formattedValue = window.TEUI.formatNumber(
@@ -319,9 +337,14 @@ window.TEUI.SectionModules.sect12 = (function () {
     setValue: function (fieldId, value, source = "user") {
       this.getCurrentState().setValue(fieldId, value, source);
 
-      // BRIDGE: For backward compatibility, sync Target changes to global StateManager
+      // ✅ FIX: Publish BOTH Target and Reference changes to StateManager
+      // This ensures downstream sections receive updates in both modes
       if (this.currentMode === "target") {
+        // Target mode: publish unprefixed value
         window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
+      } else if (this.currentMode === "reference") {
+        // Reference mode: publish with ref_ prefix
+        window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "user-modified");
       }
     },
     refreshUI: function () {
@@ -350,9 +373,22 @@ window.TEUI.SectionModules.sect12 = (function () {
         if (dropdown) {
           dropdown.value = stateValue; // Simple and direct - like working sections
         } else if (element.hasAttribute("contenteditable")) {
-          element.textContent = stateValue;
+          // ✅ FIX: Format numeric values to 2dp for consistency
+          const numericValue = window.TEUI.parseNumeric(stateValue);
+          if (!isNaN(numericValue) && (fieldId === "g_109" || fieldId === "d_105")) {
+            element.textContent = window.TEUI.formatNumber(
+              numericValue,
+              "number-2dp",
+            );
+          } else {
+            element.textContent = stateValue;
+          }
         }
       });
+
+      // ✅ FIX: Re-evaluate conditional editability after refreshing UI
+      // This ensures g_109 is properly editable when d_108="MEASURED" after import
+      handleConditionalEditability();
     },
   };
 
@@ -1154,6 +1190,8 @@ window.TEUI.SectionModules.sect12 = (function () {
       determinedFormatType = "integer"; // Zone number
     } else if (fieldId === "d_107") {
       determinedFormatType = "percent-2dp"; // WWR % with 2dp
+    } else if (fieldId === "g_105" || fieldId === "i_105") {
+      determinedFormatType = "percent-2dp"; // Volume/Area and Area/Volume ratios as percentages
     } else if (
       fieldId === "l_101" ||
       fieldId === "l_102" ||
@@ -1474,13 +1512,13 @@ window.TEUI.SectionModules.sect12 = (function () {
     setCalculatedValue(
       "g_105",
       g105_volAreaRatio,
-      "number-2dp",
+      "percent-2dp",
       isReferenceCalculation,
     );
     setCalculatedValue(
       "i_105",
       i105_areaVolRatio,
-      "number-2dp",
+      "percent-2dp",
       isReferenceCalculation,
     );
     // ✅ FIX: Publish d_105 (Conditioned Volume) for Reference mode
@@ -2552,12 +2590,22 @@ window.TEUI.SectionModules.sect12 = (function () {
         g109Cell.textContent.trim() === "N/A"
       ) {
         // Use value from state, or fallback to mode-specific default (1.50 Target, 2.00 Reference)
-        const displayValue = currentValue || (ModeManager.currentMode === "reference" ? "2.00" : "1.50");
+        const rawValue = currentValue || (ModeManager.currentMode === "reference" ? "2.00" : "1.50");
+
+        // ✅ FIX: Format to 2dp for consistency
+        const numericValue = window.TEUI.parseNumeric(rawValue);
+        const displayValue = window.TEUI.formatNumber(numericValue, "number-2dp");
         g109Cell.textContent = displayValue;
 
         // Only setValue if we're using a fallback (not already in state)
         if (!currentValue) {
-          ModeManager.setValue("g_109", displayValue, "calculated");
+          ModeManager.setValue("g_109", rawValue, "calculated");
+        }
+      } else {
+        // ✅ FIX: Even if cell has content, ensure it's formatted to 2dp
+        const numericValue = window.TEUI.parseNumeric(g109Cell.textContent);
+        if (!isNaN(numericValue)) {
+          g109Cell.textContent = window.TEUI.formatNumber(numericValue, "number-2dp");
         }
       }
     } else {
@@ -2774,13 +2822,10 @@ window.TEUI.SectionModules.sect12 = (function () {
       calculateAll();
     });
 
-    // ✅ MISSING: Internal field listeners to trigger calculations
-    // When user changes S12's own fields, calculations should be triggered
-    window.TEUI.StateManager.addListener("d_103", () => calculateAll()); // Stories
-    window.TEUI.StateManager.addListener("g_103", () => calculateAll()); // Exposure
-    window.TEUI.StateManager.addListener("d_105", () => calculateAll()); // Volume
-    window.TEUI.StateManager.addListener("d_108", () => calculateAll()); // Blower door method
-    window.TEUI.StateManager.addListener("g_109", () => calculateAll()); // Measured ACH50
+    // ✅ S07 PATTERN: NO listeners for S12's own input fields
+    // User edits call handleFieldBlur → ModeManager.setValue → calculateAll
+    // ModeManager.setValue publishes to StateManager (both ref_ and unprefixed)
+    // No need for listeners to create double calculations
 
     s12ListenersAdded = true;
     console.log(

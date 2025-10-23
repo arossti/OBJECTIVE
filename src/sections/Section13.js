@@ -107,16 +107,16 @@ window.TEUI.SectionModules.sect13 = (function () {
       // Step 1: Initialize empty (values come from field definitions via getFieldDefault)
       this.state = {};
 
-      // Step 2: Apply Reference-specific overrides from building codes
-      this.state.d_113 = "Electricity";
+      // Step 2: Apply Reference-specific overrides set to run on initialization (note e_10 value 287.0 as of 2025.10.20, where excel is 196.6)
+      this.state.d_113 = "Heatpump";
       this.state.f_113 = referenceValues.f_113 || "7.1";
-      this.state.d_116 = "No Cooling";
+      this.state.d_116 = "Cooling";
       this.state.d_118 = referenceValues.d_118 || "81";
       this.state.d_119 = referenceValues.d_119 || "8.33";
-      this.state.g_118 = "Volume Constant";
+      this.state.g_118 = "Volume by Schedule";
       this.state.j_115 = referenceValues.j_115 || "0.90";
       this.state.j_116 = referenceValues.j_116 || "2.66";
-      this.state.l_118 = referenceValues.l_118 || "3.50";
+      this.state.l_118 = referenceValues.l_118 || "3.50"; // ACH gets over-written by ReferenceValues.js (expected)
     },
     // MANDATORY: Include onReferenceStandardChange for d_13 changes
     onReferenceStandardChange: function () {
@@ -2926,15 +2926,24 @@ window.TEUI.SectionModules.sect13 = (function () {
 
       // Read m_124 from Cooling.js via StateManager (mode-aware)
       // ✅ FIX (Oct 6, 2025): Mode-aware read for cooling_m_124
+      // ✅ FIX (Jan 21, 2025): Two-stage architecture - cooling_m_124 may not exist during Stage 1
+      // Stage 1 (Cooling.js) publishes h_124 → triggers S13 → S13 calculates m_129
+      // Stage 2 (Cooling.js) reads m_129 → calculates m_124 → publishes cooling_m_124
+      // Therefore: cooling_m_124 is OPTIONAL until Stage 2 completes
       const m_124_raw = isReferenceCalculation
         ? window.TEUI.StateManager.getValue("ref_cooling_m_124")
         : window.TEUI.StateManager.getValue("cooling_m_124");
 
       if (!m_124_raw && m_124_raw !== 0) {
-        throw new Error("[S13] REQUIRED cooling_m_124 missing from Cooling.js");
+        // cooling_m_124 not available yet (Stage 2 hasn't run) - use 0 as placeholder
+        console.log(
+          `[S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=${isReferenceCalculation ? "reference" : "target"})`,
+        );
+        setFieldValue("m_124", 0, "number-2dp");
+      } else {
+        const activeCoolingDays = window.TEUI.parseNumeric(m_124_raw);
+        setFieldValue("m_124", activeCoolingDays, "number-2dp");
       }
-      const activeCoolingDays = window.TEUI.parseNumeric(m_124_raw);
-      setFieldValue("m_124", activeCoolingDays, "number-2dp");
     } catch (error) {
       console.error("[S13 Error] Error during calculateFreeCooling:", error);
       finalFreeCoolingLimit = 0;

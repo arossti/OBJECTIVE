@@ -68,12 +68,12 @@ window.TEUI.SectionModules.sect08 = (function () {
           defaults[fieldId] = fields[fieldId].defaultValue;
         }
       }
-      // Apply Reference-specific overrides
+      // Apply Reference-specific overrides - IS THIS CAUSING PROBLEMS??
       defaults["d_56"] = "150";
       defaults["d_57"] = "1000";
       defaults["d_58"] = "400";
-      defaults["d_59"] = "30";
-      defaults["i_59"] = "50";
+      defaults["d_59"] = "45";
+      defaults["i_59"] = "45";
       this.state = defaults;
     },
     /**
@@ -389,6 +389,14 @@ window.TEUI.SectionModules.sect08 = (function () {
       const dependencies = ["d_31", "k_31"];
       dependencies.forEach((dep) => {
         sm.addListener(dep, calculateAll);
+      });
+
+      // ✅ FIX: Add listener for the reference RH% slider (i_59)
+      // This bridges the global FieldManager update to the local ReferenceState,
+      // ensuring that changes to the slider in reference mode are captured.
+      sm.addListener("ref_i_59", (newValue) => {
+        ReferenceState.setValue("i_59", newValue);
+        console.log(`S08 ReferenceState: Synced i_59 = ${newValue} from global StateManager (ref_i_59)`);
       });
     }
   }

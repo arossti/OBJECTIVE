@@ -41,11 +41,14 @@ window.TEUI.SectionModules.sect03 = (function () {
         h_20: getFieldDefault("h_20"), // Timeframe
         h_21: getFieldDefault("h_21"), // Capacitance setting
         m_19: getFieldDefault("m_19"), // Cooling days
+        l_20: getFieldDefault("l_20"), // Summer night temp (NEW - Cooling Refactor)
+        l_21: getFieldDefault("l_21"), // Summer RH% (NEW - Cooling Refactor)
         l_22: getFieldDefault("l_22"), // Elevation
         l_24: getFieldDefault("l_24"), // Cooling override
         i_21: getFieldDefault("i_21"), // Capacitance percentage
         // ✅ CALCULATED FIELDS REMOVED: h_23, h_24 are calculated, not defaults
         // Climate data populated by calculation engines from ClimateValues.js
+        // NOTE: l_23 (Seasonal outdoor RH%) will be added in future phase
       };
       console.log(
         "S03: Target defaults set from field definitions - single source of truth",
@@ -117,6 +120,8 @@ window.TEUI.SectionModules.sect03 = (function () {
         h_20: getFieldDefault("h_20"), // Timeframe
         h_21: getFieldDefault("h_21"), // Capacitance setting
         m_19: getFieldDefault("m_19"), // Cooling days
+        l_20: getFieldDefault("l_20"), // Summer night temp (NEW - Cooling Refactor)
+        l_21: getFieldDefault("l_21"), // Summer RH% (NEW - Cooling Refactor)
         l_22: getFieldDefault("l_22"), // Elevation
         l_24: getFieldDefault("l_24"), // Cooling override
         i_21: getFieldDefault("i_21"), // Capacitance percentage
@@ -125,6 +130,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         // Both Target and Reference use Ontario/Alexandria for Excel baseline
         // ✅ CALCULATED FIELDS REMOVED: h_23, h_24 are calculated, not defaults
         // Climate data populated by calculation engines from ClimateValues.js
+        // NOTE: l_23 (Seasonal outdoor RH%) will be added in future phase
       };
       console.log(
         "S03: Reference defaults set from field definitions - single source of truth",
@@ -753,14 +759,20 @@ window.TEUI.SectionModules.sect03 = (function () {
             { value: "Future", name: "Future (2021-2050)" },
           ],
         },
-        j: {
-          fieldId: "j_20",
-          type: "calculated",
-          value: "HDD Reference Lookup",
-          classes: ["reference-value"],
+        // NEW: Summer Night Temperature field (l_20) - Cooling Refactor Phase 5.1.1
+        // Replaces: j_20 "HDD Reference Lookup" and k "HDD - Energy Star"
+        // TODO: Add tooltips with links to HDD/CDD reference resources later
+        j: { content: "L.2.0", classes: ["label-prefix"] },
+        k: { content: "Summer Night ºC", classes: ["label-main"] },
+        l: {
+          fieldId: "l_20",
+          type: "editable",
+          value: "20.43", // Default: Alexandria, ON summer night temp
           section: "climateCalculations",
+          tooltip: true, // Night-time outdoor temp (cooling season mean)
+          classes: ["user-input", "editable"],
+          // NOTE: Currently user-editable for testing. Will be locked in future (calculated from climate data)
         },
-        k: { content: "HDD - Energy Star", classes: ["reference-label"] },
       },
     },
 
@@ -803,14 +815,20 @@ window.TEUI.SectionModules.sect03 = (function () {
           tooltip: true, // Capacitance Factor
           defaultValue: "50",
         },
-        j: {
-          fieldId: "j_21",
-          type: "calculated",
-          value: "CDD Reference Lookup",
-          classes: ["reference-value"],
+        // NEW: Summer RH% field (l_21) - Cooling Refactor Phase 5.1.1
+        // Replaces: j_21 "CDD Reference Lookup" and k "CDD - Energy Star"
+        // TODO: Add tooltips with links to HDD/CDD reference resources later
+        j: { content: "L.2.2", classes: ["label-prefix"] },
+        k: { content: "Summer RH%", classes: ["label-main"] },
+        l: {
+          fieldId: "l_21",
+          type: "editable",
+          value: "55.85", // Default: Alexandria, ON cooling season mean RH at 15h00 LST
           section: "climateCalculations",
+          tooltip: true, // Cooling season mean RH at 15h00 LST
+          classes: ["user-input", "editable"],
+          // NOTE: Currently user-editable for testing. Will be locked in future (calculated from climate data)
         },
-        k: { content: "CDD - Energy Star", classes: ["reference-label"] },
       },
     },
 
@@ -2207,11 +2225,11 @@ window.TEUI.SectionModules.sect03 = (function () {
       newCapacitanceDropdown.addEventListener("change", function () {
         const selectedCapacitance = this.value;
         console.log("S03: Capacitance setting changed:", selectedCapacitance);
-        DualState.setValue("h_21", selectedCapacitance, "user");
+        ModeManager.setValue("h_21", selectedCapacitance, "user");
 
         // If "Static" is chosen, force the percentage to 0
         if (selectedCapacitance === "Static") {
-          DualState.setValue("i_21", "0", "system");
+          ModeManager.setValue("i_21", "0", "system");
           ModeManager.refreshUI(); // Refresh UI to show the slider reset to 0
         }
 
@@ -2305,11 +2323,26 @@ window.TEUI.SectionModules.sect03 = (function () {
       // ✅ CRITICAL: Bridge FieldManager slider updates to DualState
       window.TEUI.StateManager.addListener("i_21", function (newValue) {
         // When FieldManager updates StateManager, also update DualState for isolation
-        DualState.setValue("i_21", newValue, "user");
-        calculateAll(); // Recalculate everything as capacitance affects GF CDD
-        console.log(
-          `S03: Capacitance slider updated via FieldManager - bridged to DualState: ${newValue}%`,
-        );
+        // This listener handles TARGET mode slider changes.
+        if (ModeManager.currentMode === "target") {
+          ModeManager.setValue("i_21", newValue, "user");
+          calculateAll(); // Recalculate everything as capacitance affects GF CDD
+          console.log(
+            `S03: TARGET slider updated via FieldManager - bridged to DualState: ${newValue}%`,
+          );
+        }
+      });
+
+      // ✅ FINAL FIX: Add a dedicated listener for REFERENCE mode slider changes.
+      window.TEUI.StateManager.addListener("ref_i_21", function (newValue) {
+        // This listener handles REFERENCE mode slider changes.
+        if (ModeManager.currentMode === "reference") {
+          ModeManager.setValue("i_21", newValue, "user");
+          calculateAll(); // Recalculate everything as capacitance affects GF CDD
+          console.log(
+            `S03: REFERENCE slider updated via FieldManager - bridged to DualState: ${newValue}%`,
+          );
+        }
       });
 
       // ✅ CRITICAL: Bridge capacitance dropdown (h_21) updates to DualState
@@ -2342,20 +2375,15 @@ window.TEUI.SectionModules.sect03 = (function () {
         ? "integer"
         : "number-2dp"; // Default format
       this.textContent = window.TEUI.formatNumber(numericValue, formatType);
-      // ✅ MODE-AWARE: Update StateManager based on current mode
-      if (window.TEUI.StateManager) {
-        const key =
-          ModeManager.currentMode === "reference" ? `ref_${fieldId}` : fieldId;
-        window.TEUI.StateManager.setValue(
-          key,
-          numericValue.toString(),
-          "user-modified",
-        );
-      }
+
+      // ✅ MODE-AWARE: Update BOTH internal state (TargetState/ReferenceState) AND StateManager
+      // Use ModeManager.setValue() which handles both automatically
+      ModeManager.setValue(fieldId, numericValue.toString(), "user-modified");
+
       calculateAll(); // Recalculate after state update
     } else {
       // Revert to previous value if input is invalid
-      const previousValue = window.TEUI.StateManager?.getValue(fieldId) || "0"; // Fallback to 0
+      const previousValue = ModeManager.getValue(fieldId) || "0"; // Read from internal state
       const prevNumericValue = window.TEUI.parseNumeric(previousValue, 0);
       const formatType = Number.isInteger(prevNumericValue)
         ? "integer"

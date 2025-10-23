@@ -45,8 +45,10 @@ git commit -m "$COMMIT_MSG"
 
 echo "📤 Pushing to remote gh-pages..."
 
-# Push to remote
-git push origin gh-pages
+# Push the current branch (main) to remote gh-pages branch
+# Force push since gh-pages-local/main may have different history than remote gh-pages
+# This ensures local commits on main get deployed to GitHub Pages
+git push --force origin HEAD:gh-pages
 
 echo "✅ Deployment complete! Changes should be live at:"
 echo "   https://arossti.github.io/OBJECTIVE/"
