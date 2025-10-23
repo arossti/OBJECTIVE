@@ -1,44 +1,54 @@
-# S10/S11 State Purity Investigation - FINAL REPORT
+# S10/S11 State Purity Investigation - IMPLEMENTATION PLAN
 
 **Branch**: `S10-S11-PURITY`
-**Investigation Date**: October 22, 2025
-**Status**: ✅ S11 FIX COMPLETE | ✅ S12 ROBOT FINGERS TRIAL FAILED | ✅ TEST 6 PASSED - NEED MORE CAREFUL APPROACH
+**Investigation Date**: October 22-23, 2025
+**Status**: ✅ S11 FIX COMPLETE | ❌ S12 ROBOT FINGERS TRIAL FAILED (REVERTED) | 📋 STATEMANAGER APPROACH IN PROGRESS
 
 ---
 
 ## Executive Summary
 
-**Initial Problem**: S10 Target mode edits contaminated Reference model (e_10 changed)
+**Problem**: S10 Target mode edits contaminate Reference model (e_10 changes incorrectly)
 
 **Investigation Results**:
 
 - ✅ **S11 DUAL-STATE SYNC Bug Fixed** (Commit 07bbd9c)
-  - S11 ReferenceState now perfectly isolated from Target edits
-  - Test 5 validated: S11 ReferenceState d_88 = 7.50 (unchanged) when S10 Target d_73 = 100
-- ✅ **S12 Robot Fingers Complete** (Commit 32637c9)
-  - Added getAreaFromS11() helper function
-  - Updated calculateVolumeMetrics() for d_85-d_96
-  - Updated calculateCombinedUValue() for d_85-d_95
-  - Updated calculateWWR() for d_86, d_88-d_93
-  - S12 now reads all areas mode-aware from S11 sovereign states
-- ✅ **Test 6 Validation PASSED** (See Logs.md line 4701)
-  - S10 Target door area edit (7.50 → 100)
-  - S11 TargetState d_88 = 100 ✅
-  - S11 ReferenceState d_88 = 7.50 ✅ (isolated)
-  - S12 Reference read = 7.50 ✅ (Robot Fingers working)
-  - **e_10 unchanged at 341.2** ✅ (contamination eliminated)
+  - S11 ReferenceState perfectly isolated from Target edits
+  - Test validated: S11 ReferenceState d_88 = 7.50 (unchanged) when S10 Target d_73 = 100
+- ❌ **S12 Robot Fingers Trial FAILED** (Commit 32637c9, REVERTED 8b68810)
+  - Violated StateManager single source of truth architecture (README.md)
+  - Caused scope errors and calculation failures
+  - Approach abandoned - StateManager architecture restored
+- 📋 **StateManager Approach** (Current Phase)
+  - Phase 1: S11 publish ALL area values to StateManager (Target + Reference)
+  - Phase 2: S12 strict mode-aware StateManager reads (retire Robot Fingers)
 
-**Result**: State contamination bug FIXED - Reference model isolated from Target edits
+**Current Status**: Contamination still present, implementing StateManager solution per README.md/CHEATSHEET.md
 
 ---
 
-## 🎯 Root Cause: Incomplete Robot Fingers in S12
+## 🎯 Root Cause: S12 Reading Wrong Values from StateManager
 
-### What is Robot Fingers?
+### The Contamination Problem
 
-A direct cross-section state read pattern where S12 reads **directly** from S11's internal TargetState/ReferenceState instead of through StateManager. Provides immediate visual feedback when S11's d_97 (Thermal Bridge %) slider changes.
+S12's weighted U-value calculation (`g_101`, `g_102`) reads area values from StateManager, but:
 
-### Current Implementation (Partial)
+1. **S11 does NOT publish Target areas** (d_85-d_96) to StateManager
+2. **S12 Reference calculation NOT mode-aware** - reads unprefixed d_85-d_95 regardless of `isReferenceCalculation` flag
+3. **Result**: Reference calculation uses Target area values → CONTAMINATED g_101 → e_10 changes
+
+### What are g_101 and g_102?
+
+**g_101** = Weighted Average U-value for Above-Ground envelope
+**g_102** = Weighted Average U-value for Below-Ground envelope
+
+**Formula**: `g_101 = SUMPRODUCT(g_85:g_93, d_85:d_93) / SUM(d_85:d_93) × (1 + d_97/100)`
+
+**Data Sources**:
+- **g_85-g_95**: U-values from S11 (currently uses Robot Fingers - to be retired)
+- **d_85-d_96**: Area values from S11 (BROKEN - NOT mode-aware StateManager reads)
+
+---
 
 **✅ U-Values (h_85-h_93): WORKING**
 
@@ -696,31 +706,146 @@ d88 =
 - S11 does NOT publish these to StateManager currently
 - S12's Reference calculation has NO ref_d_85, ref_d_86, ref_d_87, ref_d_94, ref_d_95, ref_d_96!
 
-### Solution Required
+### Solution Required: Two-Phase StateManager Approach
 
-**NOT Robot Fingers** - We maintain StateManager architecture
+Per README.md and CHEATSHEET.md architectural principles:
 
-**Fix:** S11 must publish ALL area values to StateManager:
+> **StateManager is the ONLY source of truth for cross-section calculated values**
+> **Strict reads - NO fallback patterns** (CHEATSHEET Anti-Pattern 1)
+
+**Phase 1:** S11 Publishing - Publish ALL area values to StateManager for downstream consumption
+**Phase 2:** S12 Strict Reads - Retire Robot Fingers, implement mode-aware StateManager reads
+
+---
+
+## 📋 PHASE 1: S11 StateManager Publishing
+
+### Objective
+S11 must publish ALL area values (d_85-d_96) to StateManager for both Target and Reference models.
+
+**Currently Publishing (Reference only)**:
+- ✅ ref_d_85 through ref_d_96 (lines 1816-1825)
+- ✅ ref_f_85 through ref_f_95 (RSI values)
+- ✅ ref_g_85 through ref_g_95 (U-values)
+
+**Missing**:
+- ❌ d_85 through d_96 (Target areas) - NOT published to StateManager
+
+### Implementation Plan
+
+Add Target area publishing in S11's `calculateTargetModel()` after line 1936:
 
 ```javascript
-// In S11's calculateTargetModel() - after area calculations:
-window.TEUI.StateManager.setValue("d_85", d_85_value, "calculated");
-window.TEUI.StateManager.setValue("d_86", d_86_value, "calculated");
-window.TEUI.StateManager.setValue("d_87", d_87_value, "calculated");
-window.TEUI.StateManager.setValue("d_94", d_94_value, "calculated");
-window.TEUI.StateManager.setValue("d_95", d_95_value, "calculated");
-window.TEUI.StateManager.setValue("d_96", d_96_value, "calculated");
-
-// In S11's calculateReferenceModel() - after area calculations:
-window.TEUI.StateManager.setValue("ref_d_85", d_85_value, "calculated");
-window.TEUI.StateManager.setValue("ref_d_86", d_86_value, "calculated");
-window.TEUI.StateManager.setValue("ref_d_87", d_87_value, "calculated");
-window.TEUI.StateManager.setValue("ref_d_94", d_94_value, "calculated");
-window.TEUI.StateManager.setValue("ref_d_95", d_95_value, "calculated");
-window.TEUI.StateManager.setValue("ref_d_96", d_96_value, "calculated");
+// ✅ PUBLISH: Target area values for downstream S12 consumption
+if (window.TEUI?.StateManager) {
+  const areaFields = ["d_85", "d_86", "d_87", "d_88", "d_89", "d_90",
+                      "d_91", "d_92", "d_93", "d_94", "d_95", "d_96"];
+  areaFields.forEach(fieldId => {
+    const value = TargetState.getValue(fieldId);
+    if (value !== null && value !== undefined) {
+      window.TEUI.StateManager.setValue(fieldId, value.toString(), "calculated");
+    }
+  });
+}
 ```
 
-**Then in S12:** REMOVE all fallback patterns per CHEATSHEET anti-pattern guidance:
+**Note**: d_88-d_93 will receive values from BOTH S10 and S11. S11's values should win (later in calculation chain).
+
+---
+
+## 📋 PHASE 2: S12 Retire Robot Fingers & Strict StateManager Reads
+
+### Objective
+Eliminate ALL Robot Fingers direct DOM/state reads in S12. Replace with mode-aware StateManager reads per CHEATSHEET patterns.
+
+### Issue 1: `calculateCombinedUValue()` - NOT Mode-Aware (Lines 1608-1618)
+
+**Current Code (BROKEN)**:
+```javascript
+// ❌ WRONG: Always reads unprefixed (Target) regardless of isReferenceCalculation
+const d85 = parseFloat(getGlobalNumericValue("d_85"));
+```
+
+**Fix**:
+```javascript
+// ✅ CORRECT: Mode-aware reads
+const useRef = !!isReferenceCalculation;
+const d85 = useRef ? parseFloat(getGlobalNumericValue("ref_d_85")) || 0
+                   : parseFloat(getGlobalNumericValue("d_85")) || 0;
+```
+
+### Issue 2: `calculateVolumeMetrics()` - Fallback Anti-Pattern (Lines 1421-1468)
+
+**Current Code (ANTI-PATTERN 1)**:
+```javascript
+// ❌ Fallback contamination
+d88 = parseFloat(getGlobalNumericValue("ref_d_88")) ||
+      parseFloat(getGlobalNumericValue("d_88")) ||  // ❌ FALLBACK to Target
+      0;
+```
+
+**Fix**:
+```javascript
+// ✅ CORRECT: Strict read, NO fallback
+d88 = parseFloat(getGlobalNumericValue("ref_d_88")) || 0;  // Default to 0, NOT Target
+```
+
+### Issue 3: `getUValueFromS11()` - Robot Fingers (Lines 1556-1589)
+
+**Current Code (ROBOT FINGERS)**:
+```javascript
+// ❌ Direct cross-section state access
+const s11 = window.TEUI?.SectionModules?.sect11;
+const state = useReference ? s11.ReferenceState : s11.TargetState;
+const gVal = state.getValue(`g_${componentId}`);
+```
+
+**Fix (StateManager reads)**:
+```javascript
+// ✅ STATEMANAGER: Read from single source of truth
+function getUValueFromS11(componentId, useReference) {
+  const fieldId = `g_${componentId}`;
+
+  if (useReference) {
+    // Try U-value first
+    let value = window.TEUI.parseNumeric(
+      window.TEUI.StateManager.getValue(`ref_${fieldId}`)
+    );
+    if (!isNaN(value) && isFinite(value) && value > 0) return value;
+
+    // Try RSI conversion (1/RSI)
+    const rsiValue = window.TEUI.parseNumeric(
+      window.TEUI.StateManager.getValue(`ref_f_${componentId}`)
+    );
+    if (!isNaN(rsiValue) && isFinite(rsiValue) && rsiValue > 0) return 1 / rsiValue;
+
+    return 0;  // Strict: NO fallback to Target
+  } else {
+    // Target mode - unprefixed
+    let value = window.TEUI.parseNumeric(
+      window.TEUI.StateManager.getValue(fieldId)
+    );
+    if (!isNaN(value) && isFinite(value) && value > 0) return value;
+
+    const rsiValue = window.TEUI.parseNumeric(
+      window.TEUI.StateManager.getValue(`f_${componentId}`)
+    );
+    if (!isNaN(rsiValue) && isFinite(rsiValue) && rsiValue > 0) return 1 / rsiValue;
+
+    return 0;
+  }
+}
+```
+
+### Benefits of StateManager Approach
+
+1. ✅ **Architectural Compliance**: StateManager as single source of truth (README.md)
+2. ✅ **Strict Reads**: No fallback contamination (CHEATSHEET Anti-Pattern 1)
+3. ✅ **Mode Isolation**: Reference reads ONLY ref_ values, Target reads ONLY unprefixed
+4. ✅ **Testability**: Clear data flow through StateManager
+5. ✅ **Maintainability**: Standard pattern used across all sections
+
+**Then continue with S12 fixes to remove all fallback patterns:
 
 ```javascript
 // Reference calculation - STRICT reads only:
