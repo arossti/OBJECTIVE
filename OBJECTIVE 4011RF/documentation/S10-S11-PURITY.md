@@ -1,8 +1,8 @@
-# S10/S11 State Purity Investigation - IMPLEMENTATION PLAN
+# S10/S11 State Purity Investigation - FINAL REPORT
 
 **Branch**: `S10-S11-PURITY`
 **Investigation Date**: October 22-23, 2025
-**Status**: ✅ S11 FIX COMPLETE | ❌ S12 ROBOT FINGERS TRIAL FAILED (REVERTED) | 📋 STATEMANAGER APPROACH IN PROGRESS
+**Status**: ✅ PHASE 1 & 2 COMPLETE | ⚠️ RESIDUAL CONTAMINATION DETECTED
 
 ---
 
@@ -10,20 +10,22 @@
 
 **Problem**: S10 Target mode edits contaminate Reference model (e_10 changes incorrectly)
 
-**Investigation Results**:
+**Implementation Complete (October 23, 2025)**:
 
-- ✅ **S11 DUAL-STATE SYNC Bug Fixed** (Commit 07bbd9c)
-  - S11 ReferenceState perfectly isolated from Target edits
-  - Test validated: S11 ReferenceState d_88 = 7.50 (unchanged) when S10 Target d_73 = 100
-- ❌ **S12 Robot Fingers Trial FAILED** (Commit 32637c9, REVERTED 8b68810)
-  - Violated StateManager single source of truth architecture (README.md)
-  - Caused scope errors and calculation failures
-  - Approach abandoned - StateManager architecture restored
-- 📋 **StateManager Approach** (Current Phase)
-  - Phase 1: S11 publish ALL area values to StateManager (Target + Reference)
-  - Phase 2: S12 strict mode-aware StateManager reads (retire Robot Fingers)
+- ✅ **Phase 1: S11 Target Area Publishing** (Commit a18017f)
+  - S11 now publishes ALL Target area values (d_85-d_96) to StateManager
+  - Reference areas already published (ref_d_85-ref_d_96)
+  - U-values already published for both modes
+  - Test validated: All areas available in StateManager
 
-**Current Status**: Contamination still present, implementing StateManager solution per README.md/CHEATSHEET.md
+- ✅ **Phase 2: S12 StateManager Strict Reads** (Commit a998468)
+  - Retired Robot Fingers pattern completely
+  - Issue 1 Fixed: `calculateCombinedUValue()` area reads now mode-aware
+  - Issue 2 Fixed: Removed ALL fallback anti-patterns from `calculateVolumeMetrics()`
+  - Issue 3 Fixed: `getUValueFromS11()` now reads from StateManager (not direct state access)
+  - Complies with CHEATSHEET Anti-Pattern 1 (no fallbacks)
+
+**Current Status**: S10/S11/S12 fixes complete, but residual contamination detected on **second** consecutive Target edits. Contamination may be downstream (S13/S14/S15/S04). Further investigation needed.
 
 ---
 
@@ -888,12 +890,262 @@ d86 = parseFloat(getGlobalNumericValue("d_86")) || 0; // No fallback
 - ✅ `4012-Section11.js` - Add area publishing for d_85-d_87, d_94-d_96
 - ✅ `4012-Section12.js` - Remove fallback patterns (use backup as baseline)
 
-### Success Criteria
+### Success Criteria (October 23 - PARTIAL SUCCESS)
 
-- ✅ Contamination eliminated (e_10 stable: 287.0 → 287.0)
+- ⚠️ **Contamination reduced but not eliminated** (stable on first edit, changes on second)
 - ✅ S12 calculations working (user inputs affect outputs)
 - ✅ Reference engine running (ref_g_101, ref_g_102 have values)
-- ✅ Correct e_10 value (287.0)
 - ✅ g_101 Target ≠ g_101 Reference (different area values)
-- ✅ StateManager as single source of truth (no Robot Fingers)
+- ✅ StateManager as single source of truth (Robot Fingers retired)
 - ✅ No fallback patterns (strict reads per CHEATSHEET)
+- ⚠️ **Issue**: Residual contamination on consecutive edits (downstream sections?)
+
+---
+
+## 🧪 AUTOMATED CONTAMINATION TEST SCRIPT
+
+Copy and paste this script into browser console after page initialization to identify the contamination source:
+
+```javascript
+(function() {
+  console.clear();
+  console.log("═══════════════════════════════════════════════════════════");
+  console.log("🔬 AUTOMATED CONTAMINATION DIAGNOSTIC TEST");
+  console.log("   S10→S11→S12→S13→S14→S15→S04→S01 Full Stack Trace");
+  console.log("═══════════════════════════════════════════════════════════\n");
+
+  // Store baseline values
+  const baseline = {
+    // S10 areas
+    d_73: window.TEUI.StateManager.getValue("d_73"),
+    ref_d_73: window.TEUI.StateManager.getValue("ref_d_73"),
+
+    // S11 areas
+    d_88: window.TEUI.StateManager.getValue("d_88"),
+    ref_d_88: window.TEUI.StateManager.getValue("ref_d_88"),
+
+    // S11 U-values
+    g_88: window.TEUI.StateManager.getValue("g_88"),
+    ref_g_88: window.TEUI.StateManager.getValue("ref_g_88"),
+
+    // S12 weighted U-values
+    g_101: window.TEUI.StateManager.getValue("g_101"),
+    ref_g_101: window.TEUI.StateManager.getValue("ref_g_101"),
+    g_102: window.TEUI.StateManager.getValue("g_102"),
+    ref_g_102: window.TEUI.StateManager.getValue("ref_g_102"),
+
+    // S13 heat loss/gain
+    i_125: window.TEUI.StateManager.getValue("i_125"),
+    ref_i_125: window.TEUI.StateManager.getValue("ref_i_125"),
+
+    // S14 totals
+    i_131: window.TEUI.StateManager.getValue("i_131"),
+    ref_i_131: window.TEUI.StateManager.getValue("ref_i_131"),
+
+    // S15 energy use
+    d_136: window.TEUI.StateManager.getValue("d_136"),
+    ref_d_136: window.TEUI.StateManager.getValue("ref_d_136"),
+
+    // S01 Final TEUI
+    h_10: window.TEUI.StateManager.getValue("h_10"),
+    e_10: window.TEUI.StateManager.getValue("e_10")
+  };
+
+  console.log("📊 BASELINE VALUES (Initial State):");
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  console.log("S10 Door Area:");
+  console.log("  d_73 (Target):", baseline.d_73);
+  console.log("  ref_d_73 (Ref):", baseline.ref_d_73);
+
+  console.log("\nS11 Mapped Area:");
+  console.log("  d_88 (Target):", baseline.d_88);
+  console.log("  ref_d_88 (Ref):", baseline.ref_d_88);
+
+  console.log("\nS11 U-values:");
+  console.log("  g_88 (Target):", baseline.g_88);
+  console.log("  ref_g_88 (Ref):", baseline.ref_g_88);
+
+  console.log("\nS12 Weighted U-values:");
+  console.log("  g_101 (Target):", baseline.g_101);
+  console.log("  ref_g_101 (Ref):", baseline.ref_g_101);
+  console.log("  g_102 (Target):", baseline.g_102);
+  console.log("  ref_g_102 (Ref):", baseline.ref_g_102);
+
+  console.log("\nS13 Heat Loss:");
+  console.log("  i_125 (Target):", baseline.i_125);
+  console.log("  ref_i_125 (Ref):", baseline.ref_i_125);
+
+  console.log("\nS14 Totals:");
+  console.log("  i_131 (Target):", baseline.i_131);
+  console.log("  ref_i_131 (Ref):", baseline.ref_i_131);
+
+  console.log("\nS15 Energy Use:");
+  console.log("  d_136 (Target):", baseline.d_136);
+  console.log("  ref_d_136 (Ref):", baseline.ref_d_136);
+
+  console.log("\nS01 Final TEUI:");
+  console.log("  h_10 (Target):", baseline.h_10);
+  console.log("  e_10 (Reference):", baseline.e_10);
+
+  console.log("\n═══════════════════════════════════════════════════════════");
+  console.log("🎯 TEST SEQUENCE:");
+  console.log("1. Switch to TARGET mode");
+  console.log("2. Edit S10 door area: 7.5 → 100");
+  console.log("3. Wait for calculations to settle");
+  console.log("4. Edit S10 door area: 100 → 200");
+  console.log("5. Run CHECK #1 below");
+  console.log("6. Edit S10 door area: 200 → 50");
+  console.log("7. Run CHECK #2 below");
+  console.log("═══════════════════════════════════════════════════════════\n");
+
+  // Store for later comparison
+  window.CONTAMINATION_TEST_BASELINE = baseline;
+
+  console.log("✅ Baseline stored. Now make the edits listed above.\n");
+  console.log("After FIRST TWO edits (7.5→100→200), run:");
+  console.log("%cwindow.CONTAMINATION_CHECK_1()", "color: green; font-weight: bold; font-size: 14px");
+
+  console.log("\nAfter THIRD edit (200→50), run:");
+  console.log("%cwindow.CONTAMINATION_CHECK_2()", "color: green; font-weight: bold; font-size: 14px");
+})();
+
+// CHECK #1: After first two edits
+window.CONTAMINATION_CHECK_1 = function() {
+  console.log("\n\n═══════════════════════════════════════════════════════════");
+  console.log("📊 CHECK #1: After edits 7.5→100→200");
+  console.log("═══════════════════════════════════════════════════════════\n");
+
+  const baseline = window.CONTAMINATION_TEST_BASELINE;
+  const current = {
+    d_73: window.TEUI.StateManager.getValue("d_73"),
+    ref_d_73: window.TEUI.StateManager.getValue("ref_d_73"),
+    d_88: window.TEUI.StateManager.getValue("d_88"),
+    ref_d_88: window.TEUI.StateManager.getValue("ref_d_88"),
+    g_88: window.TEUI.StateManager.getValue("g_88"),
+    ref_g_88: window.TEUI.StateManager.getValue("ref_g_88"),
+    g_101: window.TEUI.StateManager.getValue("g_101"),
+    ref_g_101: window.TEUI.StateManager.getValue("ref_g_101"),
+    g_102: window.TEUI.StateManager.getValue("g_102"),
+    ref_g_102: window.TEUI.StateManager.getValue("ref_g_102"),
+    i_125: window.TEUI.StateManager.getValue("i_125"),
+    ref_i_125: window.TEUI.StateManager.getValue("ref_i_125"),
+    i_131: window.TEUI.StateManager.getValue("i_131"),
+    ref_i_131: window.TEUI.StateManager.getValue("ref_i_131"),
+    d_136: window.TEUI.StateManager.getValue("d_136"),
+    ref_d_136: window.TEUI.StateManager.getValue("ref_d_136"),
+    h_10: window.TEUI.StateManager.getValue("h_10"),
+    e_10: window.TEUI.StateManager.getValue("e_10")
+  };
+
+  const changes = {
+    d_73: current.d_73 !== baseline.d_73,
+    ref_d_73: current.ref_d_73 !== baseline.ref_d_73,
+    d_88: current.d_88 !== baseline.d_88,
+    ref_d_88: current.ref_d_88 !== baseline.ref_d_88,
+    g_88: current.g_88 !== baseline.g_88,
+    ref_g_88: current.ref_g_88 !== baseline.ref_g_88,
+    g_101: current.g_101 !== baseline.g_101,
+    ref_g_101: current.ref_g_101 !== baseline.ref_g_101,
+    g_102: current.g_102 !== baseline.g_102,
+    ref_g_102: current.ref_g_102 !== baseline.ref_g_102,
+    i_125: current.i_125 !== baseline.i_125,
+    ref_i_125: current.ref_i_125 !== baseline.ref_i_125,
+    i_131: current.i_131 !== baseline.i_131,
+    ref_i_131: current.ref_i_131 !== baseline.ref_i_131,
+    d_136: current.d_136 !== baseline.d_136,
+    ref_d_136: current.ref_d_136 !== baseline.ref_d_136,
+    h_10: current.h_10 !== baseline.h_10,
+    e_10: current.e_10 !== baseline.e_10
+  };
+
+  console.log("EXPECTED CHANGES (Target edited):");
+  console.log("  ✅ d_73, d_88, g_101, i_125, i_131, d_136, h_10 should change");
+  console.log("  ❌ ref_* values should NOT change\n");
+
+  console.log("ACTUAL RESULTS:");
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+
+  const sections = [
+    {name: "S10", fields: ["d_73", "ref_d_73"]},
+    {name: "S11 Areas", fields: ["d_88", "ref_d_88"]},
+    {name: "S11 U-values", fields: ["g_88", "ref_g_88"]},
+    {name: "S12 Weighted U", fields: ["g_101", "ref_g_101", "g_102", "ref_g_102"]},
+    {name: "S13 Heat Loss", fields: ["i_125", "ref_i_125"]},
+    {name: "S14 Totals", fields: ["i_131", "ref_i_131"]},
+    {name: "S15 Energy", fields: ["d_136", "ref_d_136"]},
+    {name: "S01 TEUI", fields: ["h_10", "e_10"]}
+  ];
+
+  let contaminationFound = false;
+  sections.forEach(section => {
+    console.log(`\n${section.name}:`);
+    section.fields.forEach(field => {
+      const changed = changes[field];
+      const isRef = field.startsWith("ref_");
+      const expectedChange = !isRef;
+      const status = changed === expectedChange ? "✅" : "❌";
+      const value = `${baseline[field]} → ${current[field]}`;
+
+      if (changed !== expectedChange) {
+        contaminationFound = true;
+        console.log(`  ${status} ${field}: ${value} ${changed ? "CHANGED" : "UNCHANGED"} (${expectedChange ? "should change" : "should NOT change"})`);
+      } else {
+        console.log(`  ${status} ${field}: ${value}`);
+      }
+    });
+  });
+
+  console.log("\n═══════════════════════════════════════════════════════════");
+  if (contaminationFound) {
+    console.log("%c⚠️ CONTAMINATION DETECTED!", "color: red; font-weight: bold; font-size: 16px");
+    console.log("Reference values changed when only Target was edited.");
+  } else {
+    console.log("%c✅ NO CONTAMINATION DETECTED!", "color: green; font-weight: bold; font-size: 16px");
+  }
+  console.log("═══════════════════════════════════════════════════════════\n");
+
+  window.CONTAMINATION_TEST_CHECK1 = current;
+};
+
+// CHECK #2: After third edit
+window.CONTAMINATION_CHECK_2 = function() {
+  console.log("\n\n═══════════════════════════════════════════════════════════");
+  console.log("📊 CHECK #2: After edit 200→50 (third consecutive edit)");
+  console.log("═══════════════════════════════════════════════════════════\n");
+
+  const check1 = window.CONTAMINATION_TEST_CHECK1;
+  const current = {
+    d_73: window.TEUI.StateManager.getValue("d_73"),
+    ref_d_73: window.TEUI.StateManager.getValue("ref_d_73"),
+    e_10: window.TEUI.StateManager.getValue("e_10"),
+    ref_g_101: window.TEUI.StateManager.getValue("ref_g_101")
+  };
+
+  console.log("COMPARISON TO CHECK #1:");
+  console.log("  d_73:", check1.d_73, "→", current.d_73, current.d_73 !== check1.d_73 ? "✅ Changed" : "No change");
+  console.log("  ref_d_73:", check1.ref_d_73, "→", current.ref_d_73, current.ref_d_73 !== check1.ref_d_73 ? "❌ CHANGED (contamination!)" : "✅ Unchanged");
+  console.log("  e_10:", check1.e_10, "→", current.e_10, current.e_10 !== check1.e_10 ? "❌ CHANGED (contamination!)" : "✅ Unchanged");
+  console.log("  ref_g_101:", check1.ref_g_101, "→", current.ref_g_101, current.ref_g_101 !== check1.ref_g_101 ? "❌ CHANGED (contamination!)" : "✅ Unchanged");
+
+  console.log("\n═══════════════════════════════════════════════════════════");
+  const contaminated = current.e_10 !== check1.e_10 || current.ref_d_73 !== check1.ref_d_73;
+  if (contaminated) {
+    console.log("%c⚠️ SECOND-EDIT CONTAMINATION CONFIRMED!", "color: red; font-weight: bold; font-size: 16px");
+    console.log("This pattern suggests contamination on consecutive edits.");
+    console.log("Likely source: Downstream sections (S13/S14/S15/S04) or calculation timing.");
+  } else {
+    console.log("%c✅ ALL STABLE - NO CONTAMINATION!", "color: green; font-weight: bold; font-size: 16px");
+  }
+  console.log("═══════════════════════════════════════════════════════════\n");
+};
+```
+
+**Usage:**
+1. Refresh page
+2. Run the initial script (stores baseline)
+3. Follow test sequence (make 3 edits to S10 Target door)
+4. Run `window.CONTAMINATION_CHECK_1()` after first two edits
+5. Run `window.CONTAMINATION_CHECK_2()` after third edit
+6. Paste Logs.md results here for analysis
+
+This will identify EXACTLY which section is causing contamination.
