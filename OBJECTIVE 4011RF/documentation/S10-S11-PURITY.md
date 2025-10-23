@@ -720,6 +720,143 @@ window.TEUI.StateManager.setValue("ref_d_95", d_95_value, "calculated");
 window.TEUI.StateManager.setValue("ref_d_96", d_96_value, "calculated");
 ```
 
+---
+
+## 🔬 DEEP DIVE: g_101 and g_102 Contamination Analysis
+
+### What are g_101 and g_102?
+
+**g_101** = Weighted Average U-value for **Above-Ground** envelope (air-exposed surfaces)
+**g_102** = Weighted Average U-value for **Below-Ground** envelope (ground-coupled surfaces)
+
+These are critical calculated values that flow through the entire calculation chain to determine final TEUI (e_10).
+
+### Excel Formula (Weighted Average)
+
+```
+g_101 = [SUMPRODUCT(g_85:g_93, d_85:d_93) / SUM(d_85:d_93)] × (1 + d_97/100)
+g_102 = [SUMPRODUCT(g_94:g_95, d_94:d_95) / SUM(d_94:d_95)] × (1 + d_97/100)
+```
+
+Where:
+
+- **g_85-g_95**: U-values (W/m²K) from S11 for each envelope component
+- **d_85-d_96**: Area values (m²) for each envelope component
+- **d_97**: Thermal bridge penalty percentage from S11 (e.g., 20%)
+
+**User's Intuition was CORRECT**: S12 reads **D column (area)** values for weighted U-value calculation, not H column values!
+
+### Current S12 Data Sources for g_101/g_102
+
+Analysis of [sections/4012-Section12.js:1551-1674](sections/4012-Section12.js#L1551-L1674):
+
+```javascript
+function calculateCombinedUValue(isReferenceCalculation = false) {
+  const useRef = !!isReferenceCalculation;
+
+  // ✅ U-values (g_85-g_95): CORRECT - Robot Fingers Pattern
+  const g85 = getUValueFromS11("85", useRef); // Lines 1556-1589
+  const g86 = getUValueFromS11("86", useRef); // Direct S11 state read
+  // ... g_87-g_95
+
+  // ❌ Areas (d_85-d_95): BROKEN - NOT mode-aware!
+  const d85 = parseFloat(getGlobalNumericValue("d_85")); // Line 1608
+  const d86 = parseFloat(getGlobalNumericValue("d_86")); // Line 1609
+  // ... d_87-d_95 (lines 1610-1618)
+
+  // Formula implementation
+  const sumProductAir =
+    d85 * g85 + d86 * g86 + d87 * g87 + d88 * g88 + d89 * g89 + d90 * g90 +
+    d91 * g91 + d92 * g92 + d93 * g93;
+
+  const g101_uAir =
+    d101_areaAir > 0 ? (sumProductAir / d101_areaAir) * tbFactor : 0;
+}
+```
+
+**Where `getGlobalNumericValue()` = `window.TEUI.StateManager.getValue(fieldId)`** ([4012-Section12.js:1085-1089](sections/4012-Section12.js#L1085-L1089))
+
+### The Contamination Mechanism
+
+| Data Point | Reference Calculation                     | Target Calculation                  | Status |
+| ---------- | ----------------------------------------- | ----------------------------------- | ------ |
+| **g_85**   | `S11.ReferenceState.g_85` (e.g., 0.210)   | `S11.TargetState.g_85` (e.g., 0.18) | ✅     |
+| **g_86**   | `S11.ReferenceState.g_86` (e.g., 0.360)   | `S11.TargetState.g_86` (e.g., 0.30) | ✅     |
+| ...        | (g_87-g_95 correct)                       | (g_87-g_95 correct)                 | ✅     |
+| **d_85**   | `StateManager.getValue("d_85")` ← **TGT** | `StateManager.getValue("d_85")`     | ❌     |
+| **d_86**   | `StateManager.getValue("d_86")` ← **TGT** | `StateManager.getValue("d_86")`     | ❌     |
+| ...        | (d_87-d_95 all read **Target**)           | (d_87-d_95 correct)                 | ❌     |
+| **d_97**   | `S11.ReferenceState.d_97` (e.g., 20%)     | `S11.TargetState.d_97` (e.g., 20%)  | ✅     |
+
+**Critical Finding**: The asymmetry! U-values use Robot Fingers (mode-aware), but areas use StateManager (NOT mode-aware)!
+
+**Contamination Chain**:
+
+1. User edits S10 Target door area: d_73 = 7.50 → 100
+2. S10 publishes: `d_88 = 100` (Target), `ref_d_88 = 7.50` (Reference) ✅
+3. S11 Target calculation runs → TargetState.d_88 = 100 ✅
+4. S11 ReferenceState.d_88 stays 7.50 ✅ (Fixed by commit 07bbd9c)
+5. S11 **does NOT publish d_88 to StateManager** (Robot Fingers design)
+6. S12 Reference calculation runs: `calculateCombinedUValue(true)`
+   - U-values: `g88 = S11.ReferenceState.g_88` = 0.650 ✅
+   - **Areas: `d88 = StateManager.getValue("d_88")` = ??? (stale/Target value)** ❌
+7. Weighted average calculation mixes:
+   - Reference U-values (correct: 0.210, 0.360, 0.650, etc.)
+   - Target areas (contaminated: includes modified d_88 = 100)
+8. Result: **CONTAMINATED g_101** value
+9. Cascade: S12 → S13 → S14 → S15 → S04 → S01
+10. Final result: **e_10 changes from 287.0 → 308.4** ❌
+
+### Two Contamination Sources in S12
+
+#### Source 1: `calculateVolumeMetrics()` (lines 1415-1483)
+
+**Status**: Mode-aware BUT has fallback anti-pattern
+
+```javascript
+if (isReferenceCalculation) {
+  d88 =
+    parseFloat(getGlobalNumericValue("ref_d_88")) || // Try Reference
+    parseFloat(getGlobalNumericValue("d_88")) || // ❌ FALLBACK to Target
+    0;
+}
+```
+
+#### Source 2: `calculateCombinedUValue()` (lines 1608-1618)
+
+**Status**: NOT mode-aware AT ALL
+
+```javascript
+// ALWAYS reads unprefixed, regardless of isReferenceCalculation value!
+const d85 = parseFloat(getGlobalNumericValue("d_85"));
+const d86 = parseFloat(getGlobalNumericValue("d_86"));
+// ... d_87-d_95
+```
+
+### Revised Solution: Robot Fingers for Architectural Consistency
+
+**Observation**: S12 already uses Robot Fingers for U-values ([4012-Section12.js:1556-1589](sections/4012-Section12.js#L1556-L1589)):
+
+```javascript
+function getUValueFromS11(componentId, useReference) {
+  const s11 = window.TEUI?.SectionModules?.sect11;
+  const state = useReference ? s11.ReferenceState : s11.TargetState;
+  return state.getValue(`g_${componentId}`); // Direct state read
+}
+```
+
+**Recommendation**: Extend Robot Fingers pattern to areas for consistency!
+
+**Advantages**:
+
+- ✅ Matches existing U-value read pattern
+- ✅ NO StateManager publishing needed (S11 areas stay sovereign)
+- ✅ NO fallback patterns (strict reads)
+- ✅ Cleaner architecture (symmetric U-value and area reads)
+- ✅ Already proven working for U-values
+
+**Implementation**: See "Option B: Robot Fingers Implementation" section below
+
 **Then in S12:** REMOVE all fallback patterns per CHEATSHEET anti-pattern guidance:
 
 ```javascript
