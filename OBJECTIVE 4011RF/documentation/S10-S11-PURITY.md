@@ -327,11 +327,106 @@ For detailed test results and evolution of understanding, see git history:
 ---
 
 **Last Updated**: October 22, 2025
-**Implementation**: ✅ COMPLETE (Commit 32637c9)
-**Validation**: ✅ PASSED (Test 6 - e_10 unchanged at 341.2)
-**Branch**: `S10-S11-PURITY` (ready for merge to C-RF)
-**Status**: CONTAMINATION BUG FIXED - Reference model isolated from Target edits
+**Implementation**: ⚠️ BROKEN - Robot Fingers causes S12 dysfunction
+**Validation**: ✅ Contamination fixed BUT ❌ S12 calculations broken
+**Branch**: `S10-S11-PURITY` (REVERT TO BACKUP NEEDED)
+**Status**: CONTAMINATION BUG FIXED - but Robot Fingers implementation broke S12
 
-**Known Separate Issues** (not related to contamination):
-- h_10 and e_10 absolute value calculations need investigation
-- S12 backup file available if needed for comparison
+---
+
+## 🚨 CRITICAL FINDINGS - S12 Robot Fingers Implementation Broken
+
+### Diagnostic Results (Logs.md line 1771+)
+
+**✅ Contamination Fix Working:**
+- Test 6 PASSED: e_10 unchanged when S10 Target edited (341.2 stable)
+- S11 state isolation working perfectly
+
+**❌ S12 Calculations Completely Broken:**
+
+1. **getAreaFromS11() NOT IN SCOPE**
+   - Function declared inside `calculateCombinedUValue()`
+   - NOT accessible to `calculateVolumeMetrics()` or `calculateWWR()`
+   - Returns: `❌ getAreaFromS11 does NOT exist - function not in scope!`
+
+2. **S12 Internal States Empty**
+   - `S12 TargetState g_101: undefined`
+   - `S12 ReferenceState g_101: undefined`
+   - S12 sovereign states not being populated
+
+3. **Reference Engine Not Running**
+   - `ref_g_101: null` (should have value)
+   - `ref_g_102: null` (should have value)
+   - `ref_d_103: null` (should have value)
+   - Reference calculations not executing
+
+4. **S11 States Back to Baseline**
+   - `S11 TargetState d_88: 7.50` (reset from Test 6's 100)
+   - `S11 ReferenceState d_88: 7.50`
+   - Both states identical (expected after refresh)
+
+5. **Wrong e_10 Value Published**
+   - StateManager e_10 = 341.2 (wrong - should be ~65.5)
+   - S01 correctly calculates 65.5 from upstream values
+   - S12 publishing garbage value to StateManager
+
+### Root Cause Analysis
+
+**The Robot Fingers implementation has THREE fatal flaws:**
+
+1. **Scope Error**: `getAreaFromS11()` declared at line 1585 inside `calculateCombinedUValue()`, making it inaccessible to other functions
+2. **Reference Engine Dead**: S12's Reference engine not running (all ref_* values null)
+3. **Calculation Flow Broken**: User input changes have NO effect on S12 calculations
+
+### Comparison to Backup
+
+**S12 Backup (4012-Section12.js.backup.js):**
+- ✅ Calculations working
+- ✅ Reference engine running
+- ✅ User inputs affect calculations
+- ❌ State contamination bug (Target edits affect Reference)
+
+**S12 Current (after Robot Fingers):**
+- ✅ State contamination fixed
+- ❌ Calculations broken
+- ❌ Reference engine dead
+- ❌ User inputs have no effect
+
+---
+
+## 📋 Recommended Action Plan for Tomorrow
+
+### Option A: Revert and Redesign (RECOMMENDED)
+
+1. **Revert S12 to backup** (commit 437bab9)
+2. **Investigate WHY backup has contamination** despite Robot Fingers
+3. **Design minimal fix** that preserves working calculations
+4. **Test incrementally** - one function at a time
+
+### Option B: Fix Current Implementation
+
+1. **Move getAreaFromS11() to module scope** (like getUValueFromS11)
+2. **Debug why Reference engine not running**
+3. **Fix S12 internal state population**
+4. **Validate calculation flow restored**
+
+### Key Questions for Tomorrow
+
+1. **Why was backup contaminated?** - It didn't have Robot Fingers areas, so what caused mixing?
+2. **Is Robot Fingers even needed?** - Maybe S11 should publish areas to StateManager after all?
+3. **Can we fix contamination without breaking calculations?** - Smaller, targeted intervention
+
+### Files to Preserve
+
+- ✅ `4012-Section11.js` - S11 DUAL-STATE SYNC fix is GOOD (commit 07bbd9c)
+- ✅ `4012-Section10.js` - S10 is clean (reverted to e2c0ac6)
+- ❌ `4012-Section12.js` - BROKEN, revert to backup
+- ✅ `4012-Section12.js.backup.js` - KEEP THIS SAFE
+
+### Success Criteria
+
+- ✅ Contamination eliminated (e_10 stable on Target edits)
+- ✅ S12 calculations working (user inputs affect outputs)
+- ✅ Reference engine running (ref_g_101, ref_g_102 have values)
+- ✅ Correct e_10 value (~65.5, not 341.2)
+- ✅ g_101 Target ≠ g_101 Reference (different area values)
