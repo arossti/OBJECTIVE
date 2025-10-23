@@ -19,6 +19,7 @@ window.TEUI.SectionModules.sect11 = (function () {
   let isS11Initialized = false; // Prevents sync before initialization completes
   let isSyncingFromS10 = false; // Prevents recursion in sync function
   let syncTimeout = null; // For debouncing rapid sync calls
+  let isInitializationPhase = true; // ✅ FIX: Disable DUAL-STATE SYNC after initialization
 
   // ✅ ANTI-PATTERN FIX: Type metadata only (no duplicate default values)
   // Component types for indicator calculation logic - values come from ReferenceState
@@ -1209,6 +1210,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       const stateManager_refArea = window.TEUI.StateManager.getValue("ref_d_73");
 
       const needsDualSync =
+        isInitializationPhase && // ✅ FIX: Only during initialization, not user edits
         currentMode === "target" &&
         (refArea_d88 === undefined || refArea_d88 !== stateManager_refArea);
 
@@ -2403,6 +2405,13 @@ window.TEUI.SectionModules.sect11 = (function () {
     // 5. Perform initial calculations for this section
     // Now runs with correct areas from S10, producing correct ref_k_98
     calculateAll();
+
+    // ✅ FIX: Disable DUAL-STATE SYNC after initialization
+    // After init, listeners should use mode-aware sync only
+    isInitializationPhase = false;
+    console.log(
+      "[S11 Area Sync] Initialization phase complete - DUAL-STATE SYNC disabled",
+    );
 
     // 6. Apply validation tooltips to fields
     if (window.TEUI.TooltipManager && window.TEUI.TooltipManager.initialized) {
