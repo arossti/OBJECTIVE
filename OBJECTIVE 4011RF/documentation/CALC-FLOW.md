@@ -686,8 +686,72 @@ But **Reference mode is section-specific** - one section can be in Reference mod
 
 ---
 
+## CRITICAL DISCOVERY: S10/S11 State Mixing (October 22, 2025)
+
+**SEVERITY**: BLOCKER - Fundamental architectural corruption
+
+### The Problem
+
+**Symptom**: Edits made to S10 in **Target mode** are flowing to the **Reference model**, NOT the Target model.
+
+**User Discovery**:
+> "I just noticed a major flaw with state mixing in S10, S11. Edits made to Target mode of S10 flow to the Reference model, NOT The Target model. It is all kinds of messed up and I honestly never even noticed this until now."
+
+### Historical Investigation
+
+**Time Machine Backups Checked**:
+- October 15, 2025 and earlier: **State mixing present in ALL versions**
+
+**Timeline Hypothesis**:
+The corruption likely occurred AFTER the 'FINAL BOSS' or 'SON-OF-A-BOSS' bug fixes, when we implemented quality-of-life changes to write S10 area values to S11 file.
+
+### Root Cause Theory
+
+The S10→S11 area synchronization mechanism introduced during/after the boss bug fixes may have:
+1. Mixed up Target vs Reference value publishing
+2. Incorrectly mapped state prefixes (ref_ vs unprefixed)
+3. Created listener crosswalk between modes
+
+### What We Know
+
+**Working Before**:
+- 'FINAL BOSS' and 'SON-OF-A-BOSS' branches were successfully fixed
+- System worked correctly at some point
+
+**Broken After**:
+- S10 area export to S11 was added as quality-of-life improvement
+- State mixing began (date unknown)
+- Present in all backups from Oct 15 backward
+
+### Next Steps - PAUSED
+
+1. **User Action Required**: Explore Time Machine backups to find:
+   - Last known-good version where S10 Target→Target and Reference→Reference work correctly
+   - First broken version where state mixing appears
+   - Identify the specific commit/change that introduced the corruption
+
+2. **Once Found**: Compare the working vs broken S10/S11 files to identify:
+   - Incorrect state publishing logic
+   - Listener registration errors
+   - ModeManager setValue() misuse
+   - StateManager prefix confusion
+
+3. **Fix Strategy**:
+   - Revert S10/S11 to known-good baseline
+   - Re-apply only the necessary S10→S11 area sync feature
+   - Ensure strict separation: Target mode edits → unprefixed values, Reference mode edits → ref_ values
+   - Add defensive diagnostics to detect state mixing early
+
+### Current Work SUSPENDED
+
+- S11 mode guard fix (commit c416526): **INCOMPLETE** - May be addressing wrong problem
+- Reference mode cascade investigation: **ON HOLD** - Cannot debug cascade until state mixing is fixed
+- All diagnostic logging: **REMOVED** - S10 reverted to clean baseline (commit e4939fd)
+
+---
+
 **Last Updated**: October 22, 2025
-**Assigned To**: AI Agent
-**Priority**: CRITICAL - Blocking production deployment
-**Current Commit**: `a9ae25a` - S10 Reference publishing diagnostics
-**Status**: ✅ ROOT CAUSE IDENTIFIED - Mode guard blocking S11 Reference listeners
+**Assigned To**: User (Time Machine investigation)
+**Priority**: BLOCKER - Must fix state mixing before any other work
+**Current Commit**: `e4939fd` - S10 reverted, investigation paused
+**Status**: 🚨 CRITICAL STATE MIXING - Investigating historical backups to find corruption source
