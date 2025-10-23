@@ -1207,7 +1207,8 @@ window.TEUI.SectionModules.sect11 = (function () {
       // Check if ReferenceState areas are unpopulated OR don't match StateManager
       // This handles BOTH initialization (undefined) AND import (stale values)
       const refArea_d88 = ReferenceState.getValue("d_88");
-      const stateManager_refArea = window.TEUI.StateManager.getValue("ref_d_73");
+      const stateManager_refArea =
+        window.TEUI.StateManager.getValue("ref_d_73");
 
       const needsDualSync =
         isInitializationPhase && // ✅ FIX: Only during initialization, not user edits
@@ -1240,17 +1241,13 @@ window.TEUI.SectionModules.sect11 = (function () {
           // Sync Target state
           if (targetValue !== null && targetValue !== undefined) {
             TargetState.setValue(s11Field, targetValue);
-            console.log(
-              `[S11 Area Sync] ${s11Field} TARGET = ${targetValue}`,
-            );
+            console.log(`[S11 Area Sync] ${s11Field} TARGET = ${targetValue}`);
           }
 
           // Sync Reference state (THIS IS THE FIX - ensures ref areas available for first calc)
           if (refValue !== null && refValue !== undefined) {
             ReferenceState.setValue(s11Field, refValue);
-            console.log(
-              `[S11 Area Sync] ${s11Field} REFERENCE = ${refValue}`,
-            );
+            console.log(`[S11 Area Sync] ${s11Field} REFERENCE = ${refValue}`);
           }
 
           // Update DOM with Target value (we're in Target mode)

@@ -91,16 +91,16 @@ console.log(`Reference d_117:          ${d_117_ref} kWh (Cooling load)`);
 
 console.log("\n🔍 DIAGNOSTIC SUMMARY\n");
 if (h_21_ref === null || h_21_ref === undefined) {
-  console.log("❌ ISSUE: ref_h_21 not in StateManager");
+console.log("❌ ISSUE: ref_h_21 not in StateManager");
 }
 if (i_21_ref === null || i_21_ref === undefined) {
-  console.log("❌ ISSUE: ref_i_21 not in StateManager");
+console.log("❌ ISSUE: ref_i_21 not in StateManager");
 }
 if (i_59_ref === null || i_59_ref === undefined) {
-  console.log("❌ ISSUE: ref_i_59 not in StateManager");
+console.log("❌ ISSUE: ref_i_59 not in StateManager");
 }
 if (latent_ref === latent_target && i_59_ref !== i_59_target) {
-  console.log("❌ ISSUE: Different RH% but identical latent load");
+console.log("❌ ISSUE: Different RH% but identical latent load");
 }
 
 console.log("\n=== END DIAGNOSTIC ===\n");

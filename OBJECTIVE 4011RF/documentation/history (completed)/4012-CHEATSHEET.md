@@ -212,7 +212,7 @@ if (fieldId === "d_12" || fieldId === "ref_d_12") {
 
 **Discovered:** October 22, 2025 (S12 Reference mode calculation flow bug)
 
-**Description:** A section adds StateManager listeners for its **own input fields** (both unprefixed and ref_ prefixed), causing double calculations that interfere with the normal calculation flow.
+**Description:** A section adds StateManager listeners for its **own input fields** (both unprefixed and ref\_ prefixed), causing double calculations that interfere with the normal calculation flow.
 
 **Symptom:** Reference mode user edits in a section don't flow through to downstream sections. Changes only propagate when switching back to Target mode (the "catch-up" effect).
 

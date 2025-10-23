@@ -210,7 +210,9 @@ window.TEUI.CoolingCalculations = (function () {
     const i_59_value = window.TEUI.parseNumeric(
       getModeAwareValue("i_59", "45"),
     );
-    console.log(`[Cooling] 🔍 i_59 READ: mode=${state.currentMode}, i_59_value=${i_59_value}, will use indoorRH=${i_59_value ? i_59_value / 100 : 0.45}`);
+    console.log(
+      `[Cooling] 🔍 i_59 READ: mode=${state.currentMode}, i_59_value=${i_59_value}, will use indoorRH=${i_59_value ? i_59_value / 100 : 0.45}`,
+    );
     state.indoorRH = i_59_value ? i_59_value / 100 : 0.45; // Convert percentage to decimal, default 45%
     const partialPressureIndoor = pSatIndoor * state.indoorRH; // A52: Indoor RH% from S08 i_59
 
@@ -472,7 +474,9 @@ window.TEUI.CoolingCalculations = (function () {
     }
 
     state.calculatingStage1 = true;
-    console.log(`[Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=${mode})...`);
+    console.log(
+      `[Cooling Stage 1] 🚀 Starting ventilation & free cooling calculations (mode=${mode})...`,
+    );
 
     // Store current mode for mode-aware reads/writes
     state.currentMode = mode;
@@ -525,7 +529,9 @@ window.TEUI.CoolingCalculations = (function () {
       // Dispatch event to notify S13 that Stage 1 cooling calculations are ready
       dispatchCoolingEvent("stage1");
 
-      console.log(`[Cooling Stage 1] ✅ Complete: h_124=${state.freeCoolingLimit.toFixed(2)} kWh/yr, latentLoadFactor=${state.latentLoadFactor.toFixed(3)}`);
+      console.log(
+        `[Cooling Stage 1] ✅ Complete: h_124=${state.freeCoolingLimit.toFixed(2)} kWh/yr, latentLoadFactor=${state.latentLoadFactor.toFixed(3)}`,
+      );
     } finally {
       state.calculatingStage1 = false;
     }
@@ -560,20 +566,24 @@ window.TEUI.CoolingCalculations = (function () {
     // CRITICAL: Check if active cooling system exists
     const d_116 = getModeAwareValue("d_116", "No Cooling");
     if (d_116 === "No Cooling") {
-      console.log(`[Cooling Stage 2] ⏭️ Skipping - No active cooling system (d_116="${d_116}")`);
+      console.log(
+        `[Cooling Stage 2] ⏭️ Skipping - No active cooling system (d_116="${d_116}")`,
+      );
       // Set m_124 to 0 since no active cooling
       state.daysActiveCooling = 0;
       const prefix = mode === "reference" ? "ref_" : "";
       window.TEUI?.StateManager?.setValue(
         `${prefix}cooling_m_124`,
         "0",
-        "calculated"
+        "calculated",
       );
       return;
     }
 
     state.calculatingStage2 = true;
-    console.log(`[Cooling Stage 2] 🚀 Starting active cooling calculations (mode=${mode})...`);
+    console.log(
+      `[Cooling Stage 2] 🚀 Starting active cooling calculations (mode=${mode})...`,
+    );
 
     // Store current mode for mode-aware reads/writes
     state.currentMode = mode;
@@ -588,7 +598,9 @@ window.TEUI.CoolingCalculations = (function () {
       // Dispatch event to notify S13 that Stage 2 cooling calculations are ready
       dispatchCoolingEvent("stage2");
 
-      console.log(`[Cooling Stage 2] ✅ Complete: m_124=${state.daysActiveCooling.toFixed(2)} days`);
+      console.log(
+        `[Cooling Stage 2] ✅ Complete: m_124=${state.daysActiveCooling.toFixed(2)} days`,
+      );
     } finally {
       state.calculatingStage2 = false;
     }
@@ -769,7 +781,9 @@ window.TEUI.CoolingCalculations = (function () {
    * @param {string} stage - Optional stage identifier ("stage1", "stage2", or undefined for legacy)
    */
   function dispatchCoolingEvent(stage) {
-    const eventName = stage ? `cooling-calculations-${stage}` : "cooling-calculations-loaded";
+    const eventName = stage
+      ? `cooling-calculations-${stage}`
+      : "cooling-calculations-loaded";
 
     const event = new CustomEvent(eventName, {
       detail: {
@@ -810,7 +824,9 @@ window.TEUI.CoolingCalculations = (function () {
     // - S13 uses h_124 to calculate m_129
     // - This listener triggers Stage 2 when m_129 is ready
     // - Stage 2 calculates m_124 using m_129
-    console.log(`[Cooling] 🔗 Registering m_129 listener to trigger Stage 2 (Target mode)`);
+    console.log(
+      `[Cooling] 🔗 Registering m_129 listener to trigger Stage 2 (Target mode)`,
+    );
     sm.addListener("m_129", function (newValue) {
       console.log(
         `[Cooling] 🎯 m_129 changed: ${newValue} → triggering Stage 2 for TARGET mode`,
@@ -822,7 +838,9 @@ window.TEUI.CoolingCalculations = (function () {
     });
 
     // Listen for ref_m_129 (Reference mode mitigated cooling load)
-    console.log(`[Cooling] 🔗 Registering ref_m_129 listener to trigger Stage 2 (Reference mode)`);
+    console.log(
+      `[Cooling] 🔗 Registering ref_m_129 listener to trigger Stage 2 (Reference mode)`,
+    );
     sm.addListener("ref_m_129", function (newValue) {
       console.log(
         `[Cooling] 🎯 ref_m_129 changed: ${newValue} → triggering Stage 2 for REFERENCE mode`,
@@ -837,7 +855,9 @@ window.TEUI.CoolingCalculations = (function () {
     // ============================================================================
     // If user changes from "No Cooling" to an active system, trigger Stage 2
     // If user changes to "No Cooling", skip Stage 2
-    console.log(`[Cooling] 🔗 Registering d_116 listener for cooling system changes`);
+    console.log(
+      `[Cooling] 🔗 Registering d_116 listener for cooling system changes`,
+    );
     sm.addListener("d_116", function (newValue) {
       console.log(
         `[Cooling] 🌡️ Cooling system changed: d_116="${newValue}" → triggering Stage 2 for both modes`,

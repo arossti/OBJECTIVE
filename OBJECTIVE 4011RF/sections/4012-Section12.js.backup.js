@@ -344,7 +344,11 @@ window.TEUI.SectionModules.sect12 = (function () {
         window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
       } else if (this.currentMode === "reference") {
         // Reference mode: publish with ref_ prefix
-        window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "user-modified");
+        window.TEUI.StateManager.setValue(
+          `ref_${fieldId}`,
+          value,
+          "user-modified",
+        );
       }
     },
     refreshUI: function () {
@@ -375,7 +379,10 @@ window.TEUI.SectionModules.sect12 = (function () {
         } else if (element.hasAttribute("contenteditable")) {
           // ✅ FIX: Format numeric values to 2dp for consistency
           const numericValue = window.TEUI.parseNumeric(stateValue);
-          if (!isNaN(numericValue) && (fieldId === "g_109" || fieldId === "d_105")) {
+          if (
+            !isNaN(numericValue) &&
+            (fieldId === "g_109" || fieldId === "d_105")
+          ) {
             element.textContent = window.TEUI.formatNumber(
               numericValue,
               "number-2dp",
@@ -1552,7 +1559,7 @@ window.TEUI.SectionModules.sect12 = (function () {
 
       if (!s11) {
         console.warn(
-          `[S12] S11 module not loaded for component ${componentId} - recalc will occur when S11 initializes`
+          `[S12] S11 module not loaded for component ${componentId} - recalc will occur when S11 initializes`,
         );
         return 0; // Return 0 until S11 loads (listeners will trigger recalc)
       }
@@ -1560,7 +1567,7 @@ window.TEUI.SectionModules.sect12 = (function () {
       const state = useReference ? s11.ReferenceState : s11.TargetState;
       if (!state?.getValue) {
         console.error(
-          `[S12] CRITICAL: S11 ${useReference ? "Reference" : "Target"}State missing for g_${componentId}`
+          `[S12] CRITICAL: S11 ${useReference ? "Reference" : "Target"}State missing for g_${componentId}`,
         );
         return 0;
       }
@@ -1619,19 +1626,19 @@ window.TEUI.SectionModules.sect12 = (function () {
       const stateValue = window.TEUI.parseNumeric(
         useRef
           ? s11.ReferenceState.getValue("d_97")
-          : s11.TargetState.getValue("d_97")
+          : s11.TargetState.getValue("d_97"),
       );
 
       if (!isNaN(stateValue) && isFinite(stateValue)) {
         d97_tbPenaltyPercent = stateValue;
       } else {
         console.warn(
-          `[S12] TB% missing from S11 ${useRef ? "Reference" : "Target"}State, using default 50%`
+          `[S12] TB% missing from S11 ${useRef ? "Reference" : "Target"}State, using default 50%`,
         );
       }
     } else {
       console.warn(
-        `[S12] S11 module not loaded for TB%, using default 50% - recalc will occur when S11 initializes`
+        `[S12] S11 module not loaded for TB%, using default 50% - recalc will occur when S11 initializes`,
       );
     }
 
@@ -2590,11 +2597,16 @@ window.TEUI.SectionModules.sect12 = (function () {
         g109Cell.textContent.trim() === "N/A"
       ) {
         // Use value from state, or fallback to mode-specific default (1.50 Target, 2.00 Reference)
-        const rawValue = currentValue || (ModeManager.currentMode === "reference" ? "2.00" : "1.50");
+        const rawValue =
+          currentValue ||
+          (ModeManager.currentMode === "reference" ? "2.00" : "1.50");
 
         // ✅ FIX: Format to 2dp for consistency
         const numericValue = window.TEUI.parseNumeric(rawValue);
-        const displayValue = window.TEUI.formatNumber(numericValue, "number-2dp");
+        const displayValue = window.TEUI.formatNumber(
+          numericValue,
+          "number-2dp",
+        );
         g109Cell.textContent = displayValue;
 
         // Only setValue if we're using a fallback (not already in state)
@@ -2605,7 +2617,10 @@ window.TEUI.SectionModules.sect12 = (function () {
         // ✅ FIX: Even if cell has content, ensure it's formatted to 2dp
         const numericValue = window.TEUI.parseNumeric(g109Cell.textContent);
         if (!isNaN(numericValue)) {
-          g109Cell.textContent = window.TEUI.formatNumber(numericValue, "number-2dp");
+          g109Cell.textContent = window.TEUI.formatNumber(
+            numericValue,
+            "number-2dp",
+          );
         }
       }
     } else {

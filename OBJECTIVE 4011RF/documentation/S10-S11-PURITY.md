@@ -11,6 +11,7 @@
 **Initial Problem**: S10 Target mode edits contaminated Reference model (e_10 changed)
 
 **Investigation Results**:
+
 - ✅ **S11 DUAL-STATE SYNC Bug Fixed** (Commit 07bbd9c)
   - S11 ReferenceState now perfectly isolated from Target edits
   - Test 5 validated: S11 ReferenceState d_88 = 7.50 (unchanged) when S10 Target d_73 = 100
@@ -40,47 +41,51 @@ A direct cross-section state read pattern where S12 reads **directly** from S11'
 ### Current Implementation (Partial)
 
 **✅ U-Values (h_85-h_93): WORKING**
+
 ```javascript
 // S12's calculateCombinedUValue() - lines 1549-1583, 1589-1600
 function getUValueFromS11(componentId, useReference) {
   const s11 = window.TEUI?.SectionModules?.sect11;
 
   if (useReference) {
-    return s11.ReferenceState?.getValue(`h_${componentId}`);  // ✅ Mode-aware
+    return s11.ReferenceState?.getValue(`h_${componentId}`); // ✅ Mode-aware
   } else {
-    return s11.TargetState?.getValue(`h_${componentId}`);     // ✅ Mode-aware
+    return s11.TargetState?.getValue(`h_${componentId}`); // ✅ Mode-aware
   }
 }
 
-const g88 = getUValueFromS11("88", useRef);  // ✅ Reads correct state
+const g88 = getUValueFromS11("88", useRef); // ✅ Reads correct state
 ```
 
 **❌ Area Values (d_85-d_96): BROKEN**
 
 **In calculateVolumeMetrics()** (lines 1412-1461):
+
 ```javascript
 if (isReferenceCalculation) {
   d88 =
-    parseFloat(getGlobalNumericValue("ref_d_88")) ||  // Not in StateManager
-    parseFloat(getGlobalNumericValue("d_88")) ||      // Not in StateManager
-    0;  // Falls back to 0, but actual contamination elsewhere
+    parseFloat(getGlobalNumericValue("ref_d_88")) || // Not in StateManager
+    parseFloat(getGlobalNumericValue("d_88")) || // Not in StateManager
+    0; // Falls back to 0, but actual contamination elsewhere
 }
 ```
 
 **In calculateCombinedUValue()** (lines 1601-1609):
+
 ```javascript
 // ALWAYS reads unprefixed from StateManager - NO MODE AWARENESS!
-const d85 = parseFloat(getGlobalNumericValue("d_85"));  // ❌ Wrong!
-const d88 = parseFloat(getGlobalNumericValue("d_88"));  // ❌ Wrong!
-const d89 = parseFloat(getGlobalNumericValue("d_89"));  // ❌ Wrong!
+const d85 = parseFloat(getGlobalNumericValue("d_85")); // ❌ Wrong!
+const d88 = parseFloat(getGlobalNumericValue("d_88")); // ❌ Wrong!
+const d89 = parseFloat(getGlobalNumericValue("d_89")); // ❌ Wrong!
 // ... d_90-d_93 all wrong
 ```
 
 **In calculateWWR()** (lines 1689-1718):
+
 ```javascript
 // ALWAYS reads unprefixed from StateManager
-const d88 = parseFloat(getGlobalNumericValue("d_88"));  // ❌ Wrong!
-const d89 = parseFloat(getGlobalNumericValue("d_89"));  // ❌ Wrong!
+const d88 = parseFloat(getGlobalNumericValue("d_88")); // ❌ Wrong!
+const d89 = parseFloat(getGlobalNumericValue("d_89")); // ❌ Wrong!
 // ... etc
 ```
 
@@ -105,10 +110,12 @@ const d89 = parseFloat(getGlobalNumericValue("d_89"));  // ❌ Wrong!
 All these functions read S11 area values and need Robot Fingers:
 
 1. **calculateVolumeMetrics()** (lines 1408-1476)
+
    - Reads: d_85, d_86, d_87, d_88, d_89, d_90, d_91, d_92, d_93, d_94, d_95, d_96
    - Calculates: d_101 (total air area), d_102 (ground area), d_106 (floor area)
 
 2. **calculateCombinedUValue()** (lines 1544-1687)
+
    - Reads: d_85-d_93 (air areas), d_94, d_95 (ground areas)
    - Calculates: g_101 (air U-avg), g_102 (ground U-avg), g_104 (combined U)
 
@@ -130,7 +137,7 @@ function getAreaFromS11(componentId, useReference) {
 
   if (!s11) {
     console.warn(
-      `[S12] S11 module not loaded for area ${componentId} - recalc will occur when S11 initializes`
+      `[S12] S11 module not loaded for area ${componentId} - recalc will occur when S11 initializes`,
     );
     return 0;
   }
@@ -139,7 +146,9 @@ function getAreaFromS11(componentId, useReference) {
   if (useReference) {
     const value = s11.ReferenceState?.getValue(`d_${componentId}`);
     if (value === null || value === undefined) {
-      console.warn(`[S12] S11.ReferenceState.d_${componentId} is null/undefined`);
+      console.warn(
+        `[S12] S11.ReferenceState.d_${componentId} is null/undefined`,
+      );
       return 0;
     }
     return value;
@@ -259,8 +268,14 @@ console.log("=== TEST 6: ROBOT FINGERS FIX VALIDATION ===");
 
 // Check S11 states
 console.log("\n--- S11 States ---");
-console.log("S11 TargetState d_88:", window.TEUI.SectionModules.sect11.TargetState.getValue("d_88"));
-console.log("S11 ReferenceState d_88:", window.TEUI.SectionModules.sect11.ReferenceState.getValue("d_88"));
+console.log(
+  "S11 TargetState d_88:",
+  window.TEUI.SectionModules.sect11.TargetState.getValue("d_88"),
+);
+console.log(
+  "S11 ReferenceState d_88:",
+  window.TEUI.SectionModules.sect11.ReferenceState.getValue("d_88"),
+);
 
 // Check what S12 would read
 const s11 = window.TEUI.SectionModules.sect11;
@@ -278,6 +293,7 @@ console.log("❌ FAILURE: If e_10 changed or Reference read = 100");
 ```
 
 **Success Criteria**:
+
 - ✅ S11 TargetState d_88 = 100
 - ✅ S11 ReferenceState d_88 = 7.50
 - ✅ S12 Reference read = 7.50 (not 100!)
@@ -291,6 +307,7 @@ console.log("❌ FAILURE: If e_10 changed or Reference read = 100");
 For detailed test results and evolution of understanding, see git history:
 
 **Key Commits**:
+
 - `da0f7b0` - Complete investigation, root cause identified (DUAL-STATE SYNC)
 - `07bbd9c` - Fix S11 DUAL-STATE SYNC contamination
 - `3a294ba` - Remove S10 diagnostic logging (clean baseline)
@@ -299,6 +316,7 @@ For detailed test results and evolution of understanding, see git history:
 - `aeef532` - **CURRENT: Robot Fingers incomplete discovery**
 
 **Test Results Summary**:
+
 - Test 1: S10 publishing ✅ (commit da0f7b0)
 - Test 2: S11 listeners ✅ (commit da0f7b0)
 - Test 3: Mode-aware publishing trace ✅ (commit da0f7b0)
@@ -311,11 +329,13 @@ For detailed test results and evolution of understanding, see git history:
 ## 🔍 Open Questions for Tomorrow
 
 1. **What IS in StateManager for d_88/ref_d_88?**
+
    - Run diagnostic before implementing fix
    - Verify S11 truly doesn't publish these values
    - Confirm Robot Fingers is the only read path
 
 2. **Do other sections have incomplete Robot Fingers?**
+
    - Check if S15 reads from S12 correctly
    - Audit any other cross-section dependencies
 
@@ -339,16 +359,19 @@ For detailed test results and evolution of understanding, see git history:
 ### ✅ Fixes Implemented:
 
 **1. S11 DUAL-STATE SYNC Fix (Commit 07bbd9c)**
+
 - Added `isInitializationPhase` flag
 - DUAL-STATE SYNC only runs during init
 - S11 ReferenceState isolated from Target edits
 
 **2. S10 Target Area Publishing (Commit 23db5d6)**
+
 - Created `storeTargetResults()` function
 - Publishes d_88-d_93 to StateManager for S12 consumption
 - Mirrors existing Reference publishing pattern
 
 **3. S01 TEUI Publishing (Commit 8538001)**
+
 - Publishes e_10, h_10, k_10 to StateManager
 - Fixes stale hardcoded values in logs
 - Maintains StateManager as single source of truth
@@ -356,12 +379,14 @@ For detailed test results and evolution of understanding, see git history:
 ### ✅ Test Results:
 
 **Contamination Test (PASSED):**
+
 - S10 Target door edit (7.50 → 100)
 - e_10 stable (341.2 → 341.2) ✅
 - ref_d_88 unchanged (7.50) ✅
 - S11 ReferenceState isolated ✅
 
 **Architecture Validation:**
+
 - No competing data chains ✅
 - No direct DOM reads ✅
 - StateManager is single source of truth ✅
@@ -396,28 +421,33 @@ S11 (Envelope) → S12 (Volume) → S13 (DHW) → S14 (Cooling) → S15 (Heating
 ### Diagnostic Results (Logs.md line 1771+)
 
 **✅ Contamination Fix Working:**
+
 - Test 6 PASSED: e_10 unchanged when S10 Target edited (341.2 stable)
 - S11 state isolation working perfectly
 
 **❌ S12 Calculations Completely Broken:**
 
 1. **getAreaFromS11() NOT IN SCOPE**
+
    - Function declared inside `calculateCombinedUValue()`
    - NOT accessible to `calculateVolumeMetrics()` or `calculateWWR()`
    - Returns: `❌ getAreaFromS11 does NOT exist - function not in scope!`
 
 2. **S12 Internal States Empty**
+
    - `S12 TargetState g_101: undefined`
    - `S12 ReferenceState g_101: undefined`
    - S12 sovereign states not being populated
 
 3. **Reference Engine Not Running**
+
    - `ref_g_101: null` (should have value)
    - `ref_g_102: null` (should have value)
    - `ref_d_103: null` (should have value)
    - Reference calculations not executing
 
 4. **S11 States Back to Baseline**
+
    - `S11 TargetState d_88: 7.50` (reset from Test 6's 100)
    - `S11 ReferenceState d_88: 7.50`
    - Both states identical (expected after refresh)
@@ -432,18 +462,20 @@ S11 (Envelope) → S12 (Volume) → S13 (DHW) → S14 (Cooling) → S15 (Heating
 **The Robot Fingers implementation has THREE fatal flaws:**
 
 1. **Scope Error**: `getAreaFromS11()` declared at line 1585 inside `calculateCombinedUValue()`, making it inaccessible to other functions
-2. **Reference Engine Dead**: S12's Reference engine not running (all ref_* values null)
+2. **Reference Engine Dead**: S12's Reference engine not running (all ref\_\* values null)
 3. **Calculation Flow Broken**: User input changes have NO effect on S12 calculations
 
 ### Comparison to Backup
 
 **S12 Backup (4012-Section12.js.backup.js):**
+
 - ✅ Calculations working
 - ✅ Reference engine running
 - ✅ User inputs affect calculations
 - ❌ State contamination bug (Target edits affect Reference)
 
 **S12 Current (after Robot Fingers):**
+
 - ✅ State contamination fixed
 - ❌ Calculations broken
 - ❌ Reference engine dead
@@ -464,6 +496,7 @@ S11 (Envelope) → S12 (Volume) → S13 (DHW) → S14 (Cooling) → S15 (Heating
 **Architectural Principle:** StateManager is the single source of truth (per README.md)
 
 **Problem with Robot Fingers:**
+
 - Violated StateManager architecture (direct cross-section state reads)
 - Caused scope errors and calculation failures
 - Premature optimization (StateManager listeners are synchronous, delay negligible)
@@ -477,11 +510,12 @@ S11 (Envelope) → S12 (Volume) → S13 (DHW) → S14 (Cooling) → S15 (Heating
 
 ### Option A: Fix StateManager Publishing (IMMEDIATE - TO BE IMPLEMENTED)
 
-**Strategy:** S11 publishes area values to StateManager with proper ref_ prefixes
+**Strategy:** S11 publishes area values to StateManager with proper ref\_ prefixes
 
 **Root Cause:** S11 calculates d_85-d_96 but doesn't publish to StateManager → S12 has no mode-aware areas to read
 
 **Solution:**
+
 1. **S11**: Add area publishing in `storeTargetResults()` and `storeReferenceResults()`
    - Publish d_85-d_96 (unprefixed for Target)
    - Publish ref_d_85-ref_d_96 (prefixed for Reference)
@@ -489,6 +523,7 @@ S11 (Envelope) → S12 (Volume) → S13 (DHW) → S14 (Cooling) → S15 (Heating
    - No changes needed to S12!
 
 **Changes Required:**
+
 ```javascript
 // In S11 storeTargetResults():
 window.TEUI.StateManager.setValue("d_85", calculatedValues.d_85);
@@ -502,6 +537,7 @@ window.TEUI.StateManager.setValue("ref_d_86", calculatedValues.d_86);
 ```
 
 **Pros:**
+
 - ✅ Maintains README.md architecture (StateManager = single source of truth)
 - ✅ Minimal changes (only S11, ~24 lines of publishing)
 - ✅ S12 already works with this pattern (backup proves it)
@@ -509,6 +545,7 @@ window.TEUI.StateManager.setValue("ref_d_86", calculatedValues.d_86);
 - ✅ Lowest risk approach
 
 **Cons:**
+
 - ⚠️ Negligible delay for TB% slider feedback (synchronous listeners)
 
 **Implementation Complexity:** LOW
@@ -521,23 +558,26 @@ window.TEUI.StateManager.setValue("ref_d_86", calculatedValues.d_86);
 **Strategy:** S11 owns all envelope calculations, S12 focuses on volume + ventilation
 
 **Architectural Reasoning:**
+
 - S11 has areas (d_85-d_96) ✅
 - S11 has U-values (g_85-g_95, f_85-f_95) ✅
 - S11 has TB% slider (d_97) ✅
 - **S11 has everything needed for aggregate U-values (g_101-g_104)!**
 
 **Solution:**
+
 1. **S11**: Add `calculateAggregateUValues()` function
    - Calculate g_101 (air-contact U-value)
    - Calculate g_102 (ground-contact U-value)
    - Calculate g_104 (combined U-value)
-   - Publish to StateManager (g_101, g_102, g_104 + ref_ versions)
+   - Publish to StateManager (g*101, g_102, g_104 + ref* versions)
 2. **S12**: Remove g_101-g_104 calculation logic
    - Read g_101, g_102, g_104 from StateManager
    - Focus solely on volume metrics (d_101, d_102, d_105, d_106, g_105, i_105)
    - Focus solely on ACH calculations (g_108, g_109, d_103, etc.)
 
 **Pros:**
+
 - ✅ **Immediate TB% slider feedback** (no cross-section communication!)
 - ✅ Cleaner separation of concerns (S11=envelope, S12=volume+ventilation)
 - ✅ Reduces S12 complexity significantly
@@ -546,6 +586,7 @@ window.TEUI.StateManager.setValue("ref_d_86", calculatedValues.d_86);
 - ✅ Maintains StateManager as single source of truth
 
 **Cons:**
+
 - ⚠️ Larger refactoring (move calculation logic between sections)
 - ⚠️ Need to update field ownership documentation
 - ⚠️ S11 becomes slightly larger/more complex
@@ -559,6 +600,7 @@ window.TEUI.StateManager.setValue("ref_d_86", calculatedValues.d_86);
 ## 📋 Implementation Plan
 
 ### Phase 1: Option A (COMPLETE - Commits eb8efe4, 23db5d6, 8538001)
+
 1. ✅ Update documentation with strategic decision (eb8efe4)
 2. ✅ Implement S10 Target area publishing (23db5d6)
    - Created `storeTargetResults()` function
@@ -576,6 +618,7 @@ window.TEUI.StateManager.setValue("ref_d_86", calculatedValues.d_86);
    - Reference isolation working correctly
 
 ### Phase 2: Option B (LATER - If Needed)
+
 - Only proceed if Option A fails OR if immediate TB% feedback becomes critical requirement
 - Full architectural refactor moving aggregate U-values to S11
 
@@ -586,11 +629,13 @@ window.TEUI.StateManager.setValue("ref_d_86", calculatedValues.d_86);
 ### Test Results (After S10 Target Edit)
 
 **Observation:**
+
 - BEFORE edit: e_10 = 287.0
 - Edit S10 Target door area: 7.50 → 100
 - AFTER edit: e_10 = **308.4** ❌ (changed by 21.4 kWh/m²/yr)
 
 **Diagnostic Results (Logs.md):**
+
 ```
 S10 TargetState d_73: 100
 S10 ReferenceState d_73: 7.50
@@ -603,6 +648,7 @@ SM ref_d_88 (S11 Reference ID): 7.50 ✅
 ### Root Cause Analysis
 
 **S10/S11 Publishing: WORKING ✅**
+
 - S10 correctly publishes both Target (d_88 = 100) and Reference (ref_d_88 = 7.50)
 - StateManager has correct values
 - No issue with publishing
@@ -610,28 +656,34 @@ SM ref_d_88 (S11 Reference ID): 7.50 ✅
 **S12 Fallback Pattern: ANTI-PATTERN ❌**
 
 Current code in S12 `calculateVolumeMetrics()` (lines 1427-1429):
+
 ```javascript
-d88 = parseFloat(getGlobalNumericValue("ref_d_88")) ||  // Try Reference
-      parseFloat(getGlobalNumericValue("d_88")) ||      // ❌ FALLBACK to Target
-      0;
+d88 =
+  parseFloat(getGlobalNumericValue("ref_d_88")) || // Try Reference
+  parseFloat(getGlobalNumericValue("d_88")) || // ❌ FALLBACK to Target
+  0;
 ```
 
 **Problem:** Per 4012-CHEATSHEET.md, fallback patterns are ANTI-PATTERNS!
+
 - Fallbacks mask missing data issues
 - Create unpredictable behavior
 - Violate strict mode-aware reads
 
 **Impact:**
+
 - When `ref_d_88 = 7.50` (truthy), S12 reads correctly
 - BUT fallback logic creates execution path that CAN read Target value
-- Issue may be in OTHER area fields (d_85-d_87, d_94-d_96) that don't have ref_ values
+- Issue may be in OTHER area fields (d*85-d_87, d_94-d_96) that don't have ref* values
 
 ### The Real Issue
 
 **S10 only publishes 6 area mappings:**
+
 - d_73-d_78 → d_88-d_93 (doors/windows)
 
 **S12 needs 12 area fields:**
+
 - d_85 (exterior walls above grade) ← **NOT from S10**
 - d_86 (walls below grade) ← **NOT from S10**
 - d_87 (ceiling) ← **NOT from S10**
@@ -639,6 +691,7 @@ d88 = parseFloat(getGlobalNumericValue("ref_d_88")) ||  // Try Reference
 - d_94-d_96 (slab/basement/interior) ← **NOT from S10**
 
 **Where do d_85-d_87, d_94-d_96 come from?**
+
 - These are S11's OWN calculated/input values
 - S11 does NOT publish these to StateManager currently
 - S12's Reference calculation has NO ref_d_85, ref_d_86, ref_d_87, ref_d_94, ref_d_95, ref_d_96!
@@ -671,13 +724,13 @@ window.TEUI.StateManager.setValue("ref_d_96", d_96_value, "calculated");
 
 ```javascript
 // Reference calculation - STRICT reads only:
-d85 = parseFloat(getGlobalNumericValue("ref_d_85")) || 0;  // No fallback
-d86 = parseFloat(getGlobalNumericValue("ref_d_86")) || 0;  // No fallback
+d85 = parseFloat(getGlobalNumericValue("ref_d_85")) || 0; // No fallback
+d86 = parseFloat(getGlobalNumericValue("ref_d_86")) || 0; // No fallback
 // ... etc
 
 // Target calculation - STRICT reads only:
-d85 = parseFloat(getGlobalNumericValue("d_85")) || 0;  // No fallback
-d86 = parseFloat(getGlobalNumericValue("d_86")) || 0;  // No fallback
+d85 = parseFloat(getGlobalNumericValue("d_85")) || 0; // No fallback
+d86 = parseFloat(getGlobalNumericValue("d_86")) || 0; // No fallback
 // ... etc
 ```
 
@@ -688,16 +741,19 @@ d86 = parseFloat(getGlobalNumericValue("d_86")) || 0;  // No fallback
 ### Implementation Plan
 
 **Step 1:** Add S11 area publishing for d_85-d_87, d_94-d_96
+
 - These are S11's own area fields (NOT from S10)
-- Must publish both Target (unprefixed) and Reference (ref_ prefixed)
+- Must publish both Target (unprefixed) and Reference (ref\_ prefixed)
 - Add to existing S11 publishing in lines 1819-1828 (Reference) and Target calculation
 
 **Step 2:** Remove S12 fallback anti-patterns
+
 - Replace `|| parseFloat(getGlobalNumericValue("d_XX"))` patterns
 - Use strict mode-aware reads only
-- No fallbacks - fail loudly if ref_ values missing
+- No fallbacks - fail loudly if ref\_ values missing
 
 **Step 3:** Test contamination elimination
+
 - Hard refresh
 - Edit S10 Target door area
 - Verify e_10 unchanged (287.0 → 287.0)

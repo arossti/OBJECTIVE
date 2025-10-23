@@ -26,10 +26,18 @@ async function runFullDiagnostic() {
     // S11 State
     log("\n--- S11 State ---");
     try {
-      log(`  CurrentMode: ${window.TEUI.SectionModules?.sect11?.ModeManager?.currentMode || 'undefined'}`);
-      log(`  DOM k_98: ${document.querySelector('[data-field-id="k_98"]')?.textContent || 'not visible'}`);
-      log(`  TargetState k_98: ${window.TEUI.SectionModules?.sect11?.TargetState?.getValue("k_98") ?? 'undefined'}`);
-      log(`  ReferenceState k_98: ${window.TEUI.SectionModules?.sect11?.ReferenceState?.getValue("k_98") ?? 'undefined'}`);
+      log(
+        `  CurrentMode: ${window.TEUI.SectionModules?.sect11?.ModeManager?.currentMode || "undefined"}`,
+      );
+      log(
+        `  DOM k_98: ${document.querySelector('[data-field-id="k_98"]')?.textContent || "not visible"}`,
+      );
+      log(
+        `  TargetState k_98: ${window.TEUI.SectionModules?.sect11?.TargetState?.getValue("k_98") ?? "undefined"}`,
+      );
+      log(
+        `  ReferenceState k_98: ${window.TEUI.SectionModules?.sect11?.ReferenceState?.getValue("k_98") ?? "undefined"}`,
+      );
     } catch (e) {
       log(`  ERROR: ${e.message}`);
     }
@@ -37,10 +45,18 @@ async function runFullDiagnostic() {
     // S12 State
     log("\n--- S12 State ---");
     try {
-      log(`  CurrentMode: ${window.TEUI.SectionModules?.sect12?.ModeManager?.currentMode || 'undefined'}`);
-      log(`  DOM k_104: ${document.querySelector('[data-field-id="k_104"]')?.textContent || 'not visible'}`);
-      log(`  TargetState k_104: ${window.TEUI.SectionModules?.sect12?.TargetState?.getValue("k_104") ?? 'undefined'}`);
-      log(`  ReferenceState k_104: ${window.TEUI.SectionModules?.sect12?.ReferenceState?.getValue("k_104") ?? 'undefined'}`);
+      log(
+        `  CurrentMode: ${window.TEUI.SectionModules?.sect12?.ModeManager?.currentMode || "undefined"}`,
+      );
+      log(
+        `  DOM k_104: ${document.querySelector('[data-field-id="k_104"]')?.textContent || "not visible"}`,
+      );
+      log(
+        `  TargetState k_104: ${window.TEUI.SectionModules?.sect12?.TargetState?.getValue("k_104") ?? "undefined"}`,
+      );
+      log(
+        `  ReferenceState k_104: ${window.TEUI.SectionModules?.sect12?.ReferenceState?.getValue("k_104") ?? "undefined"}`,
+      );
     } catch (e) {
       log(`  ERROR: ${e.message}`);
     }
@@ -48,8 +64,12 @@ async function runFullDiagnostic() {
     // StateManager (Global)
     log("\n--- StateManager (Cross-Section Communication) ---");
     try {
-      log(`  ref_k_98: ${window.TEUI.StateManager.getValue("ref_k_98") ?? 'undefined'}`);
-      log(`  ref_k_104: ${window.TEUI.StateManager.getValue("ref_k_104") ?? 'undefined'}`);
+      log(
+        `  ref_k_98: ${window.TEUI.StateManager.getValue("ref_k_98") ?? "undefined"}`,
+      );
+      log(
+        `  ref_k_104: ${window.TEUI.StateManager.getValue("ref_k_104") ?? "undefined"}`,
+      );
     } catch (e) {
       log(`  ERROR: ${e.message}`);
     }
@@ -57,7 +77,9 @@ async function runFullDiagnostic() {
 
   // Helper to click section tab
   function navigateToSection(sectionNum) {
-    const tab = document.querySelector(`a[href="#section${sectionNum.toString().padStart(2, '0')}"]`);
+    const tab = document.querySelector(
+      `a[href="#section${sectionNum.toString().padStart(2, "0")}"]`,
+    );
     if (tab) {
       tab.click();
       return true;
@@ -67,7 +89,9 @@ async function runFullDiagnostic() {
 
   // Helper to toggle section mode
   function toggleSectionMode(sectionNum) {
-    const toggle = document.querySelector(`#section${sectionNum.toString().padStart(2, '0')} .mode-toggle`);
+    const toggle = document.querySelector(
+      `#section${sectionNum.toString().padStart(2, "0")} .mode-toggle`,
+    );
     if (toggle) {
       toggle.click();
       return true;
@@ -78,16 +102,16 @@ async function runFullDiagnostic() {
   // Helper to change Stories slider
   function changeStories(value) {
     const slider = document.querySelector('[data-field-id="d_103"]');
-    if (slider && slider.hasAttribute('contenteditable')) {
+    if (slider && slider.hasAttribute("contenteditable")) {
       slider.textContent = value;
-      slider.dispatchEvent(new Event('blur', { bubbles: true }));
+      slider.dispatchEvent(new Event("blur", { bubbles: true }));
       return true;
     }
     return false;
   }
 
   // Wait helper
-  const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+  const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   try {
     // PHASE 1: Post-initialization
@@ -133,19 +157,20 @@ async function runFullDiagnostic() {
     log("=".repeat(70));
     log("\nKEY QUESTIONS TO ANSWER:");
     log("1. What is StateManager.ref_k_98 in Phase 3 (S11 Reference mode)?");
-    log("2. What is StateManager.ref_k_98 in Phase 5 (when S12 shows wrong value)?");
+    log(
+      "2. What is StateManager.ref_k_98 in Phase 5 (when S12 shows wrong value)?",
+    );
     log("3. What is S12.ReferenceState.k_104 in Phase 5?");
     log("4. Does StateManager.ref_k_98 ever contain -1895.40 (correct)?");
     log("5. Does it change between phases, or stay at -4267.63?");
     log("\nCopy the output above and paste into Logs.md");
-
   } catch (error) {
     log(`\n❌ ERROR during diagnostic: ${error.message}`);
     log(error.stack);
   }
 
   // Return results as string for easy copying
-  return results.join('\n');
+  return results.join("\n");
 }
 
 // Instructions

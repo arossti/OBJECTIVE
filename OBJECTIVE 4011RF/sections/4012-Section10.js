@@ -909,7 +909,7 @@ window.TEUI.SectionModules.sect10 = (function () {
         j: {
           fieldId: "j_73",
           type: "calculated",
-          value: "1.55%", // DEFAULTS ANTIPATTERN if values are calculated, why do we tell them what they should be here? 
+          value: "1.55%", // DEFAULTS ANTIPATTERN if values are calculated, why do we tell them what they should be here?
           section: "envelopeRadiantGains",
           dependencies: ["i_73", "h_79"],
         },
@@ -2282,11 +2282,7 @@ window.TEUI.SectionModules.sect10 = (function () {
       const value = TargetState.getValue(s10Field);
       if (value !== null && value !== undefined) {
         // ✅ FIX: Publish with S11 field ID (d_88-d_93) for S12 direct reads
-        window.TEUI.StateManager.setValue(
-          s11Field,
-          value,
-          "calculated",
-        );
+        window.TEUI.StateManager.setValue(s11Field, value, "calculated");
       }
     });
   }
