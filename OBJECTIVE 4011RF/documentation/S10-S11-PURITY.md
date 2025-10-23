@@ -326,11 +326,11 @@ For detailed test results and evolution of understanding, see git history:
 
 ---
 
-**Last Updated**: October 23, 2025 - Session Complete
-**Implementation**: ✅ S11 FIXED | ✅ S10 FIXED | ✅ S01 FIXED
-**Validation**: ✅ Contamination eliminated | ✅ StateManager architecture restored
-**Branch**: `S10-S11-PURITY` (Ready for merge)
-**Status**: OPTION A COMPLETE - Contamination bug fixed via StateManager publishing
+**Last Updated**: October 23, 2025 - Afternoon Session
+**Implementation**: ✅ S11 FIXED | ✅ S10 FIXED | ✅ S01 FIXED | ❌ S12 FALLBACK BUG
+**Validation**: ❌ CONTAMINATION STILL PRESENT
+**Branch**: `S10-S11-PURITY` (Work in progress)
+**Status**: S10/S01 publishing correct, but S12 fallback pattern causes contamination
 
 ---
 
@@ -581,19 +581,138 @@ window.TEUI.StateManager.setValue("ref_d_86", calculatedValues.d_86);
 
 ---
 
-## 📝 Next Steps for Tomorrow
+## 🔴 AFTERNOON SESSION FINDINGS - Contamination Still Present
 
-### Files to Preserve
+### Test Results (After S10 Target Edit)
 
-- ✅ `4012-Section11.js` - S11 DUAL-STATE SYNC fix is GOOD (commit 07bbd9c)
-- ✅ `4012-Section10.js` - S10 is clean (reverted to e2c0ac6)
-- ❌ `4012-Section12.js` - BROKEN, revert to backup
-- ✅ `4012-Section12.js.backup.js` - KEEP THIS SAFE
+**Observation:**
+- BEFORE edit: e_10 = 287.0
+- Edit S10 Target door area: 7.50 → 100
+- AFTER edit: e_10 = **308.4** ❌ (changed by 21.4 kWh/m²/yr)
+
+**Diagnostic Results (Logs.md):**
+```
+S10 TargetState d_73: 100
+S10 ReferenceState d_73: 7.50
+SM d_73 (Target): 100
+SM ref_d_73 (Reference): 7.50
+SM d_88 (S11 Target ID): 100
+SM ref_d_88 (S11 Reference ID): 7.50 ✅
+```
+
+### Root Cause Analysis
+
+**S10/S11 Publishing: WORKING ✅**
+- S10 correctly publishes both Target (d_88 = 100) and Reference (ref_d_88 = 7.50)
+- StateManager has correct values
+- No issue with publishing
+
+**S12 Fallback Pattern: ANTI-PATTERN ❌**
+
+Current code in S12 `calculateVolumeMetrics()` (lines 1427-1429):
+```javascript
+d88 = parseFloat(getGlobalNumericValue("ref_d_88")) ||  // Try Reference
+      parseFloat(getGlobalNumericValue("d_88")) ||      // ❌ FALLBACK to Target
+      0;
+```
+
+**Problem:** Per 4012-CHEATSHEET.md, fallback patterns are ANTI-PATTERNS!
+- Fallbacks mask missing data issues
+- Create unpredictable behavior
+- Violate strict mode-aware reads
+
+**Impact:**
+- When `ref_d_88 = 7.50` (truthy), S12 reads correctly
+- BUT fallback logic creates execution path that CAN read Target value
+- Issue may be in OTHER area fields (d_85-d_87, d_94-d_96) that don't have ref_ values
+
+### The Real Issue
+
+**S10 only publishes 6 area mappings:**
+- d_73-d_78 → d_88-d_93 (doors/windows)
+
+**S12 needs 12 area fields:**
+- d_85 (exterior walls above grade) ← **NOT from S10**
+- d_86 (walls below grade) ← **NOT from S10**
+- d_87 (ceiling) ← **NOT from S10**
+- d_88-d_93 ← FROM S10 ✅
+- d_94-d_96 (slab/basement/interior) ← **NOT from S10**
+
+**Where do d_85-d_87, d_94-d_96 come from?**
+- These are S11's OWN calculated/input values
+- S11 does NOT publish these to StateManager currently
+- S12's Reference calculation has NO ref_d_85, ref_d_86, ref_d_87, ref_d_94, ref_d_95, ref_d_96!
+
+### Solution Required
+
+**NOT Robot Fingers** - We maintain StateManager architecture
+
+**Fix:** S11 must publish ALL area values to StateManager:
+
+```javascript
+// In S11's calculateTargetModel() - after area calculations:
+window.TEUI.StateManager.setValue("d_85", d_85_value, "calculated");
+window.TEUI.StateManager.setValue("d_86", d_86_value, "calculated");
+window.TEUI.StateManager.setValue("d_87", d_87_value, "calculated");
+window.TEUI.StateManager.setValue("d_94", d_94_value, "calculated");
+window.TEUI.StateManager.setValue("d_95", d_95_value, "calculated");
+window.TEUI.StateManager.setValue("d_96", d_96_value, "calculated");
+
+// In S11's calculateReferenceModel() - after area calculations:
+window.TEUI.StateManager.setValue("ref_d_85", d_85_value, "calculated");
+window.TEUI.StateManager.setValue("ref_d_86", d_86_value, "calculated");
+window.TEUI.StateManager.setValue("ref_d_87", d_87_value, "calculated");
+window.TEUI.StateManager.setValue("ref_d_94", d_94_value, "calculated");
+window.TEUI.StateManager.setValue("ref_d_95", d_95_value, "calculated");
+window.TEUI.StateManager.setValue("ref_d_96", d_96_value, "calculated");
+```
+
+**Then in S12:** REMOVE all fallback patterns per CHEATSHEET anti-pattern guidance:
+
+```javascript
+// Reference calculation - STRICT reads only:
+d85 = parseFloat(getGlobalNumericValue("ref_d_85")) || 0;  // No fallback
+d86 = parseFloat(getGlobalNumericValue("ref_d_86")) || 0;  // No fallback
+// ... etc
+
+// Target calculation - STRICT reads only:
+d85 = parseFloat(getGlobalNumericValue("d_85")) || 0;  // No fallback
+d86 = parseFloat(getGlobalNumericValue("d_86")) || 0;  // No fallback
+// ... etc
+```
+
+---
+
+## 📝 Next Steps for Tonight
+
+### Implementation Plan
+
+**Step 1:** Add S11 area publishing for d_85-d_87, d_94-d_96
+- These are S11's own area fields (NOT from S10)
+- Must publish both Target (unprefixed) and Reference (ref_ prefixed)
+- Add to existing S11 publishing in lines 1819-1828 (Reference) and Target calculation
+
+**Step 2:** Remove S12 fallback anti-patterns
+- Replace `|| parseFloat(getGlobalNumericValue("d_XX"))` patterns
+- Use strict mode-aware reads only
+- No fallbacks - fail loudly if ref_ values missing
+
+**Step 3:** Test contamination elimination
+- Hard refresh
+- Edit S10 Target door area
+- Verify e_10 unchanged (287.0 → 287.0)
+
+### Files to Modify
+
+- ✅ `4012-Section11.js` - Add area publishing for d_85-d_87, d_94-d_96
+- ✅ `4012-Section12.js` - Remove fallback patterns (use backup as baseline)
 
 ### Success Criteria
 
-- ✅ Contamination eliminated (e_10 stable on Target edits)
+- ✅ Contamination eliminated (e_10 stable: 287.0 → 287.0)
 - ✅ S12 calculations working (user inputs affect outputs)
 - ✅ Reference engine running (ref_g_101, ref_g_102 have values)
-- ✅ Correct e_10 value (~65.5, not 341.2)
+- ✅ Correct e_10 value (287.0)
 - ✅ g_101 Target ≠ g_101 Reference (different area values)
+- ✅ StateManager as single source of truth (no Robot Fingers)
+- ✅ No fallback patterns (strict reads per CHEATSHEET)
