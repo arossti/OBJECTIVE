@@ -2,7 +2,7 @@
 
 **Branch**: `S10-S11-PURITY`
 **Investigation Date**: October 22, 2025
-**Status**: ✅ S11 FIX COMPLETE | ✅ S12 ROBOT FINGERS COMPLETE | 🧪 VALIDATION PENDING
+**Status**: ✅ S11 FIX COMPLETE | ✅ S12 ROBOT FINGERS COMPLETE | ✅ TEST 6 PASSED
 
 ---
 
@@ -20,8 +20,14 @@
   - Updated calculateCombinedUValue() for d_85-d_95
   - Updated calculateWWR() for d_86, d_88-d_93
   - S12 now reads all areas mode-aware from S11 sovereign states
+- ✅ **Test 6 Validation PASSED** (See Logs.md line 4701)
+  - S10 Target door area edit (7.50 → 100)
+  - S11 TargetState d_88 = 100 ✅
+  - S11 ReferenceState d_88 = 7.50 ✅ (isolated)
+  - S12 Reference read = 7.50 ✅ (Robot Fingers working)
+  - **e_10 unchanged at 341.2** ✅ (contamination eliminated)
 
-**Next Action**: Run Test 6 to validate the fix (script below)
+**Result**: State contamination bug FIXED - Reference model isolated from Target edits
 
 ---
 
@@ -322,6 +328,10 @@ For detailed test results and evolution of understanding, see git history:
 
 **Last Updated**: October 22, 2025
 **Implementation**: ✅ COMPLETE (Commit 32637c9)
-**Next Step**: Run Test 6 validation protocol (see above)
-**Branch**: `S10-S11-PURITY` (ready for validation & merge)
-**Priority**: VALIDATION - Test 6 must pass before merge to C-RF
+**Validation**: ✅ PASSED (Test 6 - e_10 unchanged at 341.2)
+**Branch**: `S10-S11-PURITY` (ready for merge to C-RF)
+**Status**: CONTAMINATION BUG FIXED - Reference model isolated from Target edits
+
+**Known Separate Issues** (not related to contamination):
+- h_10 and e_10 absolute value calculations need investigation
+- S12 backup file available if needed for comparison
