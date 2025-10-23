@@ -234,6 +234,8 @@ function calculateApplicationModel() {
 **What Broke**: Reference model showed Application values, defeating dual-engine purpose
 **Lesson**: Reference and Application states must NEVER mix
 
+**Recent Fix (2025-10-23, commit b79549c)**: S10/S11/S12 contamination eliminated - Target edits no longer affect Reference model. Root cause: S12's weighted U-value formula used Target area totals (d_101, d_102) even during Reference calculation. All S12 reads now strictly mode-aware, dual-state isolation restored.
+
 #### **❌ Multiple Calculation Triggers**
 
 **What Broke**: Competing triggers, calculation storms, recursion loops
