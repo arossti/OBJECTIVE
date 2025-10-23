@@ -866,8 +866,123 @@ The DUAL-STATE SYNC fix completely resolves the S10/S11 state mixing issue. Targ
 
 ---
 
+---
+
+## 🔴 NEW DISCOVERY: S11 State Isolation ✅ BUT S12 Contamination Persists ❌
+
+**Test 5 Result**: S11 ReferenceState d_88 = 7.50 (isolated) ✅
+**User Report**: e_10 still changes when S10 Target edited ❌
+
+### The S10 → S11 → S12 Chain
+
+**S12's Heavy Dependency on S11 Area Values**:
+
+**d_101** (Total Air-Facing Area):
+```excel
+D101 = SUM(D85:D93)
+```
+Reads: d_85, d_86, d_87, d_88, d_89, d_90, d_91, d_92, d_93 (all S11 areas including S10-sourced areas)
+
+**d_102** (Ground-Facing Area):
+```excel
+D102 = IF(D95+D94=0, 0.0000001, D94+D95)
+```
+Reads: d_94, d_95
+
+**g_101** (Weighted Average U-Value):
+Reads: d_85-d_93 areas AND h_85-h_93 U-values from S11
+
+### S12's Reference Engine Read Pattern (Lines 1412-1461)
+
+```javascript
+if (isReferenceCalculation) {
+  d88 =
+    parseFloat(getGlobalNumericValue("ref_d_88")) ||  // Try ref_ first
+    parseFloat(getGlobalNumericValue("d_88")) ||      // Fallback to Target
+    0;
+  // ... same for d_85-d_93, d_94-d_96
+}
+```
+
+**getGlobalNumericValue** (line 1078-1082):
+```javascript
+function getGlobalNumericValue(fieldId) {
+  const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
+  return window.TEUI.parseNumeric(rawValue) || 0;
+}
+```
+
+### The Contamination Mechanism
+
+**Critical Finding**: S11 does NOT publish d_88-d_93 to StateManager!
+- S11 only keeps d_88-d_93 in internal TargetState/ReferenceState
+- S10 publishes ref_d_73 to StateManager ✅
+- S11 syncs ref_d_73 → ReferenceState.d_88 ✅
+- **But S11 never publishes ref_d_88 to StateManager** ❌
+
+**When S10 Target Edit (d_73 = 100) Happens**:
+
+1. S10 publishes `d_73 = 100` to StateManager (Target)
+2. S10 dual-engine publishes `ref_d_73 = 7.50` to StateManager (Reference unchanged)
+3. S11 Target listener fires → syncs TargetState.d_88 = 100 ✅
+4. S11 ReferenceState.d_88 stays 7.50 (isolated by our fix!) ✅
+5. **S11 doesn't publish d_88 or ref_d_88 to StateManager**
+6. S12 Target engine runs → reads d_88 from StateManager → **not found**
+7. S12 Reference engine runs → tries `ref_d_88` → **not found** → falls back to `d_88` → **also not found**
+
+**Where Does S12 Get the Contaminated Value?**
+
+**Theory 1: DOM Fallback** (CHEATSHEET Anti-Pattern)
+- `getGlobalNumericValue` only reads StateManager
+- But somewhere in the chain, code might fall back to DOM reads
+- S11's DOM shows **Target values** (100) when in Target mode
+- S12 Reference engine reads from DOM → gets Target value → **contamination**
+
+**Theory 2: StateManager Contains Wrong Values**
+- S11 might be publishing to StateManager incorrectly
+- Need to verify what's actually in StateManager for d_88/ref_d_88 after Target edit
+
+**Theory 3: S11's calculateAll() Publishing Bug**
+- S11's dual-engine runs and publishes calculated transmission values
+- But might publish with wrong prefixes during the cascade
+
+### The Real Problem
+
+**S12 MUST read mode-aware area values**:
+- Target mode: d_85-d_93 (unprefixed)
+- Reference mode: ref_d_85-ref_d_93 (prefixed)
+
+**But S11 doesn't publish these to StateManager!**
+
+S11 only has internal states. S12 has no way to read S11's internal ReferenceState values - it can only read from StateManager, and StateManager doesn't have ref_d_88-ref_d_93!
+
+### Solution Options
+
+**Option A: S11 Must Publish Area Values to StateManager**
+```javascript
+// In S11's calculateTargetModel():
+window.TEUI.StateManager.setValue("d_88", TargetState.getValue("d_88"), "calculated");
+
+// In S11's calculateReferenceModel():
+window.TEUI.StateManager.setValue("ref_d_88", ReferenceState.getValue("d_88"), "calculated");
+```
+
+**Option B: S12 Must Read from S11's Internal States Directly**
+```javascript
+// In S12's calculateVolumeMetrics():
+if (isReferenceCalculation) {
+  d88 = window.TEUI.SectionModules.sect11.ReferenceState.getValue("d_88");
+} else {
+  d88 = window.TEUI.SectionModules.sect11.TargetState.getValue("d_88");
+}
+```
+
+**Recommended**: Option A (S11 publishes to StateManager) follows the S07 pattern and maintains proper state architecture.
+
+---
+
 **Last Updated**: October 22, 2025
 **Assigned To**: AI Agent
-**Priority**: COMPLETE - Ready to merge
+**Priority**: BLOCKER - S11 fix incomplete, S12 contamination identified
 **Current Branch**: `S10-S11-PURITY`
-**Status**: ✅ **FIX VALIDATED** | Test 5 PASSED | Ready for merge to C-RF
+**Status**: 🔴 **S11 ISOLATED ✅ | S12 CONTAMINATION IDENTIFIED** | Need S11 StateManager publishing fix
