@@ -1932,6 +1932,9 @@ window.TEUI.SectionModules.sect10 = (function () {
       // Calculate utilization factors
       calculateUtilizationFactors();
 
+      // ✅ FIX: Store Target results for downstream sections (S11, S12)
+      storeTargetResults();
+
       // Update reference indicators for all rows
       updateAllReferenceIndicators();
     } catch (_error) {
@@ -2253,6 +2256,39 @@ window.TEUI.SectionModules.sect10 = (function () {
       setFieldValue("i_81", 0);
       setFieldValue("i_82", 0);
     }
+  }
+
+  /**
+   * Store Target results for downstream sections
+   * ✅ FIX: Publish Target area values for S11 and S12 consumption
+   */
+  function storeTargetResults() {
+    if (!window.TEUI?.StateManager) return;
+
+    // Mapping of S10 areas to S11 equivalents (window/door areas)
+    // S10: d_73-d_78 → S11: d_88-d_93
+    const s10ToS11Map = {
+      d_73: "d_88", // Doors
+      d_74: "d_89", // Window North
+      d_75: "d_90", // Window East
+      d_76: "d_91", // Window South
+      d_77: "d_92", // Window West
+      d_78: "d_93", // Skylights
+    };
+
+    // Publish Target area values with S11 field IDs for S12 consumption
+    // S10 field IDs (d_73-d_78) are already published via ModeManager.setValue()
+    Object.entries(s10ToS11Map).forEach(([s10Field, s11Field]) => {
+      const value = TargetState.getValue(s10Field);
+      if (value !== null && value !== undefined) {
+        // ✅ FIX: Publish with S11 field ID (d_88-d_93) for S12 direct reads
+        window.TEUI.StateManager.setValue(
+          s11Field,
+          value,
+          "calculated",
+        );
+      }
+    });
   }
 
   /**
