@@ -1513,8 +1513,13 @@ window.TEUI.SectionModules.sect12 = (function () {
   }
 
   function calculateCombinedUValue(isReferenceCalculation = false) {
-    const d101_areaAir = parseFloat(getNumericValue("d_101"));
-    const d102_areaGround = parseFloat(getNumericValue("d_102"));
+    // ✅ MODE-AWARE: Read area totals based on calculation context
+    const d101_areaAir = isReferenceCalculation
+      ? parseFloat(getGlobalNumericValue("ref_d_101")) || 0
+      : parseFloat(getGlobalNumericValue("d_101")) || 0;
+    const d102_areaGround = isReferenceCalculation
+      ? parseFloat(getGlobalNumericValue("ref_d_102")) || 0
+      : parseFloat(getGlobalNumericValue("d_102")) || 0;
     // ✅ STATEMANAGER: Read U-values from StateManager (single source of truth)
     // S11 publishes both Target (g_XX) and Reference (ref_g_XX) U-values
     function getUValueFromS11(componentId, useReference) {
