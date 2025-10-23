@@ -2,7 +2,7 @@
 
 **Branch**: `S10-S11-PURITY`
 **Investigation Date**: October 22, 2025
-**Status**: ✅ S11 FIX COMPLETE | ✅ S12 ROBOT FINGERS COMPLETE | ✅ TEST 6 PASSED
+**Status**: ✅ S11 FIX COMPLETE | ✅ S12 ROBOT FINGERS TRIAL FAILED | ✅ TEST 6 PASSED - NEED MORE CAREFUL APPROACH
 
 ---
 
@@ -400,25 +400,121 @@ For detailed test results and evolution of understanding, see git history:
 
 **S12 REVERTED TO BACKUP** - Working calculations restored
 
-**Next Steps for Tomorrow:**
+---
 
-1. **Investigate WHY backup has contamination**
-   - Test backup contamination with S10 Target edit
-   - Identify specific mechanism (not Robot Fingers related)
+## 🎯 Strategic Decision: Retire Robot Fingers
 
-2. **Design minimal fix** that preserves working calculations
-   - Target ONE specific contamination point
-   - Test incrementally before proceeding
+**Architectural Principle:** StateManager is the single source of truth (per README.md)
 
-3. **Avoid full Robot Fingers rewrite**
-   - Too complex, breaks too many things
-   - Find surgical fix instead
+**Problem with Robot Fingers:**
+- Violated StateManager architecture (direct cross-section state reads)
+- Caused scope errors and calculation failures
+- Premature optimization (StateManager listeners are synchronous, delay negligible)
+- Broke dual-state isolation
 
-### Key Questions for Tomorrow
+**Decision:** Restore StateManager as communication layer for S11→S12 area values
 
-1. **Why was backup contaminated?** - It didn't have Robot Fingers areas, so what caused mixing?
-2. **Is Robot Fingers even needed?** - Maybe S11 should publish areas to StateManager after all?
-3. **Can we fix contamination without breaking calculations?** - Smaller, targeted intervention
+---
+
+## 🏗️ Two-Path Strategy
+
+### Option A: Fix StateManager Publishing (IMMEDIATE - TO BE IMPLEMENTED)
+
+**Strategy:** S11 publishes area values to StateManager with proper ref_ prefixes
+
+**Root Cause:** S11 calculates d_85-d_96 but doesn't publish to StateManager → S12 has no mode-aware areas to read
+
+**Solution:**
+1. **S11**: Add area publishing in `storeTargetResults()` and `storeReferenceResults()`
+   - Publish d_85-d_96 (unprefixed for Target)
+   - Publish ref_d_85-ref_d_96 (prefixed for Reference)
+2. **S12**: Already reads from StateManager correctly (backup file proves this works)
+   - No changes needed to S12!
+
+**Changes Required:**
+```javascript
+// In S11 storeTargetResults():
+window.TEUI.StateManager.setValue("d_85", calculatedValues.d_85);
+window.TEUI.StateManager.setValue("d_86", calculatedValues.d_86);
+// ... d_87 through d_96 (12 fields)
+
+// In S11 storeReferenceResults():
+window.TEUI.StateManager.setValue("ref_d_85", calculatedValues.d_85);
+window.TEUI.StateManager.setValue("ref_d_86", calculatedValues.d_86);
+// ... ref_d_87 through ref_d_96 (12 fields)
+```
+
+**Pros:**
+- ✅ Maintains README.md architecture (StateManager = single source of truth)
+- ✅ Minimal changes (only S11, ~24 lines of publishing)
+- ✅ S12 already works with this pattern (backup proves it)
+- ✅ No cross-section state reads (architectural compliance)
+- ✅ Lowest risk approach
+
+**Cons:**
+- ⚠️ Negligible delay for TB% slider feedback (synchronous listeners)
+
+**Implementation Complexity:** LOW
+**Time Estimate:** 1-2 hours including testing
+
+---
+
+### Option B: Move g_101-g_104 to S11 (FUTURE ENHANCEMENT)
+
+**Strategy:** S11 owns all envelope calculations, S12 focuses on volume + ventilation
+
+**Architectural Reasoning:**
+- S11 has areas (d_85-d_96) ✅
+- S11 has U-values (g_85-g_95, f_85-f_95) ✅
+- S11 has TB% slider (d_97) ✅
+- **S11 has everything needed for aggregate U-values (g_101-g_104)!**
+
+**Solution:**
+1. **S11**: Add `calculateAggregateUValues()` function
+   - Calculate g_101 (air-contact U-value)
+   - Calculate g_102 (ground-contact U-value)
+   - Calculate g_104 (combined U-value)
+   - Publish to StateManager (g_101, g_102, g_104 + ref_ versions)
+2. **S12**: Remove g_101-g_104 calculation logic
+   - Read g_101, g_102, g_104 from StateManager
+   - Focus solely on volume metrics (d_101, d_102, d_105, d_106, g_105, i_105)
+   - Focus solely on ACH calculations (g_108, g_109, d_103, etc.)
+
+**Pros:**
+- ✅ **Immediate TB% slider feedback** (no cross-section communication!)
+- ✅ Cleaner separation of concerns (S11=envelope, S12=volume+ventilation)
+- ✅ Reduces S12 complexity significantly
+- ✅ S11 dual-state architecture already proven working
+- ✅ No cross-section reads at all
+- ✅ Maintains StateManager as single source of truth
+
+**Cons:**
+- ⚠️ Larger refactoring (move calculation logic between sections)
+- ⚠️ Need to update field ownership documentation
+- ⚠️ S11 becomes slightly larger/more complex
+
+**Implementation Complexity:** MEDIUM
+**Time Estimate:** 4-6 hours including testing
+**When:** After Option A proves stable
+
+---
+
+## 📋 Implementation Plan
+
+### Phase 1: Option A (NOW)
+1. ✅ Update documentation with strategic decision
+2. ✅ Commit documentation (hash to be noted below)
+3. 🔨 Implement S11 area publishing
+4. 🧪 Test contamination elimination
+5. 🧪 Validate S12 calculations still work
+
+### Phase 2: Option B (LATER - If Needed)
+- Only proceed if Option A fails OR if immediate TB% feedback becomes critical requirement
+- Full architectural refactor moving aggregate U-values to S11
+
+---
+
+## 📝 Next Steps for Tomorrow
 
 ### Files to Preserve
 
