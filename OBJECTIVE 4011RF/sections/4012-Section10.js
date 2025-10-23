@@ -2260,9 +2260,7 @@ window.TEUI.SectionModules.sect10 = (function () {
    * ✅ FIX: Publish Reference area values for S11 and S12 consumption
    */
   function storeReferenceResults() {
-    if (!window.TEUI?.StateManager) {
-      return;
-    }
+    if (!window.TEUI?.StateManager) return;
 
     // Mapping of S10 areas to S11 equivalents (window/door areas)
     // S10: d_73-d_78 → S11: d_88-d_93
