@@ -1406,21 +1406,74 @@ window.TEUI.SectionModules.sect12 = (function () {
   //==========================================================================
 
   function calculateVolumeMetrics(isReferenceCalculation = false) {
-    const useRef = !!isReferenceCalculation;
+    // ✅ MODE-AWARE: Read area values based on calculation type
+    let d85, d86, d87, d88, d89, d90, d91, d92, d93, d94, d95, d96;
 
-    // ✅ ROBOT FINGERS: Read areas directly from S11 sovereign states
-    const d85 = getAreaFromS11("85", useRef);
-    const d86 = getAreaFromS11("86", useRef);
-    const d87 = getAreaFromS11("87", useRef);
-    const d88 = getAreaFromS11("88", useRef);
-    const d89 = getAreaFromS11("89", useRef);
-    const d90 = getAreaFromS11("90", useRef);
-    const d91 = getAreaFromS11("91", useRef);
-    const d92 = getAreaFromS11("92", useRef);
-    const d93 = getAreaFromS11("93", useRef);
-    const d94 = getAreaFromS11("94", useRef);
-    const d95 = getAreaFromS11("95", useRef);
-    const d96 = getAreaFromS11("96", useRef);
+    if (isReferenceCalculation) {
+      // Reference calculation: Read Reference areas from S11
+      d85 =
+        parseFloat(getGlobalNumericValue("ref_d_85")) ||
+        parseFloat(getGlobalNumericValue("d_85")) ||
+        0;
+      d86 =
+        parseFloat(getGlobalNumericValue("ref_d_86")) ||
+        parseFloat(getGlobalNumericValue("d_86")) ||
+        0;
+      d87 =
+        parseFloat(getGlobalNumericValue("ref_d_87")) ||
+        parseFloat(getGlobalNumericValue("d_87")) ||
+        0;
+      d88 =
+        parseFloat(getGlobalNumericValue("ref_d_88")) ||
+        parseFloat(getGlobalNumericValue("d_88")) ||
+        0;
+      d89 =
+        parseFloat(getGlobalNumericValue("ref_d_89")) ||
+        parseFloat(getGlobalNumericValue("d_89")) ||
+        0;
+      d90 =
+        parseFloat(getGlobalNumericValue("ref_d_90")) ||
+        parseFloat(getGlobalNumericValue("d_90")) ||
+        0;
+      d91 =
+        parseFloat(getGlobalNumericValue("ref_d_91")) ||
+        parseFloat(getGlobalNumericValue("d_91")) ||
+        0;
+      d92 =
+        parseFloat(getGlobalNumericValue("ref_d_92")) ||
+        parseFloat(getGlobalNumericValue("d_92")) ||
+        0;
+      d93 =
+        parseFloat(getGlobalNumericValue("ref_d_93")) ||
+        parseFloat(getGlobalNumericValue("d_93")) ||
+        0;
+      d94 =
+        parseFloat(getGlobalNumericValue("ref_d_94")) ||
+        parseFloat(getGlobalNumericValue("d_94")) ||
+        0;
+      d95 =
+        parseFloat(getGlobalNumericValue("ref_d_95")) ||
+        parseFloat(getGlobalNumericValue("d_95")) ||
+        0;
+      d96 =
+        parseFloat(getGlobalNumericValue("ref_d_96")) ||
+        parseFloat(getGlobalNumericValue("d_96")) ||
+        0;
+    } else {
+      // Target calculation: Read unprefixed values
+      d85 = parseFloat(getGlobalNumericValue("d_85"));
+      d86 = parseFloat(getGlobalNumericValue("d_86"));
+      d87 = parseFloat(getGlobalNumericValue("d_87"));
+      d88 = parseFloat(getGlobalNumericValue("d_88"));
+      d89 = parseFloat(getGlobalNumericValue("d_89"));
+      d90 = parseFloat(getGlobalNumericValue("d_90"));
+      d91 = parseFloat(getGlobalNumericValue("d_91"));
+      d92 = parseFloat(getGlobalNumericValue("d_92"));
+      d93 = parseFloat(getGlobalNumericValue("d_93"));
+      d94 = parseFloat(getGlobalNumericValue("d_94"));
+      d95 = parseFloat(getGlobalNumericValue("d_95"));
+      d96 = parseFloat(getGlobalNumericValue("d_96"));
+    }
     // ✅ DUAL-ENGINE: Use correct state based on calculation context
     const d105_vol = parseFloat(
       window.TEUI.parseNumeric(
@@ -1529,39 +1582,6 @@ window.TEUI.SectionModules.sect12 = (function () {
       return 0;
     }
 
-    // ✅ ROBOT FINGERS: Read S11 area values directly from sovereign states
-    function getAreaFromS11(componentId, useReference) {
-      const s11 = window.TEUI?.SectionModules?.sect11;
-
-      if (!s11) {
-        console.warn(
-          `[S12] S11 module not loaded for area ${componentId} - recalc will occur when S11 initializes`,
-        );
-        return 0;
-      }
-
-      // Read directly from S11's sovereign state (Robot Fingers pattern)
-      if (useReference) {
-        const value = s11.ReferenceState?.getValue(`d_${componentId}`);
-        if (value === null || value === undefined) {
-          console.warn(
-            `[S12] S11.ReferenceState.d_${componentId} is null/undefined`,
-          );
-          return 0;
-        }
-        return value;
-      } else {
-        const value = s11.TargetState?.getValue(`d_${componentId}`);
-        if (value === null || value === undefined) {
-          console.warn(
-            `[S12] S11.TargetState.d_${componentId} is null/undefined`,
-          );
-          return 0;
-        }
-        return value;
-      }
-    }
-
     const useRef = !!isReferenceCalculation;
     if (useRef) {
       // console.log("[S12] U-agg PASS: Reference calculation running");
@@ -1578,18 +1598,17 @@ window.TEUI.SectionModules.sect12 = (function () {
     const g94 = getUValueFromS11("94", useRef);
     const g95 = getUValueFromS11("95", useRef);
 
-    // ✅ ROBOT FINGERS: Areas - complete the pattern (matches U-values above)
-    const d85 = getAreaFromS11("85", useRef);
-    const d86 = getAreaFromS11("86", useRef);
-    const d87 = getAreaFromS11("87", useRef);
-    const d88 = getAreaFromS11("88", useRef);
-    const d89 = getAreaFromS11("89", useRef);
-    const d90 = getAreaFromS11("90", useRef);
-    const d91 = getAreaFromS11("91", useRef);
-    const d92 = getAreaFromS11("92", useRef);
-    const d93 = getAreaFromS11("93", useRef);
-    const d94 = getAreaFromS11("94", useRef);
-    const d95 = getAreaFromS11("95", useRef);
+    const d85 = parseFloat(getGlobalNumericValue("d_85"));
+    const d86 = parseFloat(getGlobalNumericValue("d_86"));
+    const d87 = parseFloat(getGlobalNumericValue("d_87"));
+    const d88 = parseFloat(getGlobalNumericValue("d_88"));
+    const d89 = parseFloat(getGlobalNumericValue("d_89"));
+    const d90 = parseFloat(getGlobalNumericValue("d_90"));
+    const d91 = parseFloat(getGlobalNumericValue("d_91"));
+    const d92 = parseFloat(getGlobalNumericValue("d_92"));
+    const d93 = parseFloat(getGlobalNumericValue("d_93"));
+    const d94 = parseFloat(getGlobalNumericValue("d_94"));
+    const d95 = parseFloat(getGlobalNumericValue("d_95"));
 
     // ✅ STRICT: Read TB% from S11 sovereign state without fallbacks
     // Reference pass → S11.ReferenceState.d_97; Target pass → S11.TargetState.d_97
@@ -1668,16 +1687,14 @@ window.TEUI.SectionModules.sect12 = (function () {
   }
 
   function calculateWWR(isReferenceCalculation = false) {
-    const useRef = !!isReferenceCalculation;
-
-    // ✅ ROBOT FINGERS: Read areas from S11 sovereign states
-    const d86 = getAreaFromS11("86", useRef);
-    const d88 = getAreaFromS11("88", useRef);
-    const d89 = getAreaFromS11("89", useRef);
-    const d90 = getAreaFromS11("90", useRef);
-    const d91 = getAreaFromS11("91", useRef);
-    const d92 = getAreaFromS11("92", useRef);
-    const d93 = getAreaFromS11("93", useRef);
+    // Get values with full precision
+    const d86 = parseFloat(getGlobalNumericValue("d_86"));
+    const d88 = parseFloat(getGlobalNumericValue("d_88"));
+    const d89 = parseFloat(getGlobalNumericValue("d_89"));
+    const d90 = parseFloat(getGlobalNumericValue("d_90"));
+    const d91 = parseFloat(getGlobalNumericValue("d_91"));
+    const d92 = parseFloat(getGlobalNumericValue("d_92"));
+    const d93 = parseFloat(getGlobalNumericValue("d_93"));
 
     // Calculate with full precision
     const windowDoorArea = d88 + d89 + d90 + d91 + d92 + d93;
