@@ -2029,6 +2029,34 @@ window.TEUI.SectionModules.sect11 = (function () {
         // Update reference indicators for all rows
         updateReferenceIndicators(config.row);
       });
+
+      // ✅ PUBLISH: Target area values to StateManager for downstream S12 consumption
+      if (window.TEUI?.StateManager) {
+        const areaFields = [
+          "d_85",
+          "d_86",
+          "d_87",
+          "d_88",
+          "d_89",
+          "d_90",
+          "d_91",
+          "d_92",
+          "d_93",
+          "d_94",
+          "d_95",
+          "d_96",
+        ];
+        areaFields.forEach((fieldId) => {
+          const value = TargetState.getValue(fieldId);
+          if (value !== null && value !== undefined) {
+            window.TEUI.StateManager.setValue(
+              fieldId,
+              value.toString(),
+              "calculated",
+            );
+          }
+        });
+      }
     } finally {
       ModeManager.currentMode = originalMode; // ✅ Always restore original mode
     }
