@@ -86,7 +86,7 @@ These fields are now imported from Excel instead of requiring separate weather f
 - D56 → d_56 (Radon Bq/m3)
 - D57 → d_57 (CO2 ppm)
 - D58 → d_58 (TVOC ppm)
-- D59 → d_59 (Rel Humidity %)
+- I59 → i_59 (Rel Humidity %)
 
 ### Section 09: Occupant Internal Gains
 

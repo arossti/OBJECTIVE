@@ -138,7 +138,7 @@ TEUI.ReferenceValues = {
     d_56: "150", // Max. Radon per Health Canada Bq/m3
     d_57: "1000", // Max. CO2 per Health Canada ppm
     d_58: "150", // Max. CO2 per Health Canada ppm
-    d_59: "45", // Ideal RH% averaged annually
+    i_59: "45", // Ideal RH% averaged annually
     g_67: "Regular", // Required Eppt Efficienct Spec.
     t_65: "7.0", // Reference Occupant Load (W/m²)
     t_66: "2.0", // Reference Lighting Load (W/m²) - OBC baseline
@@ -160,7 +160,7 @@ TEUI.ReferenceValues = {
     g_93: "1.420", // Min. Permissible U-Value
     f_94: "1.80", // Min. Permissible RSI
     f_95: "3.50", // Min. Permissible RSI Slab
-    d_97: "50", // Default Thermal Bridge Penatly (Not Defined in Codes)
+    d_97: "50", // Default Thermal Bridge Penatly (Not Defined in Canadian Building Codes - *NECB 2020 3.1.1.7. Calculation of Overall Thermal Transmittance)
     j_115: "0.90", // Min. AFUE if Gas or Oil
     j_116: "3.3", // Min. COPc if Dedicated Cooling
     f_113: "7.1", // Min. HSPF if Heatpump
@@ -190,7 +190,7 @@ TEUI.ReferenceValues = {
     f_85: "5.30", // Min. Permissible RSI
     f_86: "4.10", // Min. Permissible RSI
     f_87: "6.60", // Min. Permissible RSI
-    g_88: "2.560", // Min. Permissible U-Value
+    g_88: "1.990", // Min. Permissible U-Value
     g_89: "2.560", // Min. Permissible U-Value
     g_90: "2.560", // Min. Permissible U-Value
     g_91: "2.560", // Min. Permissible U-Value

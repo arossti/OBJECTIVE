@@ -1417,33 +1417,69 @@ window.TEUI.SectionModules.sect12 = (function () {
     let d85, d86, d87, d88, d89, d90, d91, d92, d93, d94, d95, d96;
 
     if (isReferenceCalculation) {
-      // ✅ STRICT READS: Reference areas ONLY, no fallback to Target (CHEATSHEET Anti-Pattern 1)
-      d85 = parseFloat(getGlobalNumericValue("ref_d_85")) || 0;
-      d86 = parseFloat(getGlobalNumericValue("ref_d_86")) || 0;
-      d87 = parseFloat(getGlobalNumericValue("ref_d_87")) || 0;
-      d88 = parseFloat(getGlobalNumericValue("ref_d_88")) || 0;
-      d89 = parseFloat(getGlobalNumericValue("ref_d_89")) || 0;
-      d90 = parseFloat(getGlobalNumericValue("ref_d_90")) || 0;
-      d91 = parseFloat(getGlobalNumericValue("ref_d_91")) || 0;
-      d92 = parseFloat(getGlobalNumericValue("ref_d_92")) || 0;
-      d93 = parseFloat(getGlobalNumericValue("ref_d_93")) || 0;
-      d94 = parseFloat(getGlobalNumericValue("ref_d_94")) || 0;
-      d95 = parseFloat(getGlobalNumericValue("ref_d_95")) || 0;
-      d96 = parseFloat(getGlobalNumericValue("ref_d_96")) || 0;
+      // Reference calculation: Read Reference areas from S11
+      d85 =
+        parseFloat(getGlobalNumericValue("ref_d_85")) ||
+        parseFloat(getGlobalNumericValue("d_85")) ||
+        0;
+      d86 =
+        parseFloat(getGlobalNumericValue("ref_d_86")) ||
+        parseFloat(getGlobalNumericValue("d_86")) ||
+        0;
+      d87 =
+        parseFloat(getGlobalNumericValue("ref_d_87")) ||
+        parseFloat(getGlobalNumericValue("d_87")) ||
+        0;
+      d88 =
+        parseFloat(getGlobalNumericValue("ref_d_88")) ||
+        parseFloat(getGlobalNumericValue("d_88")) ||
+        0;
+      d89 =
+        parseFloat(getGlobalNumericValue("ref_d_89")) ||
+        parseFloat(getGlobalNumericValue("d_89")) ||
+        0;
+      d90 =
+        parseFloat(getGlobalNumericValue("ref_d_90")) ||
+        parseFloat(getGlobalNumericValue("d_90")) ||
+        0;
+      d91 =
+        parseFloat(getGlobalNumericValue("ref_d_91")) ||
+        parseFloat(getGlobalNumericValue("d_91")) ||
+        0;
+      d92 =
+        parseFloat(getGlobalNumericValue("ref_d_92")) ||
+        parseFloat(getGlobalNumericValue("d_92")) ||
+        0;
+      d93 =
+        parseFloat(getGlobalNumericValue("ref_d_93")) ||
+        parseFloat(getGlobalNumericValue("d_93")) ||
+        0;
+      d94 =
+        parseFloat(getGlobalNumericValue("ref_d_94")) ||
+        parseFloat(getGlobalNumericValue("d_94")) ||
+        0;
+      d95 =
+        parseFloat(getGlobalNumericValue("ref_d_95")) ||
+        parseFloat(getGlobalNumericValue("d_95")) ||
+        0;
+      d96 =
+        parseFloat(getGlobalNumericValue("ref_d_96")) ||
+        parseFloat(getGlobalNumericValue("d_96")) ||
+        0;
     } else {
-      // ✅ STRICT READS: Target areas ONLY
-      d85 = parseFloat(getGlobalNumericValue("d_85")) || 0;
-      d86 = parseFloat(getGlobalNumericValue("d_86")) || 0;
-      d87 = parseFloat(getGlobalNumericValue("d_87")) || 0;
-      d88 = parseFloat(getGlobalNumericValue("d_88")) || 0;
-      d89 = parseFloat(getGlobalNumericValue("d_89")) || 0;
-      d90 = parseFloat(getGlobalNumericValue("d_90")) || 0;
-      d91 = parseFloat(getGlobalNumericValue("d_91")) || 0;
-      d92 = parseFloat(getGlobalNumericValue("d_92")) || 0;
-      d93 = parseFloat(getGlobalNumericValue("d_93")) || 0;
-      d94 = parseFloat(getGlobalNumericValue("d_94")) || 0;
-      d95 = parseFloat(getGlobalNumericValue("d_95")) || 0;
-      d96 = parseFloat(getGlobalNumericValue("d_96")) || 0;
+      // Target calculation: Read unprefixed values
+      d85 = parseFloat(getGlobalNumericValue("d_85"));
+      d86 = parseFloat(getGlobalNumericValue("d_86"));
+      d87 = parseFloat(getGlobalNumericValue("d_87"));
+      d88 = parseFloat(getGlobalNumericValue("d_88"));
+      d89 = parseFloat(getGlobalNumericValue("d_89"));
+      d90 = parseFloat(getGlobalNumericValue("d_90"));
+      d91 = parseFloat(getGlobalNumericValue("d_91"));
+      d92 = parseFloat(getGlobalNumericValue("d_92"));
+      d93 = parseFloat(getGlobalNumericValue("d_93"));
+      d94 = parseFloat(getGlobalNumericValue("d_94"));
+      d95 = parseFloat(getGlobalNumericValue("d_95"));
+      d96 = parseFloat(getGlobalNumericValue("d_96"));
     }
     // ✅ DUAL-ENGINE: Use correct state based on calculation context
     const d105_vol = parseFloat(
@@ -1513,38 +1549,43 @@ window.TEUI.SectionModules.sect12 = (function () {
   }
 
   function calculateCombinedUValue(isReferenceCalculation = false) {
-    // ✅ MODE-AWARE: Read area totals based on calculation context
-    const d101_areaAir = isReferenceCalculation
-      ? parseFloat(getGlobalNumericValue("ref_d_101")) || 0
-      : parseFloat(getGlobalNumericValue("d_101")) || 0;
-    const d102_areaGround = isReferenceCalculation
-      ? parseFloat(getGlobalNumericValue("ref_d_102")) || 0
-      : parseFloat(getGlobalNumericValue("d_102")) || 0;
-    // ✅ STATEMANAGER: Read U-values from StateManager (single source of truth)
-    // S11 publishes both Target (g_XX) and Reference (ref_g_XX) U-values
+    const d101_areaAir = parseFloat(getNumericValue("d_101"));
+    const d102_areaGround = parseFloat(getNumericValue("d_102"));
+    // Get U-values directly where available, otherwise calculate from RSI (1/RSI)
+    // Prefer S11's sovereign state (robot fingers) to avoid reliance on StateManager storage
     function getUValueFromS11(componentId, useReference) {
-      const fieldId = `g_${componentId}`;
-      const prefixedId = useReference ? `ref_${fieldId}` : fieldId;
+      // ✅ STRICT: Read from S11 sovereign state without fallbacks per CHEATSHEET anti-pattern guidance
+      const s11 = window.TEUI?.SectionModules?.sect11;
 
-      // Try U-value first (g_XX or ref_g_XX)
-      const gVal = window.TEUI.parseNumeric(
-        window.TEUI.StateManager.getValue(prefixedId),
-      );
+      if (!s11) {
+        console.warn(
+          `[S12] S11 module not loaded for component ${componentId} - recalc will occur when S11 initializes`,
+        );
+        return 0; // Return 0 until S11 loads (listeners will trigger recalc)
+      }
+
+      const state = useReference ? s11.ReferenceState : s11.TargetState;
+      if (!state?.getValue) {
+        console.error(
+          `[S12] CRITICAL: S11 ${useReference ? "Reference" : "Target"}State missing for g_${componentId}`,
+        );
+        return 0;
+      }
+
+      // Try U-value first (g_XX)
+      const gVal = window.TEUI.parseNumeric(state.getValue(`g_${componentId}`));
       if (!isNaN(gVal) && isFinite(gVal) && gVal > 0) {
         return gVal;
       }
 
-      // Try RSI conversion (f_XX → 1/RSI or ref_f_XX → 1/RSI)
-      const rsiFieldId = `f_${componentId}`;
-      const prefixedRsiId = useReference ? `ref_${rsiFieldId}` : rsiFieldId;
-      const fVal = window.TEUI.parseNumeric(
-        window.TEUI.StateManager.getValue(prefixedRsiId),
-      );
+      // Try RSI conversion (f_XX → 1/RSI)
+      const fVal = window.TEUI.parseNumeric(state.getValue(`f_${componentId}`));
       if (!isNaN(fVal) && isFinite(fVal) && fVal > 0) {
         return 1 / fVal;
       }
 
-      // ✅ STRICT: No fallback, return 0 (listeners will trigger recalc when values available)
+      // NO FALLBACK to StateManager - missing value indicates initialization timing or data issue
+      // Listeners ensure recalc when values become available
       return 0;
     }
 
@@ -1564,40 +1605,17 @@ window.TEUI.SectionModules.sect12 = (function () {
     const g94 = getUValueFromS11("94", useRef);
     const g95 = getUValueFromS11("95", useRef);
 
-    // ✅ MODE-AWARE: Read areas from StateManager based on calculation context
-    const d85 = useRef
-      ? parseFloat(getGlobalNumericValue("ref_d_85")) || 0
-      : parseFloat(getGlobalNumericValue("d_85")) || 0;
-    const d86 = useRef
-      ? parseFloat(getGlobalNumericValue("ref_d_86")) || 0
-      : parseFloat(getGlobalNumericValue("d_86")) || 0;
-    const d87 = useRef
-      ? parseFloat(getGlobalNumericValue("ref_d_87")) || 0
-      : parseFloat(getGlobalNumericValue("d_87")) || 0;
-    const d88 = useRef
-      ? parseFloat(getGlobalNumericValue("ref_d_88")) || 0
-      : parseFloat(getGlobalNumericValue("d_88")) || 0;
-    const d89 = useRef
-      ? parseFloat(getGlobalNumericValue("ref_d_89")) || 0
-      : parseFloat(getGlobalNumericValue("d_89")) || 0;
-    const d90 = useRef
-      ? parseFloat(getGlobalNumericValue("ref_d_90")) || 0
-      : parseFloat(getGlobalNumericValue("d_90")) || 0;
-    const d91 = useRef
-      ? parseFloat(getGlobalNumericValue("ref_d_91")) || 0
-      : parseFloat(getGlobalNumericValue("d_91")) || 0;
-    const d92 = useRef
-      ? parseFloat(getGlobalNumericValue("ref_d_92")) || 0
-      : parseFloat(getGlobalNumericValue("d_92")) || 0;
-    const d93 = useRef
-      ? parseFloat(getGlobalNumericValue("ref_d_93")) || 0
-      : parseFloat(getGlobalNumericValue("d_93")) || 0;
-    const d94 = useRef
-      ? parseFloat(getGlobalNumericValue("ref_d_94")) || 0
-      : parseFloat(getGlobalNumericValue("d_94")) || 0;
-    const d95 = useRef
-      ? parseFloat(getGlobalNumericValue("ref_d_95")) || 0
-      : parseFloat(getGlobalNumericValue("d_95")) || 0;
+    const d85 = parseFloat(getGlobalNumericValue("d_85"));
+    const d86 = parseFloat(getGlobalNumericValue("d_86"));
+    const d87 = parseFloat(getGlobalNumericValue("d_87"));
+    const d88 = parseFloat(getGlobalNumericValue("d_88"));
+    const d89 = parseFloat(getGlobalNumericValue("d_89"));
+    const d90 = parseFloat(getGlobalNumericValue("d_90"));
+    const d91 = parseFloat(getGlobalNumericValue("d_91"));
+    const d92 = parseFloat(getGlobalNumericValue("d_92"));
+    const d93 = parseFloat(getGlobalNumericValue("d_93"));
+    const d94 = parseFloat(getGlobalNumericValue("d_94"));
+    const d95 = parseFloat(getGlobalNumericValue("d_95"));
 
     // ✅ STRICT: Read TB% from S11 sovereign state without fallbacks
     // Reference pass → S11.ReferenceState.d_97; Target pass → S11.TargetState.d_97

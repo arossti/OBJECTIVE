@@ -871,6 +871,13 @@ window.TEUI.SectionModules.sect01 = (function () {
     updateDisplayValue("e_8", e8Formatted);
     updateDisplayValue("e_6", e6Formatted);
 
+    // ✅ PUBLISH: Update StateManager with calculated Reference values for debugging/logging
+    if (window.TEUI?.StateManager) {
+      window.TEUI.StateManager.setValue("e_10", e_10, "calculated");
+      window.TEUI.StateManager.setValue("e_8", e_8, "calculated");
+      window.TEUI.StateManager.setValue("e_6", e_6, "calculated");
+    }
+
     // Column H (Target) - Format and display with tier calculation
     const h10Formatted =
       window.TEUI?.formatNumber?.(h_10, "number-1dp") ?? h_10.toString();
@@ -921,6 +928,13 @@ window.TEUI.SectionModules.sect01 = (function () {
     updateDisplayValue("h_8", h8Formatted);
     updateDisplayValue("h_6", h6Formatted);
 
+    // ✅ PUBLISH: Update StateManager with calculated Target values for debugging/logging
+    if (window.TEUI?.StateManager) {
+      window.TEUI.StateManager.setValue("h_10", h_10, "calculated");
+      window.TEUI.StateManager.setValue("h_8", h_8, "calculated");
+      window.TEUI.StateManager.setValue("h_6", h_6, "calculated");
+    }
+
     // Column K (Actual) - Conditional on Utility Bills mode
     if (isUtilityMode) {
       const k10Formatted =
@@ -933,10 +947,24 @@ window.TEUI.SectionModules.sect01 = (function () {
       updateDisplayValue("k_10", k10Formatted);
       updateDisplayValue("k_8", k8Formatted);
       updateDisplayValue("k_6", k6Formatted);
+
+      // ✅ PUBLISH: Update StateManager with calculated Actual values for debugging/logging
+      if (window.TEUI?.StateManager) {
+        window.TEUI.StateManager.setValue("k_10", k_10, "calculated");
+        window.TEUI.StateManager.setValue("k_8", k_8, "calculated");
+        window.TEUI.StateManager.setValue("k_6", k_6, "calculated");
+      }
     } else {
       updateDisplayValue("k_10", "N/A");
       updateDisplayValue("k_8", "N/A");
       updateDisplayValue("k_6", "N/A");
+
+      // ✅ PUBLISH: Clear Actual values when not in Utility Bills mode
+      if (window.TEUI?.StateManager) {
+        window.TEUI.StateManager.setValue("k_10", null, "calculated");
+        window.TEUI.StateManager.setValue("k_8", null, "calculated");
+        window.TEUI.StateManager.setValue("k_6", null, "calculated");
+      }
     }
 
     // Calculate percentages and explanations using the calculated values

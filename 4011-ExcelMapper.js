@@ -1,5 +1,5 @@
 // Excel mapper for TEUI Calculator - Need to update for DOM-based Field-Name-Mappings
-// Maps between Excel file structure and the calculator's data model
+// Maps between Excel file structure and the calculator's data model updated 2025.10.19
 
 // Script Block 1: Core Configuration and Initial Data Structure
 const CONFIG = {
@@ -62,6 +62,8 @@ class ExcelMapper {
       H21: "h_21", // Capacitance/Static Toggle (Dropdown)
       I21: "i_21", // Capacitance Slider Position (Number)
       M19: "m_19", // Days Cooling (Editable Number)
+      L20: "l_20", // Cooling Season Average overnight Temp ºC (Editable Number) FUTURE FEATURE
+      L21: "l_21", // Cooling Season Average LST15h00 RH% (Editable Number) FUTURE FEATURE
 
       // Section 04: Actual vs Target Energy (REPORT! Sheet)
       D27: "d_27", // Actual Elec Use
@@ -94,16 +96,17 @@ class ExcelMapper {
       D49: "d_49", // Water Use Method (Dropdown)
       E49: "e_49", // User Defined Water Use l/pp/day (Only used if d_49 is User Defined) BUG: f_49 not reading e_49!
       E50: "e_50", // By Engineer DHW kWh/yr (Now correctly maps to e_50 which is the new input field)
-      D51: "d_51", // DHW Energy Source (Dropdown)
-      D52: "d_52", // DHW EF/COP (Editable Number)
-      D53: "d_53", // DHW Recovery Eff % (Editable Number)
+      D51: "d_51", // DHW System Type (Dropdown)
+      D52: "d_52", // DHW EF/COP (Slider)
+      D53: "d_53", // DHW Recovery Eff % (Slider)
       K52: "k_52", // SHW AFUE (Editable Number)
 
       // Section 08: Indoor Air Quality (REPORT! Sheet)
       D56: "d_56", // Radon Bq/m3
       D57: "d_57", // CO2 ppm
       D58: "d_58", // TVOC ppm
-      D59: "d_59", // Rel Humidity %
+      D59: "d_59", // Indoor Heating Season RH % (Slider)
+      I59: "i_59", // Indoor Cooling Season RH % (Slider) used in Cooling.js
 
       // Section 09: Occupant Internal Gains (REPORT! Sheet)
       D63: "d_63", // Occupants
@@ -111,9 +114,9 @@ class ExcelMapper {
       // 'I63': 'i_63', // Occupied Hrs/Day (If this is different or still needed, clarify) - TO BE DELETED (derived from g_63)
       // 'J63': 'j_63', // Total Hrs/Year - This line should be commented out or removed.
       D64: "d_64", // Occupant Activity (Dropdown)
-      D65: "d_65", // Plug Loads W/m2
+      //D65: "d_65", // Plug Loads W/m2 (derived from occupancy, not editable)
       D66: "d_66", // Lighting Loads W/m2
-      D67: "d_67", // Equipment Loads W/m2
+      //D67: "d_67", // Equipment Loads W/m2 (derived from occupancy, not editable)
       D68: "d_68", // Elevator Loads (Dropdown)
       G67: "g_67", // Equipment Spec (Dropdown)
 
@@ -220,6 +223,8 @@ class ExcelMapper {
       H21: "ref_h_21",
       I21: "ref_i_21",
       M19: "ref_m_19",
+      L20: "ref_l_20", // Cooling Season Average overnight Temp ºC (Editable Number) FUTURE FEATURE
+      L21: "ref_l_21", // Cooling Season Average LST15h00 RH% (Editable Number) FUTURE FEATURE
 
       // Section 04: Actual vs Target Energy (REFERENCE! Sheet)
       D27: "ref_d_27",
@@ -249,7 +254,7 @@ class ExcelMapper {
 
       // Section 07: Water Use (REFERENCE! Sheet)
       D49: "ref_d_49",
-      E49: "ref_e_49", //BUG: ref_f_49 not calculaing =e_49!
+      E49: "ref_e_49", //BUG: ref_f_49 not calculaing =ref_e_49!
       E50: "ref_e_50",
       D51: "ref_d_51",
       D52: "ref_d_52",
@@ -266,9 +271,9 @@ class ExcelMapper {
       D63: "ref_d_63",
       G63: "ref_g_63",
       D64: "ref_d_64",
-      D65: "ref_d_65",
+      //D65: "ref_d_65",
       D66: "ref_d_66",
-      D67: "ref_d_67",
+      //D67: "ref_d_67",
       D68: "ref_d_68",
       G67: "ref_g_67",
 

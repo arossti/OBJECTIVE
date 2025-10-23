@@ -19,6 +19,7 @@ window.TEUI.SectionModules.sect11 = (function () {
   let isS11Initialized = false; // Prevents sync before initialization completes
   let isSyncingFromS10 = false; // Prevents recursion in sync function
   let syncTimeout = null; // For debouncing rapid sync calls
+  let isInitializationPhase = true; // ✅ FIX: Disable DUAL-STATE SYNC after initialization
 
   // ✅ ANTI-PATTERN FIX: Type metadata only (no duplicate default values)
   // Component types for indicator calculation logic - values come from ReferenceState
@@ -1201,34 +1202,81 @@ window.TEUI.SectionModules.sect11 = (function () {
 
     try {
       const currentMode = ModeManager.currentMode; // "target" or "reference"
-      console.log(`[S11 Area Sync] Starting sync in ${currentMode} mode`);
+
+      // ✅ FIX: Detect if this is initial/import sync requiring dual-state population
+      // Check if ReferenceState areas are unpopulated OR don't match StateManager
+      // This handles BOTH initialization (undefined) AND import (stale values)
+      const refArea_d88 = ReferenceState.getValue("d_88");
+      const stateManager_refArea =
+        window.TEUI.StateManager.getValue("ref_d_73");
+
+      const needsDualSync =
+        isInitializationPhase && // ✅ FIX: Only during initialization, not user edits
+        currentMode === "target" &&
+        (refArea_d88 === undefined || refArea_d88 !== stateManager_refArea);
+
+      if (needsDualSync) {
+        console.log(
+          `[S11 Area Sync] DUAL-STATE SYNC - populating BOTH Target and Reference states`,
+        );
+        console.log(
+          `[S11 Area Sync] Reason: d_88=${refArea_d88}, ref_d_73 in StateManager=${stateManager_refArea}`,
+        );
+      } else {
+        console.log(`[S11 Area Sync] Starting sync in ${currentMode} mode`);
+      }
 
       Object.entries(areaSourceMap).forEach(([s11Field, s10Field]) => {
-        // Determine source field based on mode
-        const sourceFieldId =
-          currentMode === "reference" ? `ref_${s10Field}` : s10Field;
+        // Determine source fields
+        const targetSourceField = s10Field;
+        const refSourceField = `ref_${s10Field}`;
 
         // Read from S10 via global StateManager
-        const areaValue = window.TEUI.StateManager.getValue(sourceFieldId);
+        const targetValue =
+          window.TEUI.StateManager.getValue(targetSourceField);
+        const refValue = window.TEUI.StateManager.getValue(refSourceField);
 
-        if (areaValue !== null && areaValue !== undefined) {
-          // Write to appropriate S11 state
-          if (currentMode === "target") {
-            TargetState.setValue(s11Field, areaValue);
-          } else {
-            ReferenceState.setValue(s11Field, areaValue);
+        // ✅ FIX: During dual-state sync, populate BOTH states
+        if (needsDualSync) {
+          // Sync Target state
+          if (targetValue !== null && targetValue !== undefined) {
+            TargetState.setValue(s11Field, targetValue);
+            console.log(`[S11 Area Sync] ${s11Field} TARGET = ${targetValue}`);
           }
 
-          // Update display element - use setCalculatedValue helper
-          setCalculatedValue(s11Field, areaValue, "number");
+          // Sync Reference state (THIS IS THE FIX - ensures ref areas available for first calc)
+          if (refValue !== null && refValue !== undefined) {
+            ReferenceState.setValue(s11Field, refValue);
+            console.log(`[S11 Area Sync] ${s11Field} REFERENCE = ${refValue}`);
+          }
 
-          console.log(
-            `[S11 Area Sync] ${s11Field} = ${areaValue} (from ${sourceFieldId})`,
-          );
+          // Update DOM with Target value (we're in Target mode)
+          setCalculatedValue(s11Field, targetValue, "number");
         } else {
-          console.warn(
-            `[S11 Area Sync] ${sourceFieldId} is null/undefined, skipping ${s11Field}`,
-          );
+          // Normal mode-aware sync
+          const sourceFieldId =
+            currentMode === "reference" ? refSourceField : targetSourceField;
+          const areaValue = window.TEUI.StateManager.getValue(sourceFieldId);
+
+          if (areaValue !== null && areaValue !== undefined) {
+            // Write to appropriate S11 state
+            if (currentMode === "target") {
+              TargetState.setValue(s11Field, areaValue);
+            } else {
+              ReferenceState.setValue(s11Field, areaValue);
+            }
+
+            // Update display element
+            setCalculatedValue(s11Field, areaValue, "number");
+
+            console.log(
+              `[S11 Area Sync] ${s11Field} = ${areaValue} (from ${sourceFieldId})`,
+            );
+          } else {
+            console.warn(
+              `[S11 Area Sync] ${sourceFieldId} is null/undefined, skipping ${s11Field}`,
+            );
+          }
         }
       });
 
@@ -1291,8 +1339,10 @@ window.TEUI.SectionModules.sect11 = (function () {
     // Listen for Reference mode changes
     s10AreaFields.forEach((fieldId) => {
       window.TEUI.StateManager.addListener(`ref_${fieldId}`, (newValue) => {
-        // GUARD: Only fire if Reference mode active
-        if (ModeManager.currentMode !== "reference") return;
+        // ✅ MODE GUARD REMOVED: In dual-state architecture, sections have independent modes.
+        // S12 can be in Reference mode while S11 is in Target mode. When S12 publishes
+        // ref_i_103, S10 fires and publishes ref_d_73-78. S11 must respond regardless of
+        // its current mode - the dual-engine architecture ensures both engines run anyway.
         // GUARD: Only fire if S11 initialized
         if (!isS11Initialized) return;
 
@@ -1334,18 +1384,18 @@ window.TEUI.SectionModules.sect11 = (function () {
       if (isReferenceCalculation) {
         // ✅ CRITICAL FIX: Reference calculations read from S11's own ReferenceState
         if (input === "rsi") {
-          // Reference RSI: read from S11's ReferenceState (like Target does)
-          // ✅ ANTI-PATTERN FIX: Removed baselineValues fallback - fail fast if missing
-          inputValue = ReferenceState.getValue(rsiFieldId) || 0;
+          // Reference RSI: read from S11's ReferenceState and parse to number
+          const rawRSI = ReferenceState.getValue(rsiFieldId);
+          inputValue = window.TEUI.parseNumeric(rawRSI) || 0;
           rsiValue = inputValue;
           if (rsiValue <= 0) {
             uValue = Infinity;
           } else uValue = 1 / rsiValue;
         } else {
           // input === 'uvalue'
-          // ✅ CRITICAL FIX: Reference U-value: read from S11's ReferenceState (like Target does)
-          // ✅ ANTI-PATTERN FIX: Removed baselineValues fallback - fail fast if missing
-          inputValue = ReferenceState.getValue(uValueFieldId) || 0;
+          // ✅ FIX: Reference U-value - parse to number (match Target mode logic)
+          const rawUValue = ReferenceState.getValue(uValueFieldId);
+          inputValue = window.TEUI.parseNumeric(rawUValue) || 0;
           uValue = inputValue;
           if (uValue <= 0) {
             rsiValue = Infinity;
@@ -1369,8 +1419,9 @@ window.TEUI.SectionModules.sect11 = (function () {
         }
       }
 
-      // Update complementary value display only for Target calculations
+      // Update complementary value display for Target, store for Reference
       if (!isReferenceCalculation) {
+        // Target mode: Update DOM with converted values
         setCalculatedValue(
           uValueFieldId,
           uValue === Infinity ? "N/A" : uValue,
@@ -1380,6 +1431,17 @@ window.TEUI.SectionModules.sect11 = (function () {
           rsiFieldId,
           rsiValue === Infinity ? "N/A" : rsiValue,
           "number",
+        );
+      } else {
+        // ✅ FIX: Reference mode - store converted values to ReferenceState
+        // These need to be available for downstream sections (e.g., S12 needs U-values)
+        ReferenceState.setValue(
+          uValueFieldId,
+          uValue === Infinity ? "0" : uValue.toString(),
+        );
+        ReferenceState.setValue(
+          rsiFieldId,
+          rsiValue === Infinity ? "0" : rsiValue.toString(),
         );
       }
 
@@ -1431,7 +1493,12 @@ window.TEUI.SectionModules.sect11 = (function () {
         }
 
         // Get value from i_21 (assume it's stored as percentage, e.g., 50 for 50%)
-        let capacitanceFactor_i21 = getGlobalNumericValue("i_21");
+        let capacitanceFactor_i21;
+        if (isReferenceCalculation) {
+          capacitanceFactor_i21 = getGlobalNumericValue("ref_i_21");
+        } else {
+          capacitanceFactor_i21 = getGlobalNumericValue("i_21");
+        }
         // Convert percentage to decimal, fallback to 0.5 (50%) if input is invalid or missing
         capacitanceFactor_i21 = capacitanceFactor_i21 / 100;
         if (isNaN(capacitanceFactor_i21) || capacitanceFactor_i21 === 0) {
@@ -1758,7 +1825,20 @@ window.TEUI.SectionModules.sect11 = (function () {
         });
 
         // Store all Reference RSI values (f_85, f_86, etc.)
-        const rsiFields = ["f_85", "f_86", "f_87", "f_94", "f_95"];
+        // ✅ FIX: Include f_88-f_93 (calculated from U-value inputs)
+        const rsiFields = [
+          "f_85",
+          "f_86",
+          "f_87",
+          "f_88",
+          "f_89",
+          "f_90",
+          "f_91",
+          "f_92",
+          "f_93",
+          "f_94",
+          "f_95",
+        ];
         rsiFields.forEach((fieldId) => {
           const value = ReferenceState.getValue(fieldId);
           if (value !== null && value !== undefined) {
@@ -1949,6 +2029,34 @@ window.TEUI.SectionModules.sect11 = (function () {
         // Update reference indicators for all rows
         updateReferenceIndicators(config.row);
       });
+
+      // ✅ PUBLISH: Target area values to StateManager for downstream S12 consumption
+      if (window.TEUI?.StateManager) {
+        const areaFields = [
+          "d_85",
+          "d_86",
+          "d_87",
+          "d_88",
+          "d_89",
+          "d_90",
+          "d_91",
+          "d_92",
+          "d_93",
+          "d_94",
+          "d_95",
+          "d_96",
+        ];
+        areaFields.forEach((fieldId) => {
+          const value = TargetState.getValue(fieldId);
+          if (value !== null && value !== undefined) {
+            window.TEUI.StateManager.setValue(
+              fieldId,
+              value.toString(),
+              "calculated",
+            );
+          }
+        });
+      }
     } finally {
       ModeManager.currentMode = originalMode; // ✅ Always restore original mode
     }
@@ -2168,7 +2276,12 @@ window.TEUI.SectionModules.sect11 = (function () {
       window.TEUI.StateManager.addListener("ref_h_22", () => calculateAll());
       window.TEUI.StateManager.addListener("ref_d_22", () => calculateAll());
 
+      // Listen for S03 Capacitance changes (Target and Reference)
+      window.TEUI.StateManager.addListener("h_21", calculateAll); // Capacitance Type
+      window.TEUI.StateManager.addListener("ref_h_21", calculateAll);
       window.TEUI.StateManager.addListener("i_21", calculateAll); // Capacitance Factor (affects ground gain)
+      window.TEUI.StateManager.addListener("ref_i_21", calculateAll); // ✅ ADDED
+
       window.TEUI.StateManager.addListener("d_97", (val, _old, _id, src) => {
         console.log(
           `[S11] Listener: d_97 changed → recalculating (src=${src})`,
@@ -2301,13 +2414,28 @@ window.TEUI.SectionModules.sect11 = (function () {
       );
     }
 
-    // 5. Perform initial calculations for this section
-    calculateAll();
-
     // ✅ S10-S11 AREA SYNC: Mark S11 as initialized (CRITICAL for crash prevention)
+    // Must be set BEFORE syncAreasFromS10() to avoid guard blocks
     isS11Initialized = true;
     console.log(
       "[S11 Area Sync] S11 initialization complete - sync functions now enabled",
+    );
+
+    // ✅ FIX: Sync areas from S10 BEFORE first calculateAll()
+    // This ensures rows 88-93 have correct door/window/skylight areas
+    // from S10 before calculating cooling gains (ref_k_88..ref_k_93)
+    // Prevents initial ref_k_98 = -4267.63 bug (correct value: -1895.40)
+    syncAreasFromS10();
+
+    // 5. Perform initial calculations for this section
+    // Now runs with correct areas from S10, producing correct ref_k_98
+    calculateAll();
+
+    // ✅ FIX: Disable DUAL-STATE SYNC after initialization
+    // After init, listeners should use mode-aware sync only
+    isInitializationPhase = false;
+    console.log(
+      "[S11 Area Sync] Initialization phase complete - DUAL-STATE SYNC disabled",
     );
 
     // 6. Apply validation tooltips to fields
@@ -2316,9 +2444,6 @@ window.TEUI.SectionModules.sect11 = (function () {
         window.TEUI.TooltipManager.applyTooltipsToSection(sectionRows);
       }, 300);
     }
-
-    // 6. Perform initial area sync from S10
-    syncAreasFromS10();
   }
 
   //==========================================================================

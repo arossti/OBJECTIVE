@@ -41,14 +41,11 @@ window.TEUI.SectionModules.sect03 = (function () {
         h_20: getFieldDefault("h_20"), // Timeframe
         h_21: getFieldDefault("h_21"), // Capacitance setting
         m_19: getFieldDefault("m_19"), // Cooling days
-        l_20: getFieldDefault("l_20"), // Summer night temp (NEW - Cooling Refactor)
-        l_21: getFieldDefault("l_21"), // Summer RH% (NEW - Cooling Refactor)
         l_22: getFieldDefault("l_22"), // Elevation
         l_24: getFieldDefault("l_24"), // Cooling override
         i_21: getFieldDefault("i_21"), // Capacitance percentage
         // ✅ CALCULATED FIELDS REMOVED: h_23, h_24 are calculated, not defaults
         // Climate data populated by calculation engines from ClimateValues.js
-        // NOTE: l_23 (Seasonal outdoor RH%) will be added in future phase
       };
       console.log(
         "S03: Target defaults set from field definitions - single source of truth",
@@ -120,8 +117,6 @@ window.TEUI.SectionModules.sect03 = (function () {
         h_20: getFieldDefault("h_20"), // Timeframe
         h_21: getFieldDefault("h_21"), // Capacitance setting
         m_19: getFieldDefault("m_19"), // Cooling days
-        l_20: getFieldDefault("l_20"), // Summer night temp (NEW - Cooling Refactor)
-        l_21: getFieldDefault("l_21"), // Summer RH% (NEW - Cooling Refactor)
         l_22: getFieldDefault("l_22"), // Elevation
         l_24: getFieldDefault("l_24"), // Cooling override
         i_21: getFieldDefault("i_21"), // Capacitance percentage
@@ -130,7 +125,6 @@ window.TEUI.SectionModules.sect03 = (function () {
         // Both Target and Reference use Ontario/Alexandria for Excel baseline
         // ✅ CALCULATED FIELDS REMOVED: h_23, h_24 are calculated, not defaults
         // Climate data populated by calculation engines from ClimateValues.js
-        // NOTE: l_23 (Seasonal outdoor RH%) will be added in future phase
       };
       console.log(
         "S03: Reference defaults set from field definitions - single source of truth",
@@ -759,20 +753,14 @@ window.TEUI.SectionModules.sect03 = (function () {
             { value: "Future", name: "Future (2021-2050)" },
           ],
         },
-        // NEW: Summer Night Temperature field (l_20) - Cooling Refactor Phase 5.1.1
-        // Replaces: j_20 "HDD Reference Lookup" and k "HDD - Energy Star"
-        // TODO: Add tooltips with links to HDD/CDD reference resources later
-        j: { content: "L.2.0", classes: ["label-prefix"] },
-        k: { content: "Summer Night ºC", classes: ["label-main"] },
-        l: {
-          fieldId: "l_20",
-          type: "editable",
-          value: "20.43", // Default: Alexandria, ON summer night temp
+        j: {
+          fieldId: "j_20",
+          type: "calculated",
+          value: "HDD Reference Lookup",
+          classes: ["reference-value"],
           section: "climateCalculations",
-          tooltip: true, // Night-time outdoor temp (cooling season mean)
-          classes: ["user-input", "editable"],
-          // NOTE: Currently user-editable for testing. Will be locked in future (calculated from climate data)
         },
+        k: { content: "HDD - Energy Star", classes: ["reference-label"] },
       },
     },
 
@@ -815,20 +803,14 @@ window.TEUI.SectionModules.sect03 = (function () {
           tooltip: true, // Capacitance Factor
           defaultValue: "50",
         },
-        // NEW: Summer RH% field (l_21) - Cooling Refactor Phase 5.1.1
-        // Replaces: j_21 "CDD Reference Lookup" and k "CDD - Energy Star"
-        // TODO: Add tooltips with links to HDD/CDD reference resources later
-        j: { content: "L.2.2", classes: ["label-prefix"] },
-        k: { content: "Summer RH%", classes: ["label-main"] },
-        l: {
-          fieldId: "l_21",
-          type: "editable",
-          value: "55.85", // Default: Alexandria, ON cooling season mean RH at 15h00 LST
+        j: {
+          fieldId: "j_21",
+          type: "calculated",
+          value: "CDD Reference Lookup",
+          classes: ["reference-value"],
           section: "climateCalculations",
-          tooltip: true, // Cooling season mean RH at 15h00 LST
-          classes: ["user-input", "editable"],
-          // NOTE: Currently user-editable for testing. Will be locked in future (calculated from climate data)
         },
+        k: { content: "CDD - Energy Star", classes: ["reference-label"] },
       },
     },
 
@@ -2375,15 +2357,20 @@ window.TEUI.SectionModules.sect03 = (function () {
         ? "integer"
         : "number-2dp"; // Default format
       this.textContent = window.TEUI.formatNumber(numericValue, formatType);
-
-      // ✅ MODE-AWARE: Update BOTH internal state (TargetState/ReferenceState) AND StateManager
-      // Use ModeManager.setValue() which handles both automatically
-      ModeManager.setValue(fieldId, numericValue.toString(), "user-modified");
-
+      // ✅ MODE-AWARE: Update StateManager based on current mode
+      if (window.TEUI.StateManager) {
+        const key =
+          ModeManager.currentMode === "reference" ? `ref_${fieldId}` : fieldId;
+        window.TEUI.StateManager.setValue(
+          key,
+          numericValue.toString(),
+          "user-modified",
+        );
+      }
       calculateAll(); // Recalculate after state update
     } else {
       // Revert to previous value if input is invalid
-      const previousValue = ModeManager.getValue(fieldId) || "0"; // Read from internal state
+      const previousValue = window.TEUI.StateManager?.getValue(fieldId) || "0"; // Fallback to 0
       const prevNumericValue = window.TEUI.parseNumeric(previousValue, 0);
       const formatType = Number.isInteger(prevNumericValue)
         ? "integer"
