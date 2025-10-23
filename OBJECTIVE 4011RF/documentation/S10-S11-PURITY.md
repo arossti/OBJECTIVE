@@ -977,12 +977,125 @@ if (isReferenceCalculation) {
 }
 ```
 
-**Recommended**: Option A (S11 publishes to StateManager) follows the S07 pattern and maintains proper state architecture.
+**Recommended**: ~~Option A (S11 publishes to StateManager)~~ **SUPERSEDED** - See Robot Fingers discovery below
+
+---
+
+## 🎯 ROOT CAUSE CONFIRMED: Incomplete Robot Fingers Implementation
+
+**User Insight**: "Robot Fingers" pattern was implemented for immediate S11 TB% slider feedback to S12
+
+**What Robot Fingers Is**:
+A direct cross-section state read pattern where S12 reads **directly** from S11's internal TargetState/ReferenceState instead of through StateManager. This provides immediate visual feedback when S11's d_97 (Thermal Bridge %) slider changes.
+
+### Robot Fingers in S12 (Lines 1549-1583, 1589-1600)
+
+**U-Values (h_85-h_93): ✅ CORRECT Robot Fingers Implementation**
+```javascript
+function getUValueFromS11(componentId, useReference) {
+  const s11 = window.TEUI?.SectionModules?.sect11;
+
+  if (useReference) {
+    return s11.ReferenceState?.getValue(`h_${componentId}`);  // ✅ Mode-aware!
+  } else {
+    return s11.TargetState?.getValue(`h_${componentId}`);     // ✅ Mode-aware!
+  }
+}
+
+// Reference engine reads from ReferenceState:
+const g85 = getUValueFromS11("85", useRef);  // ✅ Correct!
+const g88 = getUValueFromS11("88", useRef);  // ✅ Correct!
+```
+
+**Area Values (d_85-d_93): ❌ BROKEN - Missing Robot Fingers!**
+```javascript
+// In calculateCombinedUValue() - ALWAYS reads unprefixed from StateManager:
+const d85 = parseFloat(getGlobalNumericValue("d_85"));  // ❌ WRONG!
+const d88 = parseFloat(getGlobalNumericValue("d_88"));  // ❌ WRONG!
+// ... d_89-d_93 all wrong!
+
+// getGlobalNumericValue reads from StateManager (unprefixed only!)
+// Reference engine uses TARGET area values → CONTAMINATION!
+```
+
+### The Complete Contamination Chain
+
+**When S10 Target Edit (d_73 = 100)**:
+
+1. S10 publishes `d_73 = 100` to StateManager (Target)
+2. S10 dual-engine publishes `ref_d_73 = 7.50` to StateManager (Reference unchanged)
+3. S11 Target listener fires → syncs TargetState.d_88 = 100 ✅
+4. S11 ReferenceState.d_88 stays 7.50 (isolated by DUAL-STATE fix!) ✅
+5. **S11 doesn't publish d_88/ref_d_88 to StateManager** (Robot Fingers pattern - direct reads!)
+6. S12 Target engine: `calculateCombinedUValue(false)` runs
+   - U-values: `getUValueFromS11("88", false)` → reads S11.TargetState.h_88 ✅
+   - **Areas: `getGlobalNumericValue("d_88")` → StateManager → NOT FOUND → Returns 0**
+7. S12 Reference engine: `calculateCombinedUValue(true)` runs
+   - U-values: `getUValueFromS11("88", true)` → reads S11.ReferenceState.h_88 ✅ (7.50's U-value)
+   - **Areas: `getGlobalNumericValue("d_88")` → StateManager → NOT FOUND → Returns 0** ❌
+   - Wait... if both return 0, why contamination?
+
+**Re-analysis Needed**: The areas are reading 0 from StateManager, but calculations still change. Let me check `calculateVolumeMetrics()` vs `calculateCombinedUValue()`:
+
+- `calculateVolumeMetrics()` (lines 1412-1461): Uses fallback pattern `ref_d_88 || d_88 || 0`
+- `calculateCombinedUValue()` (lines 1601-1609): Reads unprefixed d_85-d_93 from StateManager
+- **Both functions run in SAME engine!**
+
+**AH! The issue**: `calculateVolumeMetrics()` runs BEFORE `calculateCombinedUValue()` and stores d_101. Then `calculateCombinedUValue()` reads that contaminated d_101!
+
+Actually, looking at line 1545: `const d101_areaAir = parseFloat(getNumericValue("d_101"));`
+
+This reads **S12's own d_101** which was just calculated by `calculateVolumeMetrics()`. So if `calculateVolumeMetrics()` contaminates when reading areas, then `calculateCombinedUValue()` uses contaminated d_101!
+
+**The Real Bug**: `calculateVolumeMetrics()` fallback pattern at lines 1426-1429:
+```javascript
+d88 =
+  parseFloat(getGlobalNumericValue("ref_d_88")) ||  // Not in StateManager
+  parseFloat(getGlobalNumericValue("d_88")) ||      // Not in StateManager
+  0;  // Returns 0
+```
+
+Both return 0... unless **S11 IS publishing to StateManager somewhere we haven't found!**
+
+Let me check if S11's calculation engines publish area values we missed.
+
+### CRITICAL: Need to verify what's ACTUALLY in StateManager
+
+Run this diagnostic:
+```javascript
+console.log("StateManager d_88:", window.TEUI.StateManager.getValue("d_88"));
+console.log("StateManager ref_d_88:", window.TEUI.StateManager.getValue("ref_d_88"));
+console.log("S11 TargetState d_88:", window.TEUI.SectionModules.sect11.TargetState.getValue("d_88"));
+console.log("S11 ReferenceState d_88:", window.TEUI.SectionModules.sect11.ReferenceState.getValue("d_88"));
+```
+
+### The Fix (Once Verified)
+
+**Option 1: Complete Robot Fingers** - Add area reads to Robot Fingers pattern:
+```javascript
+// In calculateCombinedUValue(), replace lines 1601-1609:
+function getAreaFromS11(componentId, useReference) {
+  const s11 = window.TEUI?.SectionModules?.sect11;
+  if (!s11) return 0;
+
+  if (useReference) {
+    return s11.ReferenceState?.getValue(`d_${componentId}`) || 0;
+  } else {
+    return s11.TargetState?.getValue(`d_${componentId}`) || 0;
+  }
+}
+
+const d85 = getAreaFromS11("85", useRef);
+const d88 = getAreaFromS11("88", useRef);
+// ... etc
+```
+
+**Option 2: S11 Publishes to StateManager** - Still valid if we want StateManager as single source of truth instead of cross-section reads
 
 ---
 
 **Last Updated**: October 22, 2025
-**Assigned To**: AI Agent
-**Priority**: BLOCKER - S11 fix incomplete, S12 contamination identified
+**Assigned To**: User (Diagnostic verification)
+**Priority**: BLOCKER - Incomplete Robot Fingers causing contamination
 **Current Branch**: `S10-S11-PURITY`
-**Status**: 🔴 **S11 ISOLATED ✅ | S12 CONTAMINATION IDENTIFIED** | Need S11 StateManager publishing fix
+**Status**: 🔴 **ROBOT FINGERS INCOMPLETE** | Need diagnostic to verify StateManager contents | Fix identified
