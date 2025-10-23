@@ -445,8 +445,324 @@ console.log("FAILURE: If Target listener doesn't fire for d_73, or Reference doe
 
 ---
 
+### Test 3: Mode-Aware Publishing Trace ✅ PASSED
+
+**Objective**: Verify no edge cases in mode-aware publishing during cascade
+
+**Results**:
+```
+[StateManager TRACE] d_73 = 100 (source: user-modified)  ✅ Target user edit unprefixed
+Call stack: setValue @ 4012-Section10.js:312
+
+[StateManager TRACE] ref_d_73 = 7.50 (source: calculated)  ✅ Reference published with ref_
+(Multiple times during cascade)
+```
+
+**Conclusion**: No edge cases found, publishing path is clean.
+
+---
+
+### Test 4: S11 Area Sync Mode Test 🔴 **BUG FOUND!**
+
+**Objective**: Verify syncAreasFromS10() respects current mode and doesn't contaminate states
+
+**User Test Procedure**:
+1. Changed S10 Target door area to 100m²
+2. Observed **e_10 change** (Reference model updated - WRONG!)
+3. Ran enhanced Test 4
+
+**Critical Finding**:
+```
+S11 ReferenceState d_88: 200   ✅ Initial sync correct
+
+Then immediately after:
+[S11 Area Sync] Starting sync in reference mode
+[S11 Area Sync] d_88 = 7.50 (from ref_d_73)   ❌ Overwrote with wrong value!
+```
+
+**Root Cause Identified** 🎯:
+
+**File**: `4012-Section11.js:1290`
+**Function**: `syncAreasFromS10()`
+**The Bug**: Line 1290 calls `calculateAll()` which runs **BOTH engines** regardless of which mode was updated
+
+```javascript
+// Line 1256-1281: Mode-aware sync (CORRECT)
+if (currentMode === "target") {
+  TargetState.setValue(s11Field, areaValue);  ✅ Only updates Target
+} else {
+  ReferenceState.setValue(s11Field, areaValue); ✅ Only updates Reference
+}
+
+// Line 1290: DUAL-ENGINE CONTAMINATION (BUG!)
+calculateAll();  ❌ Runs BOTH Target AND Reference engines!
+```
+
+**The Contamination Chain**:
+1. User edits S10 **Target** d_73 = 100
+2. S11 Target listener fires → `syncAreasFromS10()`
+3. Correctly writes only to `TargetState.setValue("d_88", 100)` ✅
+4. **BUT** then calls `calculateAll()` which runs both engines ❌
+5. **Reference engine** reads from ReferenceState (still has old value or gets contaminated)
+6. Reference model recalculates → **e_10 changes** ❌
+7. **STATE MIXING CONFIRMED**
+
+**Why Both Engines Create Contamination**:
+- `calculateAll()` is designed to run both Target and Reference engines in parallel (dual-engine architecture)
+- When only ONE state (Target OR Reference) is updated, running BOTH engines causes the unchanged state to recalculate with potentially mixed values
+- The unchanged engine should NOT run when only one mode's values changed
+
+---
+
+## 🎯 ROOT CAUSE CONFIRMED (Revised After Architecture Review)
+
+**User Clarification**: Per CHEATSHEET.md, dual-engine architecture ALWAYS runs both engines. The issue is not about which engine runs, but about **state write isolation**.
+
+**Key Principle**:
+> "When S10 is in Target mode, we should NEVER write a ref_ value. The write goes to StateManager, and no change is made to the Reference model. When we place S11 in Reference mode, the UI refresh will pull updated Reference values from StateManager."
+
+### S07 Pattern (CORRECT Architecture)
+
+**S07 Listener Pattern** (Lines 1402-1403):
+```javascript
+// Both listeners just call calculateAll() - no sync function!
+window.TEUI.StateManager.addListener("d_63", calculateAll);      // Target
+window.TEUI.StateManager.addListener("ref_d_63", calculateAll);  // Reference
+```
+
+**S07 calculateAll()** (Lines 1112-1115):
+```javascript
+function calculateAll() {
+  calculateTargetModel();    // Reads from TargetState, writes to TargetState
+  calculateReferenceModel(); // Reads from ReferenceState, writes to ReferenceState
+}
+```
+
+**How S07 Works**:
+1. External dependency changes in StateManager
+2. Listener fires → `calculateAll()`
+3. Both engines run (dual-engine architecture)
+4. Target engine reads from TargetState, Reference engine reads from ReferenceState
+5. Each engine writes only to its own state
+6. **No sync function writing to wrong states!**
+
+### S11 Anti-Pattern (BUG)
+
+**S11 Listener Pattern** (Lines 1327-1337, 1342-1354):
+```javascript
+// Both listeners call same sync function!
+window.TEUI.StateManager.addListener(fieldId, (newValue) => {
+  if (ModeManager.currentMode !== "target") return;
+  debouncedSyncAreasFromS10();  // ❌ No mode info passed!
+});
+
+window.TEUI.StateManager.addListener(`ref_${fieldId}`, (newValue) => {
+  debouncedSyncAreasFromS10();  // ❌ Same function, no mode info!
+});
+```
+
+**S11 syncAreasFromS10()** (Lines 1256-1290):
+```javascript
+// Uses ModeManager.currentMode to decide which state to write
+const currentMode = ModeManager.currentMode;  // ❌ Wrong! S11 might be in Target mode always!
+
+if (currentMode === "target") {
+  TargetState.setValue(s11Field, areaValue);  // ❌ Writes Target even when ref_ listener fired!
+} else {
+  ReferenceState.setValue(s11Field, areaValue);
+}
+
+calculateAll();  // Runs both engines with contaminated states
+```
+
+**The Bug**:
+1. S10 publishes `ref_d_73` (Reference area) to StateManager
+2. S11's Reference listener fires
+3. `syncAreasFromS10()` checks `ModeManager.currentMode` → "target" (S11 is in Target mode)
+4. **Writes to TargetState instead of ReferenceState!** ❌
+5. Both engines run
+6. Target engine reads contaminated TargetState → Target model contaminated!
+7. Reference model also affected because areas are now wrong
+
+**Why This Happens**:
+- S11's `ModeManager.currentMode` is independent of S10's mode
+- S10 can be in Reference mode while S11 is in Target mode (section independence)
+- `syncAreasFromS10()` uses S11's mode to decide which state to write, but should use **which listener fired**
+
+### The Fix
+
+**Option 1: Remove syncAreasFromS10() entirely (S07 pattern)**
+- Listeners call `calculateAll()` directly
+- Calculation engines read d_88 values from StateManager during calculations
+- No separate sync function needed
+
+**Option 2: Pass trigger mode to sync function**
+```javascript
+// Target listener
+window.TEUI.StateManager.addListener(fieldId, (newValue) => {
+  if (ModeManager.currentMode !== "target") return;
+  debouncedSyncAreasFromS10("target");  // ✅ Pass which listener fired
+});
+
+// Reference listener
+window.TEUI.StateManager.addListener(`ref_${fieldId}`, (newValue) => {
+  debouncedSyncAreasFromS10("reference");  // ✅ Pass which listener fired
+});
+
+function syncAreasFromS10(triggerMode) {
+  const modeToWrite = triggerMode;  // ✅ Use trigger mode, not ModeManager.currentMode
+
+  if (modeToWrite === "target") {
+    TargetState.setValue(s11Field, areaValue);  // ✅ Writes Target when Target listener fired
+  } else {
+    ReferenceState.setValue(s11Field, areaValue);  // ✅ Writes Reference when Reference listener fired
+  }
+
+  calculateAll();  // Both engines run (dual-engine architecture preserved)
+}
+```
+
+**Recommended**: Option 2 preserves S11's existing sync architecture while fixing state isolation
+
+---
+
+### Test 4 Enhanced Results 🔴 **CRITICAL NEW FINDING**
+
+**Test Results**:
+```
+Setup:
+  StateManager d_73: 100       ✅ Set correctly
+  StateManager ref_d_73: 200   ✅ Set correctly
+  StateManager d_88: 100       ✅ Set correctly
+  StateManager ref_d_88: 200   ✅ Set correctly
+
+S11 reading in Target mode:
+  S11 Target mode reads d_88 as: 100   ✅ CORRECT (reads from TargetState)
+
+S11 reading in Reference mode:
+  S11 Reference mode reads d_88 as: 7.50   ❌ WRONG! Expected 200
+```
+
+**NEW ROOT CAUSE IDENTIFIED** 🚨:
+
+The bug is **NOT just about writes** - it's also about **reads**!
+
+**S11's ReferenceState is disconnected from StateManager**:
+1. We set StateManager `ref_d_88 = 200`
+2. S11's Reference listener fired (we saw the log)
+3. But `ModeManager.getValue("d_88")` in Reference mode returns **7.50** (old value)
+4. **S11's ReferenceState never updated from StateManager!**
+
+**Why This Is Critical**:
+- S11's TargetState **does** read from StateManager (shows 100 correctly)
+- S11's ReferenceState **does not** read from StateManager (shows 7.50, not 200)
+- This means `syncAreasFromS10()` is the ONLY way Reference values get into S11's ReferenceState
+- And `syncAreasFromS10()` uses `ModeManager.currentMode` to decide which state to write
+- When S11 is in Target mode, Reference sync writes to TargetState (contamination!)
+
+**The Double Bug**:
+
+**Bug 1: Write Contamination**
+- `syncAreasFromS10()` uses `ModeManager.currentMode` instead of listener trigger source
+- Writes Reference values to TargetState when S11 is in Target mode
+
+**Bug 2: Read Isolation**
+- S11's ReferenceState doesn't auto-populate from StateManager like TargetState does
+- Only populates through manual `syncAreasFromS10()` calls
+- If sync writes to wrong state, ReferenceState never gets correct values
+
+**Architectural Problem**:
+S07 doesn't have this issue because its calculation engines **read directly from StateManager** during calculations. S11's approach of pre-populating local states (TargetState/ReferenceState) from StateManager is fragile and error-prone.
+
+**The Complete Fix Requires**:
+1. ✅ Fix `syncAreasFromS10()` to use listener trigger source, not `ModeManager.currentMode`
+2. ✅ Ensure both TargetState and ReferenceState populate from StateManager correctly
+3. ⚠️ Or better: Remove sync entirely and read from StateManager during calculations (S07 pattern)
+
+---
+
+---
+
+## 🎯 FINAL ROOT CAUSE (User Manual Test Clarification)
+
+**User Test**: Set S10 door area to 200 in **Reference mode** → S11 shows 200 correctly ✅ Reference e_10 updates ✅
+
+**Critical Logs**:
+```
+[S10 AREA EVENT] handleFieldBlur: d_73=200 in reference mode
+[S11 Listener] ref_d_73 changed to 200 (Reference mode)
+[S11 Area Sync] DUAL-STATE SYNC - populating BOTH Target and Reference states
+[S11 Area Sync] d_88 TARGET = 7.50
+[S11 Area Sync] d_88 REFERENCE = 200  ✅ Correct!
+```
+
+**The Real Bug**: DUAL-STATE SYNC (Lines 1211-1252)
+
+```javascript
+const needsDualSync =
+  currentMode === "target" &&
+  (refArea_d88 === undefined || refArea_d88 !== stateManager_refArea);
+
+if (needsDualSync) {
+  // Populates BOTH Target AND Reference states
+  TargetState.setValue(s11Field, targetValue);      // From d_73
+  ReferenceState.setValue(s11Field, refValue);      // From ref_d_73
+}
+```
+
+**When DUAL-STATE SYNC Triggers**:
+- S11 is in Target mode
+- ReferenceState d_88 doesn't match StateManager ref_d_73
+
+**Why This Causes State Mixing**:
+
+**Scenario: User edits S10 Target door area = 100**
+
+1. S10 publishes `d_73 = 100` (Target changed)
+2. S10's dual-engine publishes `ref_d_73 = 7.50` (Reference unchanged - dual-engine always runs)
+3. S11 Target listener fires
+4. `syncAreasFromS10()` checks: currentMode="target", refArea_d88 doesn't match ref_d_73
+5. **DUAL-STATE SYNC triggers!**
+6. Writes `TargetState.d_88 = 100` ✅ Correct
+7. **Writes `ReferenceState.d_88 = 7.50`** ❌ **CONTAMINATION!**
+8. Reference model recalculates with wrong area
+9. **e_10 changes** (Reference model contaminated)
+
+**Why Reference Mode Works**:
+When S10 is in Reference mode and user edits d_73=200:
+1. S10 publishes `ref_d_73 = 200` (Reference changed)
+2. S11 Reference listener fires **OR** DUAL-STATE SYNC triggers
+3. Either way, `ReferenceState.d_88 = 200` ✅ Correct
+4. Reference model updates correctly
+
+**The Problem**: DUAL-STATE SYNC was designed for initialization/import to populate BOTH states. But it triggers during **normal user edits** and **overwrites ReferenceState with stale S10 Reference values** even when only Target changed!
+
+**The Fix**:
+
+DUAL-STATE SYNC should only run during initialization, NOT during cascading listener updates:
+
+```javascript
+// Add flag to track initialization phase
+let isInitializing = true;
+
+// In initialization code:
+window.TEUI.initializationComplete = () => {
+  isInitializing = false;
+};
+
+// In syncAreasFromS10():
+const needsDualSync =
+  isInitializing &&  // ✅ Only during init, not during user edits!
+  currentMode === "target" &&
+  (refArea_d88 === undefined || refArea_d88 !== stateManager_refArea);
+```
+
+**Or better**: Remove DUAL-STATE SYNC entirely and always use mode-aware sync with listener trigger source passed as parameter (Option 2 from earlier).
+
+---
+
 **Last Updated**: October 22, 2025
 **Assigned To**: AI Agent
 **Priority**: BLOCKER - Must fix before any other work
 **Current Branch**: `S10-S11-PURITY`
-**Status**: 🧪 Tests 1-2 PASSED | Hypotheses 1-2 ELIMINATED | Ready for Tests 3-4
+**Status**: 🔴 **FINAL ROOT CAUSE CONFIRMED** | DUAL-STATE SYNC contaminating ReferenceState | Fix identified
