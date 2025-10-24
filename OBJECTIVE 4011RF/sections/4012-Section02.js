@@ -1395,21 +1395,24 @@ window.TEUI.SectionModules.sect02 = (function () {
 
           field.addEventListener("blur", function () {
             this.classList.remove("editing");
-            // ✅ CRITICAL FIX: Save to current state (Target or Reference) via ModeManager
-            ModeManager.setValue(
-              fieldId,
-              this.textContent.trim(),
-              "user-modified",
-            );
 
-            // Also update StateManager for downstream sections (if this field needs to be shared)
-            if (window.TEUI && window.TEUI.StateManager && fieldId === "l_12") {
-              window.TEUI.StateManager.setValue(
-                fieldId,
-                this.textContent.trim(),
-                "user-modified",
-              );
+            let valueToSave = this.textContent.trim();
+
+            // ✅ CSV EXPORT FIX: Strip currency formatting before saving to preserve full precision
+            // Cost fields (l_12-l_16) are formatted for display but must be stored as numeric strings
+            if (["l_12", "l_13", "l_14", "l_15", "l_16"].includes(fieldId)) {
+              // Remove currency symbols and commas: "$1,234.5678" → "1234.5678"
+              valueToSave = valueToSave.replace(/[$,]/g, "");
+              // Ensure it's a valid number, keep full precision
+              const parsed = parseFloat(valueToSave);
+              if (!isNaN(parsed)) {
+                valueToSave = parsed.toString(); // Preserve full precision as string
+              }
             }
+
+            // ✅ CRITICAL FIX: Save to current state (Target or Reference) via ModeManager
+            // ModeManager.setValue handles mode-aware publishing to StateManager
+            ModeManager.setValue(fieldId, valueToSave, "user-modified");
           });
 
           field.addEventListener("keydown", function (e) {
