@@ -443,25 +443,27 @@ From analysis of fresh initialized state export:
 
 Following the pattern established for l_20/l_21 fix (commit 50e76f4):
 
-#### Pattern: Conditional Default Publishing
+#### Pattern: Conditional Default Publishing (Compact)
 
 ```javascript
-// In section's onSectionRendered() or initialization
-function publishReferenceDefaults() {
-  const sectionFieldIds = ["d_19", "h_19", "h_20", "h_21", "m_19", "l_20", "l_21", "i_21"];
-
-  sectionFieldIds.forEach((fieldId) => {
-    // Publish Reference default if not already set
-    const refFieldId = `ref_${fieldId}`;
-    if (!window.TEUI.StateManager.getValue(refFieldId)) {
-      const defaultValue = ReferenceState.getValue(fieldId);
-      if (defaultValue !== null && defaultValue !== undefined) {
-        window.TEUI.StateManager.setValue(refFieldId, defaultValue, "calculated");
-      }
+// In section's ModeManager.initialize() or onSectionRendered()
+// Compact array-based pattern for performance and readability
+if (window.TEUI?.StateManager) {
+  ["d_19", "h_19", "h_20", "h_21", "m_19", "l_20", "l_21", "i_21"].forEach(id => {
+    const refId = `ref_${id}`;
+    const val = ReferenceState.getValue(id);
+    if (!window.TEUI.StateManager.getValue(refId) && val != null && val !== "") {
+      window.TEUI.StateManager.setValue(refId, val, "calculated");
     }
   });
 }
 ```
+
+**Why this compact pattern:**
+- ✅ **Concise**: 6 lines vs 25 lines (verbose version)
+- ✅ **Scannable**: Field list visible at a glance
+- ✅ **Performant**: No intermediate variables, direct operations
+- ✅ **Consistent**: Same pattern repeats across all 11 sections
 
 #### Why This Works
 

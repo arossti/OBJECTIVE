@@ -1843,22 +1843,12 @@ window.TEUI.SectionModules.sect02 = (function () {
         // FileHandler.exportToCSV() reads from StateManager, not from internal ReferenceState
         // Pattern: Conditionally publish if value doesn't exist (import-safe, non-destructive)
         if (window.TEUI?.StateManager) {
-          const s02FieldIds = [
-            "d_12", "d_13", "d_14", "d_15",  // Dropdowns
-            "h_12", "h_13", "h_14", "h_15",  // Building metadata + area
-            "i_16", "i_17",                   // Certifier info
-            "l_12", "l_13", "l_14", "l_15", "l_16"  // Cost fields
-          ];
-
-          s02FieldIds.forEach((fieldId) => {
-            const refFieldId = `ref_${fieldId}`;
-            // Only publish if not already set (CSV/Excel import already sets values)
-            if (!window.TEUI.StateManager.getValue(refFieldId)) {
-              const defaultValue = ReferenceState.getValue(fieldId);
-              if (defaultValue !== null && defaultValue !== undefined && defaultValue !== "") {
-                window.TEUI.StateManager.setValue(refFieldId, defaultValue, "calculated");
-                // console.log(`S02: Published Reference default ${refFieldId} = ${defaultValue}`);
-              }
+          ["d_12", "d_13", "d_14", "d_15", "h_12", "h_13", "h_14", "h_15",
+           "i_16", "i_17", "l_12", "l_13", "l_14", "l_15", "l_16"].forEach(id => {
+            const refId = `ref_${id}`;
+            const val = ReferenceState.getValue(id);
+            if (!window.TEUI.StateManager.getValue(refId) && val != null && val !== "") {
+              window.TEUI.StateManager.setValue(refId, val, "calculated");
             }
           });
         }
