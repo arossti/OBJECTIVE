@@ -64,6 +64,7 @@ class ExcelMapper {
       M19: "m_19", // Days Cooling (Editable Number)
       L20: "l_20", // Cooling Season Average overnight Temp ºC (Editable Number) FUTURE FEATURE
       L21: "l_21", // Cooling Season Average LST15h00 RH% (Editable Number) FUTURE FEATURE
+      L24: "l_24", // Cooling Setpoint Override (Editable Number) FUTURE FEATURE - allows testing lower setpoints
 
       // Section 04: Actual vs Target Energy (REPORT! Sheet)
       D27: "d_27", // Actual Elec Use
@@ -225,6 +226,7 @@ class ExcelMapper {
       M19: "ref_m_19",
       L20: "ref_l_20", // Cooling Season Average overnight Temp ºC (Editable Number) FUTURE FEATURE
       L21: "ref_l_21", // Cooling Season Average LST15h00 RH% (Editable Number) FUTURE FEATURE
+      L24: "ref_l_24", // Cooling Setpoint Override (Editable Number) FUTURE FEATURE
 
       // Section 04: Actual vs Target Energy (REFERENCE! Sheet)
       D27: "ref_d_27",

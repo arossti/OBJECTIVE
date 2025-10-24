@@ -2480,30 +2480,18 @@ window.TEUI.SectionModules.sect03 = (function () {
       // Initial UI refresh from current state
       ModeManager.refreshUI();
 
-      // ✅ PUBLISH DEFAULTS: Ensure l_20 and l_21 defaults are in StateManager
-      // These are editable fields that won't get published until user edits them
-      // Without this, they remain empty in StateManager (causing CSV export gaps)
-      const l20Default = getFieldDefault("l_20"); // 20.43
-      const l21Default = getFieldDefault("l_21"); // 55.85
-
-      // Publish Target defaults if not already set
-      if (!window.TEUI.StateManager.getValue("l_20")) {
-        window.TEUI.StateManager.setValue("l_20", l20Default, "calculated");
-        TargetState.setValue("l_20", l20Default, "default");
-      }
-      if (!window.TEUI.StateManager.getValue("l_21")) {
-        window.TEUI.StateManager.setValue("l_21", l21Default, "calculated");
-        TargetState.setValue("l_21", l21Default, "default");
-      }
-
-      // Publish Reference defaults if not already set
-      if (!window.TEUI.StateManager.getValue("ref_l_20")) {
-        window.TEUI.StateManager.setValue("ref_l_20", l20Default, "calculated");
-        ReferenceState.setValue("l_20", l20Default, "default");
-      }
-      if (!window.TEUI.StateManager.getValue("ref_l_21")) {
-        window.TEUI.StateManager.setValue("ref_l_21", l21Default, "calculated");
-        ReferenceState.setValue("l_21", l21Default, "default");
+      // ✅ CSV EXPORT FIX: Publish ALL Reference defaults to StateManager
+      // Without this, CSV export shows empty Reference values (missing S03 fields)
+      // FileHandler.exportToCSV() reads from StateManager, not from internal ReferenceState
+      // Pattern: Conditionally publish if value doesn't exist (import-safe, non-destructive)
+      if (window.TEUI?.StateManager) {
+        ["d_19", "h_19", "h_20", "h_21", "i_21", "m_19", "l_20", "l_21", "l_24"].forEach(id => {
+          const refId = `ref_${id}`;
+          const val = ReferenceState.getValue(id);
+          if (!window.TEUI.StateManager.getValue(refId) && val != null && val !== "") {
+            window.TEUI.StateManager.setValue(refId, val, "calculated");
+          }
+        });
       }
 
       // 5. Perform initial calculations for this section
