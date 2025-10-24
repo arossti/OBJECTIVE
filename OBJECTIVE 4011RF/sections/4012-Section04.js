@@ -778,7 +778,18 @@ window.TEUI.SectionModules.sect04 = (function () {
       const currentState = this.getCurrentState();
 
       // Update user-editable input fields from current state
-      const editableFields = ["d_27", "d_28", "d_29", "d_30", "d_31", "h_35"];
+      const editableFields = [
+        "d_27",
+        "d_28",
+        "d_29",
+        "d_30",
+        "d_31",
+        "l_28",
+        "l_29",
+        "l_30",
+        "l_31",
+        "h_35",
+      ];
 
       editableFields.forEach((fieldId) => {
         const stateValue = currentState.getValue(fieldId);
@@ -796,6 +807,15 @@ window.TEUI.SectionModules.sect04 = (function () {
             if (numericValue >= 0) {
               const formattedValue =
                 window.TEUI?.formatNumber?.(numericValue, "number-2dp-comma") ??
+                stateValue;
+              element.textContent = formattedValue;
+            }
+          } else if (["l_28", "l_29", "l_30", "l_31"].includes(fieldId)) {
+            // Emission factors: display as integers
+            const numericValue = window.TEUI?.parseNumeric?.(stateValue, 0);
+            if (numericValue >= 0) {
+              const formattedValue =
+                window.TEUI?.formatNumber?.(numericValue, "integer") ??
                 stateValue;
               element.textContent = formattedValue;
             }

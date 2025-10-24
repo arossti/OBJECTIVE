@@ -503,27 +503,60 @@ This is multi-session work. Sections must be fixed systematically to prevent reg
 
 ---
 
-#### Phase 2: Section 03 Fix (Current Work)
+#### Phase 2: Section 03 Fix ✅ COMPLETE
 
 **File**: [4012-Section03.js](../sections/4012-Section03.js)
 
-**Status**: ✅ l_20/l_21 fixed (commit 50e76f4), ⏳ Need to publish remaining fields + add l_24
+**Status**: ✅ Complete (commit b7386b7)
 
-**Missing Reference values**: d_19, h_19, h_20, h_21, i_21, m_19, l_24 (7 fields)
-- Note: l_20, l_21 already fixed but need to be included in compact pattern
+**Fields fixed**: All 9 S03 fields now publish Reference defaults to StateManager
+- d_19, h_19, h_20, h_21, i_21, m_19, l_20, l_21, l_24 (cooling setpoint override - FUTURE FEATURE)
 
-**Implementation**:
-1. Add l_24 (cooling setpoint override) to ExcelMapper import mapping
-2. Add l_24 to CSV export field list (FileHandler.js)
-3. Extend `onSectionRendered()` to publish ALL S03 Reference defaults using compact pattern
-4. Test CSV export shows all S03 Reference values
-5. Verify import still works correctly
+**Pattern used**: Compact array-based forEach in ModeManager.initialize()
 
-#### Phase 3: Sections 04-15 Systematic Fix
+**Additional changes**:
+- ✅ Added l_24 (cooling setpoint override) to ExcelMapper import mapping
+- ✅ Added l_24 to CSV export field list (FileHandler.js) - now 127 fields total
+- ✅ Replaced verbose l_20/l_21 publishing code (25 lines) with compact pattern (6 lines)
+
+**Testing**: CSV export from initialized state shows all 9 S03 Reference values populated
+
+---
+
+#### Phase 3: Section 04 Fix ⏳ IN PROGRESS
+
+**File**: [4012-Section04.js](../sections/4012-Section04.js)
+
+**Status**: ⏳ Code complete, ready to test (commit 8793ee6)
+
+**Fields fixed**: All 10 S04 fields (utility bills + emission factors + PER)
+- d_27, d_28, d_29, d_30, d_31 (actual energy consumption - utility bills)
+- l_28, l_29, l_30, l_31 (emission factors - optional overrides for advanced users)
+- h_35 (PER factor)
+
+**Pattern used**: Compact array-based forEach in ModeManager.initialize()
+
+**Major changes**:
+- ❌ **Removed l_27** from ExcelMapper and CSV export (calculated field, province + year dependent)
+- ✅ **Converted l_28-l_31** from static content to editable fields (emission factor overrides)
+  - l_28: Gas emission factor (1921 gCO2e/m³)
+  - l_29: Propane emission factor (2970 gCO2e/kg)
+  - l_30: Oil emission factor (2753 gCO2e/litre)
+  - l_31: Wood emission factor (150 kgCO2e/m³)
+- ✅ Added l_28-l_31 to TargetState and ReferenceState defaults (state isolated)
+- ✅ Fields now editable in both Target and Reference modes
+
+**Total CSV fields**: 126 (l_24 added in S03, then l_27 removed in S04)
+
+**Testing required**: CSV export, verify all 10 S04 Reference values, test editability in both modes
+
+---
+
+#### Phase 4: Sections 05-15 Systematic Fix
 
 **Sections to audit** (in order of dependency):
-- S04 (Actual Energy): 11 missing
-- S05 (Emissions): 1 missing
+- S05 (Emissions): 2 missing
+- S06 (Renewable): 7 missing
 - S06 (Renewable): 7 missing
 - S07 (Water): 4 missing
 - S08 (IAQ): 5 missing
