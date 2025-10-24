@@ -49,11 +49,11 @@ Let me count the fields in each system:
 
 ### Excel Import Mapping Fields (from ExcelMapper.js)
 
-**Target fields (excelReportInputMapping):** 157 unique field IDs
+**Target fields (excelReportInputMapping):** 126 unique field IDs
 
-**Reference fields (excelReferenceInputMapping):** 157 unique field IDs (mirrors Target)
+**Reference fields (excelReferenceInputMapping):** 126 unique field IDs (mirrors Target)
 
-**Total import capacity:** 157 Target + 157 Reference = 314 field mappings
+**Total import capacity:** 126 Target + 126 Reference = 252 field mappings
 
 ### CSV Export Fields (from FileHandler.js)
 
@@ -125,7 +125,7 @@ Based on Excel import mapping, these categories are included:
 ### Section 15 - Summary (1 field)
 - d_142
 
-**Total Excel Import Fields: 157 Target + 157 Reference = 314**
+**Total Excel Import Fields: 126 Target + 126 Reference = 314**
 
 ## Questions to Investigate
 
@@ -154,7 +154,7 @@ const exportFieldIds = [
   // Section 03
   'd_19', 'h_19', 'h_20', 'h_21', 'i_21', 'm_19', 'l_20', 'l_21',
 
-  // ... continue for all 157 fields from Excel mapping
+  // ... continue for all 126 fields from Excel mapping
 ];
 ```
 
@@ -183,7 +183,7 @@ const exportFieldIds = [
 ## Workplan (Option A - Recommended)
 
 ### Phase 1: Create Explicit Field List
-1. Extract 157 field IDs from `excelReportInputMapping`
+1. Extract 126 field IDs from `excelReportInputMapping`
 2. Create static array in FileHandler.js or import from ExcelMapper
 3. Ensure order matches Excel import order
 
@@ -223,7 +223,7 @@ const exportFieldIds = [
 
 ## Success Criteria
 
-- ✅ Export CSV includes exactly 157 Target + 157 Reference fields
+- ✅ Export CSV includes exactly 126 Target + 126 Reference fields
 - ✅ Field order matches Excel import mapping order
 - ✅ Round-trip: export→reset→import produces identical e_10/h_10
 - ✅ After CSV import, edits trigger recalculation correctly

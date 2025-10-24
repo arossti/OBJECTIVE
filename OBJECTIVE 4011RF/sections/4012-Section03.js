@@ -2480,6 +2480,32 @@ window.TEUI.SectionModules.sect03 = (function () {
       // Initial UI refresh from current state
       ModeManager.refreshUI();
 
+      // ✅ PUBLISH DEFAULTS: Ensure l_20 and l_21 defaults are in StateManager
+      // These are editable fields that won't get published until user edits them
+      // Without this, they remain empty in StateManager (causing CSV export gaps)
+      const l20Default = getFieldDefault("l_20"); // 20.43
+      const l21Default = getFieldDefault("l_21"); // 55.85
+
+      // Publish Target defaults if not already set
+      if (!window.TEUI.StateManager.getValue("l_20")) {
+        window.TEUI.StateManager.setValue("l_20", l20Default, "calculated");
+        TargetState.setValue("l_20", l20Default, "default");
+      }
+      if (!window.TEUI.StateManager.getValue("l_21")) {
+        window.TEUI.StateManager.setValue("l_21", l21Default, "calculated");
+        TargetState.setValue("l_21", l21Default, "default");
+      }
+
+      // Publish Reference defaults if not already set
+      if (!window.TEUI.StateManager.getValue("ref_l_20")) {
+        window.TEUI.StateManager.setValue("ref_l_20", l20Default, "calculated");
+        ReferenceState.setValue("l_20", l20Default, "default");
+      }
+      if (!window.TEUI.StateManager.getValue("ref_l_21")) {
+        window.TEUI.StateManager.setValue("ref_l_21", l21Default, "calculated");
+        ReferenceState.setValue("l_21", l21Default, "default");
+      }
+
       // 5. Perform initial calculations for this section
       calculateAll();
 
