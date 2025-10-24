@@ -109,12 +109,10 @@ window.TEUI.SectionModules.sect10 = (function () {
       const savedState = localStorage.getItem("S10_REFERENCE_STATE");
       if (savedState) {
         this.state = JSON.parse(savedState);
-        console.log("[S10 REF DEBUG] Loaded state from localStorage");
         // ✅ CRITICAL: Re-publish to StateManager even when loading from localStorage
         // This ensures values are available for CSV export after page refresh
         this.publishToStateManager();
       } else {
-        console.log("[S10 REF DEBUG] No saved state, calling setDefaults()");
         this.setDefaults();
       }
     },
@@ -179,8 +177,6 @@ window.TEUI.SectionModules.sect10 = (function () {
       // Row 80 (nGains utilization)
       this.state.d_80 = "NRC 40%"; // Reference: NRC 40% utilization method
 
-      console.log("[S10 REF DEBUG] State after manual overrides:", JSON.stringify(this.state, null, 2));
-
       // Publish to StateManager
       this.publishToStateManager();
     },
@@ -224,16 +220,12 @@ window.TEUI.SectionModules.sect10 = (function () {
         ];
         referenceFields.forEach((fieldId) => {
           const value = this.state[fieldId];
-          console.log(`[S10 REF DEBUG] Publishing ${fieldId}: value="${value}", typeof=${typeof value}`);
           if (value !== null && value !== undefined) {
             window.TEUI.StateManager.setValue(
               `ref_${fieldId}`,
               value,
               "default",
             );
-            console.log(`[S10 REF DEBUG] ✅ Published ref_${fieldId} = "${value}"`);
-          } else {
-            console.log(`[S10 REF DEBUG] ❌ SKIPPED ref_${fieldId} (value is ${value})`);
           }
         });
       }
