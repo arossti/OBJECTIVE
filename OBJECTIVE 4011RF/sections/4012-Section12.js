@@ -78,6 +78,9 @@ window.TEUI.SectionModules.sect12 = (function () {
       const savedState = localStorage.getItem("S12_REFERENCE_STATE");
       if (savedState) {
         this.state = JSON.parse(savedState);
+        // ✅ CRITICAL: Re-publish to StateManager even when loading from localStorage
+        // This ensures values are available for CSV export after page refresh
+        this.publishToStateManager();
       } else {
         this.setDefaults();
       }
@@ -98,6 +101,14 @@ window.TEUI.SectionModules.sect12 = (function () {
         g_109: referenceValues.g_109 || "2.00", // Measured - DIFFERENT: 2.00 vs Target 1.50
       };
 
+      // Publish to StateManager
+      this.publishToStateManager();
+
+      console.log(
+        `S12: Reference defaults loaded from standard: ${currentStandard}`,
+      );
+    },
+    publishToStateManager: function () {
       // ✅ CRITICAL: Publish Reference defaults to StateManager (S10/S11/S04 pattern)
       // This fixes S15 warnings: ref_g_101, ref_d_101, ref_i_104 missing
       // 🚨 TODO: Add j_110 (air leakage zone) when it becomes user-editable
@@ -122,16 +133,9 @@ window.TEUI.SectionModules.sect12 = (function () {
               value,
               "default",
             );
-            console.log(
-              `[S12 REF DEFAULTS] Published ref_${fieldId}=${value} to StateManager`,
-            );
           }
         });
       }
-
-      console.log(
-        `S12: Reference defaults loaded from standard: ${currentStandard}`,
-      );
     },
     // MANDATORY: Include onReferenceStandardChange for d_13 changes
     onReferenceStandardChange: function () {
