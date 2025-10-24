@@ -158,7 +158,7 @@ window.TEUI.SectionModules.sect10 = (function () {
 
       // ✅ CRITICAL: Publish Reference defaults to StateManager (S02 pattern)
       // This enables S11 to read Reference area values during initialization and mode switching
-      // ✅ FIX: Include d_80 (nGains dropdown) and orientation dropdowns (e_73-e_78) for proper Reference mode functionality
+      // ✅ CSV EXPORT FIX: Include ALL 25 fields (areas, orientations, SHGCs, shading, nGains)
       if (window.TEUI?.StateManager) {
         const referenceFields = [
           "d_73",
@@ -173,6 +173,24 @@ window.TEUI.SectionModules.sect10 = (function () {
           "e_76",
           "e_77",
           "e_78", // Orientation dropdowns
+          "f_73",
+          "f_74",
+          "f_75",
+          "f_76",
+          "f_77",
+          "f_78", // SHGC values
+          "g_73",
+          "g_74",
+          "g_75",
+          "g_76",
+          "g_77",
+          "g_78", // Winter shading %
+          "h_73",
+          "h_74",
+          "h_75",
+          "h_76",
+          "h_77",
+          "h_78", // Summer shading %
           "d_80", // nGains dropdown
         ];
         referenceFields.forEach((fieldId) => {
