@@ -109,7 +109,12 @@ window.TEUI.SectionModules.sect10 = (function () {
       const savedState = localStorage.getItem("S10_REFERENCE_STATE");
       if (savedState) {
         this.state = JSON.parse(savedState);
+        console.log("[S10 REF DEBUG] Loaded state from localStorage");
+        // ✅ CRITICAL: Re-publish to StateManager even when loading from localStorage
+        // This ensures values are available for CSV export after page refresh
+        this.publishToStateManager();
       } else {
+        console.log("[S10 REF DEBUG] No saved state, calling setDefaults()");
         this.setDefaults();
       }
     },
@@ -176,6 +181,10 @@ window.TEUI.SectionModules.sect10 = (function () {
 
       console.log("[S10 REF DEBUG] State after manual overrides:", JSON.stringify(this.state, null, 2));
 
+      // Publish to StateManager
+      this.publishToStateManager();
+    },
+    publishToStateManager: function () {
       // ✅ CRITICAL: Publish Reference defaults to StateManager (S02 pattern)
       // This enables S11 to read Reference area values during initialization and mode switching
       // ✅ CSV EXPORT FIX: Include ALL 25 fields (areas, orientations, SHGCs, shading, nGains)
