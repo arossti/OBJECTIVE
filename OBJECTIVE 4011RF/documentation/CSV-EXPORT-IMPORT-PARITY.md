@@ -552,10 +552,30 @@ This is multi-session work. Sections must be fixed systematically to prevent reg
 
 ---
 
-#### Phase 4: Sections 05-15 Systematic Fix
+#### Phase 4: Section 05 Fix ✅ COMPLETE
+
+**File**: [4012-Section05.js](../sections/4012-Section05.js)
+
+**Status**: ✅ Complete (commit 3b2ccd6)
+
+**Fields fixed**: All 2 S05 fields (construction typology + embodied carbon)
+- d_39: Construction typology (Pt.3 Steel reference vs Pt.3 Mass Timber target)
+- i_41: Embodied carbon value (kgCO2e/m²)
+
+**Pattern used**: Compact array-based forEach in ModeManager.initialize()
+
+**Major changes**:
+- ✅ Added Reference value publishing to ModeManager.setValue() (ref_ prefix)
+- ✅ Published all 2 S05 Reference defaults using compact pattern
+- ✅ User edits in Reference mode now publish to StateManager correctly
+
+**Testing**: CSV export shows all 2 S05 Reference values (d_39, i_41)
+
+---
+
+#### Phase 5: Sections 06-15 Systematic Fix
 
 **Sections to audit** (in order of dependency):
-- S05 (Emissions): 2 missing
 - S06 (Renewable): 7 missing
 - S06 (Renewable): 7 missing
 - S07 (Water): 4 missing
