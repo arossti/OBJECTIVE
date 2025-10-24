@@ -72,11 +72,11 @@ class ExcelMapper {
       D29: "d_29", // Actual Propane Use
       D30: "d_30", // Actual Oil Use
       D31: "d_31", // Actual Wood Use
-      L27: "l_27", // Elec Emission Factor
-      L28: "l_28", // Gas Emission Factor
-      L29: "l_29", // Propane Emission Factor
-      L30: "l_30", // Oil Emission Factor
-      L31: "l_31", // Wood Emission Factor
+      // L27: REMOVED - calculated field (province + year dependent), should not be imported/exported
+      L28: "l_28", // Gas Emission Factor (Optional override - advanced users only)
+      L29: "l_29", // Propane Emission Factor (Optional override - advanced users only)
+      L30: "l_30", // Oil Emission Factor (Optional override - advanced users only)
+      L31: "l_31", // Wood Emission Factor (Optional override - advanced users only)
       H35: "h_35", // PER Factor (Editable Number)
 
       // Section 05: Emissions (REPORT! Sheet)
@@ -234,7 +234,7 @@ class ExcelMapper {
       D29: "ref_d_29",
       D30: "ref_d_30",
       D31: "ref_d_31",
-      L27: "ref_l_27",
+      // L27: REMOVED - calculated field, should not be imported/exported
       L28: "ref_l_28",
       L29: "ref_l_29",
       L30: "ref_l_30",

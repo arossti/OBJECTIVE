@@ -753,7 +753,7 @@
 
           // Section 04: Actual Energy
           "d_27", "d_28", "d_29", "d_30", "d_31",
-          "l_27", "l_28", "l_29", "l_30", "l_31",
+          "l_28", "l_29", "l_30", "l_31",  // l_27 removed (calculated field)
           "h_35",
 
           // Section 05: Emissions
