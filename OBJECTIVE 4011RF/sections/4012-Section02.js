@@ -1837,17 +1837,30 @@ window.TEUI.SectionModules.sect02 = (function () {
         TargetState.loadState();
         ReferenceState.setDefaults();
         ReferenceState.loadState();
-        // Publish core Reference parameters immediately so consumers (S01, S04) have values on first load
+
+        // ✅ CSV EXPORT FIX: Publish ALL Reference defaults to StateManager
+        // Without this, CSV export shows empty Reference values (89 out of 126 missing)
+        // FileHandler.exportToCSV() reads from StateManager, not from internal ReferenceState
+        // Pattern: Conditionally publish if value doesn't exist (import-safe, non-destructive)
         if (window.TEUI?.StateManager) {
-          const refH12 = ReferenceState.getValue("h_12");
-          const refH13 = ReferenceState.getValue("h_13");
-          const refH15 = ReferenceState.getValue("h_15");
-          if (refH12)
-            window.TEUI.StateManager.setValue("ref_h_12", refH12, "default");
-          if (refH13)
-            window.TEUI.StateManager.setValue("ref_h_13", refH13, "default");
-          if (refH15)
-            window.TEUI.StateManager.setValue("ref_h_15", refH15, "default");
+          const s02FieldIds = [
+            "d_12", "d_13", "d_14", "d_15",  // Dropdowns
+            "h_12", "h_13", "h_14", "h_15",  // Building metadata + area
+            "i_16", "i_17",                   // Certifier info
+            "l_12", "l_13", "l_14", "l_15", "l_16"  // Cost fields
+          ];
+
+          s02FieldIds.forEach((fieldId) => {
+            const refFieldId = `ref_${fieldId}`;
+            // Only publish if not already set (CSV/Excel import already sets values)
+            if (!window.TEUI.StateManager.getValue(refFieldId)) {
+              const defaultValue = ReferenceState.getValue(fieldId);
+              if (defaultValue !== null && defaultValue !== undefined && defaultValue !== "") {
+                window.TEUI.StateManager.setValue(refFieldId, defaultValue, "calculated");
+                // console.log(`S02: Published Reference default ${refFieldId} = ${defaultValue}`);
+              }
+            }
+          });
         }
       } catch (e) {
         console.warn("[S02] initialize: state initialization error", e);
