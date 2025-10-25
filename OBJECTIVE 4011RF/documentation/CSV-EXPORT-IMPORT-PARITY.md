@@ -962,6 +962,46 @@ With these changes, the S12 calculation flow will be robust and predictable:
 
 This targeted fix should unblock the entire Reference model and resolve the critical regression.
 
+### Testing Results (2025-10-24 Late Night)
+
+After implementing both the race condition fix and localStorage re-publication fix:
+
+**✅ CSV Export Success**:
+- All S12 Reference values now export correctly (d_103, g_103, d_105, d_108, g_109)
+- Export works even after many changes and edits
+- localStorage re-publication working as expected
+
+**⚠️ Remaining Issues**:
+
+1. **One-Time e_10 Adjustment on First S12 Target Edit**:
+   - Symptom: First change to ANY Target field in S12 causes e_10 (Reference TEUI) to recalculate
+   - Subsequent Target changes only affect h_10 (correct behavior)
+   - Analysis: Suggests initialization calculation pass missed something, and first S12 edit unblocks it by running both engines
+   - Status: Minor initialization timing issue, not blocking workflow
+
+2. **Reference Model Calculation Flow Still Blocked** ❌ CRITICAL:
+   - Symptom: Changes to S12 Reference values DO NOT propagate downstream
+   - Impact: S13, S14, S15, S04, S01 don't receive S12 Reference updates
+   - Result: e_10 doesn't change when S12 Reference values change
+   - Status: **The original calculation flow blockage persists despite CSV export fix**
+   - Conclusion: CSV export and calculation flow are SEPARATE issues
+     - CSV export: ✅ FIXED (values publish to StateManager for export)
+     - Calculation flow: ❌ STILL BROKEN (downstream sections don't consume values)
+
+3. **d_103 Air Leakage Calculation Stops at 3 Stories** (SEPARATE ISSUE):
+   - Symptom: Changes to d_103 (stories) produce internal recalculations up to 3 stories
+   - Beyond 3 stories: No change in calculations
+   - Root cause: S12 uses mini JSON table to map air leakage values based on storey height
+   - Functional recall appears broken beyond 3 stories
+   - Historical check: **This has NEVER worked** - predates dual-state refactors
+   - Status: Pre-existing bug, requires separate investigation and formula re-litigation
+   - Not related to current state isolation work
+
+**Key Insight**:
+We've achieved **partial victory** - CSV export is complete, but the Reference calculation flow remains blocked. The issue is not publication (S12 publishes correctly), but **consumption** (downstream sections S13+ don't react to S12 Reference changes).
+
+This confirms the hypothesis from earlier investigation: The problem is in Pattern 4 (Consuming External Values) in downstream sections, not in S12's publication.
+
 ---
 
 ## 📋 Established Patterns for StateManager Publication
