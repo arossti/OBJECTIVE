@@ -1064,6 +1064,46 @@ The CSV export fix code itself (or its placement/timing in initialization) is cr
 **Action Required**:
 Examine the EXACT differences in CSV publication implementation between working and broken versions to identify what breaks the calculation flow.
 
+---
+
+## 🔬 S13 Comparative Testing Setup (2025-10-25 evening)
+
+**File Naming Convention for Testing**:
+- `4012-Section13.js` (126K, Oct 23) - **BACKUP VERSION** - Currently active in index.html
+- `4012-Section13-latest.js` (127K, Oct 24) - **CSV FIX VERSION** - Renamed for comparison
+
+**Testing Results with Backup S13 (currently active)**:
+
+✅ **Calculation Flow**: WORKING
+- S12 Target changes affect only h_10 (Target model)
+- S12 Reference changes affect only e_10 (Reference model)
+- Clean state isolation between Target and Reference modes
+- **S12 is NOT the problem** - isolation working correctly
+
+❌ **Initialization Values**: INCORRECT
+- Observed on fresh initialization:
+  - e_10 (Reference TEUI): **287.0 kWh/m²/yr**
+  - h_10 (Target TEUI): **93.6 kWh/m²/yr**
+- Expected for Excel parity:
+  - e_10 (Reference TEUI): **≈196.6 kWh/m²/yr**
+  - h_10 (Target TEUI): **93.7 kWh/m²/yr**
+- **Error**: e_10 is 87+ kWh/m²/yr too high (wrong Reference calculation)
+
+**Hypothesis**: S13-latest.js likely has better initialization (closer to Excel) but blocks calculation flow.
+
+**Problem Summary**:
+Both S13 versions have issues:
+- **Backup (active)**: ✅ Flow works, ❌ Wrong e_10 initialization (~287 vs ~197 expected)
+- **Latest (offline)**: ❌ Flow blocked, ✅ Better initialization (needs verification)
+
+**Root Cause Location**: The problem is in S13's Reference model calculation logic, NOT in S12's publication pattern.
+
+**Next Investigation**:
+Compare initialization and calculation logic between backup and latest S13 to find:
+1. What makes latest's initialization more accurate
+2. What makes backup's calculation flow work correctly
+3. How to combine both fixes
+
 ### Next Steps: Compare and Fix S13
 
 **Option 1: Use Backup S13 as Baseline (RECOMMENDED)**
