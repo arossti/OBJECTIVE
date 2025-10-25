@@ -100,10 +100,6 @@ window.TEUI.SectionModules.sect12 = (function () {
 
       // ✅ CRITICAL: Publish Reference defaults to StateManager (S10/S11/S04 pattern)
       // This fixes S15 warnings: ref_g_101, ref_d_101, ref_i_104 missing
-      // 🚨 TODO: Add j_110 (air leakage zone) when it becomes user-editable
-      //    - Currently defaults to "2" (Southern Ontario)
-      //    - Future: JSON map for air leakage zones across regions
-      //    - Would need to add to ExcelMapper and CSV export field list
       if (window.TEUI?.StateManager) {
         const referenceFields = [
           "d_103",
@@ -112,7 +108,6 @@ window.TEUI.SectionModules.sect12 = (function () {
           "d_108",
           "g_109", // User input fields
           // Note: Calculated fields (g_101, d_101, i_104) will be published by calculation engines
-          // Note: j_110 (air leakage zone) not yet user-editable - defaults to "2"
         ];
         referenceFields.forEach((fieldId) => {
           const value = this.state[fieldId];
