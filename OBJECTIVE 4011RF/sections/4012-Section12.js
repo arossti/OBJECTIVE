@@ -78,6 +78,21 @@ window.TEUI.SectionModules.sect12 = (function () {
       const savedState = localStorage.getItem("S12_REFERENCE_STATE");
       if (savedState) {
         this.state = JSON.parse(savedState);
+        // ✅ CRITICAL: Re-publish to StateManager even when loading from localStorage
+        // This ensures values are available for CSV export after page refresh (S10 pattern)
+        if (window.TEUI?.StateManager) {
+          const referenceFields = ["d_103", "g_103", "d_105", "d_108", "g_109"];
+          referenceFields.forEach((fieldId) => {
+            const value = this.state[fieldId];
+            if (value !== null && value !== undefined) {
+              window.TEUI.StateManager.setValue(
+                `ref_${fieldId}`,
+                value,
+                "default",
+              );
+            }
+          });
+        }
       } else {
         this.setDefaults();
       }
@@ -2264,7 +2279,9 @@ window.TEUI.SectionModules.sect12 = (function () {
     calculateReferenceModel(); // Reads ReferenceState → stores ref_ prefixed
     calculateTargetModel(); // Reads TargetState → stores unprefixed
 
-    // ✅ S11 PATTERN: Re-write Reference values after all calculations to prevent overwrites
+    // ✅ PRIMARY PUBLISH: This is now the single, definitive point for publishing
+    // all calculated Reference values from S12. This ensures the calculation
+    // pass is complete before notifying downstream sections.
     if (window.TEUI?.StateManager && lastReferenceResults) {
       Object.entries(lastReferenceResults).forEach(([fieldId, value]) => {
         window.TEUI.StateManager.setValue(
@@ -2368,33 +2385,8 @@ window.TEUI.SectionModules.sect12 = (function () {
     // ✅ S11 PATTERN: Store results for later re-writing
     lastReferenceResults = { ...allResults };
 
-    Object.entries(allResults).forEach(([fieldId, value]) => {
-      if (value !== null && value !== undefined) {
-        window.TEUI.StateManager.setValue(
-          `ref_${fieldId}`,
-          String(value),
-          "calculated",
-        );
-        // [S12DB] Debug critical S15 dependencies
-        if (
-          [
-            "g_101",
-            "d_101",
-            "i_104",
-            "g_102",
-            "d_102",
-            "i_101",
-            "i_102",
-            "g_104",
-          ].includes(fieldId)
-        ) {
-          // S15 dependencies stored
-        }
-      }
-    });
-
     console.log(
-      "[Section12] Reference results stored with ref_ prefix for downstream sections",
+      "[Section12] Reference results cached. Publishing will occur at the end of calculateAll.",
     );
   }
 

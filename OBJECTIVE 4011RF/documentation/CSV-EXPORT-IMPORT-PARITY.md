@@ -846,6 +846,124 @@ Between contamination victory and current state:
 
 ---
 
+##  S12 Deep Dive: Unblocking the Calculation Flow
+
+**Date**: 2025-10-24
+**Analysis of**: `4012-Section12.js`
+
+Following the identification of Section 12 as the linchpin blocking the Reference model calculation flow, a deep dive into its source code reveals the likely root cause. The problem is not a simple bug, but a flawed data flow pattern involving redundant and ill-timed writes to the `StateManager`.
+
+### The Root Cause: Redundant Publishing and Race Conditions
+
+The core issue lies in the `calculateAll` and `storeReferenceResults` functions. The current implementation attempts to publish calculated Reference values (`ref_g_101`, `ref_i_104`, etc.) to the `StateManager` **twice**:
+
+1.  **First Publish (Immediate)**: Inside `calculateReferenceModel`, the `storeReferenceResults` function is called. It immediately iterates through all calculated results and publishes them to the `StateManager`.
+2.  **Second Publish (Delayed)**: At the end of the `calculateAll` function, *after* `calculateTargetModel` has also run, a special block of code re-publishes all the Reference results again from a cached object (`lastReferenceResults`).
+
+This "re-write" pattern was copied from another section as a workaround for state being overwritten. However, in S12, it creates a race condition:
+
+- The first immediate publish can trigger listeners in downstream sections (S13, S15) prematurely, before the `calculateTargetModel` pass is complete. This can lead to calculations based on an incomplete or inconsistent global state.
+- The second "re-write" is meant to fix this, but it fails to solve the problem because the downstream calculation chain may have already been broken by the premature trigger.
+
+This flawed pattern explains why the Reference calculation flow breaks *after* S12. S12 itself calculates correctly, but its method of reporting its results to the rest of the application is causing the entire chain to fail.
+
+### The Solution: A Single, Definitive Publication
+
+To fix this, we must eliminate the redundancy and establish a single, predictable point where S12's Reference results are published. The logic should be:
+
+1.  Calculate all Reference model values and cache them.
+2.  Calculate all Target model values and publish them.
+3.  **Then, and only then**, publish the cached Reference model values.
+
+This ensures that when downstream sections are notified of a change, the entire calculation pass within S12 is complete, and the global state is consistent.
+
+### Workplan: Refactor S12 Data Flow
+
+The fix requires targeted changes to two functions in `4012-Section12.js`.
+
+**1. Modify `storeReferenceResults()` to only cache results**
+
+This function should be simplified to only collect and store the results of the Reference calculation. The immediate publishing loop must be removed.
+
+**File**: `OBJECTIVE 4011RF/sections/4012-Section12.js`
+
+**Change**:
+```javascript
+// ... existing code in storeReferenceResults() ...
+function storeReferenceResults(
+  // ... arguments
+) {
+  if (!window.TEUI?.StateManager) return;
+
+  // Combine all results into a single object
+  const allResults = {
+    ...volumeResults,
+    ...uValueResults,
+    ...wwrResults,
+    ...nFactorResults,
+    ...ach50Results,
+    ...ae10Results,
+    ...airLeakageResults,
+    ...envelopeResults,
+    ...envelopeTotalsResults,
+  };
+
+  // ✅ S11 PATTERN: Store results for later re-writing
+  lastReferenceResults = { ...allResults };
+
+  // ❌ REMOVE THE IMMEDIATE PUBLISHING LOOP THAT WAS HERE
+  // Object.entries(allResults).forEach(([fieldId, value]) => { ... });
+
+  console.log(
+    "[Section12] Reference results cached. Publishing will occur at the end of calculateAll.",
+  );
+}
+```
+
+**2. Modify `calculateAll()` to be the sole publisher**
+
+The existing "re-write" block at the end of this function will now become the primary and *only* mechanism for publishing Reference results. We will add a clarifying comment to make its role explicit.
+
+**File**: `OBJECTIVE 4011RF/sections/4012-Section12.js`
+
+**Change**:
+```javascript
+// ... existing code in calculateAll() ...
+function calculateAll() {
+  // ✅ DUAL-ENGINE: Always run BOTH engines
+  calculateReferenceModel(); // Reads ReferenceState, caches results in lastReferenceResults
+  calculateTargetModel(); // Reads TargetState, publishes unprefixed values
+
+  // ✅ PRIMARY PUBLISH: This is now the single, definitive point for publishing
+  // all calculated Reference values from S12. This ensures the calculation
+  // pass is complete before notifying downstream sections.
+  if (window.TEUI?.StateManager && lastReferenceResults) {
+    Object.entries(lastReferenceResults).forEach(([fieldId, value]) => {
+      window.TEUI.StateManager.setValue(
+        `ref_${fieldId}`,
+        value.toString(),
+        "calculated",
+      );
+    });
+  }
+
+  ModeManager.updateCalculatedDisplayValues?.();
+}
+```
+
+### Expected Outcome
+
+With these changes, the S12 calculation flow will be robust and predictable:
+
+-   **No More Race Conditions**: Downstream listeners will only be called *after* all S12 calculations are complete.
+-   **Complete Data Flow**: Changes in S12 Reference mode will correctly propagate to S13, S14, S15, and beyond, fixing the broken calculation chain.
+-   **CSV Export Parity**: Because the `ref_` values are now being published correctly and consistently to the `StateManager`, the CSV export will contain the complete and accurate set of S12 Reference values.
+-   **Code Clarity**: The logic is simplified, removing the confusing double-publish pattern and making the module easier to maintain.
+
+This targeted fix should unblock the entire Reference model and resolve the critical regression.
+
+---
+
 ## 📋 Established Patterns for StateManager Publication
 
 This section consolidates the working patterns we've established for publishing Reference values to StateManager, to help future debugging efforts understand what works and what doesn't.
