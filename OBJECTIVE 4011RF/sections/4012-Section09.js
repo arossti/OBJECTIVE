@@ -1907,6 +1907,11 @@ window.TEUI.SectionModules.sect09 = (function () {
         "calculated",
       );
       window.TEUI.StateManager.setValue(
+        "ref_g_63",
+        ReferenceState.getValue("g_63"),
+        "calculated",
+      );
+      window.TEUI.StateManager.setValue(
         "ref_d_64",
         ReferenceState.getValue("d_64"),
         "calculated",
