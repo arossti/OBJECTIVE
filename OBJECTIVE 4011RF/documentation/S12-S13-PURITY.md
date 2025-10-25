@@ -5,11 +5,35 @@
 **Date Started**: 2025-10-25
 **Goal**: Fix Reference model calculation flow S12→S13 and S12 air leakage bug
 
+**Last Updated**: 2025-10-25 (Evening Session)
+
 ---
 
 ## 🎯 Mission Statement
 
 Restore clean Reference model calculation flow from S12 (envelope) to S13 (heating loads) while maintaining CSV export completeness. Fix S12 air leakage calculation bug for 3+ storey buildings.
+
+---
+
+## ✅ Recent Victories (Oct 25 Evening)
+
+### S12 N-Factor Lookup Table Extension
+**Status**: ✅ COMPLETE (Commits: 9599324, c69a332)
+- Extended n-Factor lookup from 3 stories to 6 stories
+- Added values for 4, 5, 6 storey buildings across all zones/exposures
+- Source: NRL50 Excel lookup table
+- Fixes Issue #2: Air leakage calculations now work for all building heights
+
+### S12→S10 Reference Flow FIXED
+**Status**: ✅ COMPLETE (Commit: 1f46772)
+- **Bug**: ref_g_81 would update ONCE, then freeze on subsequent S12 changes
+- **Root Cause**: DUPLICATE LISTENERS in S10
+  - Fields i_97, i_103, m_121, i_98 registered TWICE
+  - First listener: called calculateAll() ✅ (dual-engine, correct)
+  - Second listener: called calculateUtilizationFactors() ❌ (Target-only)
+  - When in Reference mode, second listener contaminated ReferenceState with Target calculations
+- **Fix**: Removed duplicate listener block entirely
+- **Result**: S10's ref_g_81 now updates correctly every time S12 storeys change
 
 ---
 
@@ -24,8 +48,8 @@ Restore clean Reference model calculation flow from S12 (envelope) to S13 (heati
 
 ### S13 File Status
 **Current Setup**:
-- `4012-Section13.js` (3662 lines) - **BACKUP VERSION** - Working calculation flow ✅
-- `4012-Section13.js.backup.js` (3682 lines) - **CSV FIX VERSION** - Broken calculation flow ❌
+- `4012-Section13.js.backup.js` (3662 lines) - **BACKUP VERSION** - formerly Working calculation flow (but not anymore with completed S12)
+- `4012-Section13.js` (3682 lines) - **CSV FIX VERSION** - Broken calculation flow ❌
 
 **Test Results**:
 - Backup S13: ✅ Reference flow works, ❌ e_10 initialization poor (287.0)
@@ -35,16 +59,21 @@ Restore clean Reference model calculation flow from S12 (envelope) to S13 (heati
 
 ## 🐛 Current Issues
 
-### Issue 1: S13 Not Consuming S12 Reference Values ⚠️ HIGH PRIORITY
+### Issue 1: S13 Blocking Reference Flow to S01 ⚠️ HIGH PRIORITY (NEXT INVESTIGATION)
 
 **Problem**:
-- S12 publishes all Reference values correctly to StateManager ✅
-- S13 does NOT consume these values ❌
-- When S12 Reference envelope values change (stories, exposure, volume), S13 heating loads don't recalculate
-- Result: e_10 doesn't update when S12 Reference values change
+- S12 → S14 Reference flow: ✅ WORKING (d_127, d_128, d_131 update)
+- S12 → S15 Reference flow: ✅ WORKING (ref_d_135 updates)
+- S12 → S15 → S04 Reference flow: ✅ WORKING (ref_j_32 updates)
+- **S12 → S13 → S01 Reference flow**: ❌ BLOCKED (e_10 doesn't update)
 
-**Evidence**:
-1. Backup S13 (3662 lines): Calculation flow WORKS
+**Observation** (User):
+> "We still see calculations now flowing to S01 on S12 changes. I suspect S13 as we see S14, S15 in Reference and Target modes updating on S12 changes to each model."
+
+**Status**: Ready for investigation after dinner break
+
+**Old Evidence** (from earlier session):
+1. Backup S13 (3662 lines): Calculation flow did WORK with older S12 file
 2. CSV-fix S13 (3682 lines): Calculation flow BLOCKED
 3. Difference: Only 48 lines (CSV export additions + m_124 handling)
 
@@ -68,7 +97,7 @@ The CSV export publication block in S13 (lines 226-235) is either:
 Changes to d_103 (number of storeys) only produce recalculations up to 3 storeys. Beyond 3 storeys, air leakage calculations don't update.
 
 **Background**:
-- S12 uses mini JSON table to map air leakage values based on storey height
+- S12 uses mini JSON table to map air leakage values based on storey height - check if this formula supports 4, 5, 6 storey parameters from d_103
 - This functional recall appears broken beyond 3 storeys
 - **Historical**: This has NEVER worked - predates dual-state refactors
 - Separate from state isolation work
