@@ -1014,6 +1014,87 @@ This confirms the hypothesis from earlier investigation: The problem is in Patte
 
 **Goal**: Restore the working Reference calculation flow from commit b79549c while maintaining CSV export completeness.
 
+---
+
+## 🎯 BREAKTHROUGH: S13 is the Blockage Point (2025-10-25)
+
+**Critical Discovery**:
+
+User swapped current S13 with backup S13 from archive → **Reference calculation flow IMMEDIATELY RESTORED** ✅
+
+**Test Results**:
+- Replaced: `sections/4012-Section13.js` (current partially refactored version)
+- With: `sections/section-BACKUPS/4012-Section13.js.backup` (archived version)
+- Result: S12 Reference changes now propagate downstream correctly!
+- Conclusion: **S13 is definitively the blockage point**
+
+**Root Cause Analysis**:
+
+The current S13 file is **partially refactored** from C-RF branch work:
+- C-RF branch goal: Organizational and maintenance clarity improvements
+- Status: Refactoring incomplete when merged into S10-S11-PURITY branch
+- Impact: Incomplete refactor broke Reference calculation flow listeners/consumption
+
+**Affected files**:
+1. `sections/4012-Section13.js` - Partially refactored, broke Reference flow
+2. `4012-Cooling.js` - May also need completion (related to S13 refactor)
+
+**What's broken in current S13**:
+- Either missing listeners for `ref_` prefixed values from S12
+- Or broken `getExternalValue()` implementation
+- Or incomplete dual-engine pattern from partial refactor
+- Likely: Listener registration or calculation trigger code was modified but not completed
+
+**What works in backup S13**:
+- Full listener chain for S12 Reference values
+- Correct `getExternalValue()` implementation
+- Complete dual-engine pattern
+- All mechanisms that existed at contamination victory commit (b79549c)
+
+**Action Required**:
+Complete the S13 refactoring OR revert to backup S13 as baseline, then carefully reapply only the CSV export publication additions without breaking the calculation flow.
+
+### Next Steps: Compare and Fix S13
+
+**Option 1: Use Backup S13 as Baseline (RECOMMENDED)**
+1. Keep backup S13 active (currently in place)
+2. Compare with broken S13 to identify what CSV export changes were made
+3. Carefully port only the CSV export publication code to backup S13
+4. Test: Ensure both calculation flow AND CSV export work together
+
+**Option 2: Fix Current S13 (Complete the Refactor)**
+1. Diff backup vs current S13 to identify what changed
+2. Identify missing/broken listener registrations
+3. Fix getExternalValue() if broken
+4. Complete dual-engine pattern implementation
+5. More risky - many changes to debug
+
+**Comparison Strategy**:
+```bash
+# See what changed between working backup and broken current
+diff sections/4012-Section13.js.backup sections/4012-Section13.js > /tmp/s13_diff.txt
+
+# Focus on:
+# - Listener registration (addListener calls)
+# - getExternalValue() implementation
+# - calculateReferenceModel() triggering
+# - StateManager value consumption
+```
+
+**What to look for in diff**:
+- Missing `sm.addListener("ref_d_101", ...)` type registrations
+- Changes to `getExternalValue()` logic
+- Removed or modified calculation triggers
+- Different pattern for consuming external values
+
+**Success Criteria**:
+- ✅ S12 Reference changes propagate to e_10
+- ✅ CSV export remains complete (126 fields)
+- ✅ State isolation maintained
+- ✅ S09 i_63 issue also fixed (bonus if backup S13 fixes this too)
+
+---
+
 ### Phase 1: Trace S09 → S13 Direct Dependencies (i_63 Issue)
 
 **Problem**: Changes to S09's g_63 (occupied hours) in Target mode cause BOTH e_10 and h_10 to update.
