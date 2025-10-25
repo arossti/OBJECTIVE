@@ -4,6 +4,45 @@
 **Branch**: S10-S11-PURITY
 **Issue**: CSV export→import→calculations produce different e_10/h_10 values
 
+---
+
+## 📋 Session Summary (2025-10-25 Evening)
+
+### Victories ✅
+1. **S12 Reference Fields Fixed** (commit 2befec9)
+   - All 5 S12 Reference user input fields now export to CSV
+   - Root cause: Browser cache serving old JavaScript
+   - Solution: Added comprehensive debug logging + safety net in calculateAll()
+   - Fields fixed: ref_d_103, ref_g_103, ref_d_105, ref_d_108, ref_g_109
+
+2. **S13-latest Activated**
+   - Correct m_124 two-stage architecture handling (no more errors)
+   - Better e_10 initialization: 192.9 vs 287.0 (95 kWh/m²/yr improvement)
+   - Perfect h_10: 93.7 (matches Excel exactly)
+   - All S13 fields export to CSV
+
+### Current Challenge ❌
+**Reference Calculation Flow Still Blocked**
+- S12 Reference changes recalculate internally ✅
+- But S13 does NOT consume S12 Reference values ❌
+- e_10 doesn't update when S12 Reference envelope changes ❌
+
+### Root Cause Identified
+- Backup S13 (3662 lines): Calculation flow WORKS ✅
+- Current S13 (3682 lines): Calculation flow BROKEN ❌
+- Difference: CSV export additions (48 lines diff)
+- **Hypothesis**: CSV publication block interferes with listener/consumption
+
+### Next Session Plan
+**Phase 1**: Detailed diff analysis of backup vs current S13
+- Focus on listener registration for S12 Reference fields
+- Focus on getExternalValue() calls reading S12 data
+- Identify what in CSV block breaks consumption
+
+**Goal**: Port CSV fix to backup S13 without breaking calculation flow
+
+---
+
 ## Problem Statement
 
 User reports that:
@@ -1231,7 +1270,64 @@ Added re-publication of user input Reference fields in `calculateAll()` (lines 2
 3. Added safety net in calculateAll() to re-publish user input fields on every calculation
 4. All 5 fields now consistently present in StateManager and CSV export
 
-**Next Step**: Test Reference calculation flow with S13-latest to see if complete S12 data enables proper downstream propagation
+**Testing Results** (2025-10-25 late evening):
+
+After S12 fix, tested Reference calculation flow:
+- ✅ S12 Target changes affect only h_10 (correct)
+- ✅ S12 Reference changes recalculate internally (correct)
+- ❌ **S12 Reference changes do NOT propagate to S13** (heating loads don't update)
+- ❌ e_10 does not change when S12 Reference values change
+
+**Conclusion**:
+- ✅ **S12 is FIXED** - All values publishing correctly to StateManager
+- ❌ **S13 is NOT CONSUMING** - Either not listening or not reading from StateManager
+
+**Critical Insight**:
+Backup S13 (3662 lines) works perfectly - Reference changes flow through.
+Current S13 (3682 lines) has CSV export additions but broke consumption.
+
+**Next Investigation**: Compare backup vs current S13 to identify what in the CSV export addition broke the listener/consumption mechanism.
+
+---
+
+## 🔬 S13 Consumption Investigation Workplan
+
+**Problem Statement**: S12 publishes all Reference values correctly, but S13 doesn't consume them. Backup S13 works, current S13 (with CSV additions) doesn't.
+
+**Files**:
+- Working: `4012-Section13.js` (currently the backup, 3662 lines)
+- Broken: `4012-Section13.js.backup.js` (CSV additions, 3682 lines)
+- Note: Files got renamed during testing - need to swap names back
+
+**Investigation Plan**:
+
+### Phase 1: Identify the Difference
+1. Diff the two S13 files focusing on:
+   - StateManager.addListener calls for S12 Reference fields
+   - getExternalValue() or getValue() calls reading S12 data
+   - ModeManager.initialize() and listener registration
+   - Any code in the 48-line diff that might affect consumption
+
+### Phase 2: Hypothesis Testing
+**Hypothesis**: The CSV export publication block (lines 226-235 in current) is interfering with listener registration or value consumption.
+
+**Test Approach**:
+1. Identify EXACTLY what the CSV export block does in current S13
+2. Check if it overwrites values that S13 needs to read from S12
+3. Check timing - does it run before or after listeners are registered?
+
+### Phase 3: Targeted Fix
+**Option A**: If CSV block is the problem, move it or modify it to not interfere
+**Option B**: If listeners are missing, add them back from backup
+**Option C**: Port ONLY the CSV fix to backup S13 without breaking consumption
+
+**Success Criteria**:
+- ✅ S12 Reference changes propagate to S13 heating loads
+- ✅ e_10 updates when S12 Reference envelope values change
+- ✅ All S13 Reference fields still export to CSV
+- ✅ Calculation flow restored: S12→S13→S14→S15→S04→S01
+
+**Next Session**: Start with Phase 1 - detailed diff analysis focusing on consumption mechanism
 
 ### Next Steps: Compare and Fix S13
 
