@@ -1887,13 +1887,14 @@ window.TEUI.SectionModules.sect12 = (function () {
     };
 
     // Determine story key with full precision (extended to 6 stories)
+    // Table has keys: 1, 1.5, 2, 3, 4, 5, 6 (no 2.5, 3.5, etc.)
     let storyKey = 1.5;
     if (stories <= 1) storyKey = 1;
     else if (stories > 1 && stories <= 1.75) storyKey = 1.5;
-    else if (stories > 1.75 && stories <= 2.5) storyKey = 2;
-    else if (stories > 2.5 && stories <= 3.5) storyKey = 3;
-    else if (stories > 3.5 && stories <= 4.5) storyKey = 4;
-    else if (stories > 4.5 && stories <= 5.5) storyKey = 5;
+    else if (stories > 1.75 && stories < 2.5) storyKey = 2;
+    else if (stories >= 2.5 && stories < 3.5) storyKey = 3;
+    else if (stories >= 3.5 && stories < 4.5) storyKey = 4;
+    else if (stories >= 4.5 && stories < 5.5) storyKey = 5;
     else storyKey = 6; // 5.5+ stories
 
     // Get n-factor with full precision
