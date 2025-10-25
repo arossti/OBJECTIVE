@@ -1194,6 +1194,39 @@ console.log("ref_g_101:", window.TEUI.StateManager.getValue("ref_g_101"));
 
 This systematic approach should quickly identify where the calculation flow breaks and guide us to the correct fix.
 
+### Separate Issue: S12 d_103 Air Leakage Calculation (3+ Stories)
+
+**Status**: Pre-existing bug, NOT related to current state isolation work.
+
+**Problem**:
+- d_103 (number of stories) changes only affect calculations up to 3 stories
+- Beyond 3 stories, no recalculation occurs
+- Affects BOTH Target and Reference models equally
+
+**Root cause hypothesis**:
+- S12 uses a mini JSON table (likely `airLeakageTable` or similar) to map air leakage values based on storey height
+- Table lookup or functional recall appears broken for values > 3
+- Possibly missing entries in the table, or conditional logic that stops at 3
+
+**Historical context**:
+- User tested pre-dual-state code: **This has NEVER worked**
+- Bug predates all dual-state architecture refactoring
+- Not introduced by current CSV export work
+
+**Impact**:
+- Medium priority: Affects buildings with 4+ stories
+- Not blocking current state isolation/CSV export work
+- Requires separate investigation and potential formula re-litigation
+
+**Investigation needed**:
+1. Find air leakage lookup table in S12
+2. Check if table has entries for 4+ stories
+3. Verify conditional logic in calculation function
+4. Compare against Excel/building code requirements
+5. Fix table or logic as needed
+
+**Deferred**: Will address after completing Reference calculation flow fixes.
+
 ---
 
 ## 📋 Established Patterns for StateManager Publication
