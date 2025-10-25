@@ -734,7 +734,16 @@ Our CSV export work added publication code to sections S02-S15:
   - S09 publishes `i_63=3650` (10 × 365) ✅
   - S09 publishes `ref_i_63=4380` (12 × 365, unchanged) ✅
   - But e_10 (Reference TEUI) still changes ❌
+- **Direct dependencies to investigate**:
+  - **S13 (Mechanical)**: i_63 directly affects d_120 and d_122 calculations
+    - Target flow: `i_63` → `d_120`, `d_122`
+    - Reference flow: `ref_i_63` → `ref_d_120`, `ref_d_122`
+    - If S13 reads `i_63` instead of `ref_i_63` for Reference calculations, contamination propagates downstream
 - **Conclusion**: Downstream sections reading `i_63` for Reference calculations instead of `ref_i_63`
+- **Resolution path**:
+  1. Investigate S13's consumption of i_63/ref_i_63 in mechanical calculations
+  2. Verify S13 correctly publishes d_120/ref_d_120 and d_122/ref_d_122
+  3. Trace contamination through S14 → S15 → S04 → S01
 - Status: Requires investigation of S13, S14, S15, S04, S01 for fallback anti-patterns
 
 **S12 Incomplete**:
