@@ -1,6 +1,6 @@
 # CSV Export/Import Parity Analysis
 
-**Date**: 2025-10-23
+**Date**: 2025-10-24
 **Branch**: S10-S11-PURITY
 **Issue**: CSV export→import→calculations produce different e_10/h_10 values
 
@@ -653,5 +653,191 @@ This is multi-session work. Sections must be fixed systematically to prevent reg
 ### Related Documentation
 
 - [4012-CHEATSHEET.md - Anti-Pattern 1: State Contamination via Fallbacks](history%20(completed)/4012-CHEATSHEET.md#anti-pattern-1-state-contamination-via-fallbacks)
+- Commit 50e76f4: l_20/l_21 fix (proof of pattern)
+- Commit 4c34826: Explicit field list implementation
+
+---
+
+## 🚨 CRITICAL REGRESSION: Reference Model Calculation Flow Broken (2025-10-24)
+
+### Problem Discovery
+
+**Testing Timeline:**
+1. **Yesterday (2025-10-23)**: Commit b79549c "CONTAMINATION ELIMINATED" - Victory over state isolation bugs
+   - ✅ Target model: Changes flow through entire calculation chain
+   - ✅ Reference model: Changes flow through entire calculation chain
+   - ✅ State isolation: Target and Reference models completely independent
+   - ✅ Dual-state architecture working perfectly
+
+2. **Today (2025-10-24)**: After CSV export work (commits efdd8a5 through 650bc47)
+   - ✅ Target model: Still works perfectly, changes flow through entire chain
+   - ✅ CSV export: Nearly complete (126 fields, barring S12)
+   - ✅ All sections publish Reference defaults to StateManager (S02-S13, S15)
+   - ❌ **Reference model: Calculation flow BROKEN - changes trapped locally**
+
+### Symptoms
+
+**Working sections (S02-S09)**:
+- ✅ State isolation maintained (Target and Reference independent)
+- ✅ Calculations update correctly in both modes
+- ⚠️ **One exception in S09**: g_63 (occupied hours) shows state mixing
+
+**Broken sections (S10 onward)**:
+- ✅ S10 Target mode: Changes flow through entire model ✅
+- ❌ S10 Reference mode: **Changes trapped within S10 - do NOT flow downstream**
+- ⚠️ **S10/S11/S12 Reference flow appears intact internally**
+- ❌ **Flow breaks AFTER S12**: Changes don't reach S13, S14, S15, S04, S01
+
+### Test Comparison: Victory vs. Current State
+
+**Reverted to b79549c (contamination victory commit)**:
+- ✅ Perfect state isolation and calculation flow
+- ✅ Every field changed in Target flows to Target model updates
+- ✅ Every Reference value changed affects only Reference model
+- ✅ "It all just works"
+- ❌ CSV export incomplete (only 37 Reference values)
+- ❌ After imports, calculation flow broke (known issue)
+
+**Current HEAD (after CSV export work)**:
+- ✅ CSV export nearly complete (126 fields published to StateManager)
+- ✅ Reference defaults published correctly for fresh initialization
+- ✅ S02-S09 maintain correct isolation and flow (except S09 g_63)
+- ❌ **S10+ Reference mode: Calculations trapped, don't propagate downstream**
+
+### Root Cause Hypothesis
+
+**Something between b79549c (yesterday) and HEAD (today) broke Reference calculation flow.**
+
+Our CSV export work added publication code to sections S02-S15:
+- Added `publishToStateManager()` methods
+- Published Reference defaults on initialization
+- Published from localStorage on page refresh
+
+**Possible causes:**
+1. **Publication timing issue**: Defaults published too early/late, blocking dynamic updates?
+2. **"One and done" publication**: Did we make publishing a static operation that prevents re-publication on user edits?
+3. **Listener interference**: Did publication code interfere with existing calculation listeners?
+4. **S12 as linchpin**: Since S12 wasn't fully fixed and flow breaks after S12, could S12 be blocking the chain?
+5. **StateManager pollution**: Are we publishing static values that override calculated values?
+
+### Known Issues
+
+**S09 State Mixing Bug** ✅ INVESTIGATED:
+- Field: g_63 (occupied hours) and derived field i_63 (annual occupied hours)
+- Symptom: Changes to Target g_63 cause BOTH e_10 and h_10 to change (should only affect h_10)
+- **Root cause FOUND**: Problem is NOT in S09!
+  - ✅ S09 calculations correct: Target and Reference compute independently
+  - ✅ S09 publication correct: Publishes both `i_63` and `ref_i_63` with correct values
+  - ❌ **Problem is downstream**: Sections S13/S14/S15/S04/S01 contaminate Reference model
+- **Evidence** (from debug logs):
+  - Change Target g_63 from 12 → 10
+  - S09 publishes `i_63=3650` (10 × 365) ✅
+  - S09 publishes `ref_i_63=4380` (12 × 365, unchanged) ✅
+  - But e_10 (Reference TEUI) still changes ❌
+- **Conclusion**: Downstream sections reading `i_63` for Reference calculations instead of `ref_i_63`
+- Status: Requires investigation of S13, S14, S15, S04, S01 for fallback anti-patterns
+
+**S12 Incomplete**:
+- S12 Reference values excluded from CSV export (too much tech debt accumulated)
+- S12 reverted to yesterday's baseline (commit b79549c)
+- Changes in S12 Reference mode recalculate locally but may not publish downstream
+- **Critical insight**: We've been stumped trying to make S12 Reference values publish to StateManager
+  - Target values work perfectly and publish correctly
+  - Reference values fail to publish despite multiple fix attempts
+  - **Solution approach**: Study how Target values successfully publish and mirror that pattern for Reference
+  - Key question: What mechanism makes Target publication work that we're missing for Reference?
+
+### Next Steps: Systematic Debugging Strategy
+
+**Option 1: Stack Trace Analysis**
+1. Add debug logging to track Reference value flow through calculation chain
+2. Make a change in S10 Reference mode
+3. Trace which sections receive the update and which don't
+4. Identify exact point where chain breaks
+5. Compare code at break point between b79549c and HEAD
+
+**Option 2: Binary Search Rollback**
+1. Identify all commits between b79549c and HEAD affecting sections
+2. Checkout commits midway through the range
+3. Test Reference calculation flow
+4. Narrow down which specific commit introduced the regression
+5. Analyze that commit's changes for root cause
+
+**Option 3: Section-by-Section Audit**
+1. For each section S10-S15, compare code between b79549c and HEAD
+2. Look for changes to:
+   - `setValue()` methods (are they still publishing on user edits?)
+   - Calculation triggers (are they still firing in Reference mode?)
+   - Listener setup (were any removed or modified?)
+3. Test each section individually to isolate the break point
+
+**Option 4: Focus on S12 First (RECOMMENDED)**
+1. S12 is the suspected linchpin (flow breaks after S12)
+2. S12 has the most complex state (volume/area totals feed downstream sections)
+3. S12 had multiple debug/revert cycles today
+4. Check if S12 is failing to publish calculated Reference values (ref_g_101, ref_d_101, etc.)
+5. **Mirror Target publication pattern**:
+   - Trace how Target values (d_103, g_103, d_105, d_108, g_109) successfully publish to StateManager
+   - Identify the mechanism: Is it in calculation functions? Listeners? setValue() calls?
+   - Apply the EXACT SAME pattern to Reference values with `ref_` prefix
+   - Test: Change S12 Reference field → verify it publishes to StateManager → verify downstream sections receive it
+6. If S12 fix unblocks the chain, proceed with systematic section fixes
+
+**Why this is the best approach**:
+- ✅ Target values prove the publication mechanism works
+- ✅ We don't need to invent new patterns, just mirror what works
+- ✅ S12 is likely the bottleneck blocking downstream flow
+- ✅ Success here could unlock the entire Reference calculation chain
+
+### Impact Assessment
+
+**User-facing:**
+- ❌ Reference model unusable for analysis (changes don't propagate)
+- ❌ CSV export/import creates unpredictable Reference model behavior
+- ❌ Users can't rely on Reference calculations for compliance verification
+
+**Development:**
+- ⚠️ Regression occurred during CSV export implementation
+- ⚠️ We have working state (b79549c) but incomplete CSV export
+- ⚠️ We have complete CSV export (HEAD) but broken Reference flow
+- ⚠️ Need to identify which changes broke flow and fix without losing CSV work
+
+### Success Criteria for Fix
+
+- ✅ S02-S09 continue to work correctly (maintain current state)
+- ✅ S09 g_63 state mixing bug fixed
+- ✅ S10+ Reference mode changes flow through entire calculation chain
+- ✅ Changes in S10 Reference → recalculate S11, S12, S13, S14, S15, S04, S01
+- ✅ State isolation maintained (Target and Reference independent)
+- ✅ CSV export remains complete (126 fields with Reference defaults)
+- ✅ All sections publish Reference values dynamically on user edits (not just on initialization)
+
+### Commits Affected (b79549c → HEAD)
+
+Between contamination victory and current state:
+- 7edcbb9: chore: ESLint and Prettier formatting
+- a87fc09: docs(S12): Add TODO comment for j_110 air leakage zone field
+- 8f6ccea: fix(S13): Publish all 10 Reference defaults to StateManager for CSV export
+- ebcc1e7: fix(S10): Publish all 25 Reference defaults to StateManager for CSV export
+- 2b7ab43: fix(S09): Publish Reference defaults to StateManager for CSV export
+- d172db6: fix(S08): Publish Reference defaults to StateManager for CSV export
+- 9d61718: fix(S07): Publish all Reference defaults to StateManager for CSV export
+- 04051a3: fix(S06): Publish Reference defaults to StateManager for CSV export
+- 3b2ccd6: fix(S05): Publish Reference defaults to StateManager for CSV export
+- 8a0d75a: fix(S04): Add emission factors to refreshUI for state isolation
+- 8793ee6: fix(S04): Make emission factors editable, publish Reference defaults
+- b7386b7: fix(S03): Publish all Reference defaults and add l_24 to mappings
+- f09a3cf: fix(S02): Remove l_12 state contamination and preserve cost field precision
+- bd38741: debug(S10): Add console logging to trace Reference value publication
+- 3ff8518: fix(S10): Add missing g_73-g_78 and d_80 to Reference state for CSV export
+- efdd8a5: fix(S10): Publish Reference values from localStorage on page load
+- c377afc: chore(S10): Remove debug logging after successful fix
+
+**Total**: 17 commits touching sections S02-S13 for CSV export work
+
+### Related Documentation
+
+- [4012-CHEATSHEET.md - Anti-Pattern 1: State Contamination via Fallbacks](history%20(completed)/4012-CHEATSHEET.md#anti-pattern-1-state-contamination-via-fallbacks)
+- Commit b79549c: "CONTAMINATION ELIMINATED" - last known working state
 - Commit 50e76f4: l_20/l_21 fix (proof of pattern)
 - Commit 4c34826: Explicit field list implementation
