@@ -1028,31 +1028,41 @@ User swapped current S13 with backup S13 from archive → **Reference calculatio
 - Result: S12 Reference changes now propagate downstream correctly!
 - Conclusion: **S13 is definitively the blockage point**
 
-**Root Cause Analysis**:
+**Testing Methodology** (2025-10-25 afternoon):
+1. Renamed `4012-Section13.js.backup` (working version) to `4012-Section13.js`
+2. Renamed current `4012-Section13.js` to `4012-Section13-OFFLINE.js`
+3. Ran application with backup S13
+4. **Result**: Clean Reference calculation flow completely restored ✅
+5. Reverted file names after testing for documentation purposes
 
-The current S13 file is **partially refactored** from C-RF branch work:
-- C-RF branch goal: Organizational and maintenance clarity improvements
-- Status: Refactoring incomplete when merged into S10-S11-PURITY branch
-- Impact: Incomplete refactor broke Reference calculation flow listeners/consumption
+**File Comparison Analysis**:
+- **Working S13** (4012-Section13.js.backup): 3662 lines
+  - Has CSV export fix (publishes S13 Reference defaults)
+  - Has Cooling.js two-stage architecture fix (cooling_m_124 handling)
+  - Clean Reference calculation flow from S12 → S13 → downstream ✅
 
-**Affected files**:
-1. `sections/4012-Section13.js` - Partially refactored, broke Reference flow
-2. `4012-Cooling.js` - May also need completion (related to S13 refactor)
+- **Broken S13** (4012-Section13.js): 3682 lines
+  - Has same CSV export fix (publication block lines 226-235)
+  - Has same Cooling.js two-stage fix (error handling lines 2940-2956)
+  - Reference calculation flow BLOCKED at S13 ❌
 
-**What's broken in current S13**:
-- Either missing listeners for `ref_` prefixed values from S12
-- Or broken `getExternalValue()` implementation
-- Or incomplete dual-engine pattern from partial refactor
-- Likely: Listener registration or calculation trigger code was modified but not completed
+**Diff Results**: Only 48 lines different between versions:
+1. CSV export publication block added to current version
+2. Cooling_m_124 error handling modified in current version
+3. Both changes appear functionally identical to working version's patterns
 
-**What works in backup S13**:
-- Full listener chain for S12 Reference values
-- Correct `getExternalValue()` implementation
-- Complete dual-engine pattern
-- All mechanisms that existed at contamination victory commit (b79549c)
+**Critical Finding**:
+The working backup file ALREADY CONTAINS both:
+- ✅ CSV export fix (publishes S13 Reference defaults)
+- ✅ Cooling.js phased approach (two-stage architecture)
+
+The only difference is **HOW the CSV publication code was added** to the current file. Something about the implementation, placement, or timing in the current version breaks Reference calculation flow.
+
+**Root Cause**:
+The CSV export fix code itself (or its placement/timing in initialization) is creating a blockage in Reference calculation propagation. This is NOT about C-RF refactoring being incomplete - both files have identical two-stage cooling architecture.
 
 **Action Required**:
-Complete the S13 refactoring OR revert to backup S13 as baseline, then carefully reapply only the CSV export publication additions without breaking the calculation flow.
+Examine the EXACT differences in CSV publication implementation between working and broken versions to identify what breaks the calculation flow.
 
 ### Next Steps: Compare and Fix S13
 
