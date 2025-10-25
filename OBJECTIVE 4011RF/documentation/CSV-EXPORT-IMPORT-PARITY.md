@@ -1104,6 +1104,69 @@ Compare initialization and calculation logic between backup and latest S13 to fi
 2. What makes backup's calculation flow work correctly
 3. How to combine both fixes
 
+---
+
+## 🔍 S12 Missing Fields Investigation (2025-10-25 evening)
+
+**Problem**: CSV export shows d_103 and g_103 Reference values are missing (empty/yellow in spreadsheet)
+
+**Hypothesis**: If S12 isn't publishing ref_d_103 and ref_g_103 to StateManager, S13 can't consume them, which could cascade into broken S13 calculations and the 87 kWh/m²/yr e_10 error.
+
+**Diagnostic Script** (paste in console after page load):
+```javascript
+// Check if S12 Reference fields are in StateManager
+console.log("=== S12 Reference Fields in StateManager ===");
+const s12RefFields = ["d_103", "g_103", "d_105", "d_108", "g_109"];
+s12RefFields.forEach(id => {
+  const refId = `ref_${id}`;
+  const value = window.TEUI.StateManager.getValue(refId);
+  console.log(`${refId}: ${value === null || value === undefined ? "❌ MISSING" : "✅ " + value}`);
+});
+
+// Check S12 ReferenceState internal values
+console.log("\n=== S12 ReferenceState Internal Values ===");
+const s12RefState = window.TEUI.SectionModules.sect12.ReferenceState?.state;
+if (s12RefState) {
+  s12RefFields.forEach(id => {
+    console.log(`${id}: ${s12RefState[id]}`);
+  });
+} else {
+  console.log("❌ Cannot access S12 ReferenceState");
+}
+
+// Check localStorage
+console.log("\n=== S12 Reference localStorage ===");
+const s12Storage = localStorage.getItem("S12_REFERENCE_STATE");
+if (s12Storage) {
+  const parsed = JSON.parse(s12Storage);
+  s12RefFields.forEach(id => {
+    console.log(`${id}: ${parsed[id]}`);
+  });
+} else {
+  console.log("❌ No localStorage found - fresh initialization");
+}
+
+// Check which initialization path was taken
+console.log("\n=== Initialization Path ===");
+console.log(s12Storage ? "Loaded from localStorage" : "Fresh setDefaults() called");
+```
+
+**Code Review Findings**:
+1. ✅ S12 ReferenceState.initialize() publishes all 5 fields (lines 84-94)
+2. ✅ S12 ReferenceState.setDefaults() publishes all 5 fields (lines 119-139)
+3. ✅ Both check for `window.TEUI?.StateManager` before publishing
+4. ✅ d_103 and g_103 are NOT calculated fields - they're pure user input
+5. ✅ calculateAll() only publishes calculated fields (g_101, d_101, i_104, etc.) - doesn't touch user input fields
+6. ❓ **Mystery**: Code looks correct, but CSV export shows d_103 and g_103 missing
+
+**Possible Causes**:
+- Timing: StateManager might not be ready when S12 initializes
+- Overwrite: Something else (S13?) might be overwriting with null/undefined
+- Storage: localStorage might have null values for these fields specifically
+- Calculation: First calculateAll() might clear these before they're saved
+
+**Next Step**: Run diagnostic script above to see actual runtime state
+
 ### Next Steps: Compare and Fix S13
 
 **Option 1: Use Backup S13 as Baseline (RECOMMENDED)**
