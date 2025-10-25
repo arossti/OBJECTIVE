@@ -1165,7 +1165,73 @@ console.log(s12Storage ? "Loaded from localStorage" : "Fresh setDefaults() calle
 - Storage: localStorage might have null values for these fields specifically
 - Calculation: First calculateAll() might clear these before they're saved
 
-**Next Step**: Run diagnostic script above to see actual runtime state
+**Diagnostic Results** (2025-10-25 evening, with S13 backup):
+
+```
+StateManager:
+  ref_d_103: ❌ MISSING
+  ref_g_103: ❌ MISSING
+  ref_d_105: ✅ 8200
+  ref_d_108: ❌ MISSING
+  ref_g_109: ❌ MISSING
+
+ReferenceState.state (internal):
+  d_103: 1 ✅
+  g_103: Exposed ✅
+  d_105: 8200.00 ✅
+  d_108: MEASURED ✅
+  g_109: 2.00 ✅
+
+localStorage: ❌ No storage (fresh initialization)
+Path: setDefaults() called
+```
+
+**🚨 CRITICAL FINDING**:
+- S12 ReferenceState has all 5 values internally ✅
+- Only 1 out of 5 values published to StateManager (d_105) ✅
+- 4 values failed to publish: d_103, g_103, d_108, g_109 ❌
+
+**Root Cause Theory**:
+The setDefaults() publication loop (lines 119-139) is running but **something is blocking/preventing the setState calls** for 4 specific fields.
+
+**Additional Finding**:
+Logs show S13 backup throws error: `[S13] REQUIRED cooling_m_124 missing from Cooling.js` (lines 1732, 1755)
+- This error occurs during initialization because cooling_m_124 doesn't exist until Stage 2
+- S13 backup uses old error-throwing approach
+- S13-latest has correct two-stage architecture handling (uses 0 placeholder)
+
+**Hypothesis**: S13's error might be preventing S12's publication from completing.
+
+**Fix Applied** (2025-10-25 late evening):
+
+After extensive debugging with comprehensive console logging, discovered that S12 WAS publishing all 5 fields during initialization, BUT the browser was serving cached JavaScript. After hard refresh with cache disabled:
+
+✅ **All 5 fields published successfully during initialization**
+✅ **All 5 fields verified in StateManager immediately after publication**
+
+**Additional Safety Net Added**:
+Added re-publication of user input Reference fields in `calculateAll()` (lines 2336-2351) to ensure they're always present even if initialization fails. This guarantees that every calculation pass re-publishes:
+- ref_d_103 (stories)
+- ref_g_103 (exposure)
+- ref_d_105 (volume)
+- ref_d_108 (blower door method)
+- ref_g_109 (measured ACH50)
+
+**Result**: ✅ **CSV export now contains all 5 S12 Reference fields!**
+
+---
+
+## ✅ S12 Reference Field Publication - COMPLETE
+
+**Status**: All 5 S12 Reference user input fields now export to CSV correctly.
+
+**Fix Summary**:
+1. Browser cache was serving old JavaScript without debug logging
+2. Added comprehensive debug logging to both initialization paths
+3. Added safety net in calculateAll() to re-publish user input fields on every calculation
+4. All 5 fields now consistently present in StateManager and CSV export
+
+**Next Step**: Test Reference calculation flow with S13-latest to see if complete S12 data enables proper downstream propagation
 
 ### Next Steps: Compare and Fix S13
 
