@@ -1004,6 +1004,198 @@ This confirms the hypothesis from earlier investigation: The problem is in Patte
 
 ---
 
+## 🔬 Investigation Workplan: Unblock Reference Calculation Flow (2025-10-25)
+
+**Current State**:
+- ✅ CSV export complete (all 126 Reference values publish to StateManager)
+- ✅ State isolation maintained in S02-S09
+- ❌ Reference calculation flow blocked at S12/S13 boundary
+- ❌ S09 i_63 changes affect both e_10 and h_10 (state mixing)
+
+**Goal**: Restore the working Reference calculation flow from commit b79549c while maintaining CSV export completeness.
+
+### Phase 1: Trace S09 → S13 Direct Dependencies (i_63 Issue)
+
+**Problem**: Changes to S09's g_63 (occupied hours) in Target mode cause BOTH e_10 and h_10 to update.
+
+**What we know**:
+- S09 correctly calculates and publishes BOTH `i_63` and `ref_i_63` with different values ✅
+- S13 uses `getExternalValue("i_63", isReferenceCalculation)` to read occupied hours
+- S13 directly uses i_63 in d_120 and d_122 calculations
+- But somehow Target i_63 changes contaminate Reference model
+
+**Investigation steps**:
+
+1. **Verify S13's getExternalValue() logic**:
+   ```javascript
+   // Check if this correctly returns ref_i_63 for Reference calculations
+   function getExternalValue(fieldId, isReferenceCalculation = false) {
+     if (isReferenceCalculation) {
+       const refValue = window.TEUI?.StateManager?.getValue(`ref_${fieldId}`);
+       return refValue !== null && refValue !== undefined ? refValue : null;
+     } else {
+       return window.TEUI?.StateManager?.getValue(fieldId);
+     }
+   }
+   ```
+   - Add debug logging to trace what value is returned
+   - Test: Change Target g_63, log what S13 receives for Reference calculation
+
+2. **Check S13's calculation triggers**:
+   ```javascript
+   // Find StateManager listeners in S13
+   sm.addListener("i_63", () => { ... });  // Does this exist?
+   sm.addListener("ref_i_63", () => { ... });  // Does this exist?
+   ```
+   - Verify S13 has BOTH listeners (one for Target, one for Reference)
+   - Check if both call their respective calculation engines
+
+3. **Trace S13's d_120 and d_122 calculations**:
+   ```javascript
+   // In S13's calculateReferenceModel():
+   const occupiedHours = getExternalValue("i_63", true);  // Should get ref_i_63
+   // Verify this is actually reading ref_i_63, not falling back to i_63
+   ```
+   - Add logging to show which value is used
+   - Check if calculation results differ between Target and Reference
+
+4. **Test hypothesis: Missing listener or wrong listener**:
+   - Possible issue: S13 only listens to `i_63` (unprefixed), not `ref_i_63`
+   - When S09 publishes new `i_63`, S13 recalculates BOTH engines (correct)
+   - But if `getExternalValue()` has a bug, Reference calc might read Target value
+   - Result: Both e_10 and h_10 change
+
+**Expected outcome**: Identify whether the issue is:
+- A) Missing `ref_i_63` listener in S13
+- B) Bug in `getExternalValue()` logic
+- C) S13 calling Target calculation when it should call Reference
+- D) Fallback anti-pattern in S13's calculation code
+
+### Phase 2: Trace S12 → S13 Calculation Flow (Main Blockage)
+
+**Problem**: Changes to S12 Reference values don't propagate to S13, S14, S15, S04, S01.
+
+**What we know**:
+- S12 publishes `ref_g_101`, `ref_d_101`, `ref_i_104` correctly ✅
+- S13 uses these values for heating/cooling load calculations
+- But changes to S12 Reference don't trigger S13 Reference recalculation
+
+**Investigation steps**:
+
+1. **Check S13's listeners for S12 values**:
+   ```javascript
+   // Should exist in S13:
+   sm.addListener("d_101", () => { calculateTargetModel(); });
+   sm.addListener("ref_d_101", () => { calculateReferenceModel(); });
+   // ... same for g_101, d_102, i_104
+   ```
+   - Search S13 code for these listener registrations
+   - If missing, that's the problem - S13 never hears S12 Reference changes
+
+2. **Verify S12 actually publishes to StateManager**:
+   - Add console logging: When S12 publishes `ref_d_101`, log it
+   - Check StateManager: `window.TEUI.StateManager.getValue("ref_d_101")`
+   - Confirm value changes when S12 Reference fields change
+
+3. **Check if S13 reads S12 Reference values**:
+   ```javascript
+   // In S13's calculateReferenceModel():
+   const envelopeArea = getExternalValue("d_101", true);  // Should get ref_d_101
+   const avgUValue = getExternalValue("g_101", true);     // Should get ref_g_101
+   ```
+   - Add logging to see what values S13 receives
+   - Compare to known S12 Reference output
+
+4. **Test the complete chain**:
+   - Change S12 Reference d_105 (volume) from 8200 → 9000
+   - Expected cascade:
+     - S12 recalculates → publishes ref_d_101, ref_g_101, ref_i_104
+     - S13 listener fires → recalculates Reference heating/cooling loads
+     - S14 listener fires → recalculates Reference fuel consumption
+     - S15 listener fires → recalculates Reference TEUI
+     - S04 listener fires → recalculates Reference emissions
+     - S01 updates → e_10 changes
+   - At which step does the chain break?
+
+**Expected outcome**: Identify the exact break point in the S12→S13→S14→S15→S04→S01 chain.
+
+### Phase 3: Compare Working State (b79549c) vs Current State
+
+**Goal**: Understand what mechanism worked at b79549c that we broke.
+
+**Investigation steps**:
+
+1. **Checkout b79549c and examine S13**:
+   ```bash
+   git show b79549c:OBJECTIVE 4011RF/sections/4012-Section13.js > /tmp/s13_working.js
+   ```
+   - Compare listener setup between b79549c and HEAD
+   - Look for listeners that existed then but are missing now
+
+2. **Check what changed in S13 between b79549c and HEAD**:
+   ```bash
+   git diff b79549c HEAD -- OBJECTIVE 4011RF/sections/4012-Section13.js
+   ```
+   - Identify any listener removals
+   - Check if `getExternalValue()` implementation changed
+
+3. **Hypothesis to test**:
+   - At b79549c, Reference values flowed dynamically WITHOUT pre-publication
+   - Our CSV work added pre-publication but broke the listener chain
+   - Maybe we removed listeners thinking they were redundant?
+
+**Expected outcome**: Find the specific code change that broke the listener chain.
+
+### Phase 4: Systematic Fix
+
+Once we identify the root cause, apply targeted fixes:
+
+**If missing listeners**:
+- Add `ref_` prefixed listeners in S13, S14, S15 for all S12 dependencies
+- Ensure each listener calls the correct calculation engine
+
+**If getExternalValue() bug**:
+- Fix the logic to ensure strict mode isolation
+- Add fallback prevention (return null, don't fall back to unprefixed)
+
+**If calculation engine not firing**:
+- Ensure `calculateReferenceModel()` is called when `ref_` values change
+- Check that dual-engine pattern (`calculateAll()`) runs both engines
+
+### Success Criteria
+
+When fixed, we should see:
+- ✅ Changes to S09 Target g_63 only affect h_10 (not e_10)
+- ✅ Changes to S09 Reference g_63 only affect e_10 (not h_10)
+- ✅ Changes to S12 Reference values propagate through full chain
+- ✅ e_10 updates correctly when S12 Reference changes
+- ✅ CSV export remains complete (126 fields)
+- ✅ State isolation maintained (Target and Reference independent)
+
+### Diagnostic Tools
+
+**Console test script for quick checks**:
+```javascript
+// Test 1: Check if S13 has ref_i_63 listener
+console.log("S13 listeners:", window.TEUI.StateManager.listeners?.ref_i_63);
+
+// Test 2: Check what value getExternalValue returns
+const testValue = window.TEUI.SectionModules.sect13.getExternalValue?.("i_63", true);
+console.log("S13 getExternalValue('i_63', true):", testValue);
+
+// Test 3: Check StateManager values
+console.log("i_63 (Target):", window.TEUI.StateManager.getValue("i_63"));
+console.log("ref_i_63 (Reference):", window.TEUI.StateManager.getValue("ref_i_63"));
+
+// Test 4: Check S12 Reference values
+console.log("ref_d_101:", window.TEUI.StateManager.getValue("ref_d_101"));
+console.log("ref_g_101:", window.TEUI.StateManager.getValue("ref_g_101"));
+```
+
+This systematic approach should quickly identify where the calculation flow breaks and guide us to the correct fix.
+
+---
+
 ## 📋 Established Patterns for StateManager Publication
 
 This section consolidates the working patterns we've established for publishing Reference values to StateManager, to help future debugging efforts understand what works and what doesn't.
