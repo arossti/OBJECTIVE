@@ -1136,13 +1136,33 @@ S12 (Volume and Surface Metrics) is the **linchpin** for downstream calculation 
 // - calculateSurfaceToVolumeRatio() should publish ref_i_104
 ```
 
-**Step 4: Verify the "contamination victory" baseline**
-```javascript
-// Checkout b79549c and test:
-// 1. Does Reference calculation flow work at that commit? CONFIRMED, IT DOES
-// 2. Do S12 Reference changes propagate downstream? CONFIRMED, THEY DO
-// 3. If YES: What did we break between b79549c and HEAD? OR IS THE ISSUE DOWNSTREAM, BUT ALSO, WHY CAN"T WE PUBLISH REF VALUES TO SM?
-```
+**Step 4: Understand the baseline vs current state difference** ✅ CONFIRMED
+
+**At b79549c (contamination victory):**
+- ✅ Reference calculation flow works perfectly
+- ✅ S12 Reference changes propagate downstream correctly
+- ✅ State isolation maintained (Target and Reference independent)
+- ❌ CSV export incomplete (only 37 Reference values out of 126)
+- **Key**: S12 worked IN CONTEXT of all other sections at that commit
+
+**At HEAD (current state with CSV export work):**
+- ✅ CSV export nearly complete (126 fields published to StateManager)
+- ✅ S02-S09 maintain correct isolation and flow
+- ❌ S10+ Reference mode changes trapped, flows downstream to S11, S12, but gets stuck there...
+- ❌ S12 can't publish Reference values to StateManager for CSV export
+- **Key**: S12 doesn't work IN CONTEXT of our CSV publication changes
+
+**Critical insight**:
+- S12 wasn't fixed in isolation at b79549c
+- The ENTIRE SYSTEM worked together at b79549c without explicit Reference default publication
+- Our CSV export work (publishing all Reference defaults to StateManager) broke the dynamic flow
+- The problem isn't just S12 - it's the interaction between S12 and all the CSV publication changes we made to S02-S15
+
+**What this means**:
+1. We can't just "fix S12 in isolation" - need to understand systemic interaction
+2. At b79549c, Reference values flowed dynamically through calculations WITHOUT being pre-published to StateManager
+3. Our CSV work added pre-publication for export, but this somehow broke the dynamic calculation flow
+4. Need to maintain BOTH: pre-publication for CSV export AND dynamic calculation flow
 
 ### Success Criteria for Unblocking S12
 
