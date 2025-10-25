@@ -236,6 +236,8 @@ function calculateApplicationModel() {
 
 **Recent Fix (2025-10-23, commit b79549c)**: S10/S11/S12 contamination eliminated - Target edits no longer affect Reference model. Root cause: S12's weighted U-value formula used Target area totals (d_101, d_102) even during Reference calculation. All S12 reads now strictly mode-aware, dual-state isolation restored.
 
+**⚠️ Critical Crossroads (2025-10-24, branch S10-S11-PURITY)**: Commit b79549c represents **reliable state isolation** with perfect Target/Reference independence and full calculation flow (S10→S11→S12→S13→S14→S15→S04→S01). Subsequent CSV export/import parity work successfully published all 126 Reference values to StateManager (achieving closer Excel parity for e_10 since all sections now access complete Reference defaults), but introduced Reference model calculation blockage at S12. Current HEAD maintains state isolation in S02-S09 but Reference changes in S10+ don't propagate downstream. The regression stems from systemic interaction between CSV publication patterns and the dynamic calculation flow that worked at b79549c. See `OBJECTIVE 4011RF/documentation/CSV-EXPORT-IMPORT-PARITY.md` for detailed investigation, established patterns, and resolution roadmap.
+
 #### **❌ Multiple Calculation Triggers**
 
 **What Broke**: Competing triggers, calculation storms, recursion loops
