@@ -844,6 +844,317 @@ Between contamination victory and current state:
 
 **Total**: 17 commits touching sections S02-S13 for CSV export work
 
+---
+
+## 📋 Established Patterns for StateManager Publication
+
+This section consolidates the working patterns we've established for publishing Reference values to StateManager, to help future debugging efforts understand what works and what doesn't.
+
+### Pattern 1: User Input Fields - Publish Defaults on Initialization
+
+**When to use**: For user-editable fields that have default values in ReferenceState.
+
+**Where it works**: S02, S03, S04, S05, S06, S07, S08, S09, S10, S11, S13, S15
+
+**How it works**:
+```javascript
+const ReferenceState = {
+  state: {},
+  initialize: function () {
+    const savedState = localStorage.getItem("SXX_REFERENCE_STATE");
+    if (savedState) {
+      this.state = JSON.parse(savedState);
+      this.publishToStateManager(); // ✅ Re-publish on every load
+    } else {
+      this.setDefaults();
+    }
+  },
+  setDefaults: function () {
+    // Set default values
+    this.state.field1 = "default1";
+    this.state.field2 = "default2";
+
+    // Publish to StateManager
+    this.publishToStateManager();
+  },
+  publishToStateManager: function () {
+    if (window.TEUI?.StateManager) {
+      const referenceFields = ["field1", "field2"];
+      referenceFields.forEach((fieldId) => {
+        const value = this.state[fieldId];
+        if (value !== null && value !== undefined) {
+          window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "default");
+        }
+      });
+    }
+  },
+};
+```
+
+**Why this pattern works**:
+- ✅ Publishes defaults on fresh initialization
+- ✅ Re-publishes from localStorage on page refresh (critical for CSV export)
+- ✅ Non-destructive: only publishes if value exists
+- ✅ Import-safe: After CSV/Excel import, values already in StateManager aren't overwritten
+
+**Key insight**: Without `publishToStateManager()` in the localStorage path, CSV exports have empty Reference values after page refresh.
+
+---
+
+### Pattern 2: User Edits - Publish Dynamically via ModeManager.setValue
+
+**When to use**: For all user-editable fields when users make changes.
+
+**Where it works**: All Pattern A sections (S02-S13, S15)
+
+**How it works**:
+```javascript
+const ModeManager = {
+  currentMode: "target",
+
+  setValue: function (fieldId, value, source = "user") {
+    // Update internal state
+    const currentState = this.currentMode === "target" ? TargetState : ReferenceState;
+    currentState.setValue(fieldId, value);
+
+    // Bridge to global StateManager
+    if (window.TEUI?.StateManager?.setValue) {
+      if (this.currentMode === "target") {
+        // Target changes: publish without prefix
+        window.TEUI.StateManager.setValue(fieldId, value, source);
+      } else if (this.currentMode === "reference") {
+        // Reference changes: publish with ref_ prefix
+        window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, source);
+      }
+    }
+  },
+};
+```
+
+**Why this pattern works**:
+- ✅ Every user edit immediately publishes to StateManager
+- ✅ Target and Reference values remain separate (different prefixes)
+- ✅ Downstream sections can consume published values
+- ✅ CSV export always has latest user values
+
+**Key insight**: This is how Target values "just work" - every edit publishes. Reference needs the same pattern.
+
+---
+
+### Pattern 3: Calculated Fields - Publish After Calculation
+
+**When to use**: For fields that are computed from other values.
+
+**Where it works**: S09 (i_63, h_71), S10, S11 (partially), S13 (partially)
+
+**How it works**:
+```javascript
+function calculateReferenceModel() {
+  try {
+    const results = calculateModel(ReferenceState, true);
+    const prefix = "ref_";
+
+    // Publish ALL calculated results with ref_ prefix
+    Object.entries(results).forEach(([fieldId, value]) => {
+      if (value !== null && value !== undefined) {
+        window.TEUI.StateManager.setValue(
+          prefix + fieldId,
+          String(value),
+          "calculated",
+        );
+      }
+    });
+
+    // Also manually publish critical values that downstream sections need
+    window.TEUI.StateManager.setValue(
+      "ref_d_63",
+      ReferenceState.getValue("d_63"),
+      "calculated",
+    );
+    window.TEUI.StateManager.setValue(
+      "ref_g_63",
+      ReferenceState.getValue("g_63"),
+      "calculated",
+    );
+  } catch (error) {
+    console.error("[SXX] Error in Reference Model calculations:", error);
+  }
+}
+
+function calculateTargetModel() {
+  try {
+    const results = calculateModel(TargetState, false);
+
+    // Publish to StateManager (without prefix)
+    Object.entries(results).forEach(([fieldId, value]) => {
+      if (window.TEUI?.StateManager && value !== null && value !== undefined) {
+        window.TEUI.StateManager.setValue(fieldId, String(value), "calculated");
+      }
+    });
+  } catch (error) {
+    console.error("[SXX] Error in Target Model calculations:", error);
+  }
+}
+```
+
+**Why this pattern works**:
+- ✅ Every calculation run publishes results to StateManager
+- ✅ Both Target and Reference calculations publish (dual-engine)
+- ✅ Values are always fresh when downstream sections read them
+- ✅ Target publishes `fieldId`, Reference publishes `ref_fieldId`
+
+**Key insight**: S09 does this correctly - calculates i_63 from both TargetState and ReferenceState, publishes both `i_63` and `ref_i_63` with correct independent values.
+
+---
+
+### Pattern 4: Consuming External Values - Mode-Aware Reading
+
+**When to use**: When a section needs values from upstream sections.
+
+**Where it works**: S13 (uses `getExternalValue`)
+
+**How it works**:
+```javascript
+function getExternalValue(fieldId, isReferenceCalculation = false) {
+  if (isReferenceCalculation) {
+    // Reference calculations read ref_ prefixed external values
+    const refValue = window.TEUI?.StateManager?.getValue(`ref_${fieldId}`);
+    return refValue !== null && refValue !== undefined ? refValue : null;
+  } else {
+    // Target calculations read unprefixed values
+    return window.TEUI?.StateManager?.getValue(fieldId);
+  }
+}
+
+// Usage in calculations:
+const occupiedHours = window.TEUI.parseNumeric(
+  getExternalValue("i_63", isReferenceCalculation),
+) || 0;
+```
+
+**Why this pattern works**:
+- ✅ Strict mode isolation - reads correct prefix based on calculation mode
+- ✅ Returns `null` if value doesn't exist (no fallback contamination)
+- ✅ Clear separation between Target and Reference data flows
+
+**Key insight**: This is how to PREVENT fallback anti-patterns. If `ref_i_63` doesn't exist, return `null`, don't fall back to `i_63`.
+
+---
+
+## 🚧 S12 Special Case: The Blocker
+
+### What Makes S12 Different
+
+S12 (Volume and Surface Metrics) is the **linchpin** for downstream calculation flow. It calculates critical values that S13, S14, S15, S04, and S01 all depend on:
+
+**Critical S12 outputs**:
+- `d_101`, `ref_d_101` - Total AG wall + window area
+- `d_102`, `ref_d_102` - Total envelope area (walls + roof + BG + floor)
+- `g_101`, `ref_g_101` - Weighted average U-value
+- `i_104`, `ref_i_104` - Surface area to volume ratio
+
+**Why it's critical**:
+- S13 (Mechanical) uses these for heating/cooling load calculations
+- S15 (Summary) uses these for TEUI totals
+- If S12 Reference values don't publish, the entire Reference calculation chain breaks downstream
+
+### What We Tried with S12
+
+**Attempt 1: Add publishToStateManager() method** (Commit 650bc47)
+- Created `publishToStateManager()` method to publish user input defaults
+- Modified `initialize()` to call it when loading from localStorage
+- **Result**: User input fields (d_103, g_103, d_105, d_108, g_109) still didn't publish
+- **Problem**: State object was empty `{}` when we tried to publish
+
+**Attempt 2: Change object assignment to individual properties**
+- Changed from `this.state = { d_103: "1", ... }` to `this.state.d_103 = "1"` (like S10 pattern)
+- **Result**: Still didn't work
+- **Problem**: Unknown - state still appeared empty
+
+**Attempt 3: Multiple debug/revert cycles**
+- Added verbose logging to trace execution
+- Reverted multiple times trying different approaches
+- Accumulated technical debt
+- **Result**: Too messy to debug further, reverted to clean baseline (b79549c)
+
+### The Mystery: Why Target Works But Reference Doesn't
+
+**Target values publish correctly in S12** - we can verify this because:
+- Changes to Target fields in S12 flow downstream correctly
+- h_10 (Target TEUI) updates when S12 Target values change
+- Target g_101, d_101, etc. appear in StateManager
+
+**Reference values DON'T publish** - we know this because:
+- Changes to Reference fields in S12 don't flow downstream
+- e_10 (Reference TEUI) doesn't update when S12 Reference values change
+- CSV export from fresh initialization shows S12 Reference values missing
+
+**Critical questions for next investigation**:
+1. **How do Target values publish?** - We need to trace the exact mechanism
+   - Is it in the calculation functions?
+   - Is it in some initialization code we haven't found?
+   - Is it in ModeManager.setValue when users edit fields?
+2. **Why doesn't the same mechanism work for Reference?**
+   - Are we missing a listener?
+   - Is there a timing issue?
+   - Is localStorage interfering?
+3. **What's different about S12 vs S10?**
+   - S10 Reference publication works perfectly
+   - S12 Reference publication fails completely
+   - Both use Pattern A dual-state architecture
+   - What's the structural difference?
+
+### Recommended Next Steps for S12
+
+**Step 1: Trace Target publication mechanism** (Start here!)
+```javascript
+// Add debug logging to S12:
+// 1. Log when d_103, g_103, etc. are published to StateManager
+// 2. Search for ALL setValue calls with these field IDs
+// 3. Find which code path successfully publishes Target values
+// 4. Mirror that exact pattern for Reference with ref_ prefix
+```
+
+**Step 2: Compare S10 vs S12 structure**
+```javascript
+// Read both files side-by-side:
+// - How does S10.ReferenceState.publishToStateManager() work?
+// - How does S10.ModeManager.setValue() work?
+// - What's different in S12's structure?
+// - Can we copy S10's working pattern exactly?
+```
+
+**Step 3: Test hypothesis about calculated values**
+```javascript
+// S12's critical values are CALCULATED (g_101, d_101, i_104)
+// They're not user inputs like d_103, g_103
+// Maybe we need Pattern 3 (calculated fields) not Pattern 1 (user inputs)?
+//
+// Check if S12 has calculation functions that should publish:
+// - calculateCombinedUValue() should publish ref_g_101
+// - calculateSurfaceAreas() should publish ref_d_101, ref_d_102
+// - calculateSurfaceToVolumeRatio() should publish ref_i_104
+```
+
+**Step 4: Verify the "contamination victory" baseline**
+```javascript
+// Checkout b79549c and test:
+// 1. Does Reference calculation flow work at that commit? CONFIRMED, IT DOES
+// 2. Do S12 Reference changes propagate downstream? CONFIRMED, THEY DO
+// 3. If YES: What did we break between b79549c and HEAD? OR IS THE ISSUE DOWNSTREAM, BUT ALSO, WHY CAN"T WE PUBLISH REF VALUES TO SM?
+```
+
+### Success Criteria for Unblocking S12
+
+When S12 is fixed, we should see:
+- ✅ CSV export includes all S12 Reference values (d_103, g_103, d_105, d_108, g_109, plus calculated values)
+- ✅ Changes to S12 Reference fields update e_10 (Reference TEUI)
+- ✅ Reference calculation flow: S10 → S11 → S12 → S13 → S14 → S15 → S04 → S01
+- ✅ State isolation maintained (Target and Reference independent)
+- ✅ Same working behavior as "contamination victory" commit b79549c
+
+---
+
 ### Related Documentation
 
 - [4012-CHEATSHEET.md - Anti-Pattern 1: State Contamination via Fallbacks](history%20(completed)/4012-CHEATSHEET.md#anti-pattern-1-state-contamination-via-fallbacks)
