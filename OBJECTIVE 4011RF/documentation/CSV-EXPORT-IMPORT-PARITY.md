@@ -6,6 +6,14 @@
 
 ---
 
+---
+
+⚠️ **NOTE**: This document has been superseded by [S12-S13-PURITY.md](S12-S13-PURITY.md) for ongoing work.
+
+This document remains as historical reference for the S10-S11 state isolation and initial CSV export investigation work.
+
+---
+
 ## 📋 Session Summary (2025-10-25 Evening)
 
 ### Victories ✅
