@@ -77,41 +77,24 @@ window.TEUI.SectionModules.sect12 = (function () {
     initialize: function () {
       const savedState = localStorage.getItem("S12_REFERENCE_STATE");
       if (savedState) {
-        console.log("[S12 DEBUG] Loading from localStorage");
         this.state = JSON.parse(savedState);
-        console.log("[S12 DEBUG] Loaded state from localStorage:", this.state);
 
         // ✅ CRITICAL: Re-publish to StateManager even when loading from localStorage
         // This ensures values are available for CSV export after page refresh (S10 pattern)
         if (window.TEUI?.StateManager) {
-          console.log("[S12 DEBUG] Re-publishing from localStorage to StateManager...");
           const referenceFields = ["d_103", "g_103", "d_105", "d_108", "g_109"];
           referenceFields.forEach((fieldId) => {
             const value = this.state[fieldId];
-            console.log(`[S12 DEBUG localStorage] ${fieldId} = ${value}, null/undefined=${value === null || value === undefined}`);
             if (value !== null && value !== undefined) {
               window.TEUI.StateManager.setValue(
                 `ref_${fieldId}`,
                 value,
                 "default",
               );
-              console.log(`[S12 REF DEFAULTS localStorage] ✅ Re-published ref_${fieldId}=${value} to StateManager`);
-            } else {
-              console.log(`[S12 REF DEFAULTS localStorage] ❌ SKIPPED ref_${fieldId} (value was ${value})`);
             }
           });
-
-          // 🔍 DIAGNOSTIC: Verify values after re-publication
-          console.log("[S12 VERIFY localStorage] Checking what StateManager has after re-publication:");
-          referenceFields.forEach(id => {
-            const val = window.TEUI?.StateManager?.getValue(`ref_${id}`);
-            console.log(`[S12 VERIFY localStorage] ref_${id} = ${val === null || val === undefined ? "❌ NULL/UNDEFINED" : "✅ " + val}`);
-          });
-        } else {
-          console.log("[S12 DEBUG] ❌ StateManager not available for localStorage re-publication!");
         }
       } else {
-        console.log("[S12 DEBUG] No localStorage found, calling setDefaults()");
         this.setDefaults();
       }
     },
@@ -132,52 +115,23 @@ window.TEUI.SectionModules.sect12 = (function () {
       };
 
       // ✅ CRITICAL: Publish Reference defaults to StateManager (S10/S11/S04 pattern)
-      // This fixes S15 warnings: ref_g_101, ref_d_101, ref_i_104 missing
-      console.log(`[S12 DEBUG] setDefaults() called, StateManager exists: ${!!window.TEUI?.StateManager}`);
-      console.log(`[S12 DEBUG] this.state:`, this.state);
-
       if (window.TEUI?.StateManager) {
-        const referenceFields = [
-          "d_103",
-          "g_103",
-          "d_105",
-          "d_108",
-          "g_109", // User input fields
-          // Note: Calculated fields (g_101, d_101, i_104) will be published by calculation engines
-        ];
-        console.log(`[S12 DEBUG] About to publish ${referenceFields.length} Reference fields...`);
+        const referenceFields = ["d_103", "g_103", "d_105", "d_108", "g_109"];
         referenceFields.forEach((fieldId) => {
           const value = this.state[fieldId];
-          console.log(`[S12 DEBUG] Checking ${fieldId}: value=${value}, null/undefined=${value === null || value === undefined}`);
           if (value !== null && value !== undefined) {
             window.TEUI.StateManager.setValue(
               `ref_${fieldId}`,
               value,
               "default",
             );
-            console.log(
-              `[S12 REF DEFAULTS] ✅ Published ref_${fieldId}=${value} to StateManager`,
-            );
-          } else {
-            console.log(
-              `[S12 REF DEFAULTS] ❌ SKIPPED ref_${fieldId} (value was ${value})`,
-            );
           }
         });
-      } else {
-        console.log(`[S12 DEBUG] ❌ StateManager not available, cannot publish Reference defaults!`);
       }
 
       console.log(
         `S12: Reference defaults loaded from standard: ${currentStandard}`,
       );
-
-      // 🔍 DIAGNOSTIC: Verify values are actually in StateManager
-      console.log("[S12 VERIFY] Checking what StateManager has RIGHT NOW:");
-      ["d_103", "g_103", "d_105", "d_108", "g_109"].forEach(id => {
-        const val = window.TEUI?.StateManager?.getValue(`ref_${id}`);
-        console.log(`[S12 VERIFY] ref_${id} = ${val === null || val === undefined ? "❌ NULL/UNDEFINED" : "✅ " + val}`);
-      });
     },
     // MANDATORY: Include onReferenceStandardChange for d_13 changes
     onReferenceStandardChange: function () {
@@ -229,13 +183,8 @@ window.TEUI.SectionModules.sect12 = (function () {
   const ModeManager = {
     currentMode: "target",
     initialize: function () {
-      console.log("🚀 [S12] ModeManager.initialize() CALLED");
-      console.log("🚀 [S12] About to initialize TargetState...");
       TargetState.initialize();
-      console.log("🚀 [S12] TargetState.initialize() completed");
-      console.log("🚀 [S12] About to initialize ReferenceState...");
       ReferenceState.initialize();
-      console.log("🚀 [S12] ReferenceState.initialize() completed");
 
       // MANDATORY: Listen for reference standard changes
       if (window.TEUI?.StateManager?.addListener) {
