@@ -559,11 +559,6 @@ window.TEUI.SectionModules.sect10 = (function () {
               ); // Default
             }
 
-            // 🔍 DEBUG: Log g_81 updates specifically
-            if (fieldId === "g_81") {
-              console.log(`[S10 UI UPDATE] Updating g_81 display: mode=${this.currentMode}, ReferenceState.getValue=${ReferenceState.getValue("g_81")}, formatted=${formattedValue}`);
-            }
-
             element.textContent = formattedValue;
           }
         }
@@ -2257,13 +2252,9 @@ window.TEUI.SectionModules.sect10 = (function () {
       const m121Reference = getGlobalNumericValue("ref_m_121") || 0;
       const i98Reference = getGlobalNumericValue("ref_i_98") || 0;
 
-      console.log(`[S10 REF g_81 CALC] Inputs: i97=${i97Reference}, i103=${i103Reference}, m121=${m121Reference}, i98=${i98Reference}, totalGains=${totalGains}`);
-
       const numeratorReference = totalGains;
       const denominatorReference =
         i97Reference + i103Reference + m121Reference + i98Reference;
-
-      console.log(`[S10 REF g_81 CALC] gamma = ${numeratorReference} / ${denominatorReference} = ${denominatorReference > 0 ? (numeratorReference / denominatorReference).toFixed(4) : 'N/A'}`);
 
       let phUtilizationFactor = 0.9;
 
@@ -2284,13 +2275,9 @@ window.TEUI.SectionModules.sect10 = (function () {
 
       const phReferenceGains = totalGains * phUtilizationFactor;
 
-      console.log(`[S10 REF g_81 CALC] Result: phUtilizationFactor=${phUtilizationFactor}, phReferenceGains=${phReferenceGains}`);
-
       // ✅ Store g_81 (PHPP utilization factor) and i_81 (PHPP usable gains)
       setFieldValue("g_81", phUtilizationFactor);
       setFieldValue("i_81", phReferenceGains);
-
-      console.log(`[S10 REF g_81 STORED] Stored g_81=${phUtilizationFactor} to ReferenceState`);
 
       //=====================================================================
       // PART 3: Calculate unusable gains based on selected method (row 80)
