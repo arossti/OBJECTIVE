@@ -1243,40 +1243,30 @@ window.TEUI.SectionModules.sect12 = (function () {
       determinedFormatType = formatType;
     }
 
-    // ✅ CRITICAL FIX: Do NOT publish to StateManager here for calculated fields!
-    // The PRIMARY PUBLISH block at the end of calculateAll() handles all Reference publications
-    // to prevent race conditions where downstream sections receive partial calculation results.
-    //
-    // For TARGET values, we still publish immediately since there's no batch publication.
+    // ✅ MODE-AWARE: Set value in appropriate state based on calculation context
     const stateFieldId = isReferenceCalculation ? `ref_${fieldId}` : fieldId;
 
     if (window.TEUI?.StateManager?.setValue) {
-      // Only publish Target values immediately
-      if (!isReferenceCalculation) {
-        const currentStr = window.TEUI.StateManager.getValue(stateFieldId);
-        const currentNum = window.TEUI.parseNumeric(currentStr);
-        const newNum = Number.isFinite(numericValue) ? numericValue : 0;
-        const epsilon = 1e-9;
-        if (!(Math.abs((currentNum || 0) - newNum) < epsilon)) {
-          window.TEUI.StateManager.setValue(
-            stateFieldId,
-            String(newNum),
-            "calculated",
-          );
-        } else {
-          // No material change; skip DOM update
-          return;
-        }
-      }
-      // Reference values: Skip StateManager publication - will be published in batch at end
-    } else {
-      if (!isReferenceCalculation) {
-        console.error(
-          "StateManager not available to set value for",
+      const currentStr = window.TEUI.StateManager.getValue(stateFieldId);
+      const currentNum = window.TEUI.parseNumeric(currentStr);
+      const newNum = Number.isFinite(numericValue) ? numericValue : 0;
+      const epsilon = 1e-9;
+      if (!(Math.abs((currentNum || 0) - newNum) < epsilon)) {
+        window.TEUI.StateManager.setValue(
           stateFieldId,
+          String(newNum),
+          "calculated",
         );
+      } else {
+        // No material change; skip DOM update
         return;
       }
+    } else {
+      console.error(
+        "StateManager not available to set value for",
+        stateFieldId,
+      );
+      return;
     }
 
     // For 'W/m2' format, use local formatNumber function
@@ -2287,17 +2277,12 @@ window.TEUI.SectionModules.sect12 = (function () {
     // all calculated Reference values from S12. This ensures the calculation
     // pass is complete before notifying downstream sections.
     if (window.TEUI?.StateManager && lastReferenceResults) {
-      console.log(`[S12 PUBLISH] Publishing ${Object.keys(lastReferenceResults).length} Reference fields to StateManager`);
       Object.entries(lastReferenceResults).forEach(([fieldId, value]) => {
         window.TEUI.StateManager.setValue(
           `ref_${fieldId}`,
           value.toString(),
           "calculated",
         );
-        // 🔍 DEBUG: Log i_103 publications specifically
-        if (fieldId === "i_103") {
-          console.log(`[S12 PUBLISH] ✅ Publishing ref_i_103 = ${value} to StateManager`);
-        }
       });
     }
 
@@ -2328,7 +2313,7 @@ window.TEUI.SectionModules.sect12 = (function () {
    * Uses Reference state values for section-local inputs
    */
   function calculateReferenceModel() {
-    console.log(`[S12 REF ENGINE] Starting Reference Model calculations... d_103=${ReferenceState.getValue("d_103")}`);
+    // console.log("[Section12] Running Reference Model calculations...");
 
     try {
       // ✅ DUAL-ENGINE: Calculate all metrics using Reference state values
@@ -2336,7 +2321,6 @@ window.TEUI.SectionModules.sect12 = (function () {
       const uValueResults = calculateCombinedUValue(true);
       const wwrResults = calculateWWR(true);
       const nFactorResults = calculateNFactor(true);
-      console.log(`[S12 REF ENGINE] nFactor calculated: g_110=${nFactorResults.g_110}`);
       const ach50Results = calculateACH50Target(true, volumeResults);
       const ae10Results = calculateAe10(true, volumeResults, ach50Results);
       const airLeakageResults = calculateAirLeakageHeatLoss(
@@ -2345,7 +2329,6 @@ window.TEUI.SectionModules.sect12 = (function () {
         ach50Results,
         nFactorResults,
       );
-      console.log(`[S12 REF ENGINE] airLeakage calculated: i_103=${airLeakageResults.i_103}`);
       const envelopeResults = calculateEnvelopeHeatLossGain(
         true,
         volumeResults,
@@ -2552,7 +2535,6 @@ window.TEUI.SectionModules.sect12 = (function () {
       field.textContent = formattedValue;
 
       // ✅ DUAL-STATE: Store value using ModeManager
-      console.log(`[S12 INPUT] Field ${fieldId} changed to ${numValue} in ${ModeManager.currentMode} mode`);
       ModeManager.setValue(fieldId, String(numValue), "user-modified");
       calculateAll();
     }
