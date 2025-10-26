@@ -254,6 +254,24 @@ if (window.TEUI?.StateManager) {
 - Key question: Is it safe calculation logic or contamination side-effect?
 - Look at differences in lines 2940-2957 (m_124 two-stage handling)
 
+**⚠️ Known Issue - Missing Reference Listeners**:
+Both S13 files (backup AND .oct25) are missing listeners for certain Reference fields:
+- `ref_i_104` (S12 calculated envelope value)
+- `ref_k_104` (S12 calculated value)
+- `ref_d_127` (S14 TED value)
+
+**Analysis**:
+- Likely a RED HERRING for state mixing (both files missing same listeners)
+- Backup has good isolation despite missing listeners
+- .oct25 has bad isolation despite missing same listeners
+- Therefore: Missing listeners NOT the cause of state mixing
+
+**Potential Impact on E_10 Disparity**:
+- Missing listeners COULD explain why e_10 initialization differs (287.0 vs 192.9)
+- If S13 doesn't listen for upstream Reference values, it may use stale/default data
+- Worth investigating during Phase 3 as potential cause of poor e_10 initialization
+- If state isolation remains clean, adding these listeners might improve e_10 without breaking architecture
+
 **Phase 4: Merge Best of Both** (if safe improvements found)
 - Port ONLY safe calculation improvements from .oct25 to backup
 - Test state isolation after each change
