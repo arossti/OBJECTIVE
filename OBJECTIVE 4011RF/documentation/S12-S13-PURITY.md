@@ -46,14 +46,28 @@ Restore clean Reference model calculation flow from S12 (envelope) to S13 (heati
 - Fix: Browser cache issue + safety net in calculateAll()
 - Commit: 2befec9
 
-### S13 File Status
-**Current Setup**:
-- `4012-Section13.js.backup.js` (3662 lines) - **BACKUP VERSION** - formerly Working calculation flow (but not anymore with completed S12)
-- `4012-Section13.js` (3682 lines) - **CSV FIX VERSION** - Broken calculation flow ❌
+### S13 File Status ⚠️ FILES SWAPPED (Oct 25 Evening)
 
-**Test Results**:
-- Backup S13: ✅ Reference flow works, ❌ e_10 initialization poor (287.0)
-- CSV-fix S13: ✅ Better e_10 (192.9), ✅ CSV export complete, ❌ Flow blocked
+**ACTIVE FILE** (In calculation flow):
+- `4012-Section13.js` (3662 lines) - **BACKUP VERSION NOW ACTIVE**
+  - ✅ GOOD state isolation (Target/Reference independent)
+  - ❌ Missing CSV export for Reference fields
+  - ❌ e_10 initialization needs improvement (~287.0, target ~192.9)
+  - 📋 Tomorrow: Add CSV export using S12 safety net pattern
+
+**OFFLINE FILE** (Taken out of calculation flow):
+- `4012-Section13.js.oct25` (3682 lines) - **STATE MIXING VERSION**
+  - ❌ BROKEN state isolation (significant state mixing across sections)
+  - ❌ Target changes contaminate Reference values
+  - ✅ Good e_10 initialization (192.9)
+  - ✅ Has CSV export
+  - 📋 Kept for reference to understand e_10 calculation differences
+
+**Why We Swapped**:
+User chose Option B: "Carefully add CSV export improvements to the backup S13 file"
+- Starting from known-good state isolation
+- Conservative, testable approach
+- Lower risk than fixing broken architecture
 
 ---
 
@@ -215,44 +229,49 @@ if (window.TEUI?.StateManager) {
 
 ---
 
-### Phase 3: Next Investigation Plan (TOMORROW)
+### Phase 3: Tomorrow's Plan (Option B - Build on Backup) ✅ APPROVED
 
-**Current Understanding**:
-- CSV export block removal did NOT fix state mixing
-- Problem is deeper than initialization timing
-- Current S13 has structural issues with Target/Reference isolation
-- Backup S13 has better isolation but poor e_10 initialization
+**Strategy**: Add CSV export to backup S13 (now active) without breaking state isolation
 
-**Goals for Tomorrow**:
-1. **Systematic Listener Audit**: Map EVERY listener in current S13
-   - Identify which call Target-only functions
-   - Find where Reference listeners might trigger Target code
-   - Look for patterns like S10's duplicate listener bug
+**Phase 1: Baseline Test** (15 min)
+- ✅ Load backup S13 with current codebase (DONE - now active file)
+- Test state isolation still works (hard refresh required)
+- Document current e_10 value (expect ~287.0)
+- Verify S12→S13 Reference flow works
 
-2. **State Contamination Points**: Find ALL places where Target state could overwrite Reference
-   - Function calls that don't check ModeManager.currentMode
-   - Shared calculation functions that write to both states
-   - setValue() calls that might target wrong state object
+**Phase 2: Minimal CSV Export** (30-60 min)
+- Add ONLY the safety net to S13's `calculateAll()`
+- Use S12 pattern with `source="default"` (lines 2289-2301 in S12 as reference)
+- Fields to publish: d_113, f_113, j_115, d_116, d_118, g_118, l_118, d_119, l_119, k_120
+- Test after addition:
+  - Does state isolation break?
+  - Do Reference fields export to CSV?
+  - Does S12→S13 flow still work?
 
-3. **Backup vs Current Deep Dive**: Beyond the 26-line diff
-   - Test backup S13 with current codebase (does it still have good isolation?)
-   - Compare listener architecture between versions
-   - Identify what changed in calculation flow, not just lines
+**Phase 3: E_10 Investigation** (if Phase 2 succeeds)
+- Compare e_10 calculation between backup (287.0) and .oct25 (192.9)
+- Identify what makes .oct25's initialization better
+- Key question: Is it safe calculation logic or contamination side-effect?
+- Look at differences in lines 2940-2957 (m_124 two-stage handling)
 
-4. **Conservative Approach**:
-   - Make ONE small change at a time
-   - Test state isolation after each change
-   - If mixing appears, immediate revert
-   - Document every observation
+**Phase 4: Merge Best of Both** (if safe improvements found)
+- Port ONLY safe calculation improvements from .oct25 to backup
+- Test state isolation after each change
+- If mixing appears → immediate revert
+- Goal: Good e_10 (192.9) + CSV export + state isolation
 
 **Critical Context**:
-- This is the LAST file to refactor in nearly 12-month development cycle
+- LAST file to refactor in nearly 12-month development cycle
 - S13 handles heating loads - most complex calculations in system
 - Cannot afford to break this - production readiness depends on it
-- User's observation: "S13 is complicated"
+- Conservative approach: ONE change at a time with testing
 
-**Success Metric**:
-Clean state isolation where Target changes do NOT affect Reference values (and vice versa)
+**Success Metrics**:
+1. ✅ Clean state isolation (Target changes don't affect Reference)
+2. ✅ CSV export works for all Reference fields
+3. ✅ S12→S13→S01 Reference flow works
+4. ✅ Good e_10 initialization (~192.9)
+5. ✅ Good h_10 value maintained (~93.7)
 
 ---
 
