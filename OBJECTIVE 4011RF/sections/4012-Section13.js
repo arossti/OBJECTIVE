@@ -1929,6 +1929,11 @@ window.TEUI.SectionModules.sect13 = (function () {
         // ✅ PATTERN 2: Run dual-engine calculations for proper Target/Reference state handling
         calculateAndRefresh();
       }); // TED (from S14, for d_114)
+
+      // ✅ REFERENCE LISTENER (Oct 26, 2025): Enable automatic propagation of Reference TED changes
+      sm.addListener("ref_d_127", () => {
+        calculateAndRefresh();
+      }); // Reference TED (from S14, for d_114) - CRITICAL for Reference flow
     } else {
       console.error(
         "[Section13] ❌ StateManager not available to add listeners!",
