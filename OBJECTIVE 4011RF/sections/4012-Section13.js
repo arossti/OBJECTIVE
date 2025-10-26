@@ -1924,13 +1924,17 @@ window.TEUI.SectionModules.sect13 = (function () {
       sm.addListener("i_71", () => {
         calculateAndRefresh();
       }); // Total Occ Gains
+      sm.addListener("ref_i_71", () => {
+        calculateAndRefresh();
+      }); // Reference Total Occ Gains (from S09)
+
       sm.addListener("i_79", calculateAndRefresh); // Total App Gains
+      sm.addListener("ref_i_79", calculateAndRefresh); // Reference Total App Gains (from S10)
+
       sm.addListener("d_127", () => {
         // ✅ PATTERN 2: Run dual-engine calculations for proper Target/Reference state handling
         calculateAndRefresh();
       }); // TED (from S14, for d_114)
-
-      // ✅ REFERENCE LISTENER (Oct 26, 2025): Enable automatic propagation of Reference TED changes
       sm.addListener("ref_d_127", () => {
         calculateAndRefresh();
       }); // Reference TED (from S14, for d_114) - CRITICAL for Reference flow
