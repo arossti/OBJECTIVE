@@ -233,14 +233,38 @@ if (window.TEUI?.StateManager) {
 
 **Strategy**: Add CSV export to backup S13 (now active) without breaking state isolation
 
-**Phase 1: Baseline Test** (15 min)
+**Phase 1: Baseline Test** (15 min) ✅ COMPLETE (Oct 25 Evening)
 - ✅ Load backup S13 with current codebase (DONE - now active file)
-- Test state isolation still works (hard refresh required)
-- Document current e_10 value (expect ~287.0)
-- Verify S12→S13 Reference flow works
+- ✅ Test state isolation still works (hard refresh required)
+- ✅ **STATE ISOLATION CONFIRMED EXCELLENT** (User test)
+  - Reference changes apply to Reference model ONLY
+  - Target changes apply to Target model ONLY
+  - NO state mixing across nearly EVERY section
+  - Tested wide sampling of key user edit fields
+- ❌ Missing CSV export functionality for Reference fields
+- ⚠️ **Values on Fresh Initialization**:
+  - **e_10**: 277.8 (Current) vs ~196.6 (Excel parity target) - **NEEDS IMPROVEMENT**
+  - **h_10**: 93.6 (Current) vs 93.7 (Excel parity target) - **VERY CLOSE** ✅
+  - Note: .oct25 file achieved e_10 ~196.6 but with broken state isolation
+  - Goal: Achieve Excel parity (196.6) WITHOUT breaking state isolation
 
-**Phase 2: Minimal CSV Export** (30-60 min)
-- Add ONLY the safety net to S13's `calculateAll()`
+**Phase 2: Add Missing Reference Listeners** (CRITICAL - Must do FIRST!) ⚠️
+- **Discovery**: S13 missing Reference listeners for ALL upstream dependencies
+- **Add listeners** for (around line 2335 in registerWithStateManager):
+  - `ref_d_127` (TED from S14) - **HIGHEST PRIORITY**
+  - `ref_l_128` (from S14)
+  - `ref_i_71` (Total Occ Gains from S09)
+  - `ref_i_79` (Total App Gains from S10)
+  - `ref_k_104` (Total Ground Loss from S12)
+  - `ref_i_104`, `ref_g_101`, `ref_d_101` (S12 envelope values)
+- **Pattern**: Each listener should call `calculateAndRefresh()` (like existing Target listeners)
+- **Test after each listener added**:
+  - Does Reference flow work for that section?
+  - Does state isolation remain clean?
+  - Does e_10 update when upstream Reference value changes?
+
+**Phase 3: CSV Export Safety Net** (AFTER listeners fixed)
+- Add safety net to S13's `calculateAll()`
 - Use S12 pattern with `source="default"` (lines 2289-2301 in S12 as reference)
 - Fields to publish: d_113, f_113, j_115, d_116, d_118, g_118, l_118, d_119, l_119, k_120
 - Test after addition:
@@ -248,35 +272,125 @@ if (window.TEUI?.StateManager) {
   - Do Reference fields export to CSV?
   - Does S12→S13 flow still work?
 
-**Phase 3: E_10 Investigation** (if Phase 2 succeeds)
-- Compare e_10 calculation between backup (287.0) and .oct25 (192.9)
-- Identify what makes .oct25's initialization better
-- Key question: Is it safe calculation logic or contamination side-effect?
+**Phase 4: E_10 Investigation** (if Phase 2+3 succeed)
+- After listeners fixed, check if e_10 improves automatically
+- If still not at 196.6 target, compare backup vs .oct25 calculation logic
 - Look at differences in lines 2940-2957 (m_124 two-stage handling)
+- Key question: Is better e_10 from safe calculation logic or contamination side-effect?
 
-**⚠️ Known Issue - Missing Reference Listeners**:
-Both S13 files (backup AND .oct25) are missing listeners for certain Reference fields:
-- `ref_i_104` (S12 calculated envelope value)
-- `ref_k_104` (S12 calculated value)
-- `ref_d_127` (S14 TED value)
+**⚠️ CRITICAL DISCOVERY - Missing Reference Listeners** (Oct 26 Early AM)
 
-**Analysis**:
-- Likely a RED HERRING for state mixing (both files missing same listeners)
-- Backup has good isolation despite missing listeners
-- .oct25 has bad isolation despite missing same listeners
-- Therefore: Missing listeners NOT the cause of state mixing
+**The Problem**: S13 is missing Reference listeners for ALL upstream dependencies!
 
-**Potential Impact on E_10 Disparity**:
-- Missing listeners COULD explain why e_10 initialization differs (287.0 vs 192.9)
-- If S13 doesn't listen for upstream Reference values, it may use stale/default data
-- Worth investigating during Phase 3 as potential cause of poor e_10 initialization
-- If state isolation remains clean, adding these listeners might improve e_10 without breaking architecture
+**What S13 Has** (Lines 2311-2335):
+- ✅ `ref_d_20`, `ref_d_21`, `ref_d_22`, `ref_h_22` (climate data)
+- ✅ `ref_i_59` (indoor RH%)
 
-**Phase 4: Merge Best of Both** (if safe improvements found)
-- Port ONLY safe calculation improvements from .oct25 to backup
-- Test state isolation after each change
-- If mixing appears → immediate revert
-- Goal: Good e_10 (192.9) + CSV export + state isolation
+**What S13 is MISSING**:
+- ❌ `ref_d_127` (TED from S14) - **SMOKING GUN!**
+- ❌ `ref_l_128` (from S14)
+- ❌ `ref_i_71` (Total Occ Gains from S09)
+- ❌ `ref_i_79` (Total App Gains from S10)
+- ❌ `ref_k_104` (Total Ground Loss from S12)
+- ❌ `ref_i_104`, `ref_g_101`, `ref_d_101` (S12 envelope values)
+
+**User's Detective Work**:
+Testing revealed "dud" sections in Reference mode:
+1. S09: d_64 (activity level) → affects gains → no e_10 change
+2. S10: d_80 and ALL S10 values → no effect on Reference totals
+3. S11: d_97 (TB% penalty) → flows to S12 and S14, but NOT to S13
+
+**The Pattern**:
+- Changes flow correctly: S09 → S10 → S11 → S12 → S14 ✅
+- S14 DOES update with Reference values ✅
+- S13 READS `ref_d_127` in calculations (lines 3022, 3324) ✅
+- But S13 doesn't LISTEN for `ref_d_127` changes ❌
+- **Result**: S13 never recalculates when upstream Reference values change!
+
+**Why This Wasn't Obviously Broken**:
+- S13 reads correct values during initialization (when calculateAll() runs)
+- But doesn't respond to upstream changes after initialization
+- This explains both the poor e_10 AND why Reference flow seems "blocked"
+
+**NOT a Red Herring Anymore**:
+- Originally thought missing listeners weren't the cause (both files missing same)
+- But BOTH files have the SAME problem - incomplete Reference architecture
+- This is THE root cause of poor e_10 and broken Reference flow
+
+**How the d_113 Test Revealed This** (Oct 26 Early AM):
+- Added single-field CSV export: `ref_d_113` with `source="default"`
+- **Result**: e_10 dropped from 277.8 to 185.5 (massive improvement!)
+- BUT: Reference flow broke for S09, S10, S11 → S13 chain
+- Changes to upstream sections became "duds" (no effect on e_10)
+- **Why**: Publishing `ref_d_113` somehow interfered with existing fragile flow
+- **Reverted**: Need to fix missing listeners FIRST, then retry CSV export
+
+**The Real Issue**:
+- S13's Reference flow was ALREADY broken (missing listeners)
+- It just wasn't obvious because initialization ran calculateAll()
+- The d_113 test exposed the fragility by changing initialization timing
+- Can't add CSV export until Reference listener architecture is complete
+
+---
+
+## 🔬 CSV Export Mechanism Analysis (Late Evening Investigation)
+
+**Question**: How are d_116 and g_118 getting published to StateManager for CSV export in backup S13?
+
+**Discovery** (Lines 368-378 in backup S13):
+
+### The Working Pattern - ModeManager.setValue()
+
+When user changes a dropdown (d_116, g_118, etc.), the flow is:
+
+1. **Dropdown change** → `handleDropdownChange()` (line 2196)
+2. **Calls** → `ModeManager.setValue(fieldId, newValue, "user-modified")` (line 2204)
+3. **ModeManager.setValue()** does TWO things (lines 368-378):
+   ```javascript
+   setValue: function (fieldId, value, source = "user") {
+     this.getCurrentState().setValue(fieldId, value, source); // Store in Target/ReferenceState
+
+     // ✅ S10 SUCCESS PATTERN: Mode-aware StateManager publication
+     if (this.currentMode === "target") {
+       // Target mode: Store unprefixed for downstream consumption
+       window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
+     } else if (this.currentMode === "reference") {
+       // Reference mode writes with ref_ prefix
+       window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, source);
+     }
+   }
+   ```
+
+**Key Insight**:
+- User input fields (d_116, g_118, d_113, f_113, j_115, d_118, d_119, l_118, l_119, k_120) get published to StateManager **automatically** when user edits them
+- Publication happens via `ModeManager.setValue()` with mode-aware prefixing
+- Uses `source="user-modified"` (NOT "calculated"!)
+- This is why d_116 and g_118 appear in CSV export - they're user input fields
+
+**Why Some Fields Missing from CSV** (d_113, f_113, j_115):
+- Screenshot shows yellow cells (missing): d_113, f_113, j_115, l_118, d_119, l_119, k_120
+- These ARE user input fields that should publish via ModeManager.setValue()
+- Likely NOT being edited in Reference mode before export, so no ref_ value exists in StateManager
+- d_116 and g_118 WERE edited, so they have ref_ values
+
+**Implication for Tomorrow's Work**:
+The .oct25 file's CSV export block (lines 226-236) was trying to solve this by publishing defaults for fields that hadn't been edited yet. But it used:
+- `source="calculated"` ❌ (triggers cascading listeners)
+- During `initialize()` ❌ (wrong timing)
+
+**The Safe Solution** (for Phase 2 tomorrow):
+Add safety net in `calculateAll()` that publishes user input Reference fields with:
+- `source="default"` ✅ (doesn't trigger listeners)
+- After both engines complete ✅ (right timing)
+- Only if value exists in ReferenceState ✅ (respects user data)
+
+**Phase 5: Final Integration** (if all phases succeed)
+- Verify all success metrics achieved:
+  - ✅ Clean state isolation
+  - ✅ Reference flow works for ALL sections
+  - ✅ CSV export complete
+  - ✅ e_10 at or near 196.6 target
+  - ✅ h_10 at or near 93.7 target
 
 **Critical Context**:
 - LAST file to refactor in nearly 12-month development cycle
