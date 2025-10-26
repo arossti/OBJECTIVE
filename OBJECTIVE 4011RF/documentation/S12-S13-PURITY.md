@@ -59,29 +59,48 @@ Restore clean Reference model calculation flow from S12 (envelope) to S13 (heati
 
 ## 🐛 Current Issues
 
-### Issue 1: S13 Blocking Reference Flow to S01 ⚠️ HIGH PRIORITY (NEXT INVESTIGATION)
+### Issue 1: S13 CSV Export Block Causing State Mixing ⚠️ HIGH PRIORITY
 
 **Problem**:
 - S12 → S14 Reference flow: ✅ WORKING (d_127, d_128, d_131 update)
 - S12 → S15 Reference flow: ✅ WORKING (ref_d_135 updates)
 - S12 → S15 → S04 Reference flow: ✅ WORKING (ref_j_32 updates)
 - **S12 → S13 → S01 Reference flow**: ❌ BLOCKED (e_10 doesn't update)
+- **Current S13**: "significant state mixing when we make changes in other sections"
+- **Backup S13**: "good state isolation" and working flow
 
 **Observation** (User):
-> "We still see calculations now flowing to S01 on S12 changes. I suspect S13 as we see S14, S15 in Reference and Target modes updating on S12 changes to each model."
+> "We have good state isolation among most Target and Reference models across all section files, but this current working S13 file, while it gives us near parity with excel's e_10 and h_10 values, still results in significant state mixing when we make changes in other sections that feed S13 with values it consumes."
 
-**Status**: Ready for investigation after dinner break
+**ROOT CAUSE IDENTIFIED** (Post-Dinner Analysis):
 
-**Old Evidence** (from earlier session):
-1. Backup S13 (3662 lines): Calculation flow did WORK with older S12 file
-2. CSV-fix S13 (3682 lines): Calculation flow BLOCKED
-3. Difference: Only 48 lines (CSV export additions + m_124 handling)
+**Diff Analysis Results**:
+- Total changes: 26 lines (20 line increase: 3662 → 3682)
+- **Change #1** (Lines 226-236): CSV export block ⚠️ **THIS IS THE PROBLEM**
+- **Change #2** (Lines 2940-2957): m_124 two-stage handling ✅ (good change, not the issue)
 
-**Root Cause Theory**:
-The CSV export publication block in S13 (lines 226-235) is either:
-- Overwriting values S13 needs to read from S12
-- Running at wrong time (before listeners registered)
-- Interfering with listener mechanism
+**The Smoking Gun - CSV Export Block**:
+```javascript
+// ✅ CSV EXPORT FIX: Publish ALL Reference defaults to StateManager
+if (window.TEUI?.StateManager) {
+  ["d_113", "f_113", "j_115", "d_116", "d_118", "g_118", "l_118", "d_119", "l_119", "k_120"].forEach((id) => {
+    const refId = `ref_${id}`;
+    const val = ReferenceState.getValue(id);
+    if (!window.TEUI.StateManager.getValue(refId) && val != null && val !== "") {
+      window.TEUI.StateManager.setValue(refId, val, "calculated"); // ❌ WRONG SOURCE!
+    }
+  });
+}
+```
+
+**Why This Breaks Everything**:
+1. **Wrong source type**: Uses `"calculated"` instead of `"default"`
+2. **Wrong timing**: Runs during `ModeManager.initialize()` (before sections fully loaded)
+3. **Cascade effect**: Publishing with `"calculated"` source triggers ALL downstream listeners
+4. **State contamination**: Cascading calculations run before dual-engine architecture stabilizes
+5. **Result**: Target calculations overwrite Reference state (same bug pattern as S10 duplicate listeners!)
+
+**Backup file works because**: It has NO CSV export block at lines 226-236!
 
 **Success Criteria**:
 - ✅ S12 Reference changes propagate to S13 heating loads
@@ -139,15 +158,38 @@ Changes to d_103 (number of storeys) only produce recalculations up to 3 storeys
 
 ---
 
-### Phase 2: Hypothesis Testing
+### Phase 2: Proposed Fix ✅ READY TO IMPLEMENT
 
-**Hypothesis**: CSV publication block (lines 226-235) interferes with S13's consumption mechanism
+**The Solution**: Remove the problematic CSV export block entirely, use S12's safety net pattern instead.
 
-**Test Approach**:
-1. Comment out CSV publication block in CSV-fix S13
-2. Test if calculation flow restores
-3. If YES: Move CSV publication to different location/timing
-4. If NO: Look for other differences (m_124 handling?)
+**Why This Works**:
+- S12 already uses this pattern successfully (lines 2289-2301 in S12)
+- Publishes Reference user input fields in `calculateAll()` AFTER both engines run
+- Uses `"default"` source, not `"calculated"`
+- Runs at the RIGHT time (after initialization, during normal calculation)
+- No cascading listener triggers during initialization
+
+**Implementation**:
+1. **Remove** lines 226-236 from current S13 (the CSV export block)
+2. **Add** safety net in S13's `calculateAll()` function (after both engines run):
+```javascript
+// ✅ SAFETY NET: Ensure user input Reference fields are published for CSV export
+if (window.TEUI?.StateManager) {
+  const userInputFields = ["d_113", "f_113", "j_115", "d_116", "d_118", "g_118", "l_118", "d_119", "l_119", "k_120"];
+  userInputFields.forEach((fieldId) => {
+    const value = ReferenceState.getValue(fieldId);
+    if (value !== null && value !== undefined && value !== "") {
+      window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "default");
+    }
+  });
+}
+```
+
+**Expected Results**:
+- ✅ State isolation restored (like backup S13)
+- ✅ CSV export still works (fields published via safety net)
+- ✅ No initialization cascades (publishes during calculation, not init)
+- ✅ Good e_10/h_10 values maintained (m_124 fix still in place)
 
 ---
 
