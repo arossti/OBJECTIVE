@@ -2992,6 +2992,15 @@ window.TEUI.SectionModules.sect13 = (function () {
         } else {
         }
       }
+
+      // ✅ TEST (Oct 25, 2025): CSV export safety net for d_113 ONLY
+      // Testing if source="default" breaks state isolation or enables CSV export
+      if (window.TEUI?.StateManager) {
+        const d113Value = ReferenceState.getValue("d_113");
+        if (d113Value !== null && d113Value !== undefined && d113Value !== "") {
+          window.TEUI.StateManager.setValue(`ref_d_113`, d113Value, "default");
+        }
+      }
     } catch (error) {
       console.error("[Section13] ❌ ERROR in calculateAll:", error);
     }
