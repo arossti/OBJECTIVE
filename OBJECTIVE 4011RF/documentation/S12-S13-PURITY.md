@@ -158,22 +158,26 @@ Changes to d_103 (number of storeys) only produce recalculations up to 3 storeys
 
 ---
 
-### Phase 2: Proposed Fix ✅ READY TO IMPLEMENT
+### Phase 2: Attempted Fix - S12 Safety Net Pattern ❌ FAILED
 
-**The Solution**: Remove the problematic CSV export block entirely, use S12's safety net pattern instead.
+**Status**: REVERTED (Commit 0d1e817 → acd5755)
 
-**Why This Works**:
-- S12 already uses this pattern successfully (lines 2289-2301 in S12)
+**The Attempted Solution**: Remove CSV export block from initialize(), use S12's safety net pattern in calculateAll()
+
+**Why We Thought This Would Work**:
+- S12 uses this pattern successfully (lines 2289-2301 in S12)
 - Publishes Reference user input fields in `calculateAll()` AFTER both engines run
 - Uses `"default"` source, not `"calculated"`
 - Runs at the RIGHT time (after initialization, during normal calculation)
 - No cascading listener triggers during initialization
 
-**Implementation**:
-1. **Remove** lines 226-236 from current S13 (the CSV export block)
-2. **Add** safety net in S13's `calculateAll()` function (after both engines run):
+**Implementation Tried**:
+1. **Removed** lines 226-236 from current S13 (the CSV export block)
+2. **Added** safety net in S13's `calculateAll()` function (after both engines run):
 ```javascript
-// ✅ SAFETY NET: Ensure user input Reference fields are published for CSV export
+// ✅ CSV EXPORT SAFETY NET: Ensure user input Reference fields are published
+// (Moved from initialize() to prevent cascading listener triggers during startup)
+// Uses "default" source to avoid triggering listeners, runs AFTER both engines complete
 if (window.TEUI?.StateManager) {
   const userInputFields = ["d_113", "f_113", "j_115", "d_116", "d_118", "g_118", "l_118", "d_119", "l_119", "k_120"];
   userInputFields.forEach((fieldId) => {
@@ -185,28 +189,70 @@ if (window.TEUI?.StateManager) {
 }
 ```
 
-**Expected Results**:
-- ✅ State isolation restored (like backup S13)
-- ✅ CSV export still works (fields published via safety net)
-- ✅ No initialization cascades (publishes during calculation, not init)
-- ✅ Good e_10/h_10 values maintained (m_124 fix still in place)
+**Test Results** (Oct 25, Late Evening):
+- ❌ Nothing broke but nothing improved
+- ❌ Still "significant state mixing across a number of sections"
+- ❌ Changes in Target mode still affect Reference model values
+- ❌ Pattern that worked perfectly in S12 did NOT work in S13
+
+**Why It Failed**:
+- **The CSV export block is NOT the root cause**
+- State mixing persists even with block removed
+- Problem is deeper in S13's architecture
+- S13 is fundamentally different from S12 (heating loads vs envelope)
+
+**Key Insight**:
+> "Nothing broke but nothing improved either. Still significant state mixing across a number of sections (ie change made in Target only, values change in both Target and Reference models)."
+
+**Decision**: Revert and take more careful approach tomorrow
+
+**Lessons Learned**:
+1. S13 state mixing is NOT solely caused by CSV export timing
+2. S12 safety net pattern doesn't translate directly to S13
+3. S13 is the last file to refactor in nearly 12-month cycle - can't afford to get it wrong
+4. Need deeper architectural analysis of S13's listener setup
+5. Must identify ALL places where Target/Reference states interact in S13
 
 ---
 
-### Phase 3: Targeted Fix
+### Phase 3: Next Investigation Plan (TOMORROW)
 
-**Goal**: Port CSV export functionality to backup S13 WITHOUT breaking calculation flow
+**Current Understanding**:
+- CSV export block removal did NOT fix state mixing
+- Problem is deeper than initialization timing
+- Current S13 has structural issues with Target/Reference isolation
+- Backup S13 has better isolation but poor e_10 initialization
 
-**Options**:
-1. **Option A**: Move CSV publication to end of initialization (after listeners)
-2. **Option B**: Use same pattern as S12 (publish in calculateAll() instead)
-3. **Option C**: Identify minimal change needed in backup S13 for CSV export
+**Goals for Tomorrow**:
+1. **Systematic Listener Audit**: Map EVERY listener in current S13
+   - Identify which call Target-only functions
+   - Find where Reference listeners might trigger Target code
+   - Look for patterns like S10's duplicate listener bug
 
-**Implementation**:
-- Start with working backup S13
-- Add ONLY what's needed for CSV export
-- Test calculation flow at each step
-- Ensure no timing conflicts with listener registration
+2. **State Contamination Points**: Find ALL places where Target state could overwrite Reference
+   - Function calls that don't check ModeManager.currentMode
+   - Shared calculation functions that write to both states
+   - setValue() calls that might target wrong state object
+
+3. **Backup vs Current Deep Dive**: Beyond the 26-line diff
+   - Test backup S13 with current codebase (does it still have good isolation?)
+   - Compare listener architecture between versions
+   - Identify what changed in calculation flow, not just lines
+
+4. **Conservative Approach**:
+   - Make ONE small change at a time
+   - Test state isolation after each change
+   - If mixing appears, immediate revert
+   - Document every observation
+
+**Critical Context**:
+- This is the LAST file to refactor in nearly 12-month development cycle
+- S13 handles heating loads - most complex calculations in system
+- Cannot afford to break this - production readiness depends on it
+- User's observation: "S13 is complicated"
+
+**Success Metric**:
+Clean state isolation where Target changes do NOT affect Reference values (and vice versa)
 
 ---
 
