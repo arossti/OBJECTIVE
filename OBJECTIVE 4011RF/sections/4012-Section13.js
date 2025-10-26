@@ -1920,7 +1920,13 @@ window.TEUI.SectionModules.sect13 = (function () {
       sm.addListener("i_104", () => {
         calculateAndRefresh();
       }); // Total Trans Loss
+      sm.addListener("ref_i_104", () => {
+        calculateAndRefresh();
+      }); // Reference Total Trans Loss (from S12)
+
       sm.addListener("k_104", calculateAndRefresh); // Total Ground Loss
+      sm.addListener("ref_k_104", calculateAndRefresh); // Reference Total Ground Loss (from S12)
+
       sm.addListener("i_71", () => {
         calculateAndRefresh();
       }); // Total Occ Gains
@@ -1938,6 +1944,10 @@ window.TEUI.SectionModules.sect13 = (function () {
       sm.addListener("ref_d_127", () => {
         calculateAndRefresh();
       }); // Reference TED (from S14, for d_114) - CRITICAL for Reference flow
+
+      // ✅ Additional S14 listener
+      sm.addListener("l_128", calculateAndRefresh); // From S14
+      sm.addListener("ref_l_128", calculateAndRefresh); // Reference from S14
     } else {
       console.error(
         "[Section13] ❌ StateManager not available to add listeners!",
