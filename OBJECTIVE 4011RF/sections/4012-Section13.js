@@ -223,17 +223,6 @@ window.TEUI.SectionModules.sect13 = (function () {
       TargetState.initialize();
       ReferenceState.initialize();
 
-      // ✅ CSV EXPORT FIX: Publish ALL Reference defaults to StateManager
-      if (window.TEUI?.StateManager) {
-        ["d_113", "f_113", "j_115", "d_116", "d_118", "g_118", "l_118", "d_119", "l_119", "k_120"].forEach((id) => {
-          const refId = `ref_${id}`;
-          const val = ReferenceState.getValue(id);
-          if (!window.TEUI.StateManager.getValue(refId) && val != null && val !== "") {
-            window.TEUI.StateManager.setValue(refId, val, "calculated");
-          }
-        });
-      }
-
       // MANDATORY: Listen for reference standard changes
       if (window.TEUI?.StateManager?.addListener) {
         window.TEUI.StateManager.addListener("d_13", () => {
@@ -2998,6 +2987,19 @@ window.TEUI.SectionModules.sect13 = (function () {
           });
         } else {
         }
+      }
+
+      // ✅ CSV EXPORT SAFETY NET: Ensure user input Reference fields are published
+      // (Moved from initialize() to prevent cascading listener triggers during startup)
+      // Uses "default" source to avoid triggering listeners, runs AFTER both engines complete
+      if (window.TEUI?.StateManager) {
+        const userInputFields = ["d_113", "f_113", "j_115", "d_116", "d_118", "g_118", "l_118", "d_119", "l_119", "k_120"];
+        userInputFields.forEach((fieldId) => {
+          const value = ReferenceState.getValue(fieldId);
+          if (value !== null && value !== undefined && value !== "") {
+            window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "default");
+          }
+        });
       }
     } catch (error) {
       console.error("[Section13] ❌ ERROR in calculateAll:", error);
