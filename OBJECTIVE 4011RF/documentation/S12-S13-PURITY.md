@@ -249,7 +249,8 @@ if (window.TEUI?.StateManager) {
   - Goal: Achieve Excel parity (196.6) WITHOUT breaking state isolation
 
 **Phase 2: Add Missing Reference Listeners** (CRITICAL - Must do FIRST!) ⚠️
-- **Discovery**: S13 missing Reference listeners for ALL upstream dependencies
+- **Goal**: Enable automatic propagation of Reference changes to S13
+- **Current State**: Reference calcs work when triggered manually, but don't auto-update
 - **Add listeners** for (around line 2335 in registerWithStateManager):
   - `ref_d_127` (TED from S14) - **HIGHEST PRIORITY**
   - `ref_l_128` (from S14)
@@ -259,9 +260,15 @@ if (window.TEUI?.StateManager) {
   - `ref_i_104`, `ref_g_101`, `ref_d_101` (S12 envelope values)
 - **Pattern**: Each listener should call `calculateAndRefresh()` (like existing Target listeners)
 - **Test after each listener added**:
-  - Does Reference flow work for that section?
+  - Change upstream Reference value (e.g., S09 d_64 in Reference mode)
+  - Does S13 e_10 update AUTOMATICALLY without manual interaction?
   - Does state isolation remain clean?
-  - Does e_10 update when upstream Reference value changes?
+
+**Phase 2b: Fix DOM/StateManager Initialization Sync** (Related issue)
+- **Problem**: DOM shows "Heatpump"/"Cooling" but StateManager has different defaults
+- **Investigate**: ReferenceState.initialize() vs DOM display vs CSV export values
+- **Fix**: Ensure refreshUI() properly syncs DOM with ReferenceState on mode switch
+- **Test**: After initialization, does DOM match what CSV exports?
 
 **Phase 3: CSV Export Safety Net** (AFTER listeners fixed)
 - Add safety net to S13's `calculateAll()`
@@ -330,6 +337,37 @@ Testing revealed "dud" sections in Reference mode:
 - It just wasn't obvious because initialization ran calculateAll()
 - The d_113 test exposed the fragility by changing initialization timing
 - Can't add CSV export until Reference listener architecture is complete
+
+**IMPORTANT CLARIFICATION** (Oct 26 AM):
+User observations reveal the situation is more nuanced:
+
+1. **Why Reference Flow "Works" Sometimes**:
+   - S13 uses `registerDependency()` for Target fields (lines 2275-2288)
+   - These create dependency graph but NOT explicit listeners
+   - When user toggles through systems in Reference mode, manual interaction triggers `calculateAll()`
+   - So Reference calculations DO run, they just don't run AUTOMATICALLY on upstream changes
+   - Example: Toggling to "Heatpump" in Reference → triggers calculate → e_10 goes from 277.8 to 185.5
+
+2. **DOM vs StateManager Mismatch**:
+   - User noted: DOM shows "Heatpump" and "Cooling" on initialization
+   - But CSV export shows "No Cooling" is what system calculates with
+   - **Problem**: DOM display doesn't match StateManager/ReferenceState truth
+   - `refreshUI()` and mode-switching may not be syncing correctly
+
+3. **What's Actually Broken**:
+   - **Automatic propagation**: Upstream Reference changes don't auto-trigger S13 recalc
+   - **Initialization state**: ReferenceState defaults may not match DOM defaults
+   - **UI sync**: DOM doesn't reflect actual calculation state
+
+4. **What's NOT Broken**:
+   - Reference calculations themselves work correctly when triggered
+   - State isolation is clean (Target/Reference don't contaminate each other)
+   - Manual interaction triggers proper recalculation
+
+**Revised Understanding**:
+The missing Reference listeners don't break calculations, they break **automatic propagation**.
+User must manually interact with S13 to trigger recalc after upstream Reference changes.
+This is why toggling systems "fixes" the e_10 value - it forces a recalculation.
 
 ---
 
