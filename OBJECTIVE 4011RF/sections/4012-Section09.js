@@ -2524,9 +2524,14 @@ window.TEUI.SectionModules.sect09 = (function () {
         ReferenceState.getValue("d_64") || "Normal",
         "default",
       );
+      // ✅ FIX (Oct 27, 2025): Publish j_63 constant (8760 hours/year) for both modes
+      // Eliminates FALLBACK_READ and potential state mixing when S13 reads this value
+      window.TEUI.StateManager.setValue("j_63", "8760", "calculated");
+      window.TEUI.StateManager.setValue("ref_j_63", "8760", "calculated");
       console.log(
         `[S09] 🔗 Published initial ref_d_63=${ReferenceState.getValue("d_63")} for S07`,
       );
+      console.log(`[S09] 🔗 Published j_63=8760 and ref_j_63=8760 for S13`);
     }
 
     // 3. Inject header controls
