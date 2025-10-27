@@ -1917,6 +1917,15 @@ window.TEUI.SectionModules.sect09 = (function () {
         "calculated",
       );
 
+      // ✅ CRITICAL: Publish ref_i_63 for S13 (annual occupied hours)
+      // FIX (Oct 27, 2025): This was missing, causing state mixing when g_63 changes
+      // S13 Reference engine was falling back to Target's i_63 value
+      const ref_i_63 = ReferenceState.getValue("i_63");
+      if (ref_i_63 !== null && ref_i_63 !== undefined) {
+        window.TEUI.StateManager.setValue("ref_i_63", ref_i_63, "calculated");
+        console.log(`[S09] 🔗 Published ref_i_63=${ref_i_63} for S13`);
+      }
+
       // ✅ CRITICAL: Publish ref_i_71 for S10 (heating season internal gains)
       const ref_i_71 = ReferenceState.getValue("i_71");
       if (ref_i_71 !== null && ref_i_71 !== undefined) {
