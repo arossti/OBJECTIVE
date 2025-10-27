@@ -347,9 +347,18 @@ Two paths forward:
 2. **Path B: Race Mitigation** (SEPT15-RACE-MITIGATION.md) - Complete Orchestrator.js directed graph
 
 **Decision for Tomorrow**: Start with Path A (S13 refactor housekeeping)
-- Lower risk, needed anyway
-- May naturally fix race condition
-- If not, move to Path B (Orchestrator.js)
+- **Scope**: MAJOR CLEANUP, not re-engineering (per C-RF-WP.md Section D.5)
+- **NOT changing**: Mathematical formulas or psychrometric calculations
+- **YES changing**: Code structure, reducing complexity, improving maintainability
+- **Goal**: Eliminate timing issues through cleaner initialization flow
+- **Tasks** (from C-RF-WP.md Task 5.4.3):
+  - Review and reduce console.log statements (keep critical, remove debug hot paths)
+  - Verify all Excel formula references documented
+  - Complete JSDoc comments
+  - Simplify initialization sequence
+- **Lower risk**: Needed anyway for 12-month refactor completion
+- **May naturally fix race**: Cleaner init flow → more predictable timing
+- **If not**: Move to Path B (Orchestrator.js directed graph)
 
 **Phase 3: CSV Export Safety Net** (OPTIONAL - LOW PRIORITY)
 - **Status**: Deferred - Not urgent for production
