@@ -1,9 +1,51 @@
 # COOLING MODULE REFACTORING WORKPLAN v1.0
 
-**Project:** TEUI Calculator - Cooling System Simplification  
-**Target:** Replace `4012-Cooling.js` with `4013-CoolingSimple.js`  
-**Date:** 2025-01-20  
+**Project:** TEUI Calculator - Cooling System Simplification
+**Target:** Replace `4012-Cooling.js` with `4013-CoolingSimple.js`
+**Date:** 2025-01-20
 **Status:** Draft for Review
+
+---
+
+## 📍 CURRENT STATUS (Oct 27, 2025) - Branch: S13-RF
+
+**LAST UPDATED**: Oct 27, 2025 - Commit 9bc72c6
+
+**WORK COMPLETED**:
+- ✅ **Task 5.1.1**: Climate fields (l_20, l_21, l_23) added to S03 with mode-aware support
+- ✅ **Task 5.1.2**: S13 modified for Stage 2 calculations (m_129 = MAX(0, d_129 - h_124))
+- ✅ **Two-Stage Architecture**: Bootstrap problem eliminated (see Appendix F)
+- ✅ **State Isolation**: S01-S12 have excellent performance and clean Target/Reference separation
+- ✅ **S12-S13-PURITY Branch**: Completed investigation, merged to main
+
+**NEXT UP**: Task 5.1.3 - Create Test Suite
+
+**S13 REFACTOR STATUS**:
+- **Current State**: S13 has perfect state isolation but incomplete e_10 initialization (277.8 vs Excel 196.6)
+- **Root Cause**: Multi-pass calculation dependency (S13→S14→S15→S01) requires 3+ passes for full propagation
+- **Attempted Solutions**: Hybrid approach with CSV export achieved better initialization (195.9) but introduced state mixing - abandoned
+- **Decision**: Complete S13 housekeeping refactor per Task 5.4.3, then implement Orchestrator.js directed graph solution (see SEPT15-RACE-MITIGATION.md)
+
+**PRESERVED FILES**:
+- `4012-Section13.js.current-backup` - Clean working version with perfect state isolation
+- `4012-Section13.js.oct27-hybrid` - Hybrid experiment documenting state mixing issue
+
+**COOLING.JS STATUS**:
+- **Stage 1**: Implemented and functional (free cooling calculations)
+- **Stage 2**: Implemented in S13 (mechanical cooling calculations)
+- **Integration**: Bootstrap problem resolved - no "priming" needed
+- **Remaining Work**: Test suite creation, documentation updates, final cleanup
+
+**BRANCH STRUCTURE**:
+- `main` - Updated with S12-S13-PURITY work (commit 0efc841)
+- `S13-RF` - Active branch for S13 refactor housekeeping (current)
+- `S12-S13-PURITY` - Investigation branch (completed, merged)
+- `C-RF` - Old branch (updated but not primary)
+
+**IMMEDIATE PRIORITIES**:
+1. Complete S13 housekeeping (Task 5.4.3): Reduce console.log statements, verify Excel formula references, complete JSDoc comments
+2. Create test suite (Task 5.1.3) for Cooling.js validation
+3. Consider Orchestrator.js implementation for proper multi-pass calculation handling
 
 ---
 
