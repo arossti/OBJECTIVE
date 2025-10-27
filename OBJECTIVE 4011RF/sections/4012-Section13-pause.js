@@ -1,25 +1,20 @@
 /**
- * 4012-Section13.js.oct25 - OFFLINE VERSION (Taken out of calculation flow Oct 25, 2025)
+ * 4012-Section13.js - Mechanical Loads (Section 13) module for TEUI Calculator 4.012 October 1, 2025.
+ * Represents separation of Cooling.js functions from S13 responsibilities. Completely rewritten to use the dual-state architecture.
+ * Needs only State Isolation and Limited Bugfixes noted in S13-ENDGAME-2.md
  *
- * ⚠️ FILE STATUS: DO NOT USE IN ACTIVE CALCULATIONS
- * This file has been renamed to .oct25 and removed from calculation flow.
+ * ⚠️ FILE STATUS (Oct 25, 2025):
+ * This is the BACKUP VERSION restored to active calculation flow.
+ * - Has GOOD state isolation (Target/Reference independent)
+ * - Missing CSV export block for Reference fields (will add tomorrow)
+ * - e_10 initialization needs improvement (currently ~287.0, target ~192.9)
  *
- * Why offline:
- * - Has BROKEN state isolation (significant state mixing across sections)
- * - Target changes contaminate Reference values
- * - Changes in other sections cause unwanted updates in both Target AND Reference models
- * - Architecture issue deeper than CSV export block (tested, not the cause)
+ * The Oct 25 working version (4012-Section13.js.oct25) was taken offline due to:
+ * - Significant state mixing across sections
+ * - Target changes contaminating Reference values
+ * - Good e_10 value (192.9) but broken architecture
  *
- * What it does well:
- * - Good e_10 initialization (~192.9, close to Excel parity)
- * - Good h_10 value (~93.7)
- * - Has CSV export for Reference fields
- *
- * This file contains the CSV export improvements and m_124 two-stage handling,
- * but the state mixing makes it unsuitable for production. Kept for reference
- * to understand what gives better e_10 initialization.
- *
- * Active file: 4012-Section13.js (backup version with good state isolation)
+ * Plan: Add CSV export to THIS file using S12 safety net pattern, then improve e_10.
  */
 
 // Ensure namespace exists
@@ -240,17 +235,6 @@ window.TEUI.SectionModules.sect13 = (function () {
     initialize: function () {
       TargetState.initialize();
       ReferenceState.initialize();
-
-      // ✅ CSV EXPORT FIX: Publish ALL Reference defaults to StateManager
-      if (window.TEUI?.StateManager) {
-        ["d_113", "f_113", "j_115", "d_116", "d_118", "g_118", "l_118", "d_119", "l_119", "k_120"].forEach((id) => {
-          const refId = `ref_${id}`;
-          const val = ReferenceState.getValue(id);
-          if (!window.TEUI.StateManager.getValue(refId) && val != null && val !== "") {
-            window.TEUI.StateManager.setValue(refId, val, "calculated");
-          }
-        });
-      }
 
       // MANDATORY: Listen for reference standard changes
       if (window.TEUI?.StateManager?.addListener) {
@@ -2974,24 +2958,23 @@ window.TEUI.SectionModules.sect13 = (function () {
 
       // Read m_124 from Cooling.js via StateManager (mode-aware)
       // ✅ FIX (Oct 6, 2025): Mode-aware read for cooling_m_124
-      // ✅ FIX (Jan 21, 2025): Two-stage architecture - cooling_m_124 may not exist during Stage 1
-      // Stage 1 (Cooling.js) publishes h_124 → triggers S13 → S13 calculates m_129
-      // Stage 2 (Cooling.js) reads m_129 → calculates m_124 → publishes cooling_m_124
-      // Therefore: cooling_m_124 is OPTIONAL until Stage 2 completes
-      const m_124_raw = isReferenceCalculation
+      // ✅ FIX (Oct 27, 2025): Fallback to m_19 (cooling season days) if cooling_m_124 not yet available
+      let m_124_raw = isReferenceCalculation
         ? window.TEUI.StateManager.getValue("ref_cooling_m_124")
         : window.TEUI.StateManager.getValue("cooling_m_124");
 
+      // Fallback: Use m_19 (cooling season length) from S03 if Stage 2 hasn't run yet
       if (!m_124_raw && m_124_raw !== 0) {
-        // cooling_m_124 not available yet (Stage 2 hasn't run) - use 0 as placeholder
-        console.log(
-          `[S13] cooling_m_124 not yet available (Stage 2 pending), using 0 for m_124 (mode=${isReferenceCalculation ? "reference" : "target"})`,
-        );
-        setFieldValue("m_124", 0, "number-2dp");
-      } else {
-        const activeCoolingDays = window.TEUI.parseNumeric(m_124_raw);
-        setFieldValue("m_124", activeCoolingDays, "number-2dp");
+        const m_19_fallback = isReferenceCalculation
+          ? window.TEUI.StateManager.getValue("ref_m_19")
+          : window.TEUI.StateManager.getValue("m_19");
+
+        m_124_raw = m_19_fallback || 120; // Default to 120 days if m_19 also unavailable
+        console.warn("[S13] cooling_m_124 not available, using m_19 fallback:", m_124_raw);
       }
+
+      const activeCoolingDays = window.TEUI.parseNumeric(m_124_raw);
+      setFieldValue("m_124", activeCoolingDays, "number-2dp");
     } catch (error) {
       console.error("[S13 Error] Error during calculateFreeCooling:", error);
       finalFreeCoolingLimit = 0;
