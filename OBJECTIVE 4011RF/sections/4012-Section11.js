@@ -585,10 +585,7 @@ window.TEUI.SectionModules.sect11 = (function () {
         "k_95",
         "g_95",
         "f_95",
-        "i_96",
-        "k_96",
-        "g_96",
-        "f_96",
+        // Row 96 doesn't exist - table goes directly from Row 95 to Row 97
         // Totals and penalties
         "i_97",
         "k_97",
