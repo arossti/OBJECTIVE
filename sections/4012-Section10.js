@@ -109,6 +109,9 @@ window.TEUI.SectionModules.sect10 = (function () {
       const savedState = localStorage.getItem("S10_REFERENCE_STATE");
       if (savedState) {
         this.state = JSON.parse(savedState);
+        // ✅ CRITICAL: Re-publish to StateManager even when loading from localStorage
+        // This ensures values are available for CSV export after page refresh
+        this.publishToStateManager();
       } else {
         this.setDefaults();
       }
@@ -141,24 +144,46 @@ window.TEUI.SectionModules.sect10 = (function () {
       this.state.e_78 = "Skylight"; // Reference: Row 78 - Skylight (matches FieldDefinition)
 
       // ✅ REFERENCE PERFORMANCE OVERRIDES: Lower performance for Reference model represents code minimums
-      this.state.f_73 = "0.35"; // Reference: Better shading factor
-      this.state.h_73 = "0"; // Reference: No user adjustments
-      //this.state.d_74 = "60.00"; // Reference: Smaller window area (test, commented out for now)
-      this.state.f_74 = "0.35"; // Reference: Better shading factor
-      this.state.h_74 = "0"; // Reference: No user adjustments
-      //this.state.d_75 = "2.50"; // Reference: Smaller window area (test, commented out for now)
-      this.state.f_75 = "0.35"; // Reference: Better shading factor
-      this.state.h_75 = "0"; // Reference: No user adjustments
-      this.state.f_76 = "0.35"; // Reference: Better shading factor
-      this.state.h_76 = "0"; // Reference: No user adjustments
-      this.state.f_77 = "0.35"; // Reference: Better shading factor
-      this.state.h_77 = "0"; // Reference: No user adjustments
-      this.state.f_78 = "0.35"; // Reference: Better shading factor
-      this.state.h_78 = "0"; // Reference: No user adjustments
+      // Row 73 (Average)
+      this.state.f_73 = "0.35"; // SHGC
+      this.state.g_73 = "0"; // Winter shading %
+      this.state.h_73 = "0"; // Summer shading %
 
+      // Row 74 (North)
+      this.state.f_74 = "0.35"; // SHGC
+      this.state.g_74 = "0"; // Winter shading %
+      this.state.h_74 = "0"; // Summer shading %
+
+      // Row 75 (East)
+      this.state.f_75 = "0.35"; // SHGC
+      this.state.g_75 = "0"; // Winter shading %
+      this.state.h_75 = "0"; // Summer shading %
+
+      // Row 76 (South)
+      this.state.f_76 = "0.35"; // SHGC
+      this.state.g_76 = "0"; // Winter shading %
+      this.state.h_76 = "0"; // Summer shading %
+
+      // Row 77 (West)
+      this.state.f_77 = "0.35"; // SHGC
+      this.state.g_77 = "0"; // Winter shading %
+      this.state.h_77 = "0"; // Summer shading %
+
+      // Row 78 (Skylight)
+      this.state.f_78 = "0.35"; // SHGC
+      this.state.g_78 = "0"; // Winter shading %
+      this.state.h_78 = "0"; // Summer shading %
+
+      // Row 80 (nGains utilization)
+      this.state.d_80 = "NRC 40%"; // Reference: NRC 40% utilization method
+
+      // Publish to StateManager
+      this.publishToStateManager();
+    },
+    publishToStateManager: function () {
       // ✅ CRITICAL: Publish Reference defaults to StateManager (S02 pattern)
       // This enables S11 to read Reference area values during initialization and mode switching
-      // ✅ FIX: Include d_80 (nGains dropdown) and orientation dropdowns (e_73-e_78) for proper Reference mode functionality
+      // ✅ CSV EXPORT FIX: Include ALL 25 fields (areas, orientations, SHGCs, shading, nGains)
       if (window.TEUI?.StateManager) {
         const referenceFields = [
           "d_73",
@@ -173,6 +198,24 @@ window.TEUI.SectionModules.sect10 = (function () {
           "e_76",
           "e_77",
           "e_78", // Orientation dropdowns
+          "f_73",
+          "f_74",
+          "f_75",
+          "f_76",
+          "f_77",
+          "f_78", // SHGC values
+          "g_73",
+          "g_74",
+          "g_75",
+          "g_76",
+          "g_77",
+          "g_78", // Winter shading %
+          "h_73",
+          "h_74",
+          "h_75",
+          "h_76",
+          "h_77",
+          "h_78", // Summer shading %
           "d_80", // nGains dropdown
         ];
         referenceFields.forEach((fieldId) => {
@@ -2849,26 +2892,13 @@ window.TEUI.SectionModules.sect10 = (function () {
         });
       });
 
-      // Special handling for utilization factor dependencies
-      ["i_97", "i_103", "m_121", "i_98"].forEach((lossField) => {
-        // Target utilization factor dependencies
-        window.TEUI.StateManager.addListener(lossField, function () {
-          console.log(
-            `S10: Target utilization factor dependency ${lossField} changed.`,
-          );
-          calculateUtilizationFactors();
-          ModeManager.updateCalculatedDisplayValues(); // ✅ ADD: Update DOM after calculations
-        });
-
-        // ✅ ADD: Reference utilization factor dependencies
-        window.TEUI.StateManager.addListener(`ref_${lossField}`, function () {
-          console.log(
-            `S10: Reference utilization factor dependency ref_${lossField} changed.`,
-          );
-          calculateUtilizationFactors();
-          ModeManager.updateCalculatedDisplayValues(); // ✅ ADD: Update DOM after calculations
-        });
-      });
+      // ✅ FIX: REMOVED duplicate listeners for utilization factor dependencies
+      // These fields (i_97, i_103, m_121, i_98) are already in the main dependencies array above,
+      // which calls calculateAll() - the correct dual-engine function.
+      //
+      // The old code here called calculateUtilizationFactors() which is TARGET-ONLY,
+      // causing it to overwrite ReferenceState with Target-calculated values when in Reference mode.
+      // This created the "stuck g_81" bug where the second listener would contaminate the first's result.
 
       console.log("S10: Simplified global StateManager listeners added");
     } catch (_error) {

@@ -64,6 +64,7 @@ class ExcelMapper {
       M19: "m_19", // Days Cooling (Editable Number)
       L20: "l_20", // Cooling Season Average overnight Temp ºC (Editable Number) FUTURE FEATURE
       L21: "l_21", // Cooling Season Average LST15h00 RH% (Editable Number) FUTURE FEATURE
+      L24: "l_24", // Cooling Setpoint Override (Editable Number) FUTURE FEATURE - allows testing lower setpoints
 
       // Section 04: Actual vs Target Energy (REPORT! Sheet)
       D27: "d_27", // Actual Elec Use
@@ -71,11 +72,11 @@ class ExcelMapper {
       D29: "d_29", // Actual Propane Use
       D30: "d_30", // Actual Oil Use
       D31: "d_31", // Actual Wood Use
-      L27: "l_27", // Elec Emission Factor
-      L28: "l_28", // Gas Emission Factor
-      L29: "l_29", // Propane Emission Factor
-      L30: "l_30", // Oil Emission Factor
-      L31: "l_31", // Wood Emission Factor
+      // L27: REMOVED - calculated field (province + year dependent), should not be imported/exported
+      L28: "l_28", // Gas Emission Factor (Optional override - advanced users only)
+      L29: "l_29", // Propane Emission Factor (Optional override - advanced users only)
+      L30: "l_30", // Oil Emission Factor (Optional override - advanced users only)
+      L31: "l_31", // Wood Emission Factor (Optional override - advanced users only)
       H35: "h_35", // PER Factor (Editable Number)
 
       // Section 05: Emissions (REPORT! Sheet)
@@ -225,6 +226,7 @@ class ExcelMapper {
       M19: "ref_m_19",
       L20: "ref_l_20", // Cooling Season Average overnight Temp ºC (Editable Number) FUTURE FEATURE
       L21: "ref_l_21", // Cooling Season Average LST15h00 RH% (Editable Number) FUTURE FEATURE
+      L24: "ref_l_24", // Cooling Setpoint Override (Editable Number) FUTURE FEATURE
 
       // Section 04: Actual vs Target Energy (REFERENCE! Sheet)
       D27: "ref_d_27",
@@ -232,7 +234,7 @@ class ExcelMapper {
       D29: "ref_d_29",
       D30: "ref_d_30",
       D31: "ref_d_31",
-      L27: "ref_l_27",
+      // L27: REMOVED - calculated field, should not be imported/exported
       L28: "ref_l_28",
       L29: "ref_l_29",
       L30: "ref_l_30",

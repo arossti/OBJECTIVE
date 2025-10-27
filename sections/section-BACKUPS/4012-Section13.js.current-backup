@@ -2,6 +2,19 @@
  * 4012-Section13.js - Mechanical Loads (Section 13) module for TEUI Calculator 4.012 October 1, 2025.
  * Represents separation of Cooling.js functions from S13 responsibilities. Completely rewritten to use the dual-state architecture.
  * Needs only State Isolation and Limited Bugfixes noted in S13-ENDGAME-2.md
+ *
+ * ⚠️ FILE STATUS (Oct 25, 2025):
+ * This is the BACKUP VERSION restored to active calculation flow.
+ * - Has GOOD state isolation (Target/Reference independent)
+ * - Missing CSV export for Reference fields (will add tomorrow)
+ * - e_10 initialization needs improvement (currently ~287.0, target ~192.9)
+ *
+ * The Oct 25 working version (4012-Section13.js.oct25) was taken offline due to:
+ * - Significant state mixing across sections
+ * - Target changes contaminating Reference values
+ * - Good e_10 value (192.9) but broken architecture
+ *
+ * Plan: Add CSV export to THIS file using S12 safety net pattern, then improve e_10.
  */
 
 // Ensure namespace exists
@@ -1907,15 +1920,34 @@ window.TEUI.SectionModules.sect13 = (function () {
       sm.addListener("i_104", () => {
         calculateAndRefresh();
       }); // Total Trans Loss
+      sm.addListener("ref_i_104", () => {
+        calculateAndRefresh();
+      }); // Reference Total Trans Loss (from S12)
+
       sm.addListener("k_104", calculateAndRefresh); // Total Ground Loss
+      sm.addListener("ref_k_104", calculateAndRefresh); // Reference Total Ground Loss (from S12)
+
       sm.addListener("i_71", () => {
         calculateAndRefresh();
       }); // Total Occ Gains
+      sm.addListener("ref_i_71", () => {
+        calculateAndRefresh();
+      }); // Reference Total Occ Gains (from S09)
+
       sm.addListener("i_79", calculateAndRefresh); // Total App Gains
+      sm.addListener("ref_i_79", calculateAndRefresh); // Reference Total App Gains (from S10)
+
       sm.addListener("d_127", () => {
         // ✅ PATTERN 2: Run dual-engine calculations for proper Target/Reference state handling
         calculateAndRefresh();
       }); // TED (from S14, for d_114)
+      sm.addListener("ref_d_127", () => {
+        calculateAndRefresh();
+      }); // Reference TED (from S14, for d_114) - CRITICAL for Reference flow
+
+      // ✅ Additional S14 listener
+      sm.addListener("l_128", calculateAndRefresh); // From S14
+      sm.addListener("ref_l_128", calculateAndRefresh); // Reference from S14
     } else {
       console.error(
         "[Section13] ❌ StateManager not available to add listeners!",

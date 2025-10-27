@@ -179,7 +179,14 @@ window.TEUI.SectionModules.sect04 = (function () {
           section: "actualTargetEnergy",
           // Excel: =H28*L28/1000 (target gas emissions)
         },
-        l: { content: "1921" }, // Static gas emission factor
+        l: {
+          fieldId: "l_28",
+          type: "editable",
+          value: "1921",
+          classes: ["user-input", "editable"],
+          section: "actualTargetEnergy",
+          tooltip: true, // Gas Emission Factor (optional override)
+        },
         m: { content: "gCO2e/m³" },
         n: {},
       },
@@ -237,7 +244,14 @@ window.TEUI.SectionModules.sect04 = (function () {
           section: "actualTargetEnergy",
           // Excel: =H29*L29/1000 (target propane emissions)
         },
-        l: { content: "2970" }, // Static propane emission factor
+        l: {
+          fieldId: "l_29",
+          type: "editable",
+          value: "2970",
+          classes: ["user-input", "editable"],
+          section: "actualTargetEnergy",
+          tooltip: true, // Propane Emission Factor (optional override)
+        },
         m: { content: "gCO2e/kg" },
         n: {},
       },
@@ -295,7 +309,14 @@ window.TEUI.SectionModules.sect04 = (function () {
           section: "actualTargetEnergy",
           // Excel: =H30*L30/1000 (target oil emissions)
         },
-        l: { content: "2753" }, // Static oil emission factor
+        l: {
+          fieldId: "l_30",
+          type: "editable",
+          value: "2753",
+          classes: ["user-input", "editable"],
+          section: "actualTargetEnergy",
+          tooltip: true, // Oil Emission Factor (optional override)
+        },
         m: { content: "gCO2e/litre" },
         n: {},
       },
@@ -353,7 +374,14 @@ window.TEUI.SectionModules.sect04 = (function () {
           section: "actualTargetEnergy",
           // Excel: =H31*L31 (target wood emissions)
         },
-        l: { content: "150" }, // Static wood emission factor
+        l: {
+          fieldId: "l_31",
+          type: "editable",
+          value: "150",
+          classes: ["user-input", "editable"],
+          section: "actualTargetEnergy",
+          tooltip: true, // Wood Emission Factor (optional override)
+        },
         m: { content: "kgCO2e/m³" },
         n: {},
       },
@@ -546,12 +574,16 @@ window.TEUI.SectionModules.sect04 = (function () {
     setDefaults: function () {
       // ✅ ANTI-PATTERN FIX: Field definitions are single source of truth - no hardcoded fallbacks
       this.data = {
-        // ONLY user input fields - utility bill data (D27-D31, H35)
+        // User input fields - utility bill data (D27-D31, H35) + emission factors (L28-L31)
         d_27: getFieldDefault("d_27"), // Electricity kWh/yr
         d_28: getFieldDefault("d_28"), // Gas m³/yr
         d_29: getFieldDefault("d_29"), // Propane kg/yr
         d_30: getFieldDefault("d_30"), // Oil litres/yr
         d_31: getFieldDefault("d_31"), // Wood m³/yr
+        l_28: getFieldDefault("l_28"), // Gas Emission Factor (optional override)
+        l_29: getFieldDefault("l_29"), // Propane Emission Factor (optional override)
+        l_30: getFieldDefault("l_30"), // Oil Emission Factor (optional override)
+        l_31: getFieldDefault("l_31"), // Wood Emission Factor (optional override)
         h_35: getFieldDefault("h_35"), // PER Factor
       };
     },
@@ -618,12 +650,16 @@ window.TEUI.SectionModules.sect04 = (function () {
     setDefaults: function () {
       // ✅ ANTI-PATTERN FIX: Field definitions are single source of truth - no hardcoded fallbacks
       this.data = {
-        // Utility bills are "ground truth" - same for both Target and Reference
+        // Utility bills + emission factors - same defaults for both Target and Reference (state isolated, editable independently)
         d_27: getFieldDefault("d_27"), // Electricity kWh/yr
         d_28: getFieldDefault("d_28"), // Gas m³/yr
         d_29: getFieldDefault("d_29"), // Propane kg/yr
         d_30: getFieldDefault("d_30"), // Oil litres/yr
         d_31: getFieldDefault("d_31"), // Wood m³/yr
+        l_28: getFieldDefault("l_28"), // Gas Emission Factor (optional override)
+        l_29: getFieldDefault("l_29"), // Propane Emission Factor (optional override)
+        l_30: getFieldDefault("l_30"), // Oil Emission Factor (optional override)
+        l_31: getFieldDefault("l_31"), // Wood Emission Factor (optional override)
         h_35: getFieldDefault("h_35"), // PER Factor
       };
     },
@@ -685,6 +721,20 @@ window.TEUI.SectionModules.sect04 = (function () {
     initialize: function () {
       TargetState.initialize();
       ReferenceState.initialize();
+
+      // ✅ CSV EXPORT FIX: Publish ALL Reference defaults to StateManager
+      // Without this, CSV export shows empty Reference values (missing S04 fields)
+      // FileHandler.exportToCSV() reads from StateManager, not from internal ReferenceState
+      // Pattern: Conditionally publish if value doesn't exist (import-safe, non-destructive)
+      if (window.TEUI?.StateManager) {
+        ["d_27", "d_28", "d_29", "d_30", "d_31", "l_28", "l_29", "l_30", "l_31", "h_35"].forEach(id => {
+          const refId = `ref_${id}`;
+          const val = ReferenceState.getValue(id);
+          if (!window.TEUI.StateManager.getValue(refId) && val != null && val !== "") {
+            window.TEUI.StateManager.setValue(refId, val, "calculated");
+          }
+        });
+      }
     },
 
     switchMode: function (mode) {
@@ -728,7 +778,18 @@ window.TEUI.SectionModules.sect04 = (function () {
       const currentState = this.getCurrentState();
 
       // Update user-editable input fields from current state
-      const editableFields = ["d_27", "d_28", "d_29", "d_30", "d_31", "h_35"];
+      const editableFields = [
+        "d_27",
+        "d_28",
+        "d_29",
+        "d_30",
+        "d_31",
+        "l_28",
+        "l_29",
+        "l_30",
+        "l_31",
+        "h_35",
+      ];
 
       editableFields.forEach((fieldId) => {
         const stateValue = currentState.getValue(fieldId);
@@ -746,6 +807,15 @@ window.TEUI.SectionModules.sect04 = (function () {
             if (numericValue >= 0) {
               const formattedValue =
                 window.TEUI?.formatNumber?.(numericValue, "number-2dp-comma") ??
+                stateValue;
+              element.textContent = formattedValue;
+            }
+          } else if (["l_28", "l_29", "l_30", "l_31"].includes(fieldId)) {
+            // Emission factors: display as integers
+            const numericValue = window.TEUI?.parseNumeric?.(stateValue, 0);
+            if (numericValue >= 0) {
+              const formattedValue =
+                window.TEUI?.formatNumber?.(numericValue, "integer") ??
                 stateValue;
               element.textContent = formattedValue;
             }

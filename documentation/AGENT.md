@@ -95,6 +95,101 @@ head -50 "OBJECTIVE 4011RF/documentation/Master-Reference-Roadmap.md"
 git log --oneline -10
 ```
 
+## 🗂️ Repository Structure Rules (CRITICAL)
+
+**OBJECTIVE WORKSPACE is the git repository root. ALL development work lives in the OBJECTIVE 4011RF subdirectory.**
+
+### Directory Structure MUST BE:
+```
+OBJECTIVE WORKSPACE/                    ← Git repo root
+├── .git/                              ← Git metadata
+├── README.md                          ← Project documentation (root level)
+├── deploy-to-gh-pages.sh             ← Deployment script (root level)
+├── OBJECTIVE 4011RF/                  ← ALL SOURCE CODE HERE
+│   ├── index.html
+│   ├── sections/
+│   ├── documentation/
+│   ├── 4011-*.js (core modules)
+│   ├── 4012-*.js (section modules)
+│   └── ... (all application files)
+└── gh-pages-local/                    ← Deployment worktree (git worktree)
+```
+
+### Branch Structure:
+- **Feature branches** (S10-S11-PURITY, C-RF, etc.): Full workspace structure with OBJECTIVE 4011RF/
+- **gh-pages branch**: Deployed site ONLY (flat structure, just app files - managed via deploy script)
+- **DO NOT manually mix structures**: Development branches keep everything in OBJECTIVE 4011RF/
+
+### When Pushing to Remote:
+**Remote GitHub branches are EXACT mirrors of local branches.**
+
+When you push a development branch:
+```bash
+git push origin S10-S11-PURITY
+```
+GitHub will store an exact copy including:
+- ✅ README.md at root
+- ✅ OBJECTIVE 4011RF/ with all subdirectories
+- ✅ All documentation in OBJECTIVE 4011RF/documentation/
+- ✅ All code in OBJECTIVE 4011RF/sections/
+
+**What this means**: If you clone the repository from GitHub, it will look EXACTLY like your local OBJECTIVE WORKSPACE directory.
+
+### Deployment Workflow:
+**NEVER manually copy files between branches or structures.**
+
+To deploy to gh-pages (live site):
+```bash
+# From any development branch with OBJECTIVE 4011RF/ structure
+./deploy-to-gh-pages.sh "Commit message describing changes"
+```
+
+This script:
+1. Syncs OBJECTIVE 4011RF/ contents to gh-pages-local/ (flat structure)
+2. Commits to gh-pages-local's main branch
+3. Force pushes to remote gh-pages branch
+4. Live site updates at https://arossti.github.io/OBJECTIVE/
+
+**DO NOT**: Try to "merge" development branches to gh-pages or manually restructure files.
+
+### Common Pitfalls to AVOID:
+
+❌ **Creating root-level duplicates**: Files like `sections/`, `obc/` at root (outside OBJECTIVE 4011RF/)
+- These are leftovers from branch switching or deployment artifacts
+- Safe to delete: `rm -rf sections/ obc/` (if they exist outside OBJECTIVE 4011RF/)
+
+❌ **iCloud " 2" suffix duplicates**: macOS/iCloud sync conflicts
+- Pattern: `filename 2.js`, `filename 2.md`
+- Safe to delete if original exists: `find . -name "* 2.*" -delete`
+
+❌ **Trying to merge incompatible structures**
+- Development branches (OBJECTIVE 4011RF/) and gh-pages (flat) have different structures
+- Use deploy script, not git merge
+
+### Sanity Check Commands:
+```bash
+# Verify clean development branch structure
+ls -la                          # Should see: README.md, OBJECTIVE 4011RF/, gh-pages-local/
+ls -la OBJECTIVE 4011RF/       # Should see: index.html, sections/, documentation/, etc.
+
+# Check for unwanted root-level duplicates
+ls -la | grep -v "OBJECTIVE\|README\|gh-pages\|\.git"  # Should be minimal
+
+# Find iCloud duplicates
+find . -name "* 2.*" -o -name "* 2"
+
+# Verify remote branch structure matches local
+git fetch origin
+git diff origin/CURRENT_BRANCH --name-only  # Should be minimal/none
+```
+
+### If Structure Gets Messed Up:
+1. Don't panic - your work is saved in commits
+2. Switch to known-good branch: `git checkout S10-S11-PURITY` (or other feature branch)
+3. Verify structure: `ls -la` and `ls OBJECTIVE 4011RF/`
+4. Clean up root-level artifacts: Remove any directories that shouldn't be at root
+5. Check git status: `git status` - untracked files at root are safe to delete
+
 # Git Note
 
 When running terminal commands, especially git commands, if they fail, check if you are prepending the command with cd to the project's absolute root directory. This must be done for every command in a sequence, as the shell's working directory may not persist between commands.

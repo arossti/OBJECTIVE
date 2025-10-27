@@ -738,51 +738,77 @@
           return strVal;
         };
 
-        const allFields = this.fieldManager.getAllFields();
-        const userEditableFieldIds = [];
+        // ✅ EXPLICIT FIELD LIST: Matches Excel import mapping exactly
+        // This ensures perfect round-trip parity (export→import)
+        // Order matches ExcelMapper.excelReportInputMapping definition
+        const userEditableFieldIds = [
+          // Section 02: Building Information
+          "d_12", "d_13", "d_14", "d_15",
+          "h_12", "h_13", "h_14", "h_15",
+          "i_16", "i_17",
+          "l_12", "l_13", "l_14", "l_15", "l_16",
+
+          // Section 03: Climate
+          "d_19", "h_19", "h_20", "h_21", "i_21", "m_19", "l_20", "l_21", "l_24",
+
+          // Section 04: Actual Energy
+          "d_27", "d_28", "d_29", "d_30", "d_31",
+          "l_28", "l_29", "l_30", "l_31",  // l_27 removed (calculated field)
+          "h_35",
+
+          // Section 05: Emissions
+          "d_39", "i_41",
+
+          // Section 06: Renewable Energy
+          "d_44", "d_45", "d_46", "i_44", "k_45", "i_46", "m_43",
+
+          // Section 07: Water Use
+          "d_49", "e_49", "e_50", "d_51", "d_52", "d_53", "k_52",
+
+          // Section 08: Indoor Air Quality
+          "d_56", "d_57", "d_58", "d_59", "i_59",
+
+          // Section 09: Occupant Gains
+          "d_63", "g_63", "d_64", "d_66", "d_68", "g_67",
+
+          // Section 10: Radiant Gains (31 fields)
+          "d_73", "d_74", "d_75", "d_76", "d_77", "d_78",
+          "e_73", "e_74", "e_75", "e_76", "e_77", "e_78",
+          "f_73", "f_74", "f_75", "f_76", "f_77", "f_78",
+          "g_73", "g_74", "g_75", "g_76", "g_77", "g_78",
+          "h_73", "h_74", "h_75", "h_76", "h_77", "h_78",
+          "d_80",
+
+          // Section 11: Transmission Losses
+          "d_85", "f_85", "d_86", "f_86", "d_87", "f_87",
+          "g_88", "g_89", "g_90", "g_91", "g_92", "g_93",
+          "d_94", "f_94", "d_95", "f_95",
+          "d_96", "d_97",
+
+          // Section 12: Volume Metrics
+          "d_103", "g_103", "d_105", "d_108", "g_109",
+
+          // Section 13: Mechanical Loads
+          "d_113", "f_113", "j_115", "d_116", "d_118", "g_118", "l_118", "d_119", "l_119", "k_120",
+
+          // Section 15: Summary
+          "d_142",
+        ];
+
         const targetValues = [];
         const referenceValues = [];
 
-        // Filter for fields explicitly marked as user-editable by type
-        // Order of fields will be based on their definition order in fieldManager.getAllFields()
-        Object.entries(allFields).forEach(([id, def]) => {
-          // Skip ref_ prefixed fields in the field list (we'll get those separately)
-          if (id.startsWith("ref_")) {
-            return;
-          }
+        // Get values for each field in the explicit list
+        userEditableFieldIds.forEach((fieldId) => {
+          // Get target/application value
+          const targetValue = this.stateManager.getValue(fieldId) ?? "";
+          targetValues.push(escapeCSV(targetValue));
 
-          if (
-            def.type === "editable" ||
-            def.type === "dropdown" ||
-            def.type === "year_slider" ||
-            def.type === "percentage" ||
-            def.type === "coefficient" ||
-            def.type === "coefficient_slider" ||
-            def.type === "number"
-            // Add any other custom types considered user-editable here
-          ) {
-            userEditableFieldIds.push(id);
-
-            // Get target/application value
-            const targetValue =
-              this.stateManager.getValue(id) ?? def.defaultValue ?? "";
-            targetValues.push(escapeCSV(targetValue));
-
-            // Get reference value (with ref_ prefix)
-            const refFieldId = `ref_${id}`;
-            const referenceValue =
-              this.stateManager.getValue(refFieldId) ?? def.defaultValue ?? "";
-            referenceValues.push(escapeCSV(referenceValue));
-          }
+          // Get reference value (with ref_ prefix)
+          const refFieldId = `ref_${fieldId}`;
+          const referenceValue = this.stateManager.getValue(refFieldId) ?? "";
+          referenceValues.push(escapeCSV(referenceValue));
         });
-
-        if (userEditableFieldIds.length === 0) {
-          this.showStatus(
-            "No user-editable fields found to export.",
-            "warning",
-          );
-          return;
-        }
 
         // Construct CSV content:
         // Row 1: Field IDs (headers)
@@ -806,7 +832,7 @@
 
         console.log(`[CSV Export] Generated filename: ${filename}`);
         console.log(
-          `[CSV Export] Exported ${userEditableFieldIds.length} fields with Target and Reference values`,
+          `[CSV Export] Exported ${userEditableFieldIds.length} fields (explicit list matching Excel import) with Target and Reference values`,
         );
 
         // Trigger Download

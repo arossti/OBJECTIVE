@@ -2480,6 +2480,20 @@ window.TEUI.SectionModules.sect03 = (function () {
       // Initial UI refresh from current state
       ModeManager.refreshUI();
 
+      // ✅ CSV EXPORT FIX: Publish ALL Reference defaults to StateManager
+      // Without this, CSV export shows empty Reference values (missing S03 fields)
+      // FileHandler.exportToCSV() reads from StateManager, not from internal ReferenceState
+      // Pattern: Conditionally publish if value doesn't exist (import-safe, non-destructive)
+      if (window.TEUI?.StateManager) {
+        ["d_19", "h_19", "h_20", "h_21", "i_21", "m_19", "l_20", "l_21", "l_24"].forEach(id => {
+          const refId = `ref_${id}`;
+          const val = ReferenceState.getValue(id);
+          if (!window.TEUI.StateManager.getValue(refId) && val != null && val !== "") {
+            window.TEUI.StateManager.setValue(refId, val, "calculated");
+          }
+        });
+      }
+
       // 5. Perform initial calculations for this section
       calculateAll();
 

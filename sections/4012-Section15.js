@@ -193,7 +193,9 @@ window.TEUI.SectionModules.sect15 = (function () {
         const saved = localStorage.getItem(this.storageKey);
         if (saved) {
           this.data = JSON.parse(saved);
-          // console.log(`S15: Loaded Reference state from localStorage`);
+          // ✅ CRITICAL: Re-publish to StateManager even when loading from localStorage
+          // This ensures values are available for CSV export after page refresh
+          this.publishToStateManager();
         }
       } catch (error) {
         console.warn(`S15: Error loading Reference state:`, error);
@@ -228,7 +230,17 @@ window.TEUI.SectionModules.sect15 = (function () {
     // Set default values for Reference calculations
     setDefaults: function () {
       // S15 is mostly calculated values, minimal defaults needed
-      // console.log(`S15: Reference defaults set`);
+      // d_142: Capital cost premium for heatpump (user input field)
+      this.data.d_142 = "30000.00"; // Default heatpump cost premium
+
+      // Publish to StateManager
+      this.publishToStateManager();
+    },
+    publishToStateManager: function () {
+      // ✅ CSV EXPORT FIX: Publish d_142 Reference default to StateManager
+      if (window.TEUI?.StateManager && this.data.d_142) {
+        window.TEUI.StateManager.setValue("ref_d_142", this.data.d_142, "default");
+      }
     },
   };
 

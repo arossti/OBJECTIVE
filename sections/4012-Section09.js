@@ -198,6 +198,17 @@ window.TEUI.SectionModules.sect09 = (function () {
     initialize: function () {
       TargetState.initialize();
       ReferenceState.initialize();
+
+      // ✅ CSV EXPORT FIX: Publish ALL Reference defaults to StateManager
+      if (window.TEUI?.StateManager) {
+        ["d_63", "g_63", "d_64", "d_66", "g_67", "d_68"].forEach((id) => {
+          const refId = `ref_${id}`;
+          const val = ReferenceState.getValue(id);
+          if (!window.TEUI.StateManager.getValue(refId) && val != null && val !== "") {
+            window.TEUI.StateManager.setValue(refId, val, "calculated");
+          }
+        });
+      }
     },
     switchMode: function (mode) {
       if (
@@ -1893,6 +1904,11 @@ window.TEUI.SectionModules.sect09 = (function () {
       window.TEUI.StateManager.setValue(
         "ref_d_63",
         ReferenceState.getValue("d_63"),
+        "calculated",
+      );
+      window.TEUI.StateManager.setValue(
+        "ref_g_63",
+        ReferenceState.getValue("g_63"),
         "calculated",
       );
       window.TEUI.StateManager.setValue(

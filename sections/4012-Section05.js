@@ -170,6 +170,17 @@ window.TEUI.SectionModules.sect05 = (function () {
       TargetState.initialize();
       ReferenceState.initialize();
 
+      // ✅ CSV EXPORT FIX: Publish ALL Reference defaults to StateManager
+      if (window.TEUI?.StateManager) {
+        ["d_39", "i_41"].forEach((id) => {
+          const refId = `ref_${id}`;
+          const val = ReferenceState.getValue(id);
+          if (!window.TEUI.StateManager.getValue(refId) && val != null && val !== "") {
+            window.TEUI.StateManager.setValue(refId, val, "calculated");
+          }
+        });
+      }
+
       // Listen for reference standard changes
       if (window.TEUI?.StateManager?.addListener) {
         window.TEUI.StateManager.addListener("d_13", () => {
@@ -189,9 +200,14 @@ window.TEUI.SectionModules.sect05 = (function () {
     setValue: function (fieldId, value, source = "user") {
       this.getCurrentState().setValue(fieldId, value, source);
 
-      // BRIDGE: Sync Target changes to StateManager (NO PREFIX)
-      if (this.currentMode === "target") {
+      // ✅ BRIDGE: Sync Target changes to StateManager (NO PREFIX)
+      if (this.currentMode === "target" && window.TEUI?.StateManager) {
         window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
+      }
+
+      // ✅ BRIDGE: Sync Reference changes to StateManager (WITH ref_ PREFIX)
+      if (this.currentMode === "reference" && window.TEUI?.StateManager) {
+        window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "user-modified");
       }
     },
 

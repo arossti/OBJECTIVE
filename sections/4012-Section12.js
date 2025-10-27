@@ -78,6 +78,22 @@ window.TEUI.SectionModules.sect12 = (function () {
       const savedState = localStorage.getItem("S12_REFERENCE_STATE");
       if (savedState) {
         this.state = JSON.parse(savedState);
+
+        // ✅ CRITICAL: Re-publish to StateManager even when loading from localStorage
+        // This ensures values are available for CSV export after page refresh (S10 pattern)
+        if (window.TEUI?.StateManager) {
+          const referenceFields = ["d_103", "g_103", "d_105", "d_108", "g_109"];
+          referenceFields.forEach((fieldId) => {
+            const value = this.state[fieldId];
+            if (value !== null && value !== undefined) {
+              window.TEUI.StateManager.setValue(
+                `ref_${fieldId}`,
+                value,
+                "default",
+              );
+            }
+          });
+        }
       } else {
         this.setDefaults();
       }
@@ -91,24 +107,16 @@ window.TEUI.SectionModules.sect12 = (function () {
 
       // Apply reference values to S12 fields with fallbacks
       this.state = {
-        d_103: referenceValues.d_103 || "1", // Stories - DIFFERENT: 1 vs Target 1.5
+        d_103: referenceValues.d_103 || "1.5", // Stories - MATCHES Target 1.5
         g_103: referenceValues.g_103 || "Exposed", // Exposure - DIFFERENT: Exposed vs Target Normal
-        d_105: "8200.00", // Volume - DIFFERENT: 8200 vs Target 8000
+        d_105: "8000.00", // Volume - MATCHES:Target 8000
         d_108: referenceValues.d_108 || "MEASURED", // Blower door method - DIFFERENT: Reference uses MEASURED vs Target AL-1B
-        g_109: referenceValues.g_109 || "2.00", // Measured - DIFFERENT: 2.00 vs Target 1.50
+        g_109: referenceValues.g_109 || "1.30", // Measured - DIFFERENT method: But same result as AL-1B
       };
 
       // ✅ CRITICAL: Publish Reference defaults to StateManager (S10/S11/S04 pattern)
-      // This fixes S15 warnings: ref_g_101, ref_d_101, ref_i_104 missing
       if (window.TEUI?.StateManager) {
-        const referenceFields = [
-          "d_103",
-          "g_103",
-          "d_105",
-          "d_108",
-          "g_109", // User input fields
-          // Note: Calculated fields (g_101, d_101, i_104) will be published by calculation engines
-        ];
+        const referenceFields = ["d_103", "g_103", "d_105", "d_108", "g_109"];
         referenceFields.forEach((fieldId) => {
           const value = this.state[fieldId];
           if (value !== null && value !== undefined) {
@@ -116,9 +124,6 @@ window.TEUI.SectionModules.sect12 = (function () {
               `ref_${fieldId}`,
               value,
               "default",
-            );
-            console.log(
-              `[S12 REF DEFAULTS] Published ref_${fieldId}=${value} to StateManager`,
             );
           }
         });
@@ -1862,31 +1867,35 @@ window.TEUI.SectionModules.sect12 = (function () {
           ? "Exposed"
           : "Normal";
 
-    // N-factor lookup table with precise values
+    // N-factor lookup table with precise values (extended to 6 stories)
     const nFactorTable = {
       1: {
-        Shielded: { 1: 18.6, 1.5: 16.7, 2: 14.8, 3: 13.0 },
-        Normal: { 1: 15.5, 1.5: 14.0, 2: 12.4, 3: 10.9 },
-        Exposed: { 1: 14.0, 1.5: 12.6, 2: 11.2, 3: 9.8 },
+        Shielded: { 1: 18.6, 1.5: 16.7, 2: 14.8, 3: 13.0, 4: 11.2, 5: 9.4, 6: 7.6 },
+        Normal: { 1: 15.5, 1.5: 14.0, 2: 12.4, 3: 10.9, 4: 9.4, 5: 7.9, 6: 6.4 },
+        Exposed: { 1: 14.0, 1.5: 12.6, 2: 11.2, 3: 9.8, 4: 13.0, 5: 13.0, 6: 13.0 },
       },
       2: {
-        Shielded: { 1: 22.2, 1.5: 20.0, 2: 17.8, 3: 15.5 },
-        Normal: { 1: 18.5, 1.5: 16.7, 2: 14.8, 3: 13.0 },
-        Exposed: { 1: 16.7, 1.5: 15.0, 2: 13.3, 3: 11.7 },
+        Shielded: { 1: 22.2, 1.5: 20.0, 2: 17.8, 3: 15.5, 4: 13.2, 5: 10.9, 6: 8.6 },
+        Normal: { 1: 18.5, 1.5: 16.7, 2: 14.8, 3: 13.0, 4: 11.2, 5: 9.4, 6: 7.6 },
+        Exposed: { 1: 16.7, 1.5: 15.0, 2: 13.3, 3: 11.7, 4: 10.1, 5: 8.5, 6: 6.9 },
       },
       3: {
-        Shielded: { 1: 25.8, 1.5: 23.1, 2: 20.6, 3: 18.1 },
-        Normal: { 1: 21.5, 1.5: 19.4, 2: 17.2, 3: 15.1 },
-        Exposed: { 1: 19.4, 1.5: 17.4, 2: 15.5, 3: 13.5 },
+        Shielded: { 1: 25.8, 1.5: 23.1, 2: 20.6, 3: 18.1, 4: 15.6, 5: 13.1, 6: 10.6 },
+        Normal: { 1: 21.5, 1.5: 19.4, 2: 17.2, 3: 15.1, 4: 13.0, 5: 10.9, 6: 8.8 },
+        Exposed: { 1: 19.4, 1.5: 17.4, 2: 15.5, 3: 13.5, 4: 11.5, 5: 9.5, 6: 7.5 },
       },
     };
 
-    // Determine story key with full precision
+    // Determine story key with full precision (extended to 6 stories)
+    // Table has keys: 1, 1.5, 2, 3, 4, 5, 6 (no 2.5, 3.5, etc.)
     let storyKey = 1.5;
     if (stories <= 1) storyKey = 1;
     else if (stories > 1 && stories <= 1.75) storyKey = 1.5;
-    else if (stories > 1.75 && stories <= 2.5) storyKey = 2;
-    else storyKey = 3;
+    else if (stories > 1.75 && stories < 2.5) storyKey = 2;
+    else if (stories >= 2.5 && stories < 3.5) storyKey = 3;
+    else if (stories >= 3.5 && stories < 4.5) storyKey = 4;
+    else if (stories >= 4.5 && stories < 5.5) storyKey = 5;
+    else storyKey = 6; // 5.5+ stories
 
     // Get n-factor with full precision
     let nFactor = nFactorTable[2]["Normal"][1.5];
@@ -2264,7 +2273,9 @@ window.TEUI.SectionModules.sect12 = (function () {
     calculateReferenceModel(); // Reads ReferenceState → stores ref_ prefixed
     calculateTargetModel(); // Reads TargetState → stores unprefixed
 
-    // ✅ S11 PATTERN: Re-write Reference values after all calculations to prevent overwrites
+    // ✅ PRIMARY PUBLISH: This is now the single, definitive point for publishing
+    // all calculated Reference values from S12. This ensures the calculation
+    // pass is complete before notifying downstream sections.
     if (window.TEUI?.StateManager && lastReferenceResults) {
       Object.entries(lastReferenceResults).forEach(([fieldId, value]) => {
         window.TEUI.StateManager.setValue(
@@ -2272,6 +2283,23 @@ window.TEUI.SectionModules.sect12 = (function () {
           value.toString(),
           "calculated",
         );
+      });
+    }
+
+    // ✅ FIX: Also ensure user input Reference fields are published
+    // These should be published during initialization, but as a safety net,
+    // re-publish them here to ensure they're always available for CSV export
+    if (window.TEUI?.StateManager) {
+      const userInputFields = ["d_103", "g_103", "d_105", "d_108", "g_109"];
+      userInputFields.forEach((fieldId) => {
+        const value = ReferenceState.getValue(fieldId);
+        if (value !== null && value !== undefined) {
+          window.TEUI.StateManager.setValue(
+            `ref_${fieldId}`,
+            value,
+            "default",
+          );
+        }
       });
     }
 
@@ -2368,33 +2396,8 @@ window.TEUI.SectionModules.sect12 = (function () {
     // ✅ S11 PATTERN: Store results for later re-writing
     lastReferenceResults = { ...allResults };
 
-    Object.entries(allResults).forEach(([fieldId, value]) => {
-      if (value !== null && value !== undefined) {
-        window.TEUI.StateManager.setValue(
-          `ref_${fieldId}`,
-          String(value),
-          "calculated",
-        );
-        // [S12DB] Debug critical S15 dependencies
-        if (
-          [
-            "g_101",
-            "d_101",
-            "i_104",
-            "g_102",
-            "d_102",
-            "i_101",
-            "i_102",
-            "g_104",
-          ].includes(fieldId)
-        ) {
-          // S15 dependencies stored
-        }
-      }
-    });
-
     console.log(
-      "[Section12] Reference results stored with ref_ prefix for downstream sections",
+      "[Section12] Reference results cached. Publishing will occur at the end of calculateAll.",
     );
   }
 

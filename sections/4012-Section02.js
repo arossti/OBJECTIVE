@@ -1395,21 +1395,24 @@ window.TEUI.SectionModules.sect02 = (function () {
 
           field.addEventListener("blur", function () {
             this.classList.remove("editing");
-            // ✅ CRITICAL FIX: Save to current state (Target or Reference) via ModeManager
-            ModeManager.setValue(
-              fieldId,
-              this.textContent.trim(),
-              "user-modified",
-            );
 
-            // Also update StateManager for downstream sections (if this field needs to be shared)
-            if (window.TEUI && window.TEUI.StateManager && fieldId === "l_12") {
-              window.TEUI.StateManager.setValue(
-                fieldId,
-                this.textContent.trim(),
-                "user-modified",
-              );
+            let valueToSave = this.textContent.trim();
+
+            // ✅ CSV EXPORT FIX: Strip currency formatting before saving to preserve full precision
+            // Cost fields (l_12-l_16) are formatted for display but must be stored as numeric strings
+            if (["l_12", "l_13", "l_14", "l_15", "l_16"].includes(fieldId)) {
+              // Remove currency symbols and commas: "$1,234.5678" → "1234.5678"
+              valueToSave = valueToSave.replace(/[$,]/g, "");
+              // Ensure it's a valid number, keep full precision
+              const parsed = parseFloat(valueToSave);
+              if (!isNaN(parsed)) {
+                valueToSave = parsed.toString(); // Preserve full precision as string
+              }
             }
+
+            // ✅ CRITICAL FIX: Save to current state (Target or Reference) via ModeManager
+            // ModeManager.setValue handles mode-aware publishing to StateManager
+            ModeManager.setValue(fieldId, valueToSave, "user-modified");
           });
 
           field.addEventListener("keydown", function (e) {
@@ -1837,17 +1840,20 @@ window.TEUI.SectionModules.sect02 = (function () {
         TargetState.loadState();
         ReferenceState.setDefaults();
         ReferenceState.loadState();
-        // Publish core Reference parameters immediately so consumers (S01, S04) have values on first load
+
+        // ✅ CSV EXPORT FIX: Publish ALL Reference defaults to StateManager
+        // Without this, CSV export shows empty Reference values (89 out of 126 missing)
+        // FileHandler.exportToCSV() reads from StateManager, not from internal ReferenceState
+        // Pattern: Conditionally publish if value doesn't exist (import-safe, non-destructive)
         if (window.TEUI?.StateManager) {
-          const refH12 = ReferenceState.getValue("h_12");
-          const refH13 = ReferenceState.getValue("h_13");
-          const refH15 = ReferenceState.getValue("h_15");
-          if (refH12)
-            window.TEUI.StateManager.setValue("ref_h_12", refH12, "default");
-          if (refH13)
-            window.TEUI.StateManager.setValue("ref_h_13", refH13, "default");
-          if (refH15)
-            window.TEUI.StateManager.setValue("ref_h_15", refH15, "default");
+          ["d_12", "d_13", "d_14", "d_15", "h_12", "h_13", "h_14", "h_15",
+           "i_16", "i_17", "l_12", "l_13", "l_14", "l_15", "l_16"].forEach(id => {
+            const refId = `ref_${id}`;
+            const val = ReferenceState.getValue(id);
+            if (!window.TEUI.StateManager.getValue(refId) && val != null && val !== "") {
+              window.TEUI.StateManager.setValue(refId, val, "calculated");
+            }
+          });
         }
       } catch (e) {
         console.warn("[S02] initialize: state initialization error", e);

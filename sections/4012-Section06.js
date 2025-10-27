@@ -152,6 +152,17 @@ window.TEUI.SectionModules.sect06 = (function () {
       TargetState.initialize();
       ReferenceState.initialize();
 
+      // ✅ CSV EXPORT FIX: Publish ALL Reference defaults to StateManager
+      if (window.TEUI?.StateManager) {
+        ["d_44", "d_45", "d_46", "i_44", "k_45", "i_46", "m_43"].forEach((id) => {
+          const refId = `ref_${id}`;
+          const val = ReferenceState.getValue(id);
+          if (!window.TEUI.StateManager.getValue(refId) && val != null && val !== "") {
+            window.TEUI.StateManager.setValue(refId, val, "calculated");
+          }
+        });
+      }
+
       // Listen for reference standard changes
       if (window.TEUI?.StateManager?.addListener) {
         window.TEUI.StateManager.addListener("d_13", () => {
