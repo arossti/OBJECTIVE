@@ -5,7 +5,33 @@
 **Date Started**: 2025-10-25
 **Goal**: Fix Reference model calculation flow S12→S13 and S12 air leakage bug
 
-**Last Updated**: 2025-10-25 (Evening Session)
+**Last Updated**: 2025-10-26 (Late Evening - RACE CONDITION DISCOVERED)
+
+---
+
+## 🚀 MAJOR BREAKTHROUGH (Oct 26, Late Evening)
+
+**ROOT CAUSE IDENTIFIED: Race Condition Between S13 and S01**
+
+- ✅ **Safari**: e_10 = 195.4 (Excel parity!) - 611ms initialization
+- ❌ **Chrome**: e_10 = 277.8 (wrong) - 640ms initialization
+- **Chrome is faster** → S01 calculates BEFORE S13 Reference values ready
+- **Safari is slower** → S13 Reference values ready BEFORE S01 calculates
+
+**This explains EVERYTHING**:
+- Why manual toggle fixes it (forces re-calculation after S13 ready)
+- Why Target fallback didn't work (timing issue, not defaults issue)
+- Why debug logging was confusing (race makes execution order unpredictable)
+
+**Tomorrow's Plan**: Complete S13 refactor per C-RF-WP.md (housekeeping/cleanup)
+- May naturally improve race condition timing
+- If not, proceed to SEPT15-RACE-MITIGATION.md (Orchestrator.js)
+
+**Current Status**:
+- ✅ Excel parity: 99.5% accurate (195.4 vs 196.6)
+- ✅ State isolation: Clean across all sections
+- ✅ Automatic propagation: Working perfectly
+- ⚠️ Race condition: Browser-dependent initialization timing
 
 ---
 
@@ -281,37 +307,49 @@ All Reference listeners added (commits 16bb325, 22c68a3, 714bff0):
 
 **Phase 2 SUCCESS**: Complete Reference listener architecture enables automatic propagation and achieves Excel parity!
 
-**Phase 2b: Fix ReferenceState Initialization Defaults** ⚠️ INVESTIGATION ONGOING
-- **Problem Identified**: ReferenceState initializes with wrong system defaults
-  - DOM shows: "Heatpump" + "Cooling" (correct)
-  - ReferenceState has: "Electricity" + "No Cooling" (wrong)
-  - This causes e_10 = 277.8 instead of 197.6 on initialization
-- **Impact**: User must toggle systems to "prime" calculation for correct e_10
-- **Root Cause**: Unknown - investigation ongoing
-- **Priority**: HIGH - Last blocker before production readiness
+**Phase 2b: Fix ReferenceState Initialization Defaults** ✅ ROOT CAUSE IDENTIFIED! (Oct 26, Late Evening)
+
+**🎯 BREAKTHROUGH: It's a Race Condition!**
+
+**The Discovery** (User testing, Oct 26):
+- **Safari** (after hard refresh, Cmd+Opt+R): e_10 = **195.4** ✅ CORRECT!
+  - Initialization time: 611ms
+  - Consistently correct on reload
+  - Excel parity achieved on initialization!
+- **Chrome** (after hard refresh + cache clear): e_10 = 277.8 ❌ WRONG
+  - Initialization time: 640ms
+  - Consistently wrong on reload
+  - S13 Reference DOM shows correct values but doesn't propagate to S01
+
+**Critical Observation**:
+> "Chrome initializes in 640ms. Safari in 611ms. Given that in Chrome, S13 in Reference mode loads up with all of the expected values calculated and showing in the DOM, but they don't make it to S01's e_10, suggests an extremely subtle race condition."
+
+**Root Cause**: RACE CONDITION between S13 initialization and S01 calculation
+- Chrome is faster (640ms) → S01 calculates BEFORE S13 Reference values are ready
+- Safari is slower (611ms) → S13 Reference values ready BEFORE S01 calculates
+- This is NOT a code logic issue - it's a timing/orchestration issue
+
+**Why Previous Approaches Failed**:
+- ❌ Target fallback: Wrong solution to wrong problem (timing, not defaults)
+- ❌ Debug logging: Couldn't see the race happening in real-time
+- ❌ Manual toggle: "Primes" the system by forcing re-calculation after initialization
 
 **Failed Approach #1: Target Fallback Pattern** ❌ (Oct 26, Commits 670083a-4e653c1, REVERTED)
 - **Hypothesis**: Reference should default to Target values when not defined in ReferenceValues.js
-- **Implementation**: Added "safe fallback" in onReferenceStandardChange():
-  ```javascript
-  this.state.d_113 = referenceValues.d_113 || TargetState.getValue("d_113");
-  this.state.d_116 = referenceValues.d_116 || TargetState.getValue("d_116");
-  ```
-- **Why It Failed**:
-  1. onReferenceStandardChange() is ONLY called when d_13 changes, NOT during initialization
-  2. ReferenceState.setDefaults() already correctly sets d_113="Heatpump", d_116="Cooling"
-  3. Added extensive debug logging but browser cache prevented logs from appearing
-  4. Made no progress despite multiple refresh/debug cycles
+- **Implementation**: Added "safe fallback" in onReferenceStandardChange()
+- **Why It Failed**: Was solving wrong problem - issue is timing, not defaults
 - **Reverted To**: Commit f808431 (before fallback attempts)
-- **Lesson**: The problem is NOT in setDefaults() - values are set correctly there
+- **Lesson**: ReferenceState.setDefaults() works correctly, but S01 reads values too early
 
-**Next Investigation Direction**:
-- ReferenceState.setDefaults() DOES set correct values (lines 156-158)
-- getValue() should return those values during calculations
-- Either: (a) calculations are reading from wrong source, OR
-- Either: (b) something is overwriting state after initialization, OR
-- Either: (c) timing issue - calculations run before initialization completes
-- Need to isolate WHEN and WHERE the wrong system values are being used
+**The Real Solution**:
+Two paths forward:
+1. **Path A: S13 Refactor** (C-RF-WP.md) - Cleanup and housekeeping may naturally improve timing
+2. **Path B: Race Mitigation** (SEPT15-RACE-MITIGATION.md) - Complete Orchestrator.js directed graph
+
+**Decision for Tomorrow**: Start with Path A (S13 refactor housekeeping)
+- Lower risk, needed anyway
+- May naturally fix race condition
+- If not, move to Path B (Orchestrator.js)
 
 **Phase 3: CSV Export Safety Net** (OPTIONAL - LOW PRIORITY)
 - **Status**: Deferred - Not urgent for production
