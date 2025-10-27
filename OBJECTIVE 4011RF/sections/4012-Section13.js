@@ -2814,8 +2814,10 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     const ventEnergyRecovered_d123 = ventEnergyCoolingIncoming_d122 * sre_d118;
 
-    // Only update DOM for Target calculations
+    // ✅ FIX (Oct 27, 2025): Store cooling ventilation values for BOTH Target AND Reference
+    // Previously only stored Target values, causing Reference CED calculations to use Target d_122
     if (!isReferenceCalculation) {
+      // Target: Update DOM
       setFieldValue("i_122", latentLoadFactor_i122, "percent-0dp");
       setFieldValue(
         "d_122",
@@ -2823,6 +2825,12 @@ window.TEUI.SectionModules.sect13 = (function () {
         "number-2dp-comma",
       );
       setFieldValue("d_123", ventEnergyRecovered_d123, "number-2dp-comma");
+    } else {
+      // Reference: Store with ref_ prefix for CED calculations
+      window.TEUI.StateManager.setValue("ref_i_122", latentLoadFactor_i122.toString(), "calculated");
+      window.TEUI.StateManager.setValue("ref_d_122", ventEnergyCoolingIncoming_d122.toString(), "calculated");
+      window.TEUI.StateManager.setValue("ref_d_123", ventEnergyRecovered_d123.toString(), "calculated");
+      console.log(`[S13] 🔗 Published ref_d_122=${ventEnergyCoolingIncoming_d122.toFixed(2)} kWh/yr for Reference CED calc`);
     }
 
     return {
@@ -2855,14 +2863,23 @@ window.TEUI.SectionModules.sect13 = (function () {
     const k103 = getGlobalNumericValue(
       isReferenceCalculation ? "ref_k_103" : "k_103",
     );
-    const d122 = window.TEUI.parseNumeric(getFieldValue("d_122")) || 0; // From S13's own calculation
+    // ✅ FIX (Oct 27, 2025): Make d_122 read mode-aware
+    // Was reading unprefixed d_122 (Target value) even in Reference calculations
+    const d122 = window.TEUI.parseNumeric(
+      getExternalValue("d_122", isReferenceCalculation)
+    ) || 0;
 
     // Excel formula: D129 = K71+K79+K97+K104+K103+D122 (FIXED: was K98, should be K97)
     const cedUnmitigated = k71 + k79 + k97 + k104 + k103 + d122;
 
-    // Only update DOM for Target calculations
+    // ✅ FIX (Oct 27, 2025): Store CED values for BOTH Target AND Reference
     if (!isReferenceCalculation) {
+      // Target: Update DOM
       setFieldValue("d_129", cedUnmitigated, "number-2dp-comma");
+    } else {
+      // Reference: Store with ref_ prefix for CED mitigated calculation
+      window.TEUI.StateManager.setValue("ref_d_129", cedUnmitigated.toString(), "calculated");
+      console.log(`[S13] 🔗 Published ref_d_129=${cedUnmitigated.toFixed(2)} kWh/yr for Reference CED mitigated calc`);
     }
 
     return { d_129: cedUnmitigated };
