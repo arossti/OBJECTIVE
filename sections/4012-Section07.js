@@ -710,6 +710,13 @@ window.TEUI.SectionModules.sect07 = (function () {
   function setSectionValue(fieldId, value, isReferenceCalculation = false) {
     if (isReferenceCalculation) {
       ReferenceState.setValue(fieldId, value);
+      // ✅ FIX (Oct 27, 2025): Publish Reference values to StateManager with ref_ prefix
+      // This fixes FALLBACK_READ violations for ref_e_51, ref_k_54
+      window.TEUI?.StateManager?.setValue(
+        `ref_${fieldId}`,
+        value.toString(),
+        "calculated",
+      );
     } else {
       TargetState.setValue(fieldId, value);
       // ✅ Store Target values to StateManager for cross-section communication
