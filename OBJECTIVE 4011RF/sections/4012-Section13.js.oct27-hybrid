@@ -1929,10 +1929,11 @@ window.TEUI.SectionModules.sect13 = (function () {
         ModeManager.updateCalculatedDisplayValues();
       };
 
-      // Only essential S03 climate values that S13 actually needs
-      sm.addListener("d_20", calculateAndRefresh); // HDD - needed for heating calculations
-      sm.addListener("d_21", calculateAndRefresh); // CDD - needed for cooling calculations
-      // Removed: d_23, d_24, h_23, h_24 - S13 doesn't directly use these (S11/S12 handle them)
+      // ❌ REMOVED CLIMATE LISTENERS - These cause state mixing because S03 doesn't publish ref_d_20/ref_d_21
+      // Climate data should propagate through S12 heat loss (ref_i_104, ref_k_104) instead
+      // sm.addListener("d_20", calculateAndRefresh); // REMOVED - causes state mixing
+      // sm.addListener("d_21", calculateAndRefresh); // REMOVED - causes state mixing
+
       sm.addListener("i_104", () => {
         calculateAndRefresh();
       }); // Total Trans Loss
