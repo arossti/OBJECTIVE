@@ -342,6 +342,8 @@ All Reference listeners added (commits 16bb325, 22c68a3, 714bff0):
 - **Lesson**: ReferenceState.setDefaults() works correctly, but S01 reads values too early
 
 **The Real Solution**:
+Not a race condition - it's a **multi-pass calculation dependency issue**. Test script (toggle-s13-systems.js) shows e_10 = 185.5 after 1 toggle, requires 3x cooling toggles to reach 197.6. Each pass propagates more of S13→S14→S15→S01 chain. See SEPT15-RACE-MITIGATION.md for Orchestrator.js implementation plan.
+
 Two paths forward:
 1. **Path A: S13 Refactor** (C-RF-WP.md) - Cleanup and housekeeping may naturally improve timing
 2. **Path B: Race Mitigation** (SEPT15-RACE-MITIGATION.md) - Complete Orchestrator.js directed graph

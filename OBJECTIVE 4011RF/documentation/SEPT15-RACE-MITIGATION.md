@@ -187,6 +187,107 @@ S03 calculates d_20=7100 → StateManager.setValue(d_20, "7100", "calculated") �
 
 ---
 
+### **🔥 S13 MULTI-PASS CALCULATION ISSUE** _(Added Oct 26, 2025)_
+
+**CRITICAL DISCOVERY**: S13 initialization issue is NOT a timing race - it's a **multi-pass calculation dependency problem**.
+
+**Test Evidence** (test-scripts/toggle-s13-systems.js):
+- **Pass 1**: e_10 = 185.5 kWh/m²/yr (after 1 cooling toggle)
+- **Pass 2**: e_10 = ~190 kWh/m²/yr (estimated)
+- **Pass 3**: e_10 = 197.6 kWh/m²/yr (Excel parity achieved!)
+- **Excel Target**: 196.6 kWh/m²/yr (99.5% accurate after 3 passes)
+
+**The Problem**:
+1. S13 Reference model initializes with correct values (d_113="Heatpump", d_116="Cooling")
+2. BUT calculation chain S13→S14→S15→S01 requires **3+ calculation passes** to fully propagate
+3. Each toggle forces a new `calculateAll()` round, propagating more of the dependency chain
+4. Initial calculation only completes ~60% of the propagation (185.5 vs 197.6)
+
+**Why This Happens**:
+- **Listener Spaghetti**: No guaranteed execution order for StateManager listeners
+- **Multi-hop Dependencies**: S13 publishes → S14 reads/publishes → S15 reads/publishes → S01 reads
+- **Asynchronous Nature**: Each section `calculateAll()` runs independently, may read stale values
+- **No Topological Ordering**: Calculations don't wait for upstream dependencies to complete
+
+**Concrete S13 Implementation Plan**:
+
+**Step 1: Document S13 Dependencies** (15 minutes)
+```javascript
+// In Orchestrator.js or dependency registry:
+const s13Dependencies = {
+  sectionId: "sect13",
+  upstream: [
+    "sect03",  // Climate (d_20, d_21, d_22, h_22)
+    "sect09",  // Occupant Gains (i_71)
+    "sect10",  // Appliance Gains (i_79)
+    "sect12",  // Envelope Losses (i_104, k_104)
+    "sect14",  // TED (d_127, l_128)
+  ],
+  downstream: [
+    "sect14",  // TEDI Summary (reads S13 mechanical loads)
+    "sect15",  // TEUI Summary (reads S14 values)
+    "sect01",  // Key Values (reads S15 e_10)
+  ],
+  outputs: [
+    "d_113", "d_116", "d_117",  // System selections
+    "h_113", "h_114", "h_115",  // Energy calculations
+    "m_129",                     // Mechanical cooling load
+    // ... all S13 calculated values
+  ]
+};
+```
+
+**Step 2: Implement Topological Sort for S13 Chain** (1 hour)
+```javascript
+// Orchestrator.js
+function calculateS13Chain() {
+  // Calculate in dependency order (upstream first)
+  const order = [
+    "sect03",  // Climate data
+    "sect09",  // Gains (depends on S03)
+    "sect10",  // Gains (depends on S03)
+    "sect12",  // Losses (depends on S03)
+    "sect13",  // Mechanical (depends on S09, S10, S12, S14)
+    "sect14",  // TEDI (depends on S13)
+    "sect15",  // TEUI (depends on S14)
+    "sect01",  // Key Values (depends on S15)
+  ];
+
+  order.forEach(sectionKey => {
+    const section = window.TEUI.SectionModules[sectionKey];
+    if (section?.calculateAll) {
+      section.calculateAll();
+      // Wait for completion before next section
+    }
+  });
+}
+```
+
+**Step 3: Test with S13** (30 minutes)
+- Run toggle-s13-systems.js with Orchestrator enabled
+- Verify e_10 = 197.6 after **single pass** (not 3 passes)
+- Confirm no state mixing, no calculation loops
+
+**Step 4: Replace Listener Spaghetti** (2 hours)
+- Remove individual S13 Reference listeners (ref_d_127, ref_i_71, etc.)
+- Replace with single Orchestrator call on any S13 dependency change
+- Cleaner, more maintainable, guaranteed order
+
+**Success Metrics**:
+- ✅ e_10 = 197.6 on **first initialization** (Chrome and Safari)
+- ✅ No manual toggle required
+- ✅ Single calculation pass (not 3 passes)
+- ✅ State isolation maintained
+- ✅ Reduced listener count in S13
+
+**Fallback Plan**:
+If Orchestrator doesn't help (as in previous attempts):
+1. Complete S13 refactor (C-RF-WP.md housekeeping)
+2. Accept 3-pass requirement as architectural limitation
+3. Add automatic 3x recalculation on initialization (temporary workaround)
+
+---
+
 ## Core Principles
 
 1. **Section autonomy preserved**
