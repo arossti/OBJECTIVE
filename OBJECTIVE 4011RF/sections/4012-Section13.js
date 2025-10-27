@@ -2653,11 +2653,19 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     const ventilationRateM3h_h120 = ventilationRateLs_d120 * 3.6;
 
-    // Only update DOM for Target calculations
+    // ✅ FIX (Oct 27, 2025): Store ventilation values for BOTH Target AND Reference
+    // Previously only stored Target values, causing Reference to fall back to Target d_120
     if (!isReferenceCalculation) {
+      // Target: Update DOM
       setFieldValue("d_120", ventilationRateLs_d120, "number-2dp-comma");
       setFieldValue("f_120", ventRateLs * 2.11888, "number-2dp-comma"); // cfm conversion
       setFieldValue("h_120", ventilationRateM3h_h120, "number-2dp-comma"); // m3/hr
+    } else {
+      // Reference: Store with ref_ prefix for downstream calculations
+      window.TEUI.StateManager.setValue("ref_d_120", ventilationRateLs_d120.toString(), "calculated");
+      window.TEUI.StateManager.setValue("ref_f_120", (ventRateLs * 2.11888).toString(), "calculated");
+      window.TEUI.StateManager.setValue("ref_h_120", ventilationRateM3h_h120.toString(), "calculated");
+      console.log(`[S13] 🔗 Published ref_d_120=${ventilationRateLs_d120.toFixed(2)} L/s for Reference ventilation energy calc`);
     }
 
     // ✅ PATTERN 1: Mode-aware reading (automatic with temporary mode switching)
