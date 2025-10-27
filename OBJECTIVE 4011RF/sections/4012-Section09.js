@@ -1876,7 +1876,13 @@ window.TEUI.SectionModules.sect09 = (function () {
    */
   function calculateReferenceModel() {
     try {
+      // 🔍 DIAGNOSTIC: Log Reference state values BEFORE calculation
+      console.log(`[S09 REF DIAGNOSTIC] BEFORE calc: g_63=${ReferenceState.getValue("g_63")}, d_63=${ReferenceState.getValue("d_63")}`);
+
       const results = calculateModel(ReferenceState, true);
+
+      // 🔍 DIAGNOSTIC: Log calculated i_63 result
+      console.log(`[S09 REF DIAGNOSTIC] AFTER calc: i_63=${results.i_63}`);
       const prefix = "ref_";
 
       // Store all results in StateManager with "ref_" prefix
@@ -2268,6 +2274,12 @@ window.TEUI.SectionModules.sect09 = (function () {
       );
     }
 
+    // 🔍 DIAGNOSTIC: Log g_63 changes and state isolation
+    if (fieldId === "g_63") {
+      console.log(`[S09 g_63 DIAGNOSTIC] User changed g_63 to: ${newValue}, currentMode=${ModeManager?.currentMode}`);
+      console.log(`[S09 g_63 DIAGNOSTIC] BEFORE setValue - TargetState.g_63=${TargetState.getValue("g_63")}, ReferenceState.g_63=${ReferenceState.getValue("g_63")}`);
+    }
+
     // Store via ModeManager (dual-state aware)
     // ✅ StateManager will automatically trigger Clock timing on "user-modified" state
     if (ModeManager && typeof ModeManager.setValue === "function") {
@@ -2277,11 +2289,21 @@ window.TEUI.SectionModules.sect09 = (function () {
       console.log(`[S09DB] ERROR: ModeManager.setValue not available!`);
     }
 
+    // 🔍 DIAGNOSTIC: Log state after setValue
+    if (fieldId === "g_63") {
+      console.log(`[S09 g_63 DIAGNOSTIC] AFTER setValue - TargetState.g_63=${TargetState.getValue("g_63")}, ReferenceState.g_63=${ReferenceState.getValue("g_63")}`);
+    }
+
     // Recalculate and update display
     // console.log(`[S09DB] About to call calculateAll() from dropdown handler`);
     calculateAll();
     // console.log(`[S09DB] About to call updateCalculatedDisplayValues()`);
     ModeManager.updateCalculatedDisplayValues();
+
+    // 🔍 DIAGNOSTIC: Log what was published to StateManager
+    if (fieldId === "g_63") {
+      console.log(`[S09 g_63 DIAGNOSTIC] AFTER calculateAll - i_63=${window.TEUI.StateManager.getValue("i_63")}, ref_i_63=${window.TEUI.StateManager.getValue("ref_i_63")}`);
+    }
   }
 
   /**
