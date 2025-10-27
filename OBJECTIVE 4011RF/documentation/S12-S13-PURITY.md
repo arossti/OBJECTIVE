@@ -5,7 +5,52 @@
 **Date Started**: 2025-10-25
 **Goal**: Fix Reference model calculation flow S12→S13 and S12 air leakage bug
 
-**Last Updated**: 2025-10-26 (Very Late Evening - HYBRID VERSION TESTING)
+**Last Updated**: 2025-10-27 (Final - HYBRID EXPERIMENT CONCLUDED)
+
+---
+
+## 🧪 FINAL HYBRID EXPERIMENT - CONCLUSION (Oct 27, 2025)
+
+**EXPERIMENT**: Combine oct25 CSV export block + current Reference listeners to achieve correct initialization without state mixing.
+
+**FILES TESTED**:
+1. **Working/Offline** (4012-Section13-offline.js): Perfect state isolation, wrong e_10 initialization (277.8)
+2. **Hybrid** (4012-Section13.js): CSV export + Reference listeners
+
+**RESULTS**:
+- ✅ **Initialization**: e_10 = 195.9 (closer to Excel 196.6 than 277.8)
+- ❌ **State Mixing**: Present in S10 g_63 (occupied hours) and potentially other sections
+- ⚠️ **One-time corrections**: Some "mixing" is actually multi-pass propagation completing (acceptable)
+- ❌ **True state mixing**: Target g_63 changes cause BOTH h_10 (Target) AND e_10 (Reference) to update
+
+**ROOT CAUSE OF HYBRID STATE MIXING**:
+Initial hypothesis (climate listeners d_20/d_21) was **INCORRECT**. Both working and hybrid files have identical climate listeners. The CSV export block itself appears to create listener contamination or timing issues that break state isolation in ways we cannot easily identify without major refactoring.
+
+**SPECIFIC STATE MIXING EXAMPLE (S10 g_63)**:
+- **Hybrid**: g_63 change in Target mode → h_10 changes (correct) + e_10 changes (STATE MIXING ❌)
+- **Working**: g_63 change in Target mode → h_10 changes (correct), e_10 unchanged (ISOLATED ✅)
+
+**ATTEMPTED FIXES**:
+1. Removed climate listeners (d_20, d_21) - **NO EFFECT** (both files have same listeners)
+2. Analyzed getExternalValue() - identical in both files
+3. Investigated S10 publishing ref_i_63 - not the issue
+
+**DECISION**: Abandon hybrid approach. The "easy fix" doesn't exist.
+
+**LESSONS LEARNED**:
+- CSV export block contamination mechanism is subtle and deeply intertwined with initialization timing
+- Multi-pass calculation dependency (S13→S14→S15→S01) is the real root cause of wrong initialization
+- Band-aid solutions won't work - need proper architectural solution
+
+**PRESERVED FILES** (moved to backups):
+- 4012-Section13.js.oct27-hybrid (experimental hybrid - state mixing present)
+- 4012-Section13.js.oct25 (original - state mixing + correct init)
+- 4012-Section13.js.oct26.js (earlier experiment)
+- 4012-Section13.js.current-backup (clean working version backup)
+
+**FINAL COMMIT**: 802adf7 (reverted incorrect climate listener fix)
+
+**NEXT STEPS**: Complete S13 refactor (C-RF branch), then implement Orchestrator.js directed graph solution.
 
 ---
 
