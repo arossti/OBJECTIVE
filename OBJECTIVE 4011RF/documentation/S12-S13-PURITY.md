@@ -5,13 +5,44 @@
 **Date Started**: 2025-10-25
 **Goal**: Fix Reference model calculation flow S12→S13 and S12 air leakage bug
 
-**Last Updated**: 2025-10-26 (Late Evening - RACE CONDITION DISCOVERED)
+**Last Updated**: 2025-10-26 (Very Late Evening - HYBRID VERSION TESTING)
+
+---
+
+## 🧪 EXPERIMENTAL HYBRID VERSION (Oct 26, Very Late Evening) - Commit bf6ad3e
+
+**HYPOTHESIS**: Combine best of both versions without Orchestrator.
+
+**Active File**: 4012-Section13.js (HYBRID combining oct25 + Reference listeners)
+- ✅ CSV Export Block: Publishes Reference defaults during init (from oct25)
+- ✅ Reference Listeners: All 6 listeners for automatic propagation (from current)
+- ❓ State Isolation: To be tested (Reference listeners previously tested clean)
+
+**Theory**:
+Oct 25 state mixing was NOT caused by:
+- CSV export block (tested removed, mixing persisted)
+- Missing Reference listeners (current version has them, no mixing)
+
+Likely causes of Oct 25 state mixing:
+- Something else in that specific version
+- OR testing artifact/misunderstanding
+
+**Expected Results**:
+- ✅ e_10 initialization: ~192-197 (not 277.8) - CSV export provides values
+- ✅ State isolation: Clean (Reference listeners tested)
+- ✅ Automatic propagation: Working (listeners present)
+
+**If This Works**: Correct initialization WITHOUT Orchestrator! 🎉
+**If State Mixing Returns**: Reference listeners somehow cause contamination
+**If e_10 Still Wrong**: CSV export timing issue remains
+
+**Backup**: Previous working version saved as 4012-Section13.js.current-backup
 
 ---
 
 ## 🚀 MAJOR BREAKTHROUGH (Oct 26, Late Evening)
 
-**ROOT CAUSE IDENTIFIED: Race Condition Between S13 and S01**
+**ROOT CAUSE IDENTIFIED: Multi-Pass Calculation Dependency Issue** (NOT timing race)
 
 - ✅ **Safari**: e_10 = 195.4 (Excel parity!) - 611ms initialization
 - ❌ **Chrome**: e_10 = 277.8 (wrong) - 640ms initialization
