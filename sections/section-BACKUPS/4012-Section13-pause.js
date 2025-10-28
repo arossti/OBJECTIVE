@@ -14,7 +14,7 @@
  * - Target changes contaminating Reference values
  * - Good e_10 value (192.9) but broken architecture
  *
- * Plan: Add CSV export to THIS file using S12 safety net pattern, then improve e_10.
+ * Plan: This file is ABSENT CSV export block that working S13 file now has, and critical fixes that repaired state mixing from S09 to S13. Add CSV export to THIS file using S12 safety net pattern, then improve e_10.
  */
 
 // Ensure namespace exists
@@ -2958,22 +2958,15 @@ window.TEUI.SectionModules.sect13 = (function () {
 
       // Read m_124 from Cooling.js via StateManager (mode-aware)
       // ✅ FIX (Oct 6, 2025): Mode-aware read for cooling_m_124
-      // ✅ FIX (Oct 27, 2025): Fallback to m_19 (cooling season days) if cooling_m_124 not yet available
-      let m_124_raw = isReferenceCalculation
+      // ✅ FIX (Oct 27, 2025): Accept 0 as valid (Cooling.js initializes to 0, Stage 2 updates later)
+      // m_124 is ACTIVE COOLING DAYS calculated as E52/(m_19*24), NOT the same as m_19!
+      const m_124_raw = isReferenceCalculation
         ? window.TEUI.StateManager.getValue("ref_cooling_m_124")
         : window.TEUI.StateManager.getValue("cooling_m_124");
 
-      // Fallback: Use m_19 (cooling season length) from S03 if Stage 2 hasn't run yet
-      if (!m_124_raw && m_124_raw !== 0) {
-        const m_19_fallback = isReferenceCalculation
-          ? window.TEUI.StateManager.getValue("ref_m_19")
-          : window.TEUI.StateManager.getValue("m_19");
-
-        m_124_raw = m_19_fallback || 120; // Default to 120 days if m_19 also unavailable
-        console.warn("[S13] cooling_m_124 not available, using m_19 fallback:", m_124_raw);
-      }
-
-      const activeCoolingDays = window.TEUI.parseNumeric(m_124_raw);
+      // Default to 0 if not yet calculated (Cooling.js Stage 2 will update when m_129 is ready)
+      // NOTE: 0 is valid and expected during initialization (no active cooling until Stage 2 runs)
+      const activeCoolingDays = window.TEUI.parseNumeric(m_124_raw) || 0;
       setFieldValue("m_124", activeCoolingDays, "number-2dp");
     } catch (error) {
       console.error("[S13 Error] Error during calculateFreeCooling:", error);

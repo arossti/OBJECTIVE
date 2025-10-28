@@ -1943,11 +1943,6 @@ window.TEUI.SectionModules.sect13 = (function () {
       sm.addListener("k_104", calculateAndRefresh); // Total Ground Loss
       sm.addListener("ref_k_104", calculateAndRefresh); // Reference Total Ground Loss (from S12)
 
-      // ✅ FIX (Oct 27, 2025): Listen for volume changes from S12
-      // Volume affects ventilation calculations (d_120, d_122, etc.) when g_118 uses volumetric methods
-      sm.addListener("d_105", calculateAndRefresh); // Conditioned Volume (from S12)
-      sm.addListener("ref_d_105", calculateAndRefresh); // Reference Conditioned Volume (from S12)
-
       sm.addListener("i_71", () => {
         calculateAndRefresh();
       }); // Total Occ Gains
@@ -3004,22 +2999,15 @@ window.TEUI.SectionModules.sect13 = (function () {
 
       // Read m_124 from Cooling.js via StateManager (mode-aware)
       // ✅ FIX (Oct 6, 2025): Mode-aware read for cooling_m_124
-      // ✅ FIX (Oct 27, 2025): Fallback to m_19 (cooling season days) if cooling_m_124 not yet available
-      let m_124_raw = isReferenceCalculation
+      // ✅ FIX (Oct 27, 2025): Accept 0 as valid (Cooling.js initializes to 0, Stage 2 updates later)
+      // m_124 is ACTIVE COOLING DAYS calculated as E52/(m_19*24), NOT the same as m_19!
+      const m_124_raw = isReferenceCalculation
         ? window.TEUI.StateManager.getValue("ref_cooling_m_124")
         : window.TEUI.StateManager.getValue("cooling_m_124");
 
-      // Fallback: Use m_19 (cooling season length) from S03 if Stage 2 hasn't run yet
-      if (!m_124_raw && m_124_raw !== 0) {
-        const m_19_fallback = isReferenceCalculation
-          ? window.TEUI.StateManager.getValue("ref_m_19")
-          : window.TEUI.StateManager.getValue("m_19");
-
-        m_124_raw = m_19_fallback || 120; // Default to 120 days if m_19 also unavailable
-        console.warn("[S13] cooling_m_124 not available, using m_19 fallback:", m_124_raw);
-      }
-
-      const activeCoolingDays = window.TEUI.parseNumeric(m_124_raw);
+      // Default to 0 if not yet calculated (Cooling.js Stage 2 will update when m_129 is ready)
+      // NOTE: 0 is valid and expected during initialization (no active cooling until Stage 2 runs)
+      const activeCoolingDays = window.TEUI.parseNumeric(m_124_raw) || 0;
       setFieldValue("m_124", activeCoolingDays, "number-2dp");
     } catch (error) {
       console.error("[S13 Error] Error during calculateFreeCooling:", error);

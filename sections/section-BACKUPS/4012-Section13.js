@@ -1,25 +1,20 @@
 /**
- * 4012-Section13.js.oct25 - OFFLINE VERSION (Taken out of calculation flow Oct 25, 2025)
+ * 4012-Section13.js - Mechanical Loads (Section 13) module for TEUI Calculator 4.012 October 1, 2025.
+ * Represents separation of Cooling.js functions from S13 responsibilities. Completely rewritten to use the dual-state architecture.
+ * Needs only State Isolation and Limited Bugfixes noted in S13-ENDGAME-2.md
  *
- * ⚠️ FILE STATUS: DO NOT USE IN ACTIVE CALCULATIONS
- * This file has been renamed to .oct25 and removed from calculation flow.
+ * ⚠️ FILE STATUS (Oct 25, 2025):
+ * This is the BACKUP VERSION restored to active calculation flow.
+ * - Has GOOD state isolation (Target/Reference independent)
+ * - Missing CSV export for Reference fields (will add tomorrow)
+ * - e_10 initialization needs improvement (currently ~287.0, target ~192.9)
  *
- * Why offline:
- * - Has BROKEN state isolation (significant state mixing across sections)
- * - Target changes contaminate Reference values
- * - Changes in other sections cause unwanted updates in both Target AND Reference models
- * - Architecture issue deeper than CSV export block (tested, not the cause)
+ * The Oct 25 working version (4012-Section13.js.oct25) was taken offline due to:
+ * - Significant state mixing across sections
+ * - Target changes contaminating Reference values
+ * - Good e_10 value (192.9) but broken architecture
  *
- * What it does well:
- * - Good e_10 initialization (~192.9, close to Excel parity)
- * - Good h_10 value (~93.7)
- * - Has CSV export for Reference fields
- *
- * This file contains the CSV export improvements and m_124 two-stage handling,
- * but the state mixing makes it unsuitable for production. Kept for reference
- * to understand what gives better e_10 initialization.
- *
- * Active file: 4012-Section13.js (backup version with good state isolation)
+ * Plan: Add CSV export to THIS file using S12 safety net pattern, then improve e_10.
  */
 
 // Ensure namespace exists
@@ -240,17 +235,6 @@ window.TEUI.SectionModules.sect13 = (function () {
     initialize: function () {
       TargetState.initialize();
       ReferenceState.initialize();
-
-      // ✅ CSV EXPORT FIX: Publish ALL Reference defaults to StateManager
-      if (window.TEUI?.StateManager) {
-        ["d_113", "f_113", "j_115", "d_116", "d_118", "g_118", "l_118", "d_119", "l_119", "k_120"].forEach((id) => {
-          const refId = `ref_${id}`;
-          const val = ReferenceState.getValue(id);
-          if (!window.TEUI.StateManager.getValue(refId) && val != null && val !== "") {
-            window.TEUI.StateManager.setValue(refId, val, "calculated");
-          }
-        });
-      }
 
       // MANDATORY: Listen for reference standard changes
       if (window.TEUI?.StateManager?.addListener) {
@@ -1943,11 +1927,6 @@ window.TEUI.SectionModules.sect13 = (function () {
       sm.addListener("k_104", calculateAndRefresh); // Total Ground Loss
       sm.addListener("ref_k_104", calculateAndRefresh); // Reference Total Ground Loss (from S12)
 
-      // ✅ FIX (Oct 27, 2025): Listen for volume changes from S12
-      // Volume affects ventilation calculations (d_120, d_122, etc.) when g_118 uses volumetric methods
-      sm.addListener("d_105", calculateAndRefresh); // Conditioned Volume (from S12)
-      sm.addListener("ref_d_105", calculateAndRefresh); // Reference Conditioned Volume (from S12)
-
       sm.addListener("i_71", () => {
         calculateAndRefresh();
       }); // Total Occ Gains
@@ -2658,19 +2637,11 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     const ventilationRateM3h_h120 = ventilationRateLs_d120 * 3.6;
 
-    // ✅ FIX (Oct 27, 2025): Store ventilation values for BOTH Target AND Reference
-    // Previously only stored Target values, causing Reference to fall back to Target d_120
+    // Only update DOM for Target calculations
     if (!isReferenceCalculation) {
-      // Target: Update DOM
       setFieldValue("d_120", ventilationRateLs_d120, "number-2dp-comma");
       setFieldValue("f_120", ventRateLs * 2.11888, "number-2dp-comma"); // cfm conversion
       setFieldValue("h_120", ventilationRateM3h_h120, "number-2dp-comma"); // m3/hr
-    } else {
-      // Reference: Store with ref_ prefix for downstream calculations
-      window.TEUI.StateManager.setValue("ref_d_120", ventilationRateLs_d120.toString(), "calculated");
-      window.TEUI.StateManager.setValue("ref_f_120", (ventRateLs * 2.11888).toString(), "calculated");
-      window.TEUI.StateManager.setValue("ref_h_120", ventilationRateM3h_h120.toString(), "calculated");
-      console.log(`[S13] 🔗 Published ref_d_120=${ventilationRateLs_d120.toFixed(2)} L/s for Reference ventilation energy calc`);
     }
 
     // ✅ PATTERN 1: Mode-aware reading (automatic with temporary mode switching)
@@ -2819,10 +2790,8 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     const ventEnergyRecovered_d123 = ventEnergyCoolingIncoming_d122 * sre_d118;
 
-    // ✅ FIX (Oct 27, 2025): Store cooling ventilation values for BOTH Target AND Reference
-    // Previously only stored Target values, causing Reference CED calculations to use Target d_122
+    // Only update DOM for Target calculations
     if (!isReferenceCalculation) {
-      // Target: Update DOM
       setFieldValue("i_122", latentLoadFactor_i122, "percent-0dp");
       setFieldValue(
         "d_122",
@@ -2830,12 +2799,6 @@ window.TEUI.SectionModules.sect13 = (function () {
         "number-2dp-comma",
       );
       setFieldValue("d_123", ventEnergyRecovered_d123, "number-2dp-comma");
-    } else {
-      // Reference: Store with ref_ prefix for CED calculations
-      window.TEUI.StateManager.setValue("ref_i_122", latentLoadFactor_i122.toString(), "calculated");
-      window.TEUI.StateManager.setValue("ref_d_122", ventEnergyCoolingIncoming_d122.toString(), "calculated");
-      window.TEUI.StateManager.setValue("ref_d_123", ventEnergyRecovered_d123.toString(), "calculated");
-      console.log(`[S13] 🔗 Published ref_d_122=${ventEnergyCoolingIncoming_d122.toFixed(2)} kWh/yr for Reference CED calc`);
     }
 
     return {
@@ -2868,23 +2831,14 @@ window.TEUI.SectionModules.sect13 = (function () {
     const k103 = getGlobalNumericValue(
       isReferenceCalculation ? "ref_k_103" : "k_103",
     );
-    // ✅ FIX (Oct 27, 2025): Make d_122 read mode-aware
-    // Was reading unprefixed d_122 (Target value) even in Reference calculations
-    const d122 = window.TEUI.parseNumeric(
-      getExternalValue("d_122", isReferenceCalculation)
-    ) || 0;
+    const d122 = window.TEUI.parseNumeric(getFieldValue("d_122")) || 0; // From S13's own calculation
 
     // Excel formula: D129 = K71+K79+K97+K104+K103+D122 (FIXED: was K98, should be K97)
     const cedUnmitigated = k71 + k79 + k97 + k104 + k103 + d122;
 
-    // ✅ FIX (Oct 27, 2025): Store CED values for BOTH Target AND Reference
+    // Only update DOM for Target calculations
     if (!isReferenceCalculation) {
-      // Target: Update DOM
       setFieldValue("d_129", cedUnmitigated, "number-2dp-comma");
-    } else {
-      // Reference: Store with ref_ prefix for CED mitigated calculation
-      window.TEUI.StateManager.setValue("ref_d_129", cedUnmitigated.toString(), "calculated");
-      console.log(`[S13] 🔗 Published ref_d_129=${cedUnmitigated.toFixed(2)} kWh/yr for Reference CED mitigated calc`);
     }
 
     return { d_129: cedUnmitigated };
@@ -3004,21 +2958,13 @@ window.TEUI.SectionModules.sect13 = (function () {
 
       // Read m_124 from Cooling.js via StateManager (mode-aware)
       // ✅ FIX (Oct 6, 2025): Mode-aware read for cooling_m_124
-      // ✅ FIX (Oct 27, 2025): Fallback to m_19 (cooling season days) if cooling_m_124 not yet available
-      let m_124_raw = isReferenceCalculation
+      const m_124_raw = isReferenceCalculation
         ? window.TEUI.StateManager.getValue("ref_cooling_m_124")
         : window.TEUI.StateManager.getValue("cooling_m_124");
 
-      // Fallback: Use m_19 (cooling season length) from S03 if Stage 2 hasn't run yet
       if (!m_124_raw && m_124_raw !== 0) {
-        const m_19_fallback = isReferenceCalculation
-          ? window.TEUI.StateManager.getValue("ref_m_19")
-          : window.TEUI.StateManager.getValue("m_19");
-
-        m_124_raw = m_19_fallback || 120; // Default to 120 days if m_19 also unavailable
-        console.warn("[S13] cooling_m_124 not available, using m_19 fallback:", m_124_raw);
+        throw new Error("[S13] REQUIRED cooling_m_124 missing from Cooling.js");
       }
-
       const activeCoolingDays = window.TEUI.parseNumeric(m_124_raw);
       setFieldValue("m_124", activeCoolingDays, "number-2dp");
     } catch (error) {
