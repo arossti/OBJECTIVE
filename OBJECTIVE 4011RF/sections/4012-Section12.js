@@ -28,7 +28,7 @@ window.TEUI.SectionModules.sect12 = (function () {
       }
     },
     setDefaults: function () {
-      // S12-specific defaults - MUST match sectionRows values
+      // S12-specific defaults - MUST match sectionRows values CONSOLIDATE THESE TO FIELD DEFINITIONS PER 4012-CHEATSHEET.md
       this.state = {
         d_103: "1.5", // Number of stories (dropdown)
         g_103: "Normal", // Exposure (dropdown)
@@ -105,7 +105,7 @@ window.TEUI.SectionModules.sect12 = (function () {
       const referenceValues =
         window.TEUI?.ReferenceValues?.[currentStandard] || {};
 
-      // Apply reference values to S12 fields with fallbacks
+      // Apply reference values to S12 fields with fallbacks - these are fine
       this.state = {
         d_103: referenceValues.d_103 || "1.5", // Stories - MATCHES Target 1.5
         g_103: referenceValues.g_103 || "Exposed", // Exposure - DIFFERENT: Exposed vs Target Normal
@@ -218,7 +218,7 @@ window.TEUI.SectionModules.sect12 = (function () {
       const calculatedFields = [
         "d_101",
         "d_102",
-        "d_105",
+        // d_105 removed - it's USER INPUT (editable), not calculated
         "d_106",
         "d_107",
         "g_101",
@@ -745,7 +745,7 @@ window.TEUI.SectionModules.sect12 = (function () {
         d: {
           fieldId: "d_105",
           type: "editable",
-          value: "8000.00",
+          value: "8000.00", // Our only required Target default set here
           section: "volumeSurfaceMetrics",
           tooltip: true, // Conditioned Volume
           classes: ["user-input"],
@@ -1497,20 +1497,17 @@ window.TEUI.SectionModules.sect12 = (function () {
       "percent-2dp",
       isReferenceCalculation,
     );
-    // ✅ FIX: Publish d_105 (Conditioned Volume) for Reference mode
-    // This is critical for S13 ventilation calculations which depend on volume
-    setCalculatedValue(
-      "d_105",
-      d105_vol,
-      "number-2dp-comma",
-      isReferenceCalculation,
-    );
+
+    // ❌ REMOVED: d_105 is USER INPUT, not calculated
+    // DO NOT call setCalculatedValue on d_105 - it overwrites user edits!
+    // d_105 is already published to StateManager via ModeManager.setValue when user edits it
+    // Calling setCalculatedValue here was causing Reference mode edits to be ignored
 
     // Return calculated values for Reference engine storage
     return {
       d_101: d101_areaAir,
       d_102: d102_areaGround,
-      d_105: d105_vol, // ✅ FIX: Include d_105 for ref_ prefix storage
+      // d_105: Removed from return - it's user input, not calculated
       d_106: d106_floorArea,
       g_105: g105_volAreaRatio,
       i_105: i105_areaVolRatio,
