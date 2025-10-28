@@ -28,7 +28,7 @@ window.TEUI.SectionModules.sect12 = (function () {
       }
     },
     setDefaults: function () {
-      // S12-specific defaults - MUST match sectionRows values
+      // S12-specific defaults - MUST match sectionRows values CONSOLIDATE THESE TO FIELD DEFINITIONS PER 4012-CHEATSHEET.md
       this.state = {
         d_103: "1.5", // Number of stories (dropdown)
         g_103: "Normal", // Exposure (dropdown)
@@ -105,7 +105,7 @@ window.TEUI.SectionModules.sect12 = (function () {
       const referenceValues =
         window.TEUI?.ReferenceValues?.[currentStandard] || {};
 
-      // Apply reference values to S12 fields with fallbacks
+      // Apply reference values to S12 fields with fallbacks - these are fine
       this.state = {
         d_103: referenceValues.d_103 || "1.5", // Stories - MATCHES Target 1.5
         g_103: referenceValues.g_103 || "Exposed", // Exposure - DIFFERENT: Exposed vs Target Normal
@@ -745,7 +745,7 @@ window.TEUI.SectionModules.sect12 = (function () {
         d: {
           fieldId: "d_105",
           type: "editable",
-          value: "8000.00",
+          value: "8000.00", // Our only required Target default set here
           section: "volumeSurfaceMetrics",
           tooltip: true, // Conditioned Volume
           classes: ["user-input"],
