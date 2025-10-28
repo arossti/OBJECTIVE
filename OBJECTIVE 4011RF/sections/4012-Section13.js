@@ -1943,6 +1943,11 @@ window.TEUI.SectionModules.sect13 = (function () {
       sm.addListener("k_104", calculateAndRefresh); // Total Ground Loss
       sm.addListener("ref_k_104", calculateAndRefresh); // Reference Total Ground Loss (from S12)
 
+      // ✅ FIX (Oct 27, 2025): Listen for volume changes from S12
+      // Volume affects ventilation calculations (d_120, d_122, etc.) when g_118 uses volumetric methods
+      sm.addListener("d_105", calculateAndRefresh); // Conditioned Volume (from S12)
+      sm.addListener("ref_d_105", calculateAndRefresh); // Reference Conditioned Volume (from S12)
+
       sm.addListener("i_71", () => {
         calculateAndRefresh();
       }); // Total Occ Gains
