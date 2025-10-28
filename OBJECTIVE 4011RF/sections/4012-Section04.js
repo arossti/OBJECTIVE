@@ -950,10 +950,16 @@ window.TEUI.SectionModules.sect04 = (function () {
     // Store in StateManager for cross-section communication
     if (ModeManager.currentMode === "target") {
       if (window.TEUI?.StateManager) {
+        if (fieldId === "h_27" || fieldId === "j_27") {
+          console.log(`[S04 DEBUG] 📤 Publishing ${fieldId}=${valueToStore} to StateManager (Target mode)`);
+        }
         window.TEUI.StateManager.setValue(fieldId, valueToStore, "calculated");
       }
     } else {
       if (window.TEUI?.StateManager) {
+        if (fieldId === "h_27" || fieldId === "j_27") {
+          console.log(`[S04 DEBUG] 📤 Publishing ref_${fieldId}=${valueToStore} to StateManager (Reference mode)`);
+        }
         window.TEUI.StateManager.setValue(
           `ref_${fieldId}`,
           valueToStore,
@@ -1035,6 +1041,7 @@ window.TEUI.SectionModules.sect04 = (function () {
     const h_27 = getGlobalNumericValue("d_136") || 0; // Reads ref_d_136 in Reference mode
     const l_27 = getElectricityEmissionFactor();
 
+    console.log(`[S04 DEBUG] calculateRow27 in ${ModeManager.currentMode} mode: d_136=${h_27}, publishing as h_27`);
     setFieldValue("h_27", h_27);
     setFieldValue("f_27", d_27 - d_43 - i_43);
     setFieldValue("g_27", ((d_27 - d_43 - i_43) * l_27) / 1000);
@@ -1479,7 +1486,8 @@ window.TEUI.SectionModules.sect04 = (function () {
 
     // ✅ CLEAN DEPENDENCY LISTENERS: Only direct dependencies, no fallbacks
     if (window.TEUI?.StateManager?.addListener) {
-      const calculateAndRefresh = () => {
+      const calculateAndRefresh = (newValue, oldValue, sourceFieldId) => {
+        console.log(`[S04 DEBUG] 🔔 Listener fired for field: ${sourceFieldId}, triggering calculateAll()`);
         calculateAll();
         ModeManager.updateCalculatedDisplayValues();
       };
