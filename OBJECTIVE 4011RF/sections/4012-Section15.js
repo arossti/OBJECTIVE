@@ -101,9 +101,6 @@ window.TEUI.SectionModules.sect15 = (function () {
         : rawValue.toString();
     TargetState.setValue(fieldId, valueToStore);
     if (window.TEUI?.StateManager) {
-      if (fieldId === "d_136") {
-        console.log(`[S15 DEBUG] 📤 Publishing Target ${fieldId}=${valueToStore} to StateManager`);
-      }
       window.TEUI.StateManager.setValue(fieldId, valueToStore, "calculated");
     }
   }
