@@ -1515,12 +1515,10 @@ window.TEUI.SectionModules.sect15 = (function () {
       if (primaryHeating === "Electricity") {
         ref_teuTargetedElecHPGasOil = ref_teuTargetTotal;
       } else if (primaryHeating === "Heatpump") {
-        // ✅ FIX: Include ref_m121 (ventilation energy) - was missing, causing volume insensitivity
         ref_teuTargetedElecHPGasOil =
-          k51 + d117_effective + d114 + m43_final + h70 + ref_m121;
+          k51 + d117_effective + d114 + m43_final + h70;
       } else {
-        // ✅ FIX: Include ref_m121 (ventilation energy) - was missing, causing volume insensitivity
-        ref_teuTargetedElecHPGasOil = k51 + d117_effective + m43_final + h70 + ref_m121;
+        ref_teuTargetedElecHPGasOil = k51 + d117_effective + m43_final + h70;
       }
 
       setReferenceValue("d_136", ref_teuTargetedElecHPGasOil);
@@ -1809,12 +1807,10 @@ window.TEUI.SectionModules.sect15 = (function () {
       if (primaryHeating === "Electricity") {
         teuTargetedElecHPGasOil = teuTargetTotal; // teuTargetTotal already uses d117_effective
       } else if (primaryHeating === "Heatpump") {
-        // ✅ FIX: Include m121 (ventilation energy) - was missing, causing volume insensitivity
-        teuTargetedElecHPGasOil = k51 + d117_effective + d114 + m43 + h70 + m121;
+        teuTargetedElecHPGasOil = k51 + d117_effective + d114 + m43 + h70;
       } else {
         // Gas or Oil - sum elec loads only, exclude heating demand (d114)
-        // ✅ FIX: Include m121 (ventilation energy) - was missing, causing volume insensitivity
-        teuTargetedElecHPGasOil = k51 + d117_effective + m43 + h70 + m121;
+        teuTargetedElecHPGasOil = k51 + d117_effective + m43 + h70;
       }
 
       // 🔍 KEY: Log S15 Target calculation for comparison
