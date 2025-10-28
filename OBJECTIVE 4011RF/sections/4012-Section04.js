@@ -950,14 +950,14 @@ window.TEUI.SectionModules.sect04 = (function () {
     // Store in StateManager for cross-section communication
     if (ModeManager.currentMode === "target") {
       if (window.TEUI?.StateManager) {
-        if (fieldId === "h_27" || fieldId === "j_27") {
+        if (fieldId === "h_27" || fieldId === "j_27" || fieldId === "j_32") {
           console.log(`[S04 DEBUG] 📤 Publishing ${fieldId}=${valueToStore} to StateManager (Target mode)`);
         }
         window.TEUI.StateManager.setValue(fieldId, valueToStore, "calculated");
       }
     } else {
       if (window.TEUI?.StateManager) {
-        if (fieldId === "h_27" || fieldId === "j_27") {
+        if (fieldId === "h_27" || fieldId === "j_27" || fieldId === "j_32") {
           console.log(`[S04 DEBUG] 📤 Publishing ref_${fieldId}=${valueToStore} to StateManager (Reference mode)`);
         }
         window.TEUI.StateManager.setValue(
@@ -1163,6 +1163,8 @@ window.TEUI.SectionModules.sect04 = (function () {
 
     // Note: Both Target and Reference currently use same wood offset (d_60) as per current Excel model
     // Future enhancement: Reference model could use independent ref_d_60 for scenario comparison
+
+    console.log(`[S04 DEBUG] calculateRow32 in ${ModeManager.currentMode} mode: j_27=${j_27} → j_32=${j_32}`);
 
     // ✅ CRITICAL FOR S01: Store subtotals for downstream consumption
     setFieldValue("f_32", f_32); // Actual energy subtotal

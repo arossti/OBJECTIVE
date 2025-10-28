@@ -1324,6 +1324,9 @@ window.TEUI.SectionModules.sect01 = (function () {
         (newValue, oldValue, sourceFieldId) => {
           // Only recalculate if the value actually changed
           if (newValue !== oldValue) {
+            if (fieldId === "j_32" || fieldId === "ref_j_32") {
+              console.log(`[S01 DEBUG] 🔔 Listener fired for ${sourceFieldId}: ${oldValue} → ${newValue}, triggering runAllCalculations()`);
+            }
             if (fieldId === "g_32") {
               // Special handling for g_32 field changes (if needed in future)
             }
