@@ -1,11 +1,3 @@
-/Users/andrewthomson/Library/Python/3.9/lib/python/site-packages/openpyxl/worksheet/_reader.py:329: UserWarning: Conditional Formatting extension is not supported and will be removed
-  warn(msg)
-/Users/andrewthomson/Library/Python/3.9/lib/python/site-packages/openpyxl/worksheet/_reader.py:329: UserWarning: Data Validation extension is not supported and will be removed
-  warn(msg)
-/Users/andrewthomson/Library/Python/3.9/lib/python/site-packages/openpyxl/reader/drawings.py:33: UserWarning: DrawingML support is incomplete and limited to charts and images only. Shapes and drawings will be lost.
-  warn("DrawingML support is incomplete and limited to charts and images only. Shapes and drawings will be lost.")
-🔍 Scanning rows 12-145, columns A-P comprehensively...
-✅ Extracted 107 validation tooltips from REPORT sheet
 {
   "H12": {
     "cell": "H12",
