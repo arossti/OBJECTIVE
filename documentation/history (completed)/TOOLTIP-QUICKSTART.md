@@ -24,10 +24,10 @@ When your Excel file's validation messages change:
 
 ```bash
 # Navigate to workspace root
-cd "/Users/andrewthomson/Library/Mobile Documents/com~apple~CloudDocs/Documents/Documents - iMac Pro/[T] iCLOUD STUDIO/[T] Active Projects/2022 | Open Building/TEUI 4.0/OBJECTIVE WORKSPACE"
+cd "/path/to/OBJECTIVE_WORKSPACE"
 
 # Run the extraction script
-python3 extract-validation.py "/Users/andrewthomson/Library/Mobile Documents/com~apple~CloudDocs/Documents/Documents - iMac Pro/[T] iCLOUD STUDIO/[T] Active Projects/2022 | Open Building/TEUI 3.0/TEUIv3042.xlsx"
+python3 extract-validation.py "/path/to/TEUIv3042.xlsx"
 
 # Output is saved to: OBJECTIVE 4011RF/data/validation-tooltips.json
 ```
