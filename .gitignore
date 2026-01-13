@@ -25,3 +25,7 @@ temp/
 
 # Node modules (if ever added)
 node_modules/
+# Claude Code and Prettier configs (personal preference)
+.clinerules
+.prettierrc.json
+.prettierignore
