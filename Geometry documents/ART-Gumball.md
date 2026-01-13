@@ -17,12 +17,14 @@ Following Julian Barbour's relational theory of time, each transform state is a 
 ### 1. RT-Pure Operations
 
 **Traditional CAD Problems:**
+
 - Angles in degrees → transcendental functions (sin, cos) → irrational numbers
 - Floating-point accumulation errors in rotations
 - Distance calculations using √ → decimal expansion issues
 - Loss of precision in iterative transforms
 
 **ART Gumball Solution:**
+
 - **Spread** (s = Q_quad/R_quad) instead of angles → rational values
 - **Quadrance** (Q = x² + y² + z²) instead of distance → exact algebraic values
 - All calculations remain in rational/algebraic domain
@@ -34,11 +36,13 @@ Following Julian Barbour's relational theory of time, each transform state is a 
 The gumball operates in **dual mode**:
 
 #### Cartesian Mode (XYZ)
+
 - Move: Translate along X, Y, Z axes
 - Rotate: Spread-based rotation in XY, XZ, YZ planes
 - Units: Standard Cartesian coordinate increments
 
 #### Quadray Mode (WXYZ)
+
 - Move: Translate along tetrahedral basis vectors W, X, Y, Z
 - Rotate: Spread-based rotation in tetrahedral planes (WX, WY, WZ, XY, XZ, YZ)
 - Units: Quadray coordinate increments (tetrahedral lattice alignment)
@@ -48,12 +52,14 @@ The gumball operates in **dual mode**:
 ### Scale (Universal)
 
 **Parameters:**
+
 - `scaleX`: Multiplicative scale factor for X dimension
 - `scaleY`: Multiplicative scale factor for Y dimension
 - `scaleZ`: Multiplicative scale factor for Z dimension
 - `scaleUniform`: Single scale factor applied to all dimensions
 
 **Implementation:**
+
 ```javascript
 // Uniform scaling
 polyhedron.scale.set(scaleUniform, scaleUniform, scaleUniform);
@@ -63,6 +69,7 @@ polyhedron.scale.set(scaleX, scaleY, scaleZ);
 ```
 
 **RT Considerations:**
+
 - Scaling preserves quadrance ratios
 - Spread values remain invariant under uniform scaling
 - Non-uniform scaling changes spreads (must recalculate if needed)
@@ -70,24 +77,30 @@ polyhedron.scale.set(scaleX, scaleY, scaleZ);
 ### Move (Position)
 
 #### Cartesian Mode
+
 **Parameters:**
+
 - `posX`: Position along X-axis (algebraic value)
 - `posY`: Position along Y-axis (algebraic value)
 - `posZ`: Position along Z-axis (algebraic value)
 
 **Implementation:**
+
 ```javascript
 polyhedron.position.set(posX, posY, posZ);
 ```
 
 #### Quadray Mode
+
 **Parameters:**
+
 - `qW`: Coefficient for W basis vector
 - `qX`: Coefficient for X basis vector
 - `qY`: Coefficient for Y basis vector
 - `qZ`: Coefficient for Z basis vector
 
 **Implementation:**
+
 ```javascript
 // Quadray coordinates (w, x, y, z)
 // Convert to Cartesian for THREE.js positioning
@@ -96,6 +109,7 @@ polyhedron.position.copy(cartesianPos);
 ```
 
 **Quadray to Cartesian Conversion:**
+
 ```javascript
 function quadrayToCartesian(w, x, y, z) {
   // Using existing Quadray.basisVectors from ARTexplorer
@@ -111,6 +125,7 @@ function quadrayToCartesian(w, x, y, z) {
 ```
 
 **RT Advantages:**
+
 - Quadray moves align perfectly with IVM lattice
 - Natural for tetrahedral close-packing arrangements
 - Exact lattice positions without floating-point drift
@@ -118,11 +133,13 @@ function quadrayToCartesian(w, x, y, z) {
 ### Rotate (Spread-Based)
 
 **Traditional Problem:**
+
 - Rotation by θ degrees requires cos(θ) and sin(θ)
 - Transcendental functions → irrationals
 - Composition of rotations accumulates error
 
 **RT Solution:**
+
 - Define rotation by **spread** (s) in a specific plane
 - Spread s = Q_quad/R_quad (ratio of quadrances, purely algebraic)
 - Use **spread polynomials** for exact rotation matrices
@@ -130,16 +147,19 @@ function quadrayToCartesian(w, x, y, z) {
 #### Spread Definition
 
 For two lines forming an angle:
+
 - **Quadrance** of perpendicular from intersection to line: Q_quad
 - **Quadrance** of radius (distance along line): R_quad
 - **Spread**: s = Q_quad/R_quad
 
 **Key Values:**
+
 - s = 0: Lines parallel (0°)
 - s = 0.5: 45° angle (most common in tetrahedral geometry)
 - s = 1: Lines perpendicular (90°)
 
 **Example from diagram:**
+
 - R_q = 2, Q_q = 1 → s = 0.5 (45°)
 - R_q = 5, Q_q = 1 → s = 0.2 (≈26.56...°)
 - R_q = 10, Q_q = 1 → s = 0.1 (≈18.43...°)
@@ -147,11 +167,13 @@ For two lines forming an angle:
 #### Parameters
 
 **Cartesian Mode:**
+
 - `spreadXY`: Spread for rotation in XY plane (about Z-axis)
 - `spreadXZ`: Spread for rotation in XZ plane (about Y-axis)
 - `spreadYZ`: Spread for rotation in YZ plane (about X-axis)
 
 **Quadray Mode:**
+
 - `spreadWX`: Spread for rotation in WX plane
 - `spreadWY`: Spread for rotation in WY plane
 - `spreadWZ`: Spread for rotation in WZ plane
@@ -200,31 +222,67 @@ function spreadToRotationMatrix(spread, plane) {
   const matrix = new THREE.Matrix4();
 
   // Rotation matrices by plane
-  switch(plane) {
-    case 'XY': // Rotation about Z-axis
+  switch (plane) {
+    case "XY": // Rotation about Z-axis
       matrix.set(
-        cosTheta, -sinTheta, 0, 0,
-        sinTheta,  cosTheta, 0, 0,
-        0,         0,        1, 0,
-        0,         0,        0, 1
+        cosTheta,
+        -sinTheta,
+        0,
+        0,
+        sinTheta,
+        cosTheta,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
       );
       break;
 
-    case 'XZ': // Rotation about Y-axis
+    case "XZ": // Rotation about Y-axis
       matrix.set(
-        cosTheta,  0, sinTheta, 0,
-        0,         1, 0,        0,
-        -sinTheta, 0, cosTheta, 0,
-        0,         0, 0,        1
+        cosTheta,
+        0,
+        sinTheta,
+        0,
+        0,
+        1,
+        0,
+        0,
+        -sinTheta,
+        0,
+        cosTheta,
+        0,
+        0,
+        0,
+        0,
+        1
       );
       break;
 
-    case 'YZ': // Rotation about X-axis
+    case "YZ": // Rotation about X-axis
       matrix.set(
-        1, 0,         0,        0,
-        0, cosTheta, -sinTheta, 0,
-        0, sinTheta,  cosTheta, 0,
-        0, 0,         0,        1
+        1,
+        0,
+        0,
+        0,
+        0,
+        cosTheta,
+        -sinTheta,
+        0,
+        0,
+        sinTheta,
+        cosTheta,
+        0,
+        0,
+        0,
+        0,
+        1
       );
       break;
   }
@@ -240,11 +298,11 @@ For maximum RT purity, restrict spreads to algebraic values:
 ```javascript
 // Common exact spreads in tetrahedral geometry
 const EXACT_SPREADS = {
-  PARALLEL: 0,           // 0° - s = 0
-  TETRAHEDRAL: 1/3,      // ≈54.74° - tetrahedron dihedral angle
-  OCTAHEDRAL: 1/2,       // 45° - s = 1/2
-  CUBE_DIAGONAL: 2/3,    // ≈70.53° - cube diagonal to edge
-  PERPENDICULAR: 1       // 90° - s = 1
+  PARALLEL: 0, // 0° - s = 0
+  TETRAHEDRAL: 1 / 3, // ≈54.74° - tetrahedron dihedral angle
+  OCTAHEDRAL: 1 / 2, // 45° - s = 1/2
+  CUBE_DIAGONAL: 2 / 3, // ≈70.53° - cube diagonal to edge
+  PERPENDICULAR: 1, // 90° - s = 1
 };
 
 // UI could provide these as preset buttons or snap-to values
@@ -270,6 +328,7 @@ function applySpreadRotations(polyhedron, rotations) {
 ```
 
 **RT Advantages:**
+
 - Spread values remain rational/algebraic
 - No angle accumulation errors
 - Exact lattice rotations for tetrahedral/cubic symmetries
@@ -315,12 +374,19 @@ const rotationMatrix = new THREE.Matrix4().makeRotationAxis(axis, angle);
 const transformMatrix = new THREE.Matrix4()
   .makeTranslation(-rotationCenter.x, -rotationCenter.y, -rotationCenter.z)
   .multiply(rotationMatrix)
-  .multiply(new THREE.Matrix4().makeTranslation(rotationCenter.x, rotationCenter.y, rotationCenter.z));
+  .multiply(
+    new THREE.Matrix4().makeTranslation(
+      rotationCenter.x,
+      rotationCenter.y,
+      rotationCenter.z
+    )
+  );
 
 poly.applyMatrix4(transformMatrix); // Single operation for both position and orientation
 ```
 
 **Benefits:**
+
 - Reduces from 2 matrix operations to 1 per object per frame
 - Cleaner code (single transformation concept)
 - Mathematically equivalent
@@ -335,11 +401,13 @@ poly.applyMatrix4(transformMatrix); // Single operation for both position and or
 Using the rational circle parameterization from `rt-math.js`:
 
 **Current conversion path:**
+
 ```
 spread → asin(√spread) → sin/cos lookup → rotation matrix
 ```
 
 **RT-Pure path using Weierstrass substitution:**
+
 ```javascript
 /**
  * Create rotation matrix directly from spread using rational circle parameterization
@@ -359,7 +427,7 @@ function spreadToRotationMatrixRTPure(spread, axis) {
   const t = RT.spreadToParam(spread); // Already implemented in rt-math.js!
 
   // Get cos/sin from rational circle parameterization (NO trig functions!)
-  const {x: cosTheta, y: sinTheta} = RT.circleParam(t);
+  const { x: cosTheta, y: sinTheta } = RT.circleParam(t);
 
   // Build rotation matrix using Rodrigues' formula:
   // R = I + sin(θ)K + (1 - cos(θ))K²
@@ -372,10 +440,22 @@ function spreadToRotationMatrixRTPure(spread, axis) {
 
   const matrix = new THREE.Matrix4();
   matrix.set(
-    t*x*x + c,   t*x*y - s*z, t*x*z + s*y, 0,
-    t*x*y + s*z, t*y*y + c,   t*y*z - s*x, 0,
-    t*x*z - s*y, t*y*z + s*x, t*z*z + c,   0,
-    0,           0,           0,           1
+    t * x * x + c,
+    t * x * y - s * z,
+    t * x * z + s * y,
+    0,
+    t * x * y + s * z,
+    t * y * y + c,
+    t * y * z - s * x,
+    0,
+    t * x * z - s * y,
+    t * y * z + s * x,
+    t * z * z + c,
+    0,
+    0,
+    0,
+    0,
+    1
   );
 
   return matrix;
@@ -383,6 +463,7 @@ function spreadToRotationMatrixRTPure(spread, axis) {
 ```
 
 **Benefits:**
+
 - **Algebraically exact** for rational spreads (1/2, 1/3, 1/4, etc.)
 - Only uses `sqrt` **once** (in `spreadToParam`), vs. twice in traditional approach (asin + sqrt)
 - More numerically stable for small angles (avoids asin domain issues)
@@ -394,10 +475,12 @@ function spreadToRotationMatrixRTPure(spread, axis) {
 **Mathematical Insight:**
 
 The Weierstrass substitution provides a **bijective mapping** between:
+
 - Parameter `t` (rational numbers) ↔ Points on unit circle
 - Spread `s = 4t²/(1+t²)²` ↔ Perpendicularity measure
 
 This means:
+
 - **Input:** Rational spread values (1/2, 1/3, 2/3, etc.)
 - **Processing:** Rational parameter `t` (possibly irrational, but computed once)
 - **Output:** cos/sin values computed using only rational operations on `t`
@@ -412,6 +495,7 @@ This means:
 **Background:**
 
 The Quadray basis vectors form a tetrahedral coordinate system:
+
 ```javascript
 W = (1, 1, 1)/√3
 X = (1, -1, -1)/√3
@@ -420,6 +504,7 @@ Z = (-1, -1, 1)/√3
 ```
 
 Currently, rotations follow this path:
+
 ```
 Quadray coords → Cartesian → Rotate in Cartesian → Display (convert back to Quadray)
 ```
@@ -433,6 +518,7 @@ R₄ = B⁺ R₃ B
 ```
 
 where:
+
 - **B** = Quadray-to-Cartesian basis matrix (3×4, columns = basis vectors)
 - **B⁺** = Moore-Penrose pseudoinverse (4×3, since B is not square)
 - For orthonormal basis: B⁺ = Bᵀ
@@ -470,16 +556,10 @@ For **discrete tetrahedral symmetry rotations** (24 total), Quadray transformati
 
 const TETRAHEDRAL_ROTATIONS = {
   // Identity
-  IDENTITY: [1, 0, 0, 0,
-             0, 1, 0, 0,
-             0, 0, 1, 0,
-             0, 0, 0, 1],
+  IDENTITY: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
 
   // 120° rotation around (1,1,1) axis
-  ROT_120_111: [1, 0, 0, 0,
-                0, 0, 1, 0,
-                0, 0, 0, 1,
-                0, 1, 0, 0],
+  ROT_120_111: [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0],
 
   // ... (21 more symmetries)
 };
@@ -490,11 +570,13 @@ These are **algebraically exact** - no floating-point errors, perfect for snappi
 **Evaluation:**
 
 **Pros:**
+
 - Conceptually elegant (work natively in Quadray space)
 - Exact for tetrahedral symmetries
 - Educational value (demonstrates coordinate system theory)
 
 **Cons:**
+
 - Still requires conversion to Cartesian for Three.js rendering
 - Adds complexity without clear performance benefit for arbitrary rotations
 - Better suited for a future **pure-Quadray rendering engine** (not Three.js-based)
@@ -517,57 +599,57 @@ const EXACT_ROTATION_MATRICES = {
   0: {
     cos: 1,
     sin: 0,
-    matrices: {} // Indexed by axis
+    matrices: {}, // Indexed by axis
   },
 
   // spread = 1/6 (≈30°)
-  [1/6]: {
-    cos: Math.sqrt(3)/2,
+  [1 / 6]: {
+    cos: Math.sqrt(3) / 2,
     sin: 0.5,
-    matrices: {}
+    matrices: {},
   },
 
   // spread = 1/4 (≈36.87°)
-  [1/4]: {
-    cos: Math.sqrt(3)/2,
+  [1 / 4]: {
+    cos: Math.sqrt(3) / 2,
     sin: 0.5,
-    matrices: {}
+    matrices: {},
   },
 
   // spread = 1/3 (≈54.74° - tetrahedral dihedral)
-  [1/3]: {
-    cos: Math.sqrt(2/3),
-    sin: Math.sqrt(1/3),
-    matrices: {}
+  [1 / 3]: {
+    cos: Math.sqrt(2 / 3),
+    sin: Math.sqrt(1 / 3),
+    matrices: {},
   },
 
   // spread = 1/2 (45° - octahedral)
-  [1/2]: {
-    cos: 1/Math.sqrt(2),
-    sin: 1/Math.sqrt(2),
-    matrices: {}
+  [1 / 2]: {
+    cos: 1 / Math.sqrt(2),
+    sin: 1 / Math.sqrt(2),
+    matrices: {},
   },
 
   // spread = 2/3 (≈70.53° - cube diagonal to edge)
-  [2/3]: {
-    cos: Math.sqrt(1/3),
-    sin: Math.sqrt(2/3),
-    matrices: {}
+  [2 / 3]: {
+    cos: Math.sqrt(1 / 3),
+    sin: Math.sqrt(2 / 3),
+    matrices: {},
   },
 
   // spread = 3/4 (≈60°)
-  [3/4]: {
+  [3 / 4]: {
     cos: 0.5,
-    sin: Math.sqrt(3)/2,
-    matrices: {}
+    sin: Math.sqrt(3) / 2,
+    matrices: {},
   },
 
   // spread = 1 (90° - perpendicular)
   1: {
     cos: 0,
     sin: 1,
-    matrices: {}
-  }
+    matrices: {},
+  },
 };
 
 /**
@@ -602,6 +684,7 @@ function getRotationMatrix(spread, axis) {
 ```
 
 **Benefits:**
+
 - **Zero runtime cost** for exact spread values (common case)
 - Perfect numerical precision for tetrahedral/cubic geometries
 - Graceful fallback for arbitrary spreads
@@ -610,6 +693,7 @@ function getRotationMatrix(spread, axis) {
 **UI Integration:**
 
 Snap-to buttons in rotation mode:
+
 ```
 [0°] [1/6] [1/4] [1/3·tet] [1/2·45°] [2/3] [3/4] [1·90°]
 ```
@@ -656,6 +740,7 @@ Clicking a preset = instant cached matrix lookup, perfect precision.
 - After P1+P2+P3: Same as P1+P2 (no additional runtime benefit until custom renderer)
 
 **Code Locations:**
+
 - Rotation application: `ARTexplorer.html` lines 3753-3874
 - RT math library: `modules/rt-math.js`
 - Circle parameterization: `RT.circleParam()` and `RT.spreadToParam()`
@@ -676,43 +761,43 @@ Each "Now" is an **immutable snapshot** of a polyhedron's configuration at a mom
  * Stores ONLY the object state, NOT global environment
  */
 const nowSchema = {
-  id: String,              // Unique identifier (UUID or timestamp-based)
-  timestamp: Number,       // Unix timestamp when "Now" was created
+  id: String, // Unique identifier (UUID or timestamp-based)
+  timestamp: Number, // Unix timestamp when "Now" was created
 
   // Polyhedron identity
-  polyhedronType: String,  // 'tetrahedron', 'cube', 'octahedron', 'icosahedron', etc.
+  polyhedronType: String, // 'tetrahedron', 'cube', 'octahedron', 'icosahedron', etc.
 
   // Transform state (in Quadray space for RT purity)
   transform: {
     position: {
-      mode: String,        // 'cartesian' or 'quadray'
+      mode: String, // 'cartesian' or 'quadray'
 
       // Quadray coordinates (preferred for RT)
       quadray: {
-        w: Number,         // Algebraic coefficient
+        w: Number, // Algebraic coefficient
         x: Number,
         y: Number,
-        z: Number
+        z: Number,
       },
 
       // Cartesian fallback
       cartesian: {
         x: Number,
         y: Number,
-        z: Number
-      }
+        z: Number,
+      },
     },
 
     rotation: {
-      mode: String,        // 'spread' (RT-pure) or 'euler' (fallback)
+      mode: String, // 'spread' (RT-pure) or 'euler' (fallback)
 
       // Spread rotations (preferred for RT)
       spreads: [
         {
-          plane: String,   // 'XY', 'XZ', 'YZ', 'WX', 'WY', 'WZ'
-          spread: Number,  // Algebraic spread value (0-1)
-          exact: String    // Optional: exact algebraic expression e.g., "1/2", "√2/2"
-        }
+          plane: String, // 'XY', 'XZ', 'YZ', 'WX', 'WY', 'WZ'
+          spread: Number, // Algebraic spread value (0-1)
+          exact: String, // Optional: exact algebraic expression e.g., "1/2", "√2/2"
+        },
       ],
 
       // Euler angles fallback (if needed for THREE.js)
@@ -720,38 +805,39 @@ const nowSchema = {
         x: Number,
         y: Number,
         z: Number,
-        order: String    // 'XYZ', 'YXZ', etc.
-      }
+        order: String, // 'XYZ', 'YXZ', etc.
+      },
     },
 
     scale: {
-      x: Number,         // Scale factors (algebraic)
+      x: Number, // Scale factors (algebraic)
       y: Number,
       z: Number,
-      uniform: Boolean   // True if xyz are equal
-    }
+      uniform: Boolean, // True if xyz are equal
+    },
   },
 
   // Visual properties (optional)
   appearance: {
-    color: Number,       // Hex color
-    opacity: Number,     // 0-1
+    color: Number, // Hex color
+    opacity: Number, // 0-1
     wireframe: Boolean,
-    visible: Boolean
+    visible: Boolean,
   },
 
   // Metadata (optional)
   metadata: {
-    label: String,       // User-defined name
-    tags: [String],      // Searchable tags
-    notes: String        // User notes
-  }
+    label: String, // User-defined name
+    tags: [String], // Searchable tags
+    notes: String, // User notes
+  },
 };
 ```
 
 ### "Now" Operations
 
 #### Create Now
+
 ```javascript
 /**
  * Capture current polyhedron state as a "Now"
@@ -771,37 +857,39 @@ function createNow(polyhedron, gumballState) {
         cartesian: {
           x: polyhedron.position.x,
           y: polyhedron.position.y,
-          z: polyhedron.position.z
-        }
+          z: polyhedron.position.z,
+        },
       },
       rotation: {
-        mode: 'spread',
+        mode: "spread",
         spreads: gumballState.spreadRotations,
         euler: {
           x: polyhedron.rotation.x,
           y: polyhedron.rotation.y,
           z: polyhedron.rotation.z,
-          order: polyhedron.rotation.order
-        }
+          order: polyhedron.rotation.order,
+        },
       },
       scale: {
         x: polyhedron.scale.x,
         y: polyhedron.scale.y,
         z: polyhedron.scale.z,
-        uniform: polyhedron.scale.x === polyhedron.scale.y && polyhedron.scale.y === polyhedron.scale.z
-      }
+        uniform:
+          polyhedron.scale.x === polyhedron.scale.y &&
+          polyhedron.scale.y === polyhedron.scale.z,
+      },
     },
     appearance: {
       color: polyhedron.material.color.getHex(),
       opacity: polyhedron.material.opacity,
       wireframe: polyhedron.material.wireframe,
-      visible: polyhedron.visible
+      visible: polyhedron.visible,
     },
     metadata: {
       label: gumballState.label || `Now_${Date.now()}`,
       tags: gumballState.tags || [],
-      notes: gumballState.notes || ''
-    }
+      notes: gumballState.notes || "",
+    },
   };
 
   return now;
@@ -809,6 +897,7 @@ function createNow(polyhedron, gumballState) {
 ```
 
 #### Deposit Now Instance
+
 ```javascript
 /**
  * Create a permanent instance from a "Now" snapshot
@@ -833,7 +922,7 @@ function depositNowInstance(now) {
   );
 
   // Apply rotation from spread or euler
-  if (now.transform.rotation.mode === 'spread') {
+  if (now.transform.rotation.mode === "spread") {
     applySpreadRotations(instance, now.transform.rotation.spreads);
   } else {
     instance.rotation.set(
@@ -858,13 +947,14 @@ function depositNowInstance(now) {
 ```
 
 #### Now Collection Management
+
 ```javascript
 /**
  * Collection of all "Nows" in the current session
  */
 const nowCollection = {
-  nows: [],              // Array of Now snapshots
-  instances: [],         // Array of deposited THREE.Object3D instances
+  nows: [], // Array of Now snapshots
+  instances: [], // Array of deposited THREE.Object3D instances
 
   /**
    * Add a Now to the collection and deposit its instance
@@ -908,11 +998,15 @@ const nowCollection = {
    * Export Nows to JSON
    */
   exportJSON() {
-    return JSON.stringify({
-      version: '1.0',
-      count: this.nows.length,
-      nows: this.nows
-    }, null, 2);
+    return JSON.stringify(
+      {
+        version: "1.0",
+        count: this.nows.length,
+        nows: this.nows,
+      },
+      null,
+      2
+    );
   },
 
   /**
@@ -926,7 +1020,7 @@ const nowCollection = {
 
     // Import each Now
     data.nows.forEach(now => this.add(now));
-  }
+  },
 };
 ```
 
@@ -939,6 +1033,7 @@ The ART Gumball uses the **actual basis vectors as interactive handles** - simil
 #### Handle Types by Operation
 
 **MOVE Handles** - Arrow tips at end of each basis vector
+
 ```
 Quadray Mode (WXYZ):
   - 4 arrow handles (W, X, Y, Z directions)
@@ -952,6 +1047,7 @@ Cartesian Mode (XYZ):
 ```
 
 **SCALE Handles** - Cubes at end of each basis vector
+
 ```
 Quadray Mode (WXYZ):
   - 4 cube handles (W, X, Y, Z directions)
@@ -967,6 +1063,7 @@ Cartesian Mode (XYZ):
 ```
 
 **ROTATE Handles** - Hexagons (or polygons) around each basis vector axis
+
 ```
 Quadray Mode (WXYZ):
   - 4 rotation handles (around W, X, Y, Z axes)
@@ -983,6 +1080,7 @@ Cartesian Mode (XYZ):
 ```
 
 **Design Rationale:**
+
 - Hexagons preferred over circles for RT fidelity (polygonal geometry)
 - 4 rotation axes (WXYZ) simpler than 6 Central Angle planes (WX, WY, WZ, XY, XZ, YZ)
 - Less visual clutter while maintaining full rotational control
@@ -1114,6 +1212,7 @@ Click preset = instantly apply that spread value
 ### Minimal UI Elements
 
 **Top-right corner (always visible):**
+
 ```
 ┌─────────────────────────────┐
 │ Mode: [Quadray ▼]           │
@@ -1127,15 +1226,18 @@ Click preset = instantly apply that spread value
 ```
 
 **Mode dropdown:**
+
 - Cartesian (XYZ)
 - Quadray (WXYZ)
 
 **Tool dropdown:**
+
 - Move
 - Rotate
 - Scale
 
 **Poly dropdown:**
+
 - Tetrahedron
 - Cube
 - Octahedron
@@ -1150,25 +1252,31 @@ Click preset = instantly apply that spread value
 The ART Gumball system distinguishes between **Forms** (templates) and **Instances** ("Nows"):
 
 #### Forms
+
 **Forms** are polyhedra templates that always exist at the origin (0,0,0,0). They serve as:
+
 - **Blueprints** for creating instances
 - **Active editing objects** when selected
 - **Reusable templates** that reset after instance creation
 
 When a user selects a Form:
+
 1. Form appears at origin with default properties
 2. **Editing Basis** (localized gumball) appears at Form's center
 3. User can transform the Form using gumball handles
 4. Form remains "active" until released/deposited
 
 #### Instances ("Nows")
+
 **Instances** are deposited snapshots of Forms with stored transforms:
+
 - **Immutable configurations** in shape-space (Julian Barbour's "Nows")
 - **Fixed position, rotation, scale** stored in StateManager
 - **Selectable objects** that can be edited or deleted
 - **Independent from Forms** - Forms reset to origin after instance creation
 
 When a user releases a transformed Form:
+
 1. Instance is auto-created with current transform
 2. Instance is deposited in scene with stored state
 3. Form resets to origin (0,0,0,0)
@@ -1177,12 +1285,14 @@ When a user releases a transformed Form:
 #### Editing Basis vs. Origin Basis
 
 **Origin Basis (Global Reference)**
+
 - Always visible at world origin (0,0,0,0)
 - Shows global coordinate frame (XYZ or WXYZ)
 - Cannot be moved or hidden
 - Provides spatial orientation reference
 
 **Editing Basis (Localized Gumball)**
+
 - Appears when Form or Instance is selected
 - Centered on selected object's position
 - Moves with object during transformations
@@ -1192,6 +1302,7 @@ When a user releases a transformed Form:
 ### Workflow: Forms → Instances
 
 **Step 1: Select Form**
+
 ```
 User clicks "Tetrahedron" in Forms list
 → Tetrahedron Form appears at origin
@@ -1200,6 +1311,7 @@ User clicks "Tetrahedron" in Forms list
 ```
 
 **Step 2: Transform Form**
+
 ```
 User activates Move tool
 → Clicks/drags Editing Basis W-axis handle
@@ -1209,6 +1321,7 @@ User activates Move tool
 ```
 
 **Step 3: Release/Deposit**
+
 ```
 User releases mouse button (or clicks NOW button)
 → Instance auto-created with Form's current transform
@@ -1219,6 +1332,7 @@ User releases mouse button (or clicks NOW button)
 ```
 
 **Step 4: Select Instance (Edit Existing)**
+
 ```
 User clicks on deposited Instance
 → Instance becomes selected (visual highlight/glow)
@@ -1228,6 +1342,7 @@ User clicks on deposited Instance
 ```
 
 **Step 5: Delete Instance**
+
 ```
 User selects Instance
 → Presses Delete key (or Delete button)
@@ -1236,6 +1351,7 @@ User selects Instance
 ```
 
 **Step 6: Undo/Redo**
+
 ```
 User presses Cmd+Z (Undo)
 → Last action (create/move/delete) is reversed
@@ -1252,6 +1368,7 @@ User presses Cmd+Shift+Z (Redo)
 Following the proven TEUI/OBJECTIVE pattern (see [UI-Module.md](./UI-Module.md)), the `rt-state-manager.js` module manages all state:
 
 #### State Structure
+
 ```javascript
 /**
  * rt-state-manager.js
@@ -1298,47 +1415,49 @@ const RTStateManager = {
 ```
 
 #### Instance Data Structure
+
 ```javascript
 const Instance = {
-  id: String,              // Unique UUID
-  timestamp: Number,       // Creation time
-  type: String,            // 'tetrahedron', 'cube', etc.
+  id: String, // Unique UUID
+  timestamp: Number, // Creation time
+  type: String, // 'tetrahedron', 'cube', etc.
 
   transform: {
     position: {
-      mode: String,        // 'cartesian' or 'quadray'
+      mode: String, // 'cartesian' or 'quadray'
       quadray: { w, x, y, z },
-      cartesian: { x, y, z }
+      cartesian: { x, y, z },
     },
     rotation: {
-      mode: String,        // 'spread' or 'euler'
-      spreads: [{plane, spread, exact}],
-      euler: { x, y, z, order }
+      mode: String, // 'spread' or 'euler'
+      spreads: [{ plane, spread, exact }],
+      euler: { x, y, z, order },
     },
-    scale: { x, y, z, uniform }
+    scale: { x, y, z, uniform },
   },
 
   appearance: {
     color: Number,
     opacity: Number,
     wireframe: Boolean,
-    visible: Boolean
+    visible: Boolean,
   },
 
   metadata: {
     label: String,
     tags: [String],
-    notes: String
+    notes: String,
   },
 
   // THREE.js object reference (not serialized)
-  threeObject: THREE.Group
+  threeObject: THREE.Group,
 };
 ```
 
 #### Core Functions
 
 **Form Management**
+
 ```javascript
 /**
  * Select a Form (load at origin with editing basis)
@@ -1353,7 +1472,7 @@ function selectForm(formType) {
   const form = {
     type: formType,
     transform: createDefaultTransform(),
-    threeObject: createPolyhedronGroup(formType)
+    threeObject: createPolyhedronGroup(formType),
   };
 
   // Add to scene
@@ -1363,7 +1482,11 @@ function selectForm(formType) {
   createEditingBasis(form.threeObject.position);
 
   RTStateManager.activeForm = form;
-  RTStateManager.selection = { type: 'form', id: null, object: form.threeObject };
+  RTStateManager.selection = {
+    type: "form",
+    id: null,
+    object: form.threeObject,
+  };
 
   return form;
 }
@@ -1381,6 +1504,7 @@ function resetForm(form) {
 ```
 
 **Instance Management**
+
 ```javascript
 /**
  * Create Instance from active Form (auto-deposit on release)
@@ -1397,8 +1521,8 @@ function createInstance() {
     type: form.type,
     transform: cloneTransform(form.transform),
     appearance: cloneAppearance(form.threeObject),
-    metadata: { label: `${form.type}_${Date.now()}`, tags: [], notes: '' },
-    threeObject: clonePolyhedronGroup(form.threeObject)
+    metadata: { label: `${form.type}_${Date.now()}`, tags: [], notes: "" },
+    threeObject: clonePolyhedronGroup(form.threeObject),
   };
 
   // Add to StateManager
@@ -1408,7 +1532,7 @@ function createInstance() {
   scene.add(instance.threeObject);
 
   // Add to undo stack
-  addToHistory({ action: 'create', instance });
+  addToHistory({ action: "create", instance });
 
   // Reset Form to origin
   resetForm(form);
@@ -1435,7 +1559,11 @@ function selectInstance(instanceId) {
   // Show editing basis at Instance center
   createEditingBasis(instance.threeObject.position);
 
-  RTStateManager.selection = { type: 'instance', id: instanceId, object: instance.threeObject };
+  RTStateManager.selection = {
+    type: "instance",
+    id: instanceId,
+    object: instance.threeObject,
+  };
 }
 
 /**
@@ -1453,7 +1581,7 @@ function updateInstance(instanceId, newTransform) {
   applyTransformToObject(instance.threeObject, newTransform);
 
   // Add to undo stack
-  addToHistory({ action: 'update', instanceId, oldTransform, newTransform });
+  addToHistory({ action: "update", instanceId, oldTransform, newTransform });
 }
 
 /**
@@ -1478,11 +1606,12 @@ function deleteInstance(instanceId) {
   RTStateManager.selection = { type: null, id: null, object: null };
 
   // Add to undo stack
-  addToHistory({ action: 'delete', instance, index });
+  addToHistory({ action: "delete", instance, index });
 }
 ```
 
 **Selection & Highlighting**
+
 ```javascript
 /**
  * Highlight selected object (outline glow effect)
@@ -1553,6 +1682,7 @@ function onSceneClick(event) {
 ```
 
 **Undo/Redo System**
+
 ```javascript
 /**
  * Add action to history
@@ -1565,7 +1695,9 @@ function addToHistory(action) {
   RTStateManager.history.undoStack.push(action);
 
   // Limit history size
-  if (RTStateManager.history.undoStack.length > RTStateManager.history.maxHistory) {
+  if (
+    RTStateManager.history.undoStack.length > RTStateManager.history.maxHistory
+  ) {
     RTStateManager.history.undoStack.shift();
   }
 }
@@ -1579,22 +1711,24 @@ function undo() {
   const action = RTStateManager.history.undoStack.pop();
 
   switch (action.action) {
-    case 'create':
+    case "create":
       // Remove Instance
-      const index = RTStateManager.instances.findIndex(i => i.id === action.instance.id);
+      const index = RTStateManager.instances.findIndex(
+        i => i.id === action.instance.id
+      );
       if (index !== -1) {
         scene.remove(RTStateManager.instances[index].threeObject);
         RTStateManager.instances.splice(index, 1);
       }
       break;
 
-    case 'delete':
+    case "delete":
       // Re-add Instance
       RTStateManager.instances.splice(action.index, 0, action.instance);
       scene.add(action.instance.threeObject);
       break;
 
-    case 'update':
+    case "update":
       // Revert transform
       updateInstance(action.instanceId, action.oldTransform);
       break;
@@ -1613,22 +1747,24 @@ function redo() {
   const action = RTStateManager.history.redoStack.pop();
 
   switch (action.action) {
-    case 'create':
+    case "create":
       // Re-add Instance
       RTStateManager.instances.push(action.instance);
       scene.add(action.instance.threeObject);
       break;
 
-    case 'delete':
+    case "delete":
       // Remove Instance again
-      const index = RTStateManager.instances.findIndex(i => i.id === action.instance.id);
+      const index = RTStateManager.instances.findIndex(
+        i => i.id === action.instance.id
+      );
       if (index !== -1) {
         scene.remove(RTStateManager.instances[index].threeObject);
         RTStateManager.instances.splice(index, 1);
       }
       break;
 
-    case 'update':
+    case "update":
       // Re-apply new transform
       updateInstance(action.instanceId, action.newTransform);
       break;
@@ -1640,6 +1776,7 @@ function redo() {
 ```
 
 **Editing Basis (Localized Gumball)**
+
 ```javascript
 /**
  * Create editing basis at specified position
@@ -1689,6 +1826,7 @@ function hideEditingBasis() {
 ### User Interactions
 
 **Keyboard Shortcuts**
+
 - `G` - Activate Move tool
 - `S` - Activate Scale tool
 - `R` - Activate Rotate tool
@@ -1699,6 +1837,7 @@ function hideEditingBasis() {
 - `N` - Deposit Now (create Instance from active Form)
 
 **Mouse Interactions**
+
 - **Click on canvas (empty space)** - Deselect all
 - **Click on Instance** - Select Instance (show editing basis + highlight)
 - **Click on Form in list** - Select Form (load at origin with editing basis)
@@ -1706,6 +1845,7 @@ function hideEditingBasis() {
 - **Release mouse** - Auto-deposit Instance if Form was moved
 
 **UI Buttons**
+
 - **Move / Scale / Rotate** - Toggle gumball tool mode
 - **NOW** - Manually deposit Instance from active Form
 - **Delete** - Delete selected Instance
@@ -1719,38 +1859,38 @@ The **global environment** is captured once as metadata, NOT in each Now:
 
 ```javascript
 const environmentState = {
-  version: '1.0',
+  version: "1.0",
   timestamp: Date.now(),
 
   // Global settings
   grids: {
     cartesian: {
       visible: Boolean,
-      tessellation: Number
+      tessellation: Number,
     },
     quadray: {
       visible: Boolean,
-      tessellation: Number
-    }
+      tessellation: Number,
+    },
   },
 
   basis: {
     cartesian: Boolean,
-    quadray: Boolean
+    quadray: Boolean,
   },
 
   camera: {
-    position: {x, y, z},
-    target: {x, y, z},
-    zoom: Number
+    position: { x, y, z },
+    target: { x, y, z },
+    zoom: Number,
   },
 
   // RT Constants
   constants: {
     tetrahedronEdge: Number,
     cubeEdge: Number,
-    gridUnit: Number
-  }
+    gridUnit: Number,
+  },
 };
 ```
 
@@ -1759,7 +1899,7 @@ const environmentState = {
 ```javascript
 const sessionExport = {
   meta: environmentState,
-  nows: nowCollection.nows
+  nows: nowCollection.nows,
 };
 ```
 
@@ -1802,12 +1942,14 @@ uuid3,1234567892,cube,quadray,0,2,0,0,0,0,0,0,0,0,1.414,1.414,1.414,Cube_Center
   - [ ] TAB/ENTER to accept, ESC to cancel
 
 **Implementation Notes (Phase 1):**
+
 - **Date:** 2025-12-29
 - **Commit:** `f4e30fe` - "Feat: Implement WXYZ Move gumball with grid snapping (MVP)"
 - **Branch:** `Gumball`
 - **Status:** MVP working with known limitations requiring architectural improvements
 
 **Files Modified:**
+
 - `ARTexplorer.html` (lines 1307-1321, 2311-2510): Gumball implementation
   - Added invisible hit spheres (0.3 radius) at basis vector tips
   - Tool mode buttons with toggle behavior (default off)
@@ -1816,6 +1958,7 @@ uuid3,1234567892,cube,quadray,0,2,0,0,0,0,0,0,0,0,1.414,1.414,1.414,Cube_Center
   - Real-time coordinate updates (XYZ and WXYZ)
 
 **What's Working:**
+
 - ✅ Invisible clickable handles at basis vector tips
 - ✅ Constrained axis movement (drag along W, X, Y, Z)
 - ✅ Grid snapping to 0.1 for RT precision
@@ -1824,6 +1967,7 @@ uuid3,1234567892,cube,quadray,0,2,0,0,0,0,0,0,0,0,1.414,1.414,1.414,Cube_Center
 - ✅ Entire polyhedra groups move together
 
 **Critical Issues Identified:**
+
 1. **Orbit lock incomplete** - Camera still rotates during drag attempts
    - `controls.enabled = false` not fully preventing orbit
    - May need `event.stopPropagation()` at canvas level
@@ -1844,12 +1988,14 @@ uuid3,1234567892,cube,quadray,0,2,0,0,0,0,0,0,0,0,1.414,1.414,1.414,Cube_Center
 **Architectural Decisions Needed:**
 
 **Option A: Global Gumball (Current)**
+
 - Single basis vector set at world origin
 - Selected polyhedra move relative to global axes
 - ❌ Basis doesn't follow objects
 - ❌ Confusing UX when polyhedra far from origin
 
 **Option B: Localized Gumball (Recommended)**
+
 - Each selected polyhedra gets own gumball at its center
 - Basis vectors move with the object
 - ✅ Matches Maya/Blender/Rhino UX
@@ -1857,6 +2003,7 @@ uuid3,1234567892,cube,quadray,0,2,0,0,0,0,0,0,0,0,1.414,1.414,1.414,Cube_Center
 - Need: Gumball attachment/detachment system
 
 **Option C: Hybrid (Best for RT)**
+
 - Global Quadray basis always visible (reference frame)
 - Local gumball overlays on selected object
 - Can toggle between local/global transform space
@@ -1865,6 +2012,7 @@ uuid3,1234567892,cube,quadray,0,2,0,0,0,0,0,0,0,0,1.414,1.414,1.414,Cube_Center
 **Next Steps:**
 
 **Phase 1.5: Forms, Instances & StateManager (CRITICAL ARCHITECTURE)** - ✅ COMPLETED (2025-12-29)
+
 - [x] **Localized editing basis (Option C: Hybrid approach) - ✅ IMPLEMENTED**
   - [x] **Global origin basis remains visible at (0,0,0) as reference frame**
   - [x] **Editing basis appears at selected Form center when Move tool activated**
@@ -1886,6 +2034,7 @@ uuid3,1234567892,cube,quadray,0,2,0,0,0,0,0,0,0,0,1.414,1.414,1.414,Cube_Center
   - [ ] Track all instances in RTStateManager.instances array
 
 **Phase 1.6: Selection & Deletion**
+
 - [ ] Implement click-to-select for Instances
   - [ ] Raycasting on canvas click (check for Instance hits)
   - [ ] `selectInstance()` shows editing basis + highlight
@@ -1905,6 +2054,7 @@ uuid3,1234567892,cube,quadray,0,2,0,0,0,0,0,0,0,0,1.414,1.414,1.414,Cube_Center
   - [ ] Undo/Redo buttons in UI (optional)
 
 **Phase 1.7: Cartesian XYZ Support & Polish** - ✅ COMPLETED (2025-12-29)
+
 - [x] **Add Cartesian XYZ arrow dragging (same pattern as WXYZ) - ✅ IMPLEMENTED**
   - [x] **Create XYZ basis vectors in editing basis (X=red, Y=green, Z=blue)**
   - [x] **Add hit spheres at XYZ arrow tips**
@@ -1918,6 +2068,7 @@ uuid3,1234567892,cube,quadray,0,2,0,0,0,0,0,0,0,0,1.414,1.414,1.414,Cube_Center
 - [ ] Hide debug hit spheres (set opacity: 0) once testing complete
 
 **Testing Observations (2025-12-29):**
+
 - ✅ Cube and Dual Tetrahedron move together correctly
 - ✅ Grid snapping works (positions snap to 0.1, 0.2, 0.3, etc.)
 - ✅ Coordinate inputs update in real-time (both XYZ and WXYZ)
@@ -1936,18 +2087,21 @@ uuid3,1234567892,cube,quadray,0,2,0,0,0,0,0,0,0,0,1.414,1.414,1.414,Cube_Center
 ⚠️ **CRITICAL: No Selection System** - Blocking further progress on Phase 1.6+
 
 **Problem:**
+
 - All visible polyhedra move together globally
 - No way to select individual instances via click
 - Cannot isolate Forms (templates) from Instances (deposited snapshots)
 - User loses control over what gets edited
 
 **Impact:**
+
 - "Everything gets moved together and without instantiation, also everything is edited globally" (User feedback)
 - NOW button can deposit instance snapshots but they remain coupled to Forms
 - Cannot implement delete functionality (Phase 1.6)
 - Cannot implement proper Forms vs Instances workflow (Phase 1.5)
 
 **Required Solution (Phase 1.6 Prerequisites):**
+
 1. **Click-to-select raycasting** - Detect mouse clicks on 3D objects
 2. **Visual highlight glow** - Show which Form/Instance is selected (emissive material or OutlinePass)
 3. **Forms vs Instances separation:**
@@ -1956,6 +2110,7 @@ uuid3,1234567892,cube,quadray,0,2,0,0,0,0,0,0,0,0,1.414,1.414,1.414,Cube_Center
 4. **StateManager integration** - Track selected instance, deposited instances, undo stack
 
 **Architectural Recommendation (User Suggestion):**
+
 - "Should we consider breaking these functions into a new 'rt-controls.js' file?"
 - Extract gumball logic from ARTexplorer.html (~3000+ lines) to dedicated modules:
   - `rt-controls.js` - Gumball interaction logic, raycasting, selection
@@ -1963,6 +2118,7 @@ uuid3,1234567892,cube,quadray,0,2,0,0,0,0,0,0,0,0,1.414,1.414,1.414,Cube_Center
 - Keep ARTexplorer.html as UI container only (~500 lines target)
 
 ### Phase 2: Spread-Based Rotation
+
 - [ ] ROTATE mode: Polygon handles (hexagons preferred for RT fidelity)
   - [ ] Cartesian XYZ: 3 rotation handles around each axis (X, Y, Z)
     - [ ] Each handle = polygon perpendicular to rotation axis
@@ -1977,6 +2133,7 @@ uuid3,1234567892,cube,quadray,0,2,0,0,0,0,0,0,0,0,1.414,1.414,1.414,Cube_Center
 - [ ] Visual feedback during rotation
 
 ### Phase 3: "Now" System
+
 - [ ] Now data structure
 - [ ] "NOW" button functionality
 - [ ] `createNow()` and `depositNowInstance()` functions
@@ -1985,6 +2142,7 @@ uuid3,1234567892,cube,quadray,0,2,0,0,0,0,0,0,0,0,1.414,1.414,1.414,Cube_Center
 - [ ] Now counter display
 
 ### Phase 4: Import/Export
+
 - [ ] JSON export for Nows
 - [ ] CSV export for Nows
 - [ ] Import functionality
@@ -1992,6 +2150,7 @@ uuid3,1234567892,cube,quadray,0,2,0,0,0,0,0,0,0,0,1.414,1.414,1.414,Cube_Center
 - [ ] Session file format (.artnow or .json)
 
 ### Phase 5: Advanced Features
+
 - [ ] Now timeline visualization
 - [ ] Now editing/deletion
 - [ ] Instance ghosting/hiding
@@ -2020,10 +2179,12 @@ For two lines L₁ and L₂ meeting at point P:
 **Spread s = Q_quad / R_quad**
 
 Where:
+
 - **Q_quad**: Quadrance from P to closest point on opposite line (perpendicular distance²)
 - **R_quad**: Quadrance from P along the line (radius²)
 
 **Properties:**
+
 - 0 ≤ s ≤ 1 (always bounded, unlike angles)
 - s = 0: Parallel lines
 - s = 1: Perpendicular lines
@@ -2032,16 +2193,19 @@ Where:
 ### Spread Laws (Wildberger's RT)
 
 **Spread Law (analog of sine rule):**
+
 ```
 s₁/Q₁ = s₂/Q₂ = s₃/Q₃
 ```
 
 **Cross Law (analog of cosine rule):**
+
 ```
 (Q₁ + Q₂ + Q₃)² = 2(Q₁² + Q₂² + Q₃²) + 8Q₁Q₂Q₃(1-s₁)(1-s₂)(1-s₃)
 ```
 
 **Triple Spread Formula:**
+
 ```
 (s₁ + s₂ + s₃)² = 2(s₁² + s₂² + s₃²) + 4s₁s₂s₃
 ```
@@ -2050,16 +2214,16 @@ s₁/Q₁ = s₂/Q₂ = s₃/Q₃
 
 Common spreads in Platonic/Archimedean solids:
 
-| Spread | Exact Value | Angle (approx) | Geometry |
-|--------|-------------|----------------|----------|
-| 0 | 0 | 0° | Parallel |
-| 1/6 | 1/6 | ≈23.6° | - |
-| 1/4 | 1/4 | 30° | - |
-| 1/3 | 1/3 | ≈35.3° | Tetrahedron dihedral |
-| 1/2 | 1/2 | 45° | Octahedron, cube diagonal |
-| 2/3 | 2/3 | ≈54.7° | Cube diagonal to edge |
-| 3/4 | 3/4 | 60° | - |
-| 1 | 1 | 90° | Perpendicular |
+| Spread | Exact Value | Angle (approx) | Geometry                  |
+| ------ | ----------- | -------------- | ------------------------- |
+| 0      | 0           | 0°             | Parallel                  |
+| 1/6    | 1/6         | ≈23.6°         | -                         |
+| 1/4    | 1/4         | 30°            | -                         |
+| 1/3    | 1/3         | ≈35.3°         | Tetrahedron dihedral      |
+| 1/2    | 1/2         | 45°            | Octahedron, cube diagonal |
+| 2/3    | 2/3         | ≈54.7°         | Cube diagonal to edge     |
+| 3/4    | 3/4         | 60°            | -                         |
+| 1      | 1           | 90°            | Perpendicular             |
 
 ## References
 
@@ -2071,18 +2235,23 @@ Common spreads in Platonic/Archimedean solids:
 ## Future Research Directions
 
 ### Exact Trajectory Calculation
+
 Using spread-based rotations, we can calculate **exact trajectories** without floating-point drift:
+
 - Orbital paths in tetrahedral lattice
 - Geodesic paths on polyhedra
 - Lattice filling patterns
 
 ### Quantum Geometry Integration
+
 RT's algebraic exactness may align with:
+
 - Discrete spacetime models
 - Loop quantum gravity (spin networks)
 - Causal set theory
 
 ### Computational Advantages
+
 - **GPU shaders**: Spread polynomials may be faster than sin/cos
 - **Symbolic computation**: Keep transforms in algebraic form
 - **Exact inverse kinematics**: No iterative solving needed
@@ -2097,6 +2266,7 @@ RT's algebraic exactness may align with:
 **Commit:** 2cf2da1 - "Revert: Reset to working inline gumball version for analysis"
 
 **What We Have:**
+
 - ✅ Working inline gumball implementation in ARTexplorer.html
 - ✅ Extracted rt-controls.js module saved for comparison
 - ✅ Move tool with WXYZ and XYZ dual coordinate system support
@@ -2104,6 +2274,7 @@ RT's algebraic exactness may align with:
 - ✅ Backup branch `backup-broken-state` preserving broken extraction attempt
 
 **What's Broken:**
+
 - ❌ Previous hasty rt-controls.js extraction broke all axis movement except W-axis (partially)
 - ❌ No selection system - all visible polyhedra move together globally
 - ❌ No StateManager - cannot track Forms vs Instances
@@ -2115,6 +2286,7 @@ RT's algebraic exactness may align with:
 **Goal:** Understand what broke when extracting gumball code to rt-controls.js module
 
 **Tasks:**
+
 1. **Side-by-side comparison** - Compare inline gumball code in ARTexplorer.html with extracted rt-controls.js
 2. **Identify broken dependencies:**
    - What global variables does inline code access?
@@ -2126,6 +2298,7 @@ RT's algebraic exactness may align with:
 4. **Plan systematic extraction** - Design incremental approach with testing at each step
 
 **Key Questions to Answer:**
+
 - Does inline code rely on global `scene`, `camera`, `renderer`, `controls` variables?
 - Are there closure/scope issues with `this` binding in ES6 module class?
 - Do event listeners lose context when moved to module?
@@ -2141,6 +2314,7 @@ RT's algebraic exactness may align with:
 **Goal:** Enable click-to-select individual polyhedra/instances with visual feedback
 
 **CRITICAL:** This is blocking all further progress. Without selection, we cannot:
+
 - Distinguish Forms (templates at origin) from Instances (deposited snapshots)
 - Edit individual objects without affecting everything globally
 - Implement delete functionality
@@ -2150,6 +2324,7 @@ RT's algebraic exactness may align with:
 **Tasks:**
 
 #### 2.1: Click-to-Select Raycasting
+
 ```javascript
 /**
  * Handle canvas click for object selection
@@ -2193,10 +2368,11 @@ function onCanvasClick(event) {
 }
 
 // Attach listener
-renderer.domElement.addEventListener('click', onCanvasClick);
+renderer.domElement.addEventListener("click", onCanvasClick);
 ```
 
 #### 2.2: Visual Selection Highlight
+
 ```javascript
 /**
  * Highlight selected polyhedron with emissive glow
@@ -2244,11 +2420,12 @@ function deselectAll() {
     clearHighlight(currentSelection);
     currentSelection = null;
   }
-  console.log('✅ Deselected all');
+  console.log("✅ Deselected all");
 }
 ```
 
 #### 2.3: Integrate Selection with Gumball
+
 ```javascript
 /**
  * Modify getSelectedPolyhedra() to return ONLY currently selected object
@@ -2264,6 +2441,7 @@ function getSelectedPolyhedra() {
 ```
 
 **Testing Checklist:**
+
 - [ ] Click on hexahedron → hexahedron glows blue, becomes selected
 - [ ] Click on dual tetrahedron → tetrahedron glows, hexahedron deselects
 - [ ] Click on empty space → all deselect, no glow
@@ -2280,6 +2458,7 @@ function getSelectedPolyhedra() {
 **Goal:** Create `rt-state-manager.js` module following TEUI/OBJECTIVE pattern
 
 **Why Critical:**
+
 - Without StateManager, we cannot distinguish Forms from Instances
 - Cannot track deposited instances for delete/undo/redo
 - Cannot export/import sessions
@@ -2288,6 +2467,7 @@ function getSelectedPolyhedra() {
 **Tasks:**
 
 #### 3.1: Create rt-state-manager.js Module
+
 ```javascript
 /**
  * rt-state-manager.js
@@ -2298,12 +2478,12 @@ function getSelectedPolyhedra() {
 export const RTStateManager = {
   // Forms registry (templates - always at origin)
   forms: {
-    tetrahedron: { type: 'tetrahedron', name: 'Tetrahedron' },
-    cube: { type: 'cube', name: 'Hexahedron' },
-    octahedron: { type: 'octahedron', name: 'Octahedron' },
-    icosahedron: { type: 'icosahedron', name: 'Icosahedron' },
-    dodecahedron: { type: 'dodecahedron', name: 'Dodecahedron' },
-    dualTetrahedron: { type: 'dualTetrahedron', name: 'Dual Tetrahedron' }
+    tetrahedron: { type: "tetrahedron", name: "Tetrahedron" },
+    cube: { type: "cube", name: "Hexahedron" },
+    octahedron: { type: "octahedron", name: "Octahedron" },
+    icosahedron: { type: "icosahedron", name: "Icosahedron" },
+    dodecahedron: { type: "dodecahedron", name: "Dodecahedron" },
+    dualTetrahedron: { type: "dualTetrahedron", name: "Dual Tetrahedron" },
   },
 
   // Active Form (currently being transformed, NOT yet deposited)
@@ -2314,24 +2494,24 @@ export const RTStateManager = {
 
   // Selection state
   selection: {
-    type: null,      // 'form' or 'instance'
-    id: null,        // Instance ID or null for Form
-    object: null     // THREE.Object3D reference
+    type: null, // 'form' or 'instance'
+    id: null, // Instance ID or null for Form
+    object: null, // THREE.Object3D reference
   },
 
   // Undo/Redo stacks
   history: {
     undoStack: [],
     redoStack: [],
-    maxHistory: 50
+    maxHistory: 50,
   },
 
   // Gumball state
   gumball: {
-    tool: null,           // 'move', 'scale', 'rotate', or null
-    editingBasis: null,   // THREE.Group for localized gumball
-    visible: false
-  }
+    tool: null, // 'move', 'scale', 'rotate', or null
+    editingBasis: null, // THREE.Group for localized gumball
+    visible: false,
+  },
 };
 
 /**
@@ -2347,23 +2527,23 @@ export function createInstance(polyhedronGroup, scene) {
         cartesian: {
           x: polyhedronGroup.position.x,
           y: polyhedronGroup.position.y,
-          z: polyhedronGroup.position.z
-        }
+          z: polyhedronGroup.position.z,
+        },
       },
       rotation: {
         euler: {
           x: polyhedronGroup.rotation.x,
           y: polyhedronGroup.rotation.y,
-          z: polyhedronGroup.rotation.z
-        }
+          z: polyhedronGroup.rotation.z,
+        },
       },
       scale: {
         x: polyhedronGroup.scale.x,
         y: polyhedronGroup.scale.y,
-        z: polyhedronGroup.scale.z
-      }
+        z: polyhedronGroup.scale.z,
+      },
     },
-    threeObject: polyhedronGroup.clone() // Deep clone for independence
+    threeObject: polyhedronGroup.clone(), // Deep clone for independence
   };
 
   // Add to instances array
@@ -2373,9 +2553,11 @@ export function createInstance(polyhedronGroup, scene) {
   scene.add(instance.threeObject);
 
   // Add to undo stack
-  addToHistory({ action: 'create', instance });
+  addToHistory({ action: "create", instance });
 
-  console.log(`✅ Instance created: ${instance.type} #${RTStateManager.instances.length}`);
+  console.log(
+    `✅ Instance created: ${instance.type} #${RTStateManager.instances.length}`
+  );
 
   return instance;
 }
@@ -2396,7 +2578,7 @@ export function deleteInstance(instanceId, scene) {
   RTStateManager.instances.splice(index, 1);
 
   // Add to undo stack
-  addToHistory({ action: 'delete', instance, index });
+  addToHistory({ action: "delete", instance, index });
 
   console.log(`✅ Instance deleted: ${instance.type}`);
 }
@@ -2416,23 +2598,26 @@ function addToHistory(action) {
   RTStateManager.history.redoStack = []; // Clear redo on new action
 
   // Limit history size
-  if (RTStateManager.history.undoStack.length > RTStateManager.history.maxHistory) {
+  if (
+    RTStateManager.history.undoStack.length > RTStateManager.history.maxHistory
+  ) {
     RTStateManager.history.undoStack.shift();
   }
 }
 ```
 
 #### 3.2: Integrate StateManager with NOW Button
+
 ```javascript
 /**
  * Update NOW button to use StateManager
  * ARTexplorer.html
  */
-document.getElementById('now-btn').addEventListener('click', () => {
+document.getElementById("now-btn").addEventListener("click", () => {
   const selectedPolyhedra = getSelectedPolyhedra();
 
   if (selectedPolyhedra.length === 0) {
-    console.warn('⚠️ No polyhedra selected - cannot deposit instance');
+    console.warn("⚠️ No polyhedra selected - cannot deposit instance");
     return;
   }
 
@@ -2441,12 +2626,14 @@ document.getElementById('now-btn').addEventListener('click', () => {
     const instance = createInstance(poly, scene);
 
     // Update counter
-    document.getElementById('now-count').textContent = RTStateManager.instances.length;
+    document.getElementById("now-count").textContent =
+      RTStateManager.instances.length;
   });
 });
 ```
 
 **Testing Checklist:**
+
 - [ ] Import rt-state-manager.js into ARTexplorer.html
 - [ ] Select polyhedron, move it, click NOW → instance created and tracked
 - [ ] Instance counter increments correctly
@@ -2463,6 +2650,7 @@ document.getElementById('now-btn').addEventListener('click', () => {
 **Goal:** Implement proper separation between Forms (templates at origin) and Instances (deposited snapshots)
 
 **Current Problem:**
+
 - When a polyhedron is moved and deposited via NOW, it remains in the moved position
 - The "Form" (template) should reset to origin after deposition
 - User should be able to create multiple instances from same Form without interference
@@ -2470,6 +2658,7 @@ document.getElementById('now-btn').addEventListener('click', () => {
 **Proposed Workflow:**
 
 #### 4.1: Reset Form After Instance Creation
+
 ```javascript
 /**
  * After depositing instance, reset Form to origin
@@ -2493,19 +2682,21 @@ function depositAndResetForm(formGroup, scene) {
 ```
 
 #### 4.2: Mark Forms vs Instances in userData
+
 ```javascript
 /**
  * When creating polyhedra groups in initScene()
  */
-cubeGroup.userData.isForm = true;         // Template at origin
-cubeGroup.userData.polyhedronType = 'cube';
+cubeGroup.userData.isForm = true; // Template at origin
+cubeGroup.userData.polyhedronType = "cube";
 
 // When depositing instance
-instance.threeObject.userData.isForm = false;  // Deposited snapshot
+instance.threeObject.userData.isForm = false; // Deposited snapshot
 instance.threeObject.userData.instanceId = instance.id;
 ```
 
 #### 4.3: Selection Logic Differentiates Forms vs Instances
+
 ```javascript
 /**
  * Update selectPolyhedron to track selection type
@@ -2516,16 +2707,16 @@ function selectPolyhedron(polyhedron) {
   // Update StateManager selection
   if (polyhedron.userData.isForm) {
     RTStateManager.selection = {
-      type: 'form',
+      type: "form",
       id: null,
-      object: polyhedron
+      object: polyhedron,
     };
     console.log(`✅ Form selected: ${polyhedron.userData.polyhedronType}`);
   } else {
     RTStateManager.selection = {
-      type: 'instance',
+      type: "instance",
       id: polyhedron.userData.instanceId,
-      object: polyhedron
+      object: polyhedron,
     };
     console.log(`✅ Instance selected: ${polyhedron.userData.instanceId}`);
   }
@@ -2533,6 +2724,7 @@ function selectPolyhedron(polyhedron) {
 ```
 
 **Testing Checklist:**
+
 - [ ] Select Form (hexahedron at origin) → marked as Form in StateManager
 - [ ] Move Form to (1, 1, 1) → Form moves, origin basis stays at (0,0,0)
 - [ ] Click NOW → Instance deposited at (1,1,1), Form resets to (0,0,0)
@@ -2553,28 +2745,31 @@ function selectPolyhedron(polyhedron) {
 **Only proceed if Priorities 1-4 completed and tested**
 
 #### 5.1: Delete Key Functionality
+
 ```javascript
 /**
  * Delete selected instance
  */
-document.addEventListener('keydown', (event) => {
-  if (event.key === 'Delete' || event.key === 'Backspace') {
-    if (RTStateManager.selection.type === 'instance') {
+document.addEventListener("keydown", event => {
+  if (event.key === "Delete" || event.key === "Backspace") {
+    if (RTStateManager.selection.type === "instance") {
       deleteInstance(RTStateManager.selection.id, scene);
 
       // Clear selection
       deselectAll();
 
       // Update counter
-      document.getElementById('now-count').textContent = RTStateManager.instances.length;
+      document.getElementById("now-count").textContent =
+        RTStateManager.instances.length;
     } else {
-      console.warn('⚠️ Cannot delete Forms (templates), only Instances');
+      console.warn("⚠️ Cannot delete Forms (templates), only Instances");
     }
   }
 });
 ```
 
 #### 5.2: Undo/Redo Implementation
+
 ```javascript
 /**
  * Undo last action
@@ -2585,16 +2780,18 @@ function undo(scene) {
   const action = RTStateManager.history.undoStack.pop();
 
   switch (action.action) {
-    case 'create':
+    case "create":
       // Remove instance
-      const index = RTStateManager.instances.findIndex(i => i.id === action.instance.id);
+      const index = RTStateManager.instances.findIndex(
+        i => i.id === action.instance.id
+      );
       if (index !== -1) {
         scene.remove(RTStateManager.instances[index].threeObject);
         RTStateManager.instances.splice(index, 1);
       }
       break;
 
-    case 'delete':
+    case "delete":
       // Re-add instance
       RTStateManager.instances.splice(action.index, 0, action.instance);
       scene.add(action.instance.threeObject);
@@ -2608,19 +2805,25 @@ function undo(scene) {
 /**
  * Keyboard shortcuts
  */
-document.addEventListener('keydown', (event) => {
+document.addEventListener("keydown", event => {
   // Cmd+Z or Ctrl+Z
-  if ((event.metaKey || event.ctrlKey) && event.key === 'z' && !event.shiftKey) {
+  if (
+    (event.metaKey || event.ctrlKey) &&
+    event.key === "z" &&
+    !event.shiftKey
+  ) {
     event.preventDefault();
     undo(scene);
-    document.getElementById('now-count').textContent = RTStateManager.instances.length;
+    document.getElementById("now-count").textContent =
+      RTStateManager.instances.length;
   }
 
   // Cmd+Shift+Z or Ctrl+Shift+Z
-  if ((event.metaKey || event.ctrlKey) && event.key === 'z' && event.shiftKey) {
+  if ((event.metaKey || event.ctrlKey) && event.key === "z" && event.shiftKey) {
     event.preventDefault();
     redo(scene);
-    document.getElementById('now-count').textContent = RTStateManager.instances.length;
+    document.getElementById("now-count").textContent =
+      RTStateManager.instances.length;
   }
 });
 ```
@@ -2632,22 +2835,18 @@ document.addEventListener('keydown', (event) => {
 ### Success Criteria for Session - ✅ COMPLETED (2025-12-30)
 
 **Minimum (Must Complete):**
+
 1. ✅ Analysis document explaining why module extraction failed
 2. ✅ Click-to-select working with visual highlight
 3. ✅ StateManager tracking instances
 4. ✅ Forms reset to origin after NOW button pressed
 
-**Stretch Goals (If Time Permits):**
-5. ✅ Delete key functionality
-6. ✅ Undo/Redo keyboard shortcuts
+**Stretch Goals (If Time Permits):** 5. ✅ Delete key functionality 6. ✅ Undo/Redo keyboard shortcuts
 
-**Additional Improvements:**
-7. ✅ Enhanced selection visibility (bright cyan glow, 0.8 intensity, 3x line width)
-8. ✅ ESC key deselection
-9. ✅ Click empty space to deselect
-10. ✅ Fixed NOW button deselection (removes highlight glow)
+**Additional Improvements:** 7. ✅ Enhanced selection visibility (bright cyan glow, 0.8 intensity, 3x line width) 8. ✅ ESC key deselection 9. ✅ Click empty space to deselect 10. ✅ Fixed NOW button deselection (removes highlight glow)
 
 **Deferred:**
+
 - ❌ Module extraction of rt-controls.js (keep inline until selection is rock-solid)
 - ❌ Scale or Rotate modes (focus on Move perfection first)
 
@@ -2656,17 +2855,20 @@ document.addEventListener('keydown', (event) => {
 ### Session Outcomes (2025-12-30)
 
 **Key Commits:**
+
 1. `acdca9f` - Feat: Implement click-to-select system with visual highlight
 2. `cb8e495` - Feat: Implement RTStateManager with Forms/Instances workflow and keyboard shortcuts
 3. `88d5a33` - Improve: Enhance selection visibility and fix deselection issues
 4. `3eaf7ea` - Fix: Clear highlight glow when NOW button deposits instances
 
 **Files Modified:**
+
 - `src/geometry/ARTexplorer.html` - Selection system, StateManager integration, keyboard shortcuts
 - `src/geometry/modules/rt-state-manager.js` - New module (500+ lines)
 - `docs/development/Geometry documents/Module-Extraction-Analysis.md` - New analysis document
 
 **Working Features:**
+
 - ✅ Click to select Forms/Instances (bright cyan highlight)
 - ✅ ESC or click empty space to deselect
 - ✅ Move tool with WXYZ and XYZ dual coordinate systems
@@ -2677,6 +2879,7 @@ document.addEventListener('keydown', (event) => {
 - ✅ Export to JSON/CSV (RTStateManager methods)
 
 **Known Issues to Refine:**
+
 - Selection sensitivity during camera orbit (minor - acceptable for now)
 - Snap modes need UI refinement (currently working but need better documentation)
 
@@ -2684,6 +2887,7 @@ document.addEventListener('keydown', (event) => {
 
 **Status:** Session COMPLETE - All 7 priorities achieved + 3 bonus improvements
 **Next Steps:**
+
 1. Refine snap mode UI/UX
 2. Add keyboard shortcut documentation to UI
 
@@ -2694,14 +2898,17 @@ document.addEventListener('keydown', (event) => {
 **Objective:** Implement Scale mode functionality for ART Gumball system to enable scaling of both Forms and Instances using cube handles and central sphere.
 
 **Key Commits:**
+
 1. `fdbfbd5` - Feat: Add Scale mode gumball functionality with cube handles
 2. `fbd043f` - Fix: Increase scale sensitivity from 0.1 to 15.0 for meaningful scaling
 3. [pending] - Fix: Enable scaling of selected objects (Forms and Instances)
 
 **Files Modified:**
+
 - `src/geometry/ARTexplorer.html` - Visual handle switching, scale dragging logic, selection-based scaling
 
 **Implemented Features:**
+
 - ✅ Visual handle switching: Cube handles for Scale mode, sphere handles for Move mode
 - ✅ Central white sphere for uniform scaling
 - ✅ Scale dragging logic with appropriate sensitivity (15.0)
@@ -2712,6 +2919,7 @@ document.addEventListener('keydown', (event) => {
 - ✅ Reasonable bounds: Clamps scale to 0.1 - 10.0 range
 
 **Scale Mode Workflow:**
+
 1. User selects Form or Instance → cyan highlight appears
 2. Click Scale button → arrow handles convert to cubes, central white sphere appears
 3. Drag cube handle (axis-constrained) or central sphere (uniform) → object scales in real-time
@@ -2720,6 +2928,7 @@ document.addEventListener('keydown', (event) => {
 6. Click NOW button → deposits scaled instance to RTStateManager, resets Form to origin
 
 **Technical Implementation:**
+
 - **Handle Geometry**: Cubes (0.4 size, 0.5 opacity) replace spheres in Scale mode
 - **Arrow Heads**: Removed in Scale mode (`headLength = 0`) for cleaner visual
 - **Sensitivity**: 15.0 (vs 5.0 for Move mode) for visible scaling
@@ -2728,6 +2937,7 @@ document.addEventListener('keydown', (event) => {
 - **Uniform Scaling**: All three axes scaled equally (`scale.set(s, s, s)`)
 
 **Future Refinements (Deferred):**
+
 - ⏳ Rational scaling steps: Align scale increments with 0.1 slider steps for rational consistency
 - ⏳ Cube=Rational vs Tetrahedron=Rational: Respect which polyhedron type uses rational edge lengths
 - ⏳ Snap-aware scaling: Coordinate scaling with XYZ/WXYZ snap modes (0.100 steps)
@@ -2735,11 +2945,13 @@ document.addEventListener('keydown', (event) => {
 - ⏳ Scale visualization: Display current scale value near gumball during drag
 
 **Known Limitations:**
+
 - Current implementation uses continuous floating-point scale multipliers rather than rational 0.1 steps
 - Slider synchronization for Forms uses base edge lengths (1.4142 for cube, 2.0 for tet) - may need refinement
 - No visual feedback of current scale value during drag (console only)
 
 **Note:** The Scale mode now works correctly on both Forms and Instances. The rational scaling refinement is intentionally deferred to maintain clean, working code. When we return to implement rational scaling, we should:
+
 1. Quantize scale deltas to 0.1 increments
 2. Respect Cube=Rational vs Tetrahedron=Rational edge length conventions
 3. Ensure scale steps align with XYZ/WXYZ snap grid intervals
@@ -2749,26 +2961,27 @@ document.addEventListener('keydown', (event) => {
 
 **Status:** Scale Mode FUNCTIONAL - Basic scaling complete, rational refinements deferred
 **Next Steps:**
+
 1. Return to rational scaling implementation (coordinate with snap modes)
 2. Add Rotate mode functionality
 3. Consider per-axis (non-uniform) scaling with deformation controls
-3. Consider Scale and Rotate modes after Move is perfected
+4. Consider Scale and Rotate modes after Move is perfected
 
 ADDED 2025.12.30:
 
 1. Is the ART-Gumball.md specification detailed enough?
-YES, the specification is very detailed for rotation: ✅ Well-defined:
-Lines 118-277: Complete rotation specification
-Spread-to-rotation matrix conversion (lines 168-234)
-Exact algebraic spread values (lines 236-251)
-Hexagonal handles for WXYZ, circular for XYZ (lines 582-603)
-Rotation around each axis (perpendicular planes)
-✅ Missing pieces YOU just clarified:
-Two numeric input fields (degrees AND spread) - NOT in current spec
-Selection → Rotate → Drag workflow - Matches Move/Scale pattern
-Spread snapping at 0.1 intervals - Already specified but needs UI fields
+   YES, the specification is very detailed for rotation: ✅ Well-defined:
+   Lines 118-277: Complete rotation specification
+   Spread-to-rotation matrix conversion (lines 168-234)
+   Exact algebraic spread values (lines 236-251)
+   Hexagonal handles for WXYZ, circular for XYZ (lines 582-603)
+   Rotation around each axis (perpendicular planes)
+   ✅ Missing pieces YOU just clarified:
+   Two numeric input fields (degrees AND spread) - NOT in current spec
+   Selection → Rotate → Drag workflow - Matches Move/Scale pattern
+   Spread snapping at 0.1 intervals - Already specified but needs UI fields
 2. THREE.js Rotation Helpers:
-YES, THREE.js has built-in helpers we can leverage:
+   YES, THREE.js has built-in helpers we can leverage:
 
 // THREE.js provides rotation helpers, but they use ANGLES, not spreads
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
@@ -2788,10 +3001,10 @@ Must show both degrees AND spread in real-time
 Leverage from THREE.js:
 
 // We CAN use these THREE.js utilities:
-THREE.TorusGeometry()      // For circular XYZ handles
-THREE.CylinderGeometry()   // For hexagonal WXYZ handles (6 sides)
-THREE.Matrix4              // For rotation matrix application
-object.applyMatrix4()      // Apply spread-based rotation
+THREE.TorusGeometry() // For circular XYZ handles
+THREE.CylinderGeometry() // For hexagonal WXYZ handles (6 sides)
+THREE.Matrix4 // For rotation matrix application
+object.applyMatrix4() // Apply spread-based rotation
 Implementation Plan for Rotation Mode:
 Step 1: Add Numeric Input Fields (Controls Section)
 
@@ -2832,117 +3045,122 @@ Step 1: Add Numeric Input Fields (Controls Section)
 </div>
 Step 2: Create Rotation Handles (Hexagons for WXYZ, Circles for XYZ)
 
-/**
- * Create rotation handles in editing basis
- * Lines 2900-3000 in ARTexplorer.html (after Move/Scale handle code)
- */
-function createRotationHandles(editingBasis, coordinateSystem) {
+/\*\*
+
+- Create rotation handles in editing basis
+- Lines 2900-3000 in ARTexplorer.html (after Move/Scale handle code)
+  \*/
+  function createRotationHandles(editingBasis, coordinateSystem) {
   const handleGroup = new THREE.Group();
-  
-  if (coordinateSystem === 'WXYZ') {
-    // 4 hexagonal handles perpendicular to W, X, Y, Z axes
-    Quadray.basisVectors.forEach((vec, i) => {
-      const hexagon = new THREE.Mesh(
-        new THREE.CylinderGeometry(1.5, 1.5, 0.1, 6), // 6 sides = hexagon
-        new THREE.MeshBasicMaterial({
-          color: basisColors[i],
-          transparent: true,
-          opacity: 0.4
-        })
-      );
-      
+
+if (coordinateSystem === 'WXYZ') {
+// 4 hexagonal handles perpendicular to W, X, Y, Z axes
+Quadray.basisVectors.forEach((vec, i) => {
+const hexagon = new THREE.Mesh(
+new THREE.CylinderGeometry(1.5, 1.5, 0.1, 6), // 6 sides = hexagon
+new THREE.MeshBasicMaterial({
+color: basisColors[i],
+transparent: true,
+opacity: 0.4
+})
+);
+
       // Orient hexagon perpendicular to basis vector
       hexagon.quaternion.setFromUnitVectors(
         new THREE.Vector3(0, 1, 0),
         vec.clone().normalize()
       );
-      
+
       hexagon.userData.rotationAxis = vec.clone().normalize();
       hexagon.userData.axisName = ['W', 'X', 'Y', 'Z'][i];
-      
+
       handleGroup.add(hexagon);
     });
-  } else { // XYZ
-    // 3 circular (torus) handles around X, Y, Z axes
-    const axes = [
-      { axis: new THREE.Vector3(1, 0, 0), color: 0xff0000, name: 'X' },
-      { axis: new THREE.Vector3(0, 1, 0), color: 0x00ff00, name: 'Y' },
-      { axis: new THREE.Vector3(0, 0, 1), color: 0x0000ff, name: 'Z' }
-    ];
-    
+
+} else { // XYZ
+// 3 circular (torus) handles around X, Y, Z axes
+const axes = [
+{ axis: new THREE.Vector3(1, 0, 0), color: 0xff0000, name: 'X' },
+{ axis: new THREE.Vector3(0, 1, 0), color: 0x00ff00, name: 'Y' },
+{ axis: new THREE.Vector3(0, 0, 1), color: 0x0000ff, name: 'Z' }
+];
+
     axes.forEach(({axis, color, name}) => {
       const torus = new THREE.Mesh(
         new THREE.TorusGeometry(1.5, 0.05, 16, 32),
         new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.6 })
       );
-      
+
       // Orient torus perpendicular to rotation axis
       torus.quaternion.setFromUnitVectors(
         new THREE.Vector3(0, 0, 1),
         axis
       );
-      
+
       torus.userData.rotationAxis = axis;
       torus.userData.axisName = name;
-      
+
       handleGroup.add(torus);
     });
-  }
-  
-  editingBasis.add(handleGroup);
-  return handleGroup;
+
+}
+
+editingBasis.add(handleGroup);
+return handleGroup;
 }
 Step 3: Rotation Drag Logic (Spread-based)
 
-/**
- * Handle rotation drag with spread snapping
- */
-function onRotationDrag(event, selectedHandle, selectedObject) {
+/\*\*
+
+- Handle rotation drag with spread snapping
+  \*/
+  function onRotationDrag(event, selectedHandle, selectedObject) {
   // Calculate rotation delta from mouse movement
   const mouseDelta = event.movementX + event.movementY; // Simplified
-  
-  // Convert to spread delta (snap to 0.1 intervals)
-  const spreadDelta = Math.round((mouseDelta * 0.001) * 10) / 10; // Snap to 0.1
-  const newSpread = Math.max(0, Math.min(1, currentSpread + spreadDelta));
-  
-  // Update spread input
-  document.getElementById('rotSpread').value = newSpread.toFixed(2);
-  
-  // Trigger angle conversion
-  document.getElementById('rotSpread').dispatchEvent(new Event('input'));
-  
-  // Apply rotation using spread-to-matrix conversion
-  const rotationAxis = selectedHandle.userData.rotationAxis;
-  const rotationMatrix = spreadToRotationMatrix(newSpread, rotationAxis);
-  
-  selectedObject.applyMatrix4(rotationMatrix);
-  
-  currentSpread = newSpread;
+
+// Convert to spread delta (snap to 0.1 intervals)
+const spreadDelta = Math.round((mouseDelta _ 0.001) _ 10) / 10; // Snap to 0.1
+const newSpread = Math.max(0, Math.min(1, currentSpread + spreadDelta));
+
+// Update spread input
+document.getElementById('rotSpread').value = newSpread.toFixed(2);
+
+// Trigger angle conversion
+document.getElementById('rotSpread').dispatchEvent(new Event('input'));
+
+// Apply rotation using spread-to-matrix conversion
+const rotationAxis = selectedHandle.userData.rotationAxis;
+const rotationMatrix = spreadToRotationMatrix(newSpread, rotationAxis);
+
+selectedObject.applyMatrix4(rotationMatrix);
+
+currentSpread = newSpread;
 }
 
-/**
- * Spread-to-rotation matrix (from ART-Gumball.md lines 191-233)
- */
-function spreadToRotationMatrix(spread, axis) {
+/\*\*
+
+- Spread-to-rotation matrix (from ART-Gumball.md lines 191-233)
+  \*/
+  function spreadToRotationMatrix(spread, axis) {
   const s = Math.max(0, Math.min(1, spread));
   const sinTheta = Math.sqrt(s);
   const cosTheta = Math.sqrt(1 - s);
-  
-  const matrix = new THREE.Matrix4();
-  
-  // Rotation around arbitrary axis using Rodrigues' formula
-  const x = axis.x, y = axis.y, z = axis.z;
-  const c = cosTheta, s = sinTheta;
-  const t = 1 - c;
-  
-  matrix.set(
-    t*x*x + c,   t*x*y - s*z, t*x*z + s*y, 0,
-    t*x*y + s*z, t*y*y + c,   t*y*z - s*x, 0,
-    t*x*z - s*y, t*y*z + s*x, t*z*z + c,   0,
-    0,           0,           0,           1
-  );
-  
-  return matrix;
+
+const matrix = new THREE.Matrix4();
+
+// Rotation around arbitrary axis using Rodrigues' formula
+const x = axis.x, y = axis.y, z = axis.z;
+const c = cosTheta, s = sinTheta;
+const t = 1 - c;
+
+matrix.set(
+t*x*x + c, t*x*y - s*z, t*x*z + s*y, 0,
+t*x*y + s*z, t*y*y + c, t*y*z - s*x, 0,
+t*x*z - s*y, t*y*z + s*x, t*z*z + c, 0,
+0, 0, 0, 1
+);
+
+return matrix;
 }
 
 Answer to Your Questions:
@@ -2996,10 +3214,12 @@ The current rotation implementation (ARTexplorer.html lines ~3812-3813 in rt-con
 ```javascript
 // ❌ NOT RT-PURE - Uses sin, asin, sqrt
 const spreadValue = Math.sin(signedAngleRadians) * Math.sin(signedAngleRadians);
-const snappedAngleRadians = Math.asin(Math.sqrt(Math.abs(snappedSpread))) * Math.sign(snappedSpread);
+const snappedAngleRadians =
+  Math.asin(Math.sqrt(Math.abs(snappedSpread))) * Math.sign(snappedSpread);
 ```
 
 **Issues:**
+
 1. Uses `Math.sin()` to calculate spread from angle
 2. Uses `Math.asin()` and `Math.sqrt()` to calculate angle from spread
 3. Violates RT principle #4: "NO Math.sin, Math.cos, Math.tan, Math.atan"
@@ -3009,12 +3229,14 @@ const snappedAngleRadians = Math.asin(Math.sqrt(Math.abs(snappedSpread))) * Math
 ### Bug Fix History (2025-12-31)
 
 **Session 1: Initial Drag State Bugs**
+
 - ✅ Fixed: `dragStartPoint` was being updated every frame, breaking rotation accumulation
 - ✅ Fixed: Store initial mouse position and quaternions at drag start
 - ✅ Fixed: Prevent `dragStartPoint` update in rotation mode
 - ✅ Result: Rotation now calculates from original drag start, not frame-to-frame
 
 **Session 2: Quadrant Ambiguity Bug (Option A - Interim Fix)**
+
 - ✅ **Problem Identified:** Spread = sin²(θ) loses quadrant information
   - sin(45°) = sin(135°) → same spread (0.5)
   - `asin()` can only return [-90°, +90°], so 135° becomes 45° (wrong!)
@@ -3023,10 +3245,10 @@ const snappedAngleRadians = Math.asin(Math.sqrt(Math.abs(snappedSpread))) * Math
   ```javascript
   // Quadrant-preserving spread-to-angle conversion
   const acuteAngle = Math.asin(Math.sqrt(snappedSpread));
-  if (absOriginalAngle <= π/2) {
-    snappedAngle = sign * acuteAngle;  // First quadrant
+  if (absOriginalAngle <= π / 2) {
+    snappedAngle = sign * acuteAngle; // First quadrant
   } else if (absOriginalAngle <= π) {
-    snappedAngle = sign * (π - acuteAngle);  // Second quadrant (supplementary)
+    snappedAngle = sign * (π - acuteAngle); // Second quadrant (supplementary)
   }
   ```
 - ✅ **Status:** Working rotation up to 180°, but still not RT-pure
@@ -3035,20 +3257,23 @@ const snappedAngleRadians = Math.asin(Math.sqrt(Math.abs(snappedSpread))) * Math
 ### Solution: Wildberger's Rational Circle Parameterization
 
 **New Documentation Added (2025-12-30):**
+
 - ✅ [Kieran-Math.md](Kieran-Math.md#L60-L192) - Full mathematical explanation
 - ✅ [rt-math.js](../../src/geometry/modules/rt-math.js#L69-L152) - Implementation functions
 
 **Key Formula:** `Circle(t) = ((1 - t²) / (1 + t²), 2t / (1 + t²))`
 
 **Where:**
+
 - `t` = angle parameter (NOT spread) - ranges over all real numbers
 - `t = tan(θ/2)` in traditional trigonometry (Weierstrass substitution)
 - Returns `(x, y)` point on unit circle using **only rational operations**
 
 **Spread Extraction (RT-Pure):**
+
 ```javascript
 // Once we have (x, y) from parameterization:
-const spread = 1 - x*x;  // Or: spread = y*y
+const spread = 1 - x * x; // Or: spread = y*y
 // No inverse trig needed!
 ```
 
@@ -3059,6 +3284,7 @@ const spread = 1 - x*x;  // Or: spread = y*y
 **Status:** Working solution that fixes rotation reversals while maintaining current architecture
 
 **Problem:** Converting spread → angle loses quadrant information because:
+
 - Spread = sin²(θ) is always positive
 - Multiple angles have the same spread: sin(45°) = sin(135°)
 - `asin()` only returns [-90°, +90°], can't represent angles beyond first quadrant
@@ -3073,7 +3299,7 @@ const spreadValue = Math.sin(signedAngleRadians) * Math.sin(signedAngleRadians);
 const snappedSpread = Math.round(spreadValue / 0.1) * 0.1;
 
 // Preserve quadrant when converting back to angle
-const acuteAngle = Math.asin(Math.sqrt(snappedSpread));  // Returns 0° to 90°
+const acuteAngle = Math.asin(Math.sqrt(snappedSpread)); // Returns 0° to 90°
 const absOriginalAngle = Math.abs(signedAngleRadians);
 
 if (absOriginalAngle <= Math.PI / 2) {
@@ -3085,22 +3311,26 @@ if (absOriginalAngle <= Math.PI / 2) {
   snappedAngleRadians = Math.sign(signedAngleRadians) * (Math.PI - acuteAngle);
 } else {
   // Beyond 180° - normalize to [-180°, 180°]
-  snappedAngleRadians = ((signedAngleRadians + Math.PI) % (2 * Math.PI)) - Math.PI;
+  snappedAngleRadians =
+    ((signedAngleRadians + Math.PI) % (2 * Math.PI)) - Math.PI;
 }
 ```
 
 **Benefits:**
+
 - ✅ Fixes rotation reversal bug
 - ✅ Smooth continuous rotation up to 180°
 - ✅ Minimal code change (drop-in fix)
 - ✅ Preserves existing spread snapping behavior
 
 **Limitations:**
+
 - ❌ Still uses `Math.sin()` and `Math.asin()` (not RT-pure)
 - ❌ Still transcendental functions in core rotation
 - ❌ This is a **workaround**, not the ideal solution
 
 **Implementation Location:**
+
 - [ARTexplorer.html:3814-3841](../../src/geometry/ARTexplorer.html#L3814-L3841)
 
 **Next Step:** Implement Option B (RT-pure) to eliminate transcendental functions entirely
@@ -3113,35 +3343,37 @@ if (absOriginalAngle <= Math.PI / 2) {
 
 ```javascript
 // Step 1: Get screen-space angle (unavoidable atan2)
-const screenAngle = Math.atan2(screenDeltaY, screenDeltaX);  // UI boundary
+const screenAngle = Math.atan2(screenDeltaY, screenDeltaX); // UI boundary
 
 // Step 2: Convert angle to parameter 't' using rational formula
 // Instead of: const spread = Math.sin(angle) * Math.sin(angle)
-const t = Math.tan(screenAngle / 2);  // Still uses tan, but only once
+const t = Math.tan(screenAngle / 2); // Still uses tan, but only once
 
 // Step 3: Get circle point using RT-pure parameterization
-const point = RT.circleParam(t);  // {x, y} - purely rational operations
-const spread = 1 - point.x * point.x;  // RT-pure spread extraction
+const point = RT.circleParam(t); // {x, y} - purely rational operations
+const spread = 1 - point.x * point.x; // RT-pure spread extraction
 
 // Step 4: Snap spread
 const snappedSpread = Math.round(spread / 0.1) * 0.1;
 
 // Step 5: Convert back to parameter 't' (RT-pure)
-const snappedT = RT.spreadToParam(snappedSpread);  // Uses sqrt, but algebraic
+const snappedT = RT.spreadToParam(snappedSpread); // Uses sqrt, but algebraic
 
 // Step 6: Get snapped angle from parameter
 // Instead of: const angle = Math.asin(Math.sqrt(spread))
 const snappedPoint = RT.circleParam(snappedT);
-const snappedAngle = Math.atan2(snappedPoint.y, snappedPoint.x);  // Only at end
+const snappedAngle = Math.atan2(snappedPoint.y, snappedPoint.x); // Only at end
 ```
 
 **Benefits:**
+
 - ✅ Removes `Math.sin()` from spread calculation
 - ✅ Removes `Math.asin(Math.sqrt(...))` from angle recovery
 - ✅ Works directly with spread values algebraically
 - ✅ Only uses transcendental functions at UI boundaries (atan2)
 
 **Limitation:**
+
 - Still needs `atan2()` for screen-space interaction and final angle display
 - This is acceptable - atan2 is at UI boundary, not core geometry
 
@@ -3151,15 +3383,15 @@ const snappedAngle = Math.atan2(snappedPoint.y, snappedPoint.x);  // Only at end
 
 ```javascript
 // Track rotation in parameter 't' space instead of angle space
-let currentT = 0;  // Start at (1, 0) on circle
+let currentT = 0; // Start at (1, 0) on circle
 
 // During drag: increment 't' based on tangential movement
 const deltaT = calculateDeltaT(movementVector, rotationRadius);
 currentT += deltaT;
 
 // Get current rotation state
-const point = RT.circleParam(currentT);  // {x, y} on unit circle
-const spread = 1 - point.x * point.x;   // Current spread
+const point = RT.circleParam(currentT); // {x, y} on unit circle
+const spread = 1 - point.x * point.x; // Current spread
 
 // Snap in 't' space for even spread intervals
 const targetSpread = Math.round(spread / 0.1) * 0.1;
@@ -3171,12 +3403,14 @@ const rotationMatrix = buildRotationFromCirclePoint(point, axis);
 ```
 
 **Benefits:**
+
 - ✅ Zero transcendental functions in rotation calculations
 - ✅ Works entirely in rational parameter space
 - ✅ True RT-purity
 - ✅ Potentially simpler code (no angle conversions)
 
 **Challenges:**
+
 - ⚠️ Requires rethinking UI interaction (no longer screen-angle-based)
 - ⚠️ Need to calculate `deltaT` from mouse movement
 - ⚠️ More complex quaternion/matrix construction
@@ -3184,6 +3418,7 @@ const rotationMatrix = buildRotationFromCirclePoint(point, axis);
 ### Implementation Tasks
 
 **Session 1: Bug Fixes (✅ COMPLETED 2025-12-31)**
+
 1. ✅ Fix `dragStartPoint` update bug - store initial mouse position
 2. ✅ Store initial quaternions for rotation accumulation
 3. ✅ Prevent `dragStartPoint` update in rotation mode
@@ -3192,6 +3427,7 @@ const rotationMatrix = buildRotationFromCirclePoint(point, axis);
 6. ✅ Update documentation with interim fix
 
 **Session 2: RT-Pure Hybrid Approach (ATTEMPTED - REVERTED)**
+
 1. ❌ Attempted: Update rotation code to use `RT.circleParam()` and `RT.spreadToParam()`
 2. ❌ Result: Objects disappeared, rotation reversals returned
 3. ❌ Issue: `RT.spreadToParam()` had mathematical edge cases (spread=0, negative discriminants)
@@ -3199,6 +3435,7 @@ const rotationMatrix = buildRotationFromCirclePoint(point, axis);
 5. 📝 Learning: RT-pure approach needs deeper mathematical analysis
 
 **Session 3: Simplified Full Circle Rotation (✅ COMPLETED - SUCCESS!)**
+
 1. ✅ Key insight: **Remove complexity, not add it**
 2. ✅ Use `deltaAngle` directly (already calculated correctly from drag start)
 3. ✅ Comment out spread snapping temporarily
@@ -3207,6 +3444,7 @@ const rotationMatrix = buildRotationFromCirclePoint(point, axis);
 6. ✅ Commit: b5d8c07 "Success: Full 360° rotation working smoothly!"
 
 **Result:**
+
 - ✅ Full 360° smooth rotation on all 7 axes (XYZ + WXYZ)
 - ✅ No reversals, no jumps, objects stay visible
 - ✅ Cleaner code: 50+ lines → 20 lines
@@ -3215,14 +3453,17 @@ const rotationMatrix = buildRotationFromCirclePoint(point, axis);
 ### References
 
 **Documentation:**
+
 - [Kieran-Math.md - Rational Circle Parameterization](Kieran-Math.md#L60-L192)
 - [rt-math.js - RT.circleParam() and RT.spreadToParam()](../../src/geometry/modules/rt-math.js#L69-L152)
 - [HTML-Refactor-Plan.md](HTML-Refactor-Plan.md) - File size reduction plan
 
 **Current Implementation:**
+
 - [rt-controls.js:640-645](../../src/geometry/modules/rt-controls.js#L640-L645) - Rotation code using transcendental functions
 
 **RT Principles:**
+
 - Principle #4: NO Math.PI, Math.sin, Math.cos, Math.tan, Math.atan
 - Principle #5: Resolve rotations with Spread first vs. Angles
 
@@ -3239,17 +3480,20 @@ const rotationMatrix = buildRotationFromCirclePoint(point, axis);
 ### Notes
 
 **Why This Matters:**
+
 - Current code works but violates RT philosophy
 - Wildberger's parameterization provides algebraic alternative
 - Demonstrates commitment to RT-pure methodology
 - Educational value - shows how to avoid transcendental functions
 
 **Acceptable Trade-offs:**
+
 - `atan2()` at UI boundary is OK (screen-space interaction)
 - `Math.tan()` for initial parameter conversion is acceptable
 - Final angle display for user feedback uses atan2 (cosmetic only)
 
 **Core Principle:**
+
 > "Simplicity over complexity. The deltaAngle was already correct - we just needed to stop interfering with it."
 
 ---
@@ -3259,12 +3503,14 @@ const rotationMatrix = buildRotationFromCirclePoint(point, axis);
 **Status:** Deferred until polyhedral relationships are better understood
 
 **Current State:**
+
 - Spread values are calculated and displayed in real-time
 - No snapping applied - full continuous rotation freedom
 - Spread formula: `spread = sin²(θ) = 1 - cos²(θ)`
 
 **Why Deferred:**
 We don't yet know which polyhedral relationships will benefit from spread constraints. Premature optimization led to bugs. Better to:
+
 1. ✅ First: Get smooth rotation working (done!)
 2. 🔮 Second: Discover meaningful polyhedral rotation relationships through use
 3. 🔮 Third: Add constraints that support those relationships
@@ -3272,14 +3518,16 @@ We don't yet know which polyhedral relationships will benefit from spread constr
 **Potential Future Spread Snapping Approaches:**
 
 **Option 1: Angle-based snapping that preserves spread intervals**
+
 ```javascript
 // Snap to angles that give clean spread values (0.1 intervals)
 // e.g., 0°, 18.43°, 30°, 45°, 60°, 71.57°, 90° for spreads 0.0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0
-const spreadSnapAngles = [0, 0.3218, 0.5236, 0.7854, 1.0472, 1.2490, 1.5708]; // radians
+const spreadSnapAngles = [0, 0.3218, 0.5236, 0.7854, 1.0472, 1.249, 1.5708]; // radians
 const snappedAngle = findNearestAngle(deltaAngle, spreadSnapAngles);
 ```
 
 **Option 2: Toggle mode - snap on/off**
+
 ```javascript
 // Hold Shift for spread snapping, free rotate otherwise
 if (event.shiftKey) {
@@ -3290,6 +3538,7 @@ if (event.shiftKey) {
 ```
 
 **Option 3: RT-pure parameter-space snapping**
+
 ```javascript
 // Work in parameter 't' space, snap there instead of angle space
 // Requires solving RT.spreadToParam() edge cases first
@@ -3307,6 +3556,7 @@ Wait until we understand what polyhedral rotations are meaningful (e.g., face-to
 **Last Updated:** 2025-12-31
 **Status:** ✅ SOLVED - Full 360° rotation working smoothly
 **Commits:**
+
 - 2f7301e: Fix rotation reversals with quadrant-preserving logic
 - a9dbcea: Attempt RT-pure rotation (broken, reverted)
 - 6360356: Revert back to working rotation

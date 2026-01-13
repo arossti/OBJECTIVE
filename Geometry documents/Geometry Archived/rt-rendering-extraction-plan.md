@@ -63,7 +63,8 @@ function onMouseDown(event) {
 }
 
 function onMouseMove(event) {
-  if (isDragging) { // ✅ Reads shared variable
+  if (isDragging) {
+    // ✅ Reads shared variable
     updateGumballPosition();
   }
 }
@@ -80,7 +81,8 @@ export function onMouseDown(event) {
 let isDragging = false; // ❌ Separate copy of variable
 
 function onMouseMove(event) {
-  if (isDragging) { // ❌ Always false (never sees module update)
+  if (isDragging) {
+    // ❌ Always false (never sees module update)
     updateGumballPosition(); // Never runs
   }
 }
@@ -93,11 +95,11 @@ Module functions couldn't call HTML-scope functions, and vice versa:
 ```javascript
 // HTML SCOPE (index.html <script> tag):
 function getSelectedPolyhedra() {
-  return document.querySelectorAll('.polyhedron:checked');
+  return document.querySelectorAll(".polyhedron:checked");
 }
 
 function applyHighlight(elements) {
-  elements.forEach(el => el.classList.add('highlight'));
+  elements.forEach(el => el.classList.add("highlight"));
 }
 
 // MODULE CODE (rt-controls.js):
@@ -117,34 +119,34 @@ export function createEditingBasis() {
 ```javascript
 // RENDERING FUNCTIONS (call inward to same module):
 function updateGeometry() {
-  renderPolyhedron(cubeGroup, geometry, 0x4a9eff, 0.8);    // ← Same module ✅
-  createCartesianGrid();                                    // ← Same module ✅
-  const showCube = document.getElementById("showCube");     // ← Browser API ✅
+  renderPolyhedron(cubeGroup, geometry, 0x4a9eff, 0.8); // ← Same module ✅
+  createCartesianGrid(); // ← Same module ✅
+  const showCube = document.getElementById("showCube"); // ← Browser API ✅
 }
 
 function renderPolyhedron(group, geometry, color, opacity) {
   const nodeGeo = getCachedNodeGeometry(useRT, size, type); // ← Same module ✅
-  const mesh = new THREE.Mesh(nodeGeo, material);           // ← THREE.js API ✅
-  group.add(mesh);                                           // ← THREE.js API ✅
+  const mesh = new THREE.Mesh(nodeGeo, material); // ← THREE.js API ✅
+  group.add(mesh); // ← THREE.js API ✅
 }
 
 // GUMBALL FUNCTIONS (call outward to HTML scope):
 function createEditingBasis() {
-  const selected = getSelectedPolyhedra();                  // ← HTML scope ❌
-  applyHighlight(selected);                                 // ← HTML scope ❌
-  scene.add(editingBasis);                                  // ← HTML global ❌
+  const selected = getSelectedPolyhedra(); // ← HTML scope ❌
+  applyHighlight(selected); // ← HTML scope ❌
+  scene.add(editingBasis); // ← HTML global ❌
 }
 ```
 
 **Key Differences:**
 
-| Aspect | Rendering Functions | Gumball Functions |
-|--------|-------------------|------------------|
-| **Dependency Direction** | Call inward (same module) | Call outward (HTML scope) |
-| **Shared State** | Minimal (mostly stateless) | Heavy (isDragging, selectedPolyhedra, etc.) |
-| **Global Access** | Only THREE.js, RT library | Scene, groups, selection state |
-| **DOM Dependencies** | Read-only (getElementById) | Read/write (event handlers, classList) |
-| **Risk Level** | LOW | HIGH |
+| Aspect                   | Rendering Functions        | Gumball Functions                           |
+| ------------------------ | -------------------------- | ------------------------------------------- |
+| **Dependency Direction** | Call inward (same module)  | Call outward (HTML scope)                   |
+| **Shared State**         | Minimal (mostly stateless) | Heavy (isDragging, selectedPolyhedra, etc.) |
+| **Global Access**        | Only THREE.js, RT library  | Scene, groups, selection state              |
+| **DOM Dependencies**     | Read-only (getElementById) | Read/write (event handlers, classList)      |
+| **Risk Level**           | LOW                        | HIGH                                        |
 
 ### Avoidance Strategy for This Extraction
 
@@ -212,6 +214,7 @@ This extraction fails if:
 ### rt-rendering.js Stub (Outdated Code)
 
 **Has (but outdated):**
+
 - ✅ initScene() - Basic structure exists
 - ✅ createCartesianGrid() - Needs Z-up coordinate updates
 - ✅ createQuadrayBasis() - Needs update
@@ -224,6 +227,7 @@ This extraction fails if:
 - ✅ onWindowResize() - OK
 
 **Missing:**
+
 - ❌ `getCachedNodeGeometry()` - NEW function for RT node generation
 - ❌ `getPolyhedronEdgeQuadrance()` - NEW function for close-pack calculations
 - ❌ `getClosePackedRadius()` - NEW function for packed mode
@@ -253,7 +257,8 @@ function renderPolyhedron(group, geometry, color, opacity) {
   PerformanceClock.startNodeGeneration();
 
   // FlatShading checkbox support
-  const useFlatShading = document.getElementById("nodeFlatShading")?.checked || false;
+  const useFlatShading =
+    document.getElementById("nodeFlatShading")?.checked || false;
 
   // Clones materials per node (prevents selection issues)
   const node = new THREE.Mesh(nodeGeometry, nodeMaterial.clone());
@@ -286,12 +291,14 @@ function renderPolyhedron(group, geometry, color, opacity) {
 ### ❌ REJECTED APPROACH: "Big Bang" Replacement
 
 **Don't do this:**
+
 1. Copy all rendering functions from rt-init.js to rt-rendering.js
 2. Import rt-rendering.js in rt-init.js
 3. Comment out rt-init.js functions
 4. Hope it works
 
 **Why this fails:**
+
 - Too many dependencies at once
 - Hard to isolate failures
 - Previous attempts failed this way
@@ -303,12 +310,14 @@ function renderPolyhedron(group, geometry, color, opacity) {
 #### Phase 1: Sync Simple Functions First (Low Risk)
 
 **Step 1.1: animate() & onWindowResize() (SAFEST)**
+
 - ✅ These are identical in both files
 - ✅ No dependencies on other functions
 - ✅ Pure THREE.js code
 - **Action:** Verify they match, mark as "synced"
 
 **Step 1.2: createCartesianGrid() & createQuadrayBasis()**
+
 - ⚠️ rt-rendering.js may be outdated (Z-up coordinate changes)
 - **Action:**
   1. Diff the functions
@@ -316,6 +325,7 @@ function renderPolyhedron(group, geometry, color, opacity) {
   3. Add comments marking sync date
 
 **Step 1.3: createIVMGrid() & createIVMPlanes()**
+
 - ⚠️ Tessellation logic may differ
 - **Action:**
   1. Diff the functions
@@ -372,6 +382,7 @@ function renderPolyhedron(group, geometry, color, opacity) {
 #### Phase 3: Sync updateGeometry() (High Risk)
 
 **Why this is risky:**
+
 - updateGeometry() references **ALL polyhedra groups**
 - updateGeometry() reads **ALL UI checkboxes/sliders**
 - updateGeometry() calls renderPolyhedron() for **every form**
@@ -428,9 +439,19 @@ Copy matrix rendering blocks from rt-init.js (lines 1163-1459):
 
 // Cube Matrix (lines 1163-1275)
 if (document.getElementById("showCubeMatrix").checked) {
-  const matrixSize = parseInt(document.getElementById("cubeMatrixSizeSlider").value);
+  const matrixSize = parseInt(
+    document.getElementById("cubeMatrixSizeSlider").value
+  );
   const rotate45 = document.getElementById("cubeMatrixRotate45").checked;
-  const cubeMatrixGroup = RTMatrix.createCubeMatrix(matrixSize, scale, rotate45, opacity, 0x4a9eff, Polyhedra, THREE);
+  const cubeMatrixGroup = RTMatrix.createCubeMatrix(
+    matrixSize,
+    scale,
+    rotate45,
+    opacity,
+    0x4a9eff,
+    Polyhedra,
+    THREE
+  );
   // ... rest of matrix logic
 }
 
@@ -446,9 +467,15 @@ rt-rendering.js geodesics are **missing projection radio buttons**:
 const geodesicTetra = Polyhedra.geodesicTetrahedron(scale, frequency);
 
 // NEW (rt-init.js - has projection):
-const projectionRadio = document.querySelector('input[name="geodesicTetraProjection"]:checked');
+const projectionRadio = document.querySelector(
+  'input[name="geodesicTetraProjection"]:checked'
+);
 const projection = projectionRadio ? projectionRadio.value : "out";
-const geodesicTetra = Polyhedra.geodesicTetrahedron(scale, frequency, projection);
+const geodesicTetra = Polyhedra.geodesicTetrahedron(
+  scale,
+  frequency,
+  projection
+);
 ```
 
 ---
@@ -456,6 +483,7 @@ const geodesicTetra = Polyhedra.geodesicTetrahedron(scale, frequency, projection
 #### Phase 4: Sync updateGeometryStats() (Low Risk)
 
 rt-rendering.js is **missing stats for**:
+
 - Cuboctahedron
 - Rhombic Dodecahedron
 
@@ -536,6 +564,7 @@ updateGeometry();
 **If extraction fails at ANY point:**
 
 1. **Immediately uncomment rt-init.js functions**
+
    ```javascript
    // Restore working code
    function animate() {
@@ -546,12 +575,14 @@ updateGeometry();
    ```
 
 2. **Remove import from rt-rendering.js**
+
    ```javascript
    // Delete or comment out
    // import { initScene, animate } from "./rt-rendering.js";
    ```
 
 3. **Restore from backup if needed**
+
    ```bash
    cp src/geometry/modules/rt-init.js.backup src/geometry/modules/rt-init.js
    ```
@@ -675,26 +706,28 @@ function startARTexplorer(THREE, OrbitControls, RT, Quadray, Polyhedra, ...) {
 - **Total: 8.5 hours**
 
 **Optimistic estimate:**
+
 - 4-5 hours if no major issues
 
 **Realistic estimate:**
+
 - 6-8 hours with inevitable debugging
 
 ---
 
 ## Risk Assessment
 
-| Function | Risk Level | Why | Mitigation |
-|----------|-----------|-----|------------|
-| animate() | LOW | Identical in both files | None needed |
-| onWindowResize() | LOW | Identical | None needed |
-| createCartesianGrid() | MEDIUM | Z-up coordinate changes | Careful diff, visual test |
-| createQuadrayBasis() | MEDIUM | May have scaling updates | Test with tet slider |
-| createIVMGrid() | MEDIUM | Tessellation logic critical | Test grid intervals |
-| renderPolyhedron() | HIGH | Heavily modified (RT nodes, caching, perf) | Thorough visual testing |
-| updateGeometry() | HIGH | References ALL UI elements, ALL polyhedra | Test every checkbox/slider |
-| updateGeometryStats() | LOW | Just HTML output | Check stats display |
-| getCachedNodeGeometry() | MEDIUM | New function, complex logic | Test all node sizes |
+| Function                | Risk Level | Why                                        | Mitigation                 |
+| ----------------------- | ---------- | ------------------------------------------ | -------------------------- |
+| animate()               | LOW        | Identical in both files                    | None needed                |
+| onWindowResize()        | LOW        | Identical                                  | None needed                |
+| createCartesianGrid()   | MEDIUM     | Z-up coordinate changes                    | Careful diff, visual test  |
+| createQuadrayBasis()    | MEDIUM     | May have scaling updates                   | Test with tet slider       |
+| createIVMGrid()         | MEDIUM     | Tessellation logic critical                | Test grid intervals        |
+| renderPolyhedron()      | HIGH       | Heavily modified (RT nodes, caching, perf) | Thorough visual testing    |
+| updateGeometry()        | HIGH       | References ALL UI elements, ALL polyhedra  | Test every checkbox/slider |
+| updateGeometryStats()   | LOW        | Just HTML output                           | Check stats display        |
+| getCachedNodeGeometry() | MEDIUM     | New function, complex logic                | Test all node sizes        |
 
 ---
 
@@ -709,6 +742,7 @@ function startARTexplorer(THREE, OrbitControls, RT, Quadray, Polyhedra, ...) {
 Calling `renderingAPI.animate()` caused immediate stack overflow and canvas failed to render.
 
 **Actions taken:**
+
 1. Commented out inline `animate()` function in rt-init.js (line ~1865)
 2. Replaced `animate()` call with `renderingAPI.animate()` (line ~4411)
 3. Page loaded but stack overflow occurred, canvas blank
@@ -717,6 +751,7 @@ Calling `renderingAPI.animate()` caused immediate stack overflow and canvas fail
 Factory pattern creates closure with uninitialized variables. When `renderingAPI.animate()` was called, the closure-scoped variables (`scene`, `camera`, `renderer`, `controls`) were **undefined** because `renderingAPI.initScene()` was never called to initialize them.
 
 **Technical explanation:**
+
 ```javascript
 // rt-rendering.js factory creates closure with uninitialized vars
 export function initScene(THREE) {
@@ -736,6 +771,7 @@ export function initScene(THREE) {
 ```
 
 **Error flow:**
+
 1. rt-init.js creates API: `const renderingAPI = createRenderingAPI(THREE)`
 2. rt-init.js immediately calls: `renderingAPI.animate()`
 3. BUT rt-init.js's own `initScene()` ran (initialized rt-init.js's scene/camera/renderer)
@@ -748,6 +784,7 @@ export function initScene(THREE) {
 Before calling `renderingAPI.animate()`, MUST call `renderingAPI.initScene()` to initialize closure-scoped variables.
 
 **Correct extraction order:**
+
 ```javascript
 const renderingAPI = createRenderingAPI(THREE);
 
@@ -776,6 +813,7 @@ Extraction plan updated. Must extract `initScene()` BEFORE attempting to extract
 
 **What succeeded:**
 Successfully extracted all core rendering functions from rt-init.js to rt-rendering.js module:
+
 - ✅ `initScene()` - Scene, camera, renderer, controls initialization
 - ✅ `animate()` - Animation loop with PerformanceClock
 - ✅ `onWindowResize()` - Responsive canvas resizing
@@ -808,6 +846,7 @@ Successfully extracted all core rendering functions from rt-init.js to rt-render
    - Matched pattern used by other geodesic controls
 
 **Current Status:**
+
 - ✅ All base polyhedra render correctly
 - ✅ All geodesic polyhedra render with correct frequency/projection controls
 - ✅ All matrix forms render correctly
@@ -819,6 +858,7 @@ Successfully extracted all core rendering functions from rt-init.js to rt-render
 **All Node Rendering Issues Resolved! ✅**
 
 **Final Status (2026-01-08):**
+
 - ✅ RT Geodesic nodes work correctly on ALL polyhedra (base and matrix)
 - ✅ Packed nodes work correctly on ALL polyhedra (base and matrix)
 - ✅ Classical Sphere nodes work correctly on ALL polyhedra
@@ -826,10 +866,12 @@ Successfully extracted all core rendering functions from rt-init.js to rt-render
 - ✅ No console warnings or errors
 
 **Issues Fixed:**
+
 1. ✅ **Issue #2 (RT Geodesic):** Added API-based state management (`setNodeGeometryType()`, `clearNodeCache()`) - Commit a6d6fc0
 2. ✅ **Issue #1 (Packed nodes):** Added `userData.type` to all base polyhedra groups - Commit pending
 
 **Next steps:**
+
 1. ✅ Document orphaned helper functions in rt-init.js (2026-01-08)
 2. ✅ Investigate and fix RT Geodesic issue (2026-01-08)
 3. ✅ Investigate and fix Packed nodes issue (2026-01-08)
@@ -843,22 +885,26 @@ Successfully extracted all core rendering functions from rt-init.js to rt-render
 **Status:** 🔍 IN PROGRESS - Root cause identified
 
 **Issue 1: "Packed" Nodes on Base Polyhedra ONLY**
+
 - ❌ Base forms (Cube, Tetrahedron, Octahedron, Icosahedron, Dodecahedron) do NOT show "Packed" nodes
 - ✅ Matrix forms (Cube Matrix, Tetrahedron Matrix) DO show "Packed" nodes correctly
 - ✅ Node sizes (sm/md/lg) work on BOTH base and matrix forms
 - ✅ Classical Sphere nodes work on BOTH base and matrix forms
 
 **Issue 2: "RT Geodesic" Nodes on BOTH Base and Matrix**
+
 - ❌ Base forms do NOT show "RT Geodesic" nodes
 - ❌ Matrix forms do NOT show "RT Geodesic" nodes
 - ✅ Classical Sphere nodes work on BOTH base and matrix forms
 
 **Corrected Summary:**
+
 - "Packed" is broken ONLY for base polyhedra (works for matrices)
 - "RT Geodesic" is broken for EVERYTHING (both base and matrices)
 - Classical spheres work everywhere
 
 **Investigation Tasks:**
+
 - [x] Compare `renderPolyhedron()` vs `addMatrixNodes()` node rendering logic - IDENTICAL
 - [x] Check how `useRTNodeGeometry` variable is accessed in each function - **BUG FOUND**
 - [ ] ~~Verify `nodeSize === "packed"` conditional logic~~ - Logic is correct, scope issue
@@ -868,10 +914,12 @@ Successfully extracted all core rendering functions from rt-init.js to rt-render
 
 **Critical Bug:**
 rt-init.js and rt-rendering.js each define their own separate copies of:
+
 1. `useRTNodeGeometry` (rt-init.js:2696, rt-rendering.js:24)
 2. `nodeGeometryCache` (rt-init.js:702, rt-rendering.js:21)
 
 **What's happening:**
+
 1. User clicks "RT Geodesic" node button
 2. Event handler (rt-init.js:2709-2716) sets rt-init.js's `useRTNodeGeometry = true`
 3. Event handler clears rt-init.js's `nodeGeometryCache`
@@ -897,6 +945,7 @@ The event handlers in rt-init.js modify rt-init.js's `useRTNodeGeometry` variabl
 **Solution Implemented:**
 
 1. **Added API methods to rt-rendering.js** (lines 1702-1717):
+
    ```javascript
    function setNodeGeometryType(useRT) {
      useRTNodeGeometry = useRT;
@@ -909,6 +958,7 @@ The event handlers in rt-init.js modify rt-init.js's `useRTNodeGeometry` variabl
    ```
 
 2. **Exposed methods in return statement** (lines 1720-1732):
+
    ```javascript
    return {
      // Core scene initialization
@@ -925,29 +975,32 @@ The event handlers in rt-init.js modify rt-init.js's `useRTNodeGeometry` variabl
      getScene: () => scene,
      getCamera: () => camera,
      getRenderer: () => renderer,
-     getControls: () => controls
+     getControls: () => controls,
    };
    ```
 
 3. **Updated event handlers in rt-init.js** (lines 2680-2716):
+
    ```javascript
    // Node size buttons
    document.querySelectorAll(".node-size-btn").forEach(btn => {
      btn.addEventListener("click", function () {
-       renderingAPI.clearNodeCache();  // ← Use API
+       renderingAPI.clearNodeCache(); // ← Use API
        // ... rest of handler
      });
    });
 
    // Classical Sphere button
-   document.getElementById("nodeGeomClassical").addEventListener("click", function () {
-     renderingAPI.setNodeGeometryType(false);  // ← Use API
-     // ... rest of handler
-   });
+   document
+     .getElementById("nodeGeomClassical")
+     .addEventListener("click", function () {
+       renderingAPI.setNodeGeometryType(false); // ← Use API
+       // ... rest of handler
+     });
 
    // RT Geodesic button
    document.getElementById("nodeGeomRT").addEventListener("click", function () {
-     renderingAPI.setNodeGeometryType(true);  // ← Use API
+     renderingAPI.setNodeGeometryType(true); // ← Use API
      // ... rest of handler
    });
    ```
@@ -957,6 +1010,7 @@ The event handlers in rt-init.js modify rt-init.js's `useRTNodeGeometry` variabl
    - Removed `const nodeGeometryCache = new Map();` (line 702)
 
 **Result:** ✅ Issue #2 (RT Geodesic) completely resolved
+
 - RT Geodesic nodes render correctly on all polyhedra (base and matrix)
 - Node sizes (sm/md/lg) work correctly everywhere
 - Classical Sphere nodes work correctly
@@ -970,6 +1024,7 @@ The event handlers in rt-init.js modify rt-init.js's `useRTNodeGeometry` variabl
 **Status:** ✅ FIXED
 
 **Problem:**
+
 - ❌ Base polyhedra (Cube, Tetrahedron, Octahedron, etc.) did NOT show "Packed" nodes
 - ✅ Matrix polyhedra showed "Packed" nodes correctly
 - Console warning: "⚠️ Packed mode requires polyhedronType and scale parameters" (rt-rendering.js:681)
@@ -1021,6 +1076,7 @@ geodesicOctahedronGroup.userData.type = "geodesicOctahedron";
 ```
 
 **Result:** ✅ Issue #1 (Packed nodes on base polyhedra) completely resolved
+
 - Packed nodes now render correctly on all base polyhedra
 - `getClosePackedRadius()` can calculate correct radius using edge quadrance formulas
 - All node modes (Packed, RT Geodesic, Classical Sphere, sm/md/lg) work on all polyhedra
@@ -1028,6 +1084,7 @@ geodesicOctahedronGroup.userData.type = "geodesicOctahedron";
 **Commit:** (pending - to be included with cleanup)
 
 **Files Investigated:**
+
 - [rt-rendering.js:888-1022](src/geometry/modules/rt-rendering.js#L888-L1022) - `renderPolyhedron()` function
 - [rt-rendering.js:735-849](src/geometry/modules/rt-rendering.js#L735-L849) - `addMatrixNodes()` function
 - [rt-rendering.js:667-733](src/geometry/modules/rt-rendering.js#L667-L733) - `getCachedNodeGeometry()` function
@@ -1059,11 +1116,13 @@ geodesicOctahedronGroup.userData.type = "geodesicOctahedron";
    - `createIVMPlanes()` - ~136 lines
 
 **Issues resolved:**
+
 - Duplicate grid generation eliminated
 - Added API methods: `rebuildQuadrayGrids()`, `rebuildCartesianGrids()`
 - Tessellation sliders now use rendering API instead of local functions
 
 **Commits:**
+
 - febb5ba: Comment out getCachedNodeGeometry
 - 4f063d5: Comment out renderPolyhedron
 - 9c56eb6: Comment out addMatrixNodes
@@ -1120,11 +1179,13 @@ Comprehensive comparison of rt-rendering.js (1,170 lines) vs rt-init.js (4,467 l
 #### 1. Missing PerformanceClock Import
 
 **rt-init.js** (Line 4):
+
 ```javascript
 import { PerformanceClock } from "./performance-clock.js"; // ✅ PRESENT
 ```
 
 **rt-rendering.js** (Lines 1-15):
+
 ```javascript
 import { Quadray } from "./rt-math.js";
 import { Polyhedra } from "./rt-polyhedra.js";
@@ -1134,6 +1195,7 @@ import { Polyhedra } from "./rt-polyhedra.js";
 **Impact:** Despite using PerformanceClock in renderPolyhedron() (lines 767, 801, 802, 805), the module has no import statement. **This will cause immediate runtime errors.**
 
 **Fix Required:** Add line after imports:
+
 ```javascript
 import { PerformanceClock } from "./performance-clock.js";
 ```
@@ -1147,6 +1209,7 @@ import { PerformanceClock } from "./performance-clock.js";
 **rt-rendering.js**: ❌ MISSING
 
 **Purpose:** Generates vertex nodes for matrix forms by:
+
 - Importing rt-polyhedra.js dynamically
 - Extracting vertices from each polyhedron in the matrix
 - Handling alternating tet orientations
@@ -1167,6 +1230,7 @@ import { PerformanceClock } from "./performance-clock.js";
 **rt-rendering.js**: ❌ MISSING
 
 **Purpose:** Counts triangles in THREE.js groups for performance stats by:
+
 - Traversing all children
 - Checking for indexed geometry (count / 3)
 - Checking for non-indexed geometry (position count / 3)
@@ -1181,6 +1245,7 @@ import { PerformanceClock } from "./performance-clock.js";
 #### 4. Missing Matrix Groups (~40 lines)
 
 **rt-init.js** (Lines 131-133, 241-277):
+
 ```javascript
 // Line 131-133: Variable declarations
 let cubeMatrixGroup, tetMatrixGroup, octaMatrixGroup;
@@ -1208,6 +1273,7 @@ PerformanceClock.init([
 **rt-rendering.js**: ❌ MISSING - No matrix groups declared or initialized
 
 **Fix Required:**
+
 1. Add matrix group variables to initScene() function scope
 2. Create and initialize groups in initScene()
 3. Set userData.type for each group
@@ -1256,6 +1322,7 @@ PerformanceClock.init([
 #### 6. Missing PerformanceClock Timing in updateGeometry() (~10 lines)
 
 **rt-init.js** (Lines 1143-1599):
+
 ```javascript
 function updateGeometry() {
   // Start performance timing
@@ -1274,6 +1341,7 @@ function updateGeometry() {
 **rt-rendering.js** (Lines 812-1021): ❌ MISSING all 3 timing calls
 
 **Fix Required:**
+
 1. Add `PerformanceClock.startCalculation()` at beginning of updateGeometry()
 2. Add `PerformanceClock.endCalculation()` after updateGeometryStats()
 3. Add `PerformanceClock.updateDisplay(useRTNodeGeometry)` after endCalculation()
@@ -1285,20 +1353,24 @@ function updateGeometry() {
 **rt-init.js** (Lines 1624-1844) includes:
 
 **Triangle Counting:**
+
 - Every polyhedron stats block calls `countGroupTriangles(group)`
 - Displays "Triangles: X" count for each
 
 **Geodesic Stats Blocks:**
+
 - Geodesic Tetrahedron (Lines 1764-1788, ~25 lines)
 - Geodesic Octahedron (Lines 1791-1815, ~25 lines)
 - Geodesic Icosahedron (Lines 1818-1842, ~25 lines)
 
 **rt-rendering.js** (Lines 1026-1148):
+
 - ❌ No countGroupTriangles() calls (function doesn't exist)
 - ❌ No "Triangles: X" display
 - ❌ No geodesic stats blocks
 
 **Fix Required:**
+
 1. Add countGroupTriangles() calls to all existing stats blocks
 2. Add "Triangles: X" display line for each
 3. Copy 3 geodesic stats blocks from rt-init.js
@@ -1307,22 +1379,22 @@ function updateGeometry() {
 
 ### Missing Code Summary Table
 
-| Component | Lines in rt-init.js | Status in rt-rendering.js | Impact |
-|-----------|---------------------|---------------------------|--------|
-| PerformanceClock import | Line 4 | ❌ Missing | **Runtime error** |
-| addMatrixNodes() | Lines 1023-1138 (~115) | ❌ Missing | Cannot render matrix nodes |
-| countGroupTriangles() | Lines 1605-1619 (~15) | ❌ Missing | No triangle stats |
-| Matrix group declarations | Lines 131-133 | ❌ Missing | Groups don't exist |
-| Matrix group init | Lines 241-277 (~40) | ❌ Missing | Groups not created |
-| Cube Matrix block | Lines 1163-1207 (~45) | ❌ Missing | No cube matrices |
-| Tet Matrix block | Lines 1275-1321 (~47) | ❌ Missing | No tet matrices |
-| Octa Matrix block | Lines 1357-1403 (~47) | ❌ Missing | No octa matrices |
-| Cubocta Matrix block | Lines 1405-1451 (~47) | ❌ Missing | No cubocta matrices |
-| Rhombic Dodec Matrix block | Lines 1453-1499 (~47) | ❌ Missing | No rhombic dodec matrices |
-| PerformanceClock timing | Lines 1145, 1598-1599 (~10) | ❌ Missing | No timing metrics |
-| Geodesic stats | Lines 1764-1842 (~75) | ❌ Missing | No geodesic stats |
-| Triangle counting | Throughout stats | ❌ Missing | No triangle counts |
-| **TOTAL** | **~543 lines** | ❌ **0% present** | **Module non-functional** |
+| Component                  | Lines in rt-init.js         | Status in rt-rendering.js | Impact                     |
+| -------------------------- | --------------------------- | ------------------------- | -------------------------- |
+| PerformanceClock import    | Line 4                      | ❌ Missing                | **Runtime error**          |
+| addMatrixNodes()           | Lines 1023-1138 (~115)      | ❌ Missing                | Cannot render matrix nodes |
+| countGroupTriangles()      | Lines 1605-1619 (~15)       | ❌ Missing                | No triangle stats          |
+| Matrix group declarations  | Lines 131-133               | ❌ Missing                | Groups don't exist         |
+| Matrix group init          | Lines 241-277 (~40)         | ❌ Missing                | Groups not created         |
+| Cube Matrix block          | Lines 1163-1207 (~45)       | ❌ Missing                | No cube matrices           |
+| Tet Matrix block           | Lines 1275-1321 (~47)       | ❌ Missing                | No tet matrices            |
+| Octa Matrix block          | Lines 1357-1403 (~47)       | ❌ Missing                | No octa matrices           |
+| Cubocta Matrix block       | Lines 1405-1451 (~47)       | ❌ Missing                | No cubocta matrices        |
+| Rhombic Dodec Matrix block | Lines 1453-1499 (~47)       | ❌ Missing                | No rhombic dodec matrices  |
+| PerformanceClock timing    | Lines 1145, 1598-1599 (~10) | ❌ Missing                | No timing metrics          |
+| Geodesic stats             | Lines 1764-1842 (~75)       | ❌ Missing                | No geodesic stats          |
+| Triangle counting          | Throughout stats            | ❌ Missing                | No triangle counts         |
+| **TOTAL**                  | **~543 lines**              | ❌ **0% present**         | **Module non-functional**  |
 
 ---
 
@@ -1386,15 +1458,18 @@ function updateGeometry() {
 ### Recommended Fix Order
 
 #### Phase 1: Critical Fixes (Must Have) ✅ COMPLETE
+
 1. ✅ Add PerformanceClock import (1 line) - **DONE**
 2. ✅ Add addMatrixNodes() function (115 lines) - **DONE**
 3. ✅ Add countGroupTriangles() function (15 lines) - **DONE**
 4. ✅ Add matrix group declarations in initScene() (40 lines) - **DONE**
 
 #### Phase 2: Matrix Rendering (Core Functionality) ✅ COMPLETE
+
 5. ✅ Add 5 matrix rendering blocks to updateGeometry() (233 lines) - **DONE**
 
 #### Phase 3: Performance & Stats (Polish) ✅ COMPLETE
+
 6. ✅ Add PerformanceClock timing to updateGeometry() (10 lines) - **DONE**
 7. ✅ Add geodesic stats blocks (75 lines) - **DONE**
 8. ✅ Add triangle counting to all stats blocks (scattered) - **DONE**
@@ -1423,6 +1498,7 @@ Once all missing code is added:
 ### Current Sync Status: 100% Complete ✅
 
 **Synced (100%):**
+
 - ✅ Helper functions (quadrance, close-pack, caching)
 - ✅ renderPolyhedron() core logic
 - ✅ Standard polyhedra rendering
@@ -1437,6 +1513,7 @@ Once all missing code is added:
 - ✅ Complete stats display with geodesics **ADDED**
 
 **File Stats:**
+
 - rt-rendering.js: 1,669 lines (was 1,170 lines)
 - Added: ~499 lines of production code
 - Sync Completion: 100%
@@ -1450,6 +1527,7 @@ Once all missing code is added:
 rt-rendering.js extraction is **MEDIUM RISK** but **HIGH VALUE**:
 
 **Pros:**
+
 - ✅ Rendering is well-isolated from interactive code
 - ✅ Clear import/export boundaries
 - ✅ Reduces rt-init.js by ~400 lines
@@ -1457,6 +1535,7 @@ rt-rendering.js extraction is **MEDIUM RISK** but **HIGH VALUE**:
 - ✅ Easier to test in isolation
 
 **Cons:**
+
 - ⚠️ Requires careful sync of 10+ functions
 - ⚠️ updateGeometry() is 500+ lines and touches everything
 - ⚠️ Missing matrices/geodesics = visual regression
@@ -1539,6 +1618,7 @@ Verify these matrix blocks exist in `updateGeometry()`:
 **Check rt-rendering.js exports (line 1669+):**
 
 Expected export structure:
+
 ```javascript
 export {
   // Core scene
@@ -1562,11 +1642,12 @@ export {
   getClosePackedRadius,
   getCachedNodeGeometry,
   addMatrixNodes,
-  countGroupTriangles
+  countGroupTriangles,
 };
 ```
 
 **Action Required:**
+
 - [ ] Verify export block exists at end of rt-rendering.js
 - [ ] Verify all 14+ functions are exported
 - [ ] Check for syntax errors in export block
@@ -1576,6 +1657,7 @@ export {
 **Check rt-init.js can import rt-rendering.js:**
 
 **Test completed (2026-01-08):**
+
 - ✅ Added test import: `import { PerformanceClock as PerformanceClockTest } from "./rt-rendering.js"`
 - ✅ Browser console shows: `[rt-init.js] ✅ Successfully imported from rt-rendering.js: PerformanceClock available`
 - ✅ No module loading errors
@@ -1583,6 +1665,7 @@ export {
 - ✅ Import chain works correctly
 
 Expected import location (top of rt-init.js, after existing imports):
+
 ```javascript
 import { PerformanceClock } from "./performance-clock.js";
 import { RTMatrix } from "./rt-matrix.js"; // If used
@@ -1595,11 +1678,12 @@ import {
   createCartesianGrid,
   createQuadrayBasis,
   createIVMGrid,
-  createIVMPlanes
+  createIVMPlanes,
 } from "./rt-rendering.js";
 ```
 
 **Completed Actions:**
+
 - [x] Add import statement to rt-init.js (DO NOT comment out inline functions yet)
 - [x] Test that import resolves without errors
 - [x] Check browser console for module loading errors
@@ -1609,11 +1693,13 @@ import {
 **Check index.html loads rt-init.js as module:**
 
 Expected structure:
+
 ```html
 <script type="module" src="src/geometry/modules/rt-init.js"></script>
 ```
 
 **Action Required:**
+
 - [ ] Verify `type="module"` attribute present
 - [ ] Verify path to rt-init.js is correct
 - [ ] Check that rt-rendering.js loads transitively (via rt-init.js import)
@@ -1623,12 +1709,14 @@ Expected structure:
 **Verify rendering functions DO NOT need to be in global scope:**
 
 rt-rendering.js functions are:
+
 - ✅ Called only from rt-init.js (via import)
 - ✅ NOT called from HTML onclick/onchange handlers
 - ✅ NOT called from inline `<script>` tags
 - ✅ Safe to extract from global scope
 
 **If ANY function IS called from HTML:**
+
 - ⚠️ Do NOT extract that function
 - ⚠️ Keep it in rt-init.js inline code
 - ⚠️ Document why in this plan
@@ -1638,6 +1726,7 @@ rt-rendering.js functions are:
 **Verify rt-rendering.js dependencies are satisfied:**
 
 rt-rendering.js imports:
+
 - [x] `Quadray` from rt-math.js
 - [x] `Polyhedra` from rt-polyhedra.js
 - [x] `PerformanceClock` from performance-clock.js
@@ -1645,6 +1734,7 @@ rt-rendering.js imports:
 - [x] `RT` (global from index.html)
 
 **Action Required:**
+
 - [ ] Verify all imports resolve
 - [ ] Check that THREE.js loads before rt-init.js
 - [ ] Check that RT library loads before rt-init.js
@@ -1656,6 +1746,7 @@ rt-rendering.js imports:
 **Issue Identified:** Original plan showed standalone exports, but rt-rendering.js uses factory pattern.
 
 **Resolution:**
+
 - ✅ Updated plan documentation (Section "Export/Import Structure")
 - ✅ Clarified factory pattern: `export function initScene(THREE)` returns API object
 - ✅ Updated Testing Protocol to show correct usage: `const renderingAPI = createRenderingAPI(THREE)`
@@ -1663,6 +1754,7 @@ rt-rendering.js imports:
 - ✅ Updated Phase 6.2.1 with correct step-by-step instructions
 
 **Architecture Decision:** Keep factory pattern (closure-based), do NOT restructure to standalone exports.
+
 - Pros: Natural closure scope, matches existing rt-init.js pattern
 - Cons: Slightly more verbose import (`renderingAPI.animate()` vs `animate()`)
 
@@ -1683,6 +1775,7 @@ rt-rendering.js imports:
 - [ ] No visual regressions
 
 **If ANY check fails:**
+
 - ❌ STOP - Do not proceed with commenting
 - ❌ Fix the failing check first
 - ❌ Re-verify all Phase 5 checks
@@ -1694,6 +1787,7 @@ rt-rendering.js imports:
 #### 6.2.1 Test: animate() & onWindowResize() (SAFEST) - UPDATED 2026-01-08
 
 **Step 0:** Add import and create rendering API at top of startARTexplorer():
+
 ```javascript
 // At top of rt-init.js imports:
 import { initScene as createRenderingAPI } from "./rt-rendering.js";
@@ -1706,6 +1800,7 @@ function startARTexplorer(THREE, OrbitControls, RT, Quadray, Polyhedra, ...) {
 ```
 
 **Step 1:** Comment out inline functions in rt-init.js:
+
 ```javascript
 // function animate() {
 //   requestAnimationFrame(animate);
@@ -1722,6 +1817,7 @@ function startARTexplorer(THREE, OrbitControls, RT, Quadray, Polyhedra, ...) {
 ```
 
 **Step 2:** Replace function calls with API calls:
+
 ```javascript
 // OLD: animate();
 renderingAPI.animate(); // ← NEW
@@ -1731,6 +1827,7 @@ window.addEventListener("resize", () => renderingAPI.onWindowResize()); // ← N
 ```
 
 **Step 3:** Test:
+
 - [ ] Page loads without errors
 - [ ] Animation loop runs (objects rotate/respond to mouse)
 - [ ] Window resize works (drag browser window)
@@ -1742,12 +1839,14 @@ window.addEventListener("resize", () => renderingAPI.onWindowResize()); // ← N
 #### 6.2.2 Test: Grid & Basis Functions
 
 **Comment out:**
+
 - `createCartesianGrid()`
 - `createQuadrayBasis()`
 - `createIVMGrid()`
 - `createIVMPlanes()`
 
 **Test:**
+
 - [ ] Cartesian grid renders correctly
 - [ ] Quadray basis vectors render
 - [ ] IVM tessellation renders
@@ -1758,6 +1857,7 @@ window.addEventListener("resize", () => renderingAPI.onWindowResize()); // ← N
 #### 6.2.3 Test: Helper Functions
 
 **Comment out:**
+
 - `getPolyhedronEdgeQuadrance()`
 - `getClosePackedRadius()`
 - `getCachedNodeGeometry()`
@@ -1765,6 +1865,7 @@ window.addEventListener("resize", () => renderingAPI.onWindowResize()); // ← N
 - `countGroupTriangles()`
 
 **Test:**
+
 - [ ] Polyhedra still render with correct node sizes
 - [ ] Packed mode toggle still works
 - [ ] Matrix nodes render when enabled
@@ -1774,11 +1875,13 @@ window.addEventListener("resize", () => renderingAPI.onWindowResize()); // ← N
 #### 6.2.4 Test: renderPolyhedron() (HIGH RISK)
 
 **Before commenting out:**
+
 - [ ] All helper functions working
 - [ ] No console errors
 - [ ] Visual baseline confirmed
 
 **Comment out renderPolyhedron():**
+
 ```javascript
 // function renderPolyhedron(group, geometry, color, opacity) {
 //   /* ~150 lines */
@@ -1786,6 +1889,7 @@ window.addEventListener("resize", () => renderingAPI.onWindowResize()); // ← N
 ```
 
 **Test ALL polyhedra:**
+
 - [ ] Cube renders
 - [ ] Tetrahedron renders
 - [ ] Octahedron renders
@@ -1797,6 +1901,7 @@ window.addEventListener("resize", () => renderingAPI.onWindowResize()); // ← N
 - [ ] Dual Icosahedron renders
 
 **Test ALL options:**
+
 - [ ] Faces toggle
 - [ ] Edges toggle
 - [ ] Nodes toggle (SM/MD/LG/OFF)
@@ -1806,6 +1911,7 @@ window.addEventListener("resize", () => renderingAPI.onWindowResize()); // ← N
 - [ ] Scale sliders
 
 **If ANY polyhedron breaks:**
+
 - ❌ Uncomment immediately
 - ❌ Compare rt-init.js vs rt-rendering.js renderPolyhedron()
 - ❌ Fix discrepancy in rt-rendering.js
@@ -1818,12 +1924,14 @@ window.addEventListener("resize", () => renderingAPI.onWindowResize()); // ← N
 **This is the BIG one - 500+ lines referencing ALL UI elements**
 
 **Before commenting out:**
+
 - [ ] renderPolyhedron() working perfectly
 - [ ] All polyhedra tested individually
 - [ ] Create MANUAL BACKUP of rt-init.js
 - [ ] Prepare for potential rollback
 
 **Comment out updateGeometry():**
+
 ```javascript
 // function updateGeometry() {
 //   /* ~500 lines */
@@ -1831,6 +1939,7 @@ window.addEventListener("resize", () => renderingAPI.onWindowResize()); // ← N
 ```
 
 **Test EVERY checkbox:**
+
 - [ ] Show Cube
 - [ ] Show Tetrahedron
 - [ ] Show Geodesic Tetrahedron
@@ -1850,6 +1959,7 @@ window.addEventListener("resize", () => renderingAPI.onWindowResize()); // ← N
 - [ ] Show Rhombic Dodecahedron Matrix
 
 **Test EVERY matrix slider:**
+
 - [ ] Cube Matrix Size (1-10)
 - [ ] Tet Matrix Size (1-10)
 - [ ] Octa Matrix Size (1-10)
@@ -1857,6 +1967,7 @@ window.addEventListener("resize", () => renderingAPI.onWindowResize()); // ← N
 - [ ] Rhombic Dodecahedron Matrix Size (1-10)
 
 **Test EVERY matrix rotation:**
+
 - [ ] Cube Matrix Rotate 45°
 - [ ] Tet Matrix Rotate 45°
 - [ ] Octa Matrix Rotate 45°
@@ -1864,6 +1975,7 @@ window.addEventListener("resize", () => renderingAPI.onWindowResize()); // ← N
 - [ ] Rhombic Dodecahedron Matrix Rotate 45°
 
 **Test EVERY geodesic control:**
+
 - [ ] Geodesic Tetra Frequency slider (1-6)
 - [ ] Geodesic Tetra Projection (off/in/mid/out)
 - [ ] Geodesic Octa Frequency slider (1-6)
@@ -1872,6 +1984,7 @@ window.addEventListener("resize", () => renderingAPI.onWindowResize()); // ← N
 - [ ] Geodesic Icosa Projection (off/in/mid/out)
 
 **If ANYTHING breaks:**
+
 - ❌ STOP ALL TESTING
 - ❌ Uncomment updateGeometry() immediately
 - ❌ Restore from backup if needed
@@ -1884,6 +1997,7 @@ window.addEventListener("resize", () => renderingAPI.onWindowResize()); // ← N
 #### 6.2.6 Test: updateGeometryStats()
 
 **Comment out:**
+
 ```javascript
 // function updateGeometryStats() {
 //   /* ~120 lines */
@@ -1891,6 +2005,7 @@ window.addEventListener("resize", () => renderingAPI.onWindowResize()); // ← N
 ```
 
 **Test:**
+
 - [ ] Stats panel displays
 - [ ] Vertex/Edge/Face counts correct
 - [ ] Euler verification works
@@ -1914,6 +2029,7 @@ window.addEventListener("resize", () => renderingAPI.onWindowResize()); // ← N
 - ❌ Any UI interaction breaks
 
 **Rollback procedure:**
+
 1. Uncomment ALL functions in rt-init.js
 2. Comment out import from rt-rendering.js
 3. Reload page, verify everything works again
@@ -1944,11 +2060,13 @@ window.addEventListener("resize", () => renderingAPI.onWindowResize()); // ← N
 **Compare screenshots before/after each function commented:**
 
 **Baseline (rt-init.js inline):**
+
 - [ ] Take screenshot with Cube + Tet + Octa visible
 - [ ] Take screenshot with all matrices visible
 - [ ] Take screenshot with all geodesics visible
 
 **After extraction (rt-rendering.js imported):**
+
 - [ ] Compare Cube + Tet + Octa screenshot
 - [ ] Compare matrices screenshot
 - [ ] Compare geodesics screenshot
@@ -1956,6 +2074,7 @@ window.addEventListener("resize", () => renderingAPI.onWindowResize()); // ← N
 **Use tool:** Browser DevTools screenshot, or external diff tool
 
 **If ANY pixel difference (except anti-aliasing):**
+
 - ⚠️ Investigate discrepancy
 - ⚠️ May indicate logic difference between rt-init.js and rt-rendering.js
 
@@ -1964,17 +2083,20 @@ window.addEventListener("resize", () => renderingAPI.onWindowResize()); // ← N
 **Compare PerformanceClock metrics before/after:**
 
 **Baseline (rt-init.js inline):**
+
 - Record "Node Generation" time
 - Record "Calculation" time
 - Record "Display Update" time
 - Record "Triangle Count"
 
 **After extraction (rt-rendering.js imported):**
+
 - Compare all 4 metrics
 
 **Acceptable variance:** ±5% (due to normal runtime fluctuation)
 
 **If >10% slower:**
+
 - ⚠️ Performance regression detected
 - ⚠️ Investigate cause (unnecessary cloning? import overhead?)
 
@@ -2102,6 +2224,7 @@ EOF
 - ✅ Documentation updated
 
 **If ANY criterion fails:**
+
 - ❌ Extraction is NOT complete
 - ❌ Fix the failing item before merging
 - ❌ Do NOT commit partial/broken extraction
@@ -2175,6 +2298,7 @@ EOF
 ### 10.1 Code Formatting
 
 Ran Prettier and ESLint on all geometry files:
+
 - ✅ Prettier formatted 2 files (art.css, rt-init.js)
 - ✅ ESLint found 27 warnings (0 errors)
 
@@ -2185,19 +2309,23 @@ Ran Prettier and ESLint on all geometry files:
 **File-by-File Breakdown:**
 
 #### rt-rendering.js (2 warnings)
+
 ```
 Line 317: 'labels' is assigned but never used
 Line 394: 'v0' is assigned but never used
 ```
 
 **Analysis:**
+
 - Line 317: `labels` array in `createQuadrayBasis()` - Prepared for future text labels on basis vectors
 - Line 394: `v0` in `createIVMGrid()` - Origin vertex, not directly used but part of grid calculation logic
 
 **Verdict:** ✅ **SAFE TO IGNORE** - Both are preparation code for future features. Not related to extraction.
 
 #### Other files (25 warnings)
+
 All other warnings are in files that were NOT part of the rt-rendering extraction:
+
 - rt-cross-demo.js (3 warnings)
 - rt-quadrance-demo.js (5 warnings)
 - rt-weierstrass-demo.js (2 warnings)
@@ -2237,16 +2365,19 @@ All other warnings are in files that were NOT part of the rt-rendering extractio
 ### 10.4 Extraction-Related Issues Summary
 
 **Issues from extraction:**
+
 - ✅ rt-rendering.js: 2 warnings (preparation code, not problems)
 - ✅ rt-init.js: 6 warnings (orphaned imports/variables from extraction)
 
 **Issues NOT from extraction:**
+
 - 25 warnings in demo files, filehandler, papercut, polyhedra
 - 6 warnings in rt-init.js (incomplete features predating extraction)
 
 ### 10.5 Cleanup Actions Taken
 
 **Commit dd8b8da (2026-01-09):**
+
 - ✅ Removed orphaned imports from rt-init.js
 - ✅ Removed orphaned variable declarations
 - ✅ Documented incomplete features in separate tracking
@@ -2265,6 +2396,7 @@ All other warnings are in files that were NOT part of the rt-rendering extractio
 ### 10.7 Final Status
 
 **Extraction Quality:** ✅ **EXCELLENT**
+
 - Clean module boundaries
 - No functional regressions
 - Proper separation of concerns
@@ -2272,12 +2404,14 @@ All other warnings are in files that were NOT part of the rt-rendering extractio
 - All UI/event handling in rt-init.js
 
 **Code Quality:** ✅ **GOOD**
+
 - 2 minor warnings in rt-rendering.js (preparation code)
 - 0 errors
 - All formatting consistent
 - Proper documentation
 
 **Next Steps:**
+
 1. ✅ Monitor for issues in production use
 2. ✅ Consider adding labels to Quadray basis (use `labels` array)
 3. ✅ Track incomplete features separately (camera switching, instancing)

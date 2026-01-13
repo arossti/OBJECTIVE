@@ -354,9 +354,8 @@ export const RTFileHandler = {
 
     try {
       // Import GLTFExporter dynamically
-      const { GLTFExporter } = await import(
-        "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/exporters/GLTFExporter.js"
-      );
+      const { GLTFExporter } =
+        await import("https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/exporters/GLTFExporter.js");
 
       const exporter = new GLTFExporter();
 

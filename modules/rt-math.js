@@ -296,7 +296,7 @@ export const RT = {
      * High-precision golden ratio (15+ decimal places guaranteed)
      * @returns {number} φ ≈ 1.6180339887498948482045868343656381...
      */
-    value: function() {
+    value: function () {
       return 0.5 * (1 + this.sqrt5());
     },
 
@@ -306,8 +306,8 @@ export const RT = {
      * = (3 + √5)/2
      * @returns {number} φ² ≈ 2.618033988749895
      */
-    squared: function() {
-      return this.value() + 1;  // Uses identity, not multiplication
+    squared: function () {
+      return this.value() + 1; // Uses identity, not multiplication
     },
 
     /**
@@ -316,8 +316,8 @@ export const RT = {
      * = (√5 - 1)/2 = (-1 + √5)/2
      * @returns {number} 1/φ ≈ 0.618033988749895
      */
-    inverse: function() {
-      return this.value() - 1;  // Uses identity, not division
+    inverse: function () {
+      return this.value() - 1; // Uses identity, not division
     },
 
     /**
@@ -326,8 +326,8 @@ export const RT = {
      * = 2(1 + √5)/2 + 1 = (1 + √5) + 1 = (2 + √5)/1
      * @returns {number} φ³ ≈ 4.236067977499790
      */
-    cubed: function() {
-      return 2 * this.value() + 1;  // Uses identity
+    cubed: function () {
+      return 2 * this.value() + 1; // Uses identity
     },
 
     /**
@@ -336,8 +336,8 @@ export const RT = {
      * = (7 + 3√5)/2
      * @returns {number} φ⁴ ≈ 6.854101966249685
      */
-    fourthPower: function() {
-      return 3 * this.value() + 2;  // Uses identity
+    fourthPower: function () {
+      return 3 * this.value() + 2; // Uses identity
     },
 
     /**
@@ -371,9 +371,9 @@ export const RT = {
        * const twoPhi = new RT.PurePhi.Symbolic(1, 1, 1);
        */
       constructor(a, b, c = 1) {
-        this.a = a;  // Rational part
-        this.b = b;  // √5 coefficient
-        this.c = c;  // Denominator
+        this.a = a; // Rational part
+        this.b = b; // √5 coefficient
+        this.c = c; // Denominator
       }
 
       /**
@@ -456,7 +456,11 @@ export const RT = {
        * const twoPhi = phi.scale(2);                        // 2φ = (1 + √5)/1
        */
       scale(scalar) {
-        return new RT.PurePhi.Symbolic(this.a * scalar, this.b * scalar, this.c);
+        return new RT.PurePhi.Symbolic(
+          this.a * scalar,
+          this.b * scalar,
+          this.c
+        );
       }
 
       /**
@@ -477,7 +481,7 @@ export const RT = {
         if (this.b === 0) {
           return `${this.a}/${this.c}`;
         }
-        const sign = this.b >= 0 ? '+' : '';
+        const sign = this.b >= 0 ? "+" : "";
         return `(${this.a} ${sign} ${this.b}√5)/${this.c}`;
       }
     },
@@ -488,13 +492,13 @@ export const RT = {
      */
     get constants() {
       return {
-        phi:       new this.Symbolic(1, 1, 2),   // φ = (1 + √5)/2
-        phiSq:     new this.Symbolic(3, 1, 2),   // φ² = (3 + √5)/2
-        invPhi:    new this.Symbolic(-1, 1, 2),  // 1/φ = (-1 + √5)/2
-        phiCubed:  new this.Symbolic(2, 1, 1),   // φ³ = (2 + √5)/1 = 2φ + 1
-        phiFourth: new this.Symbolic(7, 3, 2),   // φ⁴ = (7 + 3√5)/2 = 3φ + 2
-        one:       new this.Symbolic(1, 0, 1),   // 1 = (1 + 0√5)/1
-        zero:      new this.Symbolic(0, 0, 1),   // 0 = (0 + 0√5)/1
+        phi: new this.Symbolic(1, 1, 2), // φ = (1 + √5)/2
+        phiSq: new this.Symbolic(3, 1, 2), // φ² = (3 + √5)/2
+        invPhi: new this.Symbolic(-1, 1, 2), // 1/φ = (-1 + √5)/2
+        phiCubed: new this.Symbolic(2, 1, 1), // φ³ = (2 + √5)/1 = 2φ + 1
+        phiFourth: new this.Symbolic(7, 3, 2), // φ⁴ = (7 + 3√5)/2 = 3φ + 2
+        one: new this.Symbolic(1, 0, 1), // 1 = (1 + 0√5)/1
+        zero: new this.Symbolic(0, 0, 1), // 0 = (0 + 0√5)/1
       };
     },
   },
@@ -575,10 +579,10 @@ export const RT = {
     get sqrt2Values() {
       const sqrt2 = this.sqrt2();
       return {
-        value: sqrt2,                    // √2
-        squared: 2,                      // (√2)² = 2 (exact!)
-        half: sqrt2 / 2,                // √2/2 = 1/√2
-        inverse: 1 / sqrt2,             // 1/√2 = √2/2 (rationalized)
+        value: sqrt2, // √2
+        squared: 2, // (√2)² = 2 (exact!)
+        half: sqrt2 / 2, // √2/2 = 1/√2
+        inverse: 1 / sqrt2, // 1/√2 = √2/2 (rationalized)
       };
     },
 
@@ -589,10 +593,10 @@ export const RT = {
     get sqrt3Values() {
       const sqrt3 = this.sqrt3();
       return {
-        value: sqrt3,                    // √3
-        squared: 3,                      // (√3)² = 3 (exact!)
-        half: sqrt3 / 2,                // √3/2
-        inverse: 1 / sqrt3,             // 1/√3 = √3/3 (rationalized)
+        value: sqrt3, // √3
+        squared: 3, // (√3)² = 3 (exact!)
+        half: sqrt3 / 2, // √3/2
+        inverse: 1 / sqrt3, // 1/√3 = √3/3 (rationalized)
       };
     },
 
@@ -603,10 +607,10 @@ export const RT = {
     get sqrt6Values() {
       const sqrt6 = this.sqrt6();
       return {
-        value: sqrt6,                    // √6
-        squared: 6,                      // (√6)² = 6 (exact!)
-        quarterValue: sqrt6 / 4,        // √6/4 (Quadray grid interval)
-        asProduct: this.sqrt2() * this.sqrt3(),  // √6 = √2 · √3 (verification)
+        value: sqrt6, // √6
+        squared: 6, // (√6)² = 6 (exact!)
+        quarterValue: sqrt6 / 4, // √6/4 (Quadray grid interval)
+        asProduct: this.sqrt2() * this.sqrt3(), // √6 = √2 · √3 (verification)
       };
     },
   },

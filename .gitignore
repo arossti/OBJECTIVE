@@ -23,8 +23,12 @@ tmp/
 temp/
 *.tmp
 
-# Node modules (if ever added)
+# Node modules and package files
 node_modules/
+package.json
+package-lock.json
+eslint.config.js
+
 # Claude Code and Prettier configs (personal preference)
 .clinerules
 .prettierrc.json

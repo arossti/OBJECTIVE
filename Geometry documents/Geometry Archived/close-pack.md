@@ -1,24 +1,32 @@
 # Close-Packed Vertex Spheres
+
 **Feature Implementation Plan**
 
 ## Overview
+
 Add "Packed" node size option that automatically calculates vertex sphere radii using the universal close-packing formula for kissing spheres at polyhedron vertices.
 
 ## Mathematical Foundation
 
 ### Classical Distance Formula
+
 ```
 r = a/2
 ```
+
 Where:
+
 - `r` = vertex sphere radius
 - `a` = edge length of polyhedron
 
 ### Rational Trigonometry (Quadrance) Formula
+
 ```
 Q_vertex = Q_edge / 4
 ```
+
 Where:
+
 - `Q_vertex` = quadrance of vertex sphere radius (r²)
 - `Q_edge` = quadrance of edge length (a²)
 
@@ -27,9 +35,11 @@ Where:
 ## Implementation Plan
 
 ### Phase 1: Core Formula Implementation
+
 **Location**: `src/geometry/rt-init.js`
 
 1. **Add edge length calculator** (lines ~635-697, near `getCachedNodeGeometry`)
+
    ```javascript
    /**
     * Calculate edge length for each polyhedron type
@@ -38,34 +48,34 @@ Where:
     * @returns {number} Edge length in world units
     */
    function getPolyhedronEdgeLength(type, scale) {
-     switch(type) {
-       case 'tetrahedron':
-       case 'dualTetrahedron':
+     switch (type) {
+       case "tetrahedron":
+       case "dualTetrahedron":
          return 2 * scale * Math.sqrt(2); // Tet edge = 2s√2
 
-       case 'cube':
+       case "cube":
          return 2 * scale; // Cube edge = 2s
 
-       case 'octahedron':
+       case "octahedron":
          return 2 * scale; // Octa edge = 2s (same as cube in RT system)
 
-       case 'icosahedron':
+       case "icosahedron":
          return 2 * scale; // Icosa edge = 2s
 
-       case 'dodecahedron':
-         return 2 * scale / Math.sqrt(3); // Dodeca edge
+       case "dodecahedron":
+         return (2 * scale) / Math.sqrt(3); // Dodeca edge
 
-       case 'cuboctahedron':
+       case "cuboctahedron":
          return 2 * scale; // Cubocta edge = 2s
 
-       case 'rhombicDodecahedron':
+       case "rhombicDodecahedron":
          return 2 * scale; // Rhombic dodeca edge
 
-       case 'geodesicTetrahedron':
-       case 'geodesicOctahedron':
-       case 'geodesicIcosahedron':
+       case "geodesicTetrahedron":
+       case "geodesicOctahedron":
+       case "geodesicIcosahedron":
          // Geodesics subdivide base edges - use base polyhedron formula
-         const baseType = type.replace('geodesic', '').toLowerCase();
+         const baseType = type.replace("geodesic", "").toLowerCase();
          return getPolyhedronEdgeLength(baseType, scale);
 
        default:
@@ -76,6 +86,7 @@ Where:
    ```
 
 2. **Add close-pack radius calculator**
+
    ```javascript
    /**
     * Calculate close-packed vertex sphere radius using universal formula
@@ -124,7 +135,7 @@ Where:
      let trianglesPerNode = 0;
      let radius;
 
-     if (nodeSize === 'packed') {
+     if (nodeSize === "packed") {
        // CLOSE-PACKED MODE: Calculate from edge length
        radius = getClosePackedRadius(polyhedronType, scale);
      } else {
@@ -139,7 +150,11 @@ Where:
 
      if (useRT) {
        // RT Geodesic Icosahedron node
-       const polyData = window.RTPolyhedra.geodesicIcosahedron(radius, 0, "out");
+       const polyData = window.RTPolyhedra.geodesicIcosahedron(
+         radius,
+         0,
+         "out"
+       );
        // ... rest of RT geometry code
      } else {
        // Classical THREE.js Sphere
@@ -167,7 +182,9 @@ Where:
 
        // Get polyhedron type and scale from group
        const polyType = group.userData.type;
-       const scale = parseFloat(document.getElementById("tetScaleSlider").value) / (2 * Math.sqrt(2));
+       const scale =
+         parseFloat(document.getElementById("tetScaleSlider").value) /
+         (2 * Math.sqrt(2));
 
        // Get cached geometry with polyhedron-specific parameters
        const { geometry: nodeGeometry, triangles: trianglesPerNode } =
@@ -179,9 +196,11 @@ Where:
    ```
 
 ### Phase 2: UI Implementation
+
 **Location**: `src/geometry/index.html`
 
 1. **Add "Packed" button to Node size selector** (around line ~240)
+
    ```html
    <!-- Node Size Selector -->
    <div class="control-group">
@@ -197,9 +216,13 @@ Where:
    ```
 
 2. **Add tooltip/help text**
+
    ```html
-   <button class="node-size-btn" data-node-size="packed"
-           title="Close-packed spheres: r = edge/2 (kissing number)">
+   <button
+     class="node-size-btn"
+     data-node-size="packed"
+     title="Close-packed spheres: r = edge/2 (kissing number)"
+   >
      Packed
    </button>
    ```
@@ -214,6 +237,7 @@ Where:
    ```
 
 ### Phase 3: Event Handler Updates
+
 **Location**: `src/geometry/rt-init.js`
 
 1. **Node size selector handler** (lines ~1804-1817)
@@ -221,6 +245,7 @@ Where:
    - No changes needed - will automatically support 'packed' value
 
 2. **Add cache clearing logic** when toggling between modes
+
    ```javascript
    document.querySelectorAll(".node-size-btn").forEach(btn => {
      btn.addEventListener("click", function () {
@@ -229,9 +254,9 @@ Where:
        const oldSize = oldActiveBtn ? oldActiveBtn.dataset.nodeSize : null;
 
        // Clear cache when switching to/from packed mode
-       if (newSize === 'packed' || oldSize === 'packed') {
+       if (newSize === "packed" || oldSize === "packed") {
          nodeGeometryCache.clear();
-         console.log('🔄 Cache cleared: switching packed mode');
+         console.log("🔄 Cache cleared: switching packed mode");
        }
 
        // ... existing button toggle code ...
@@ -280,18 +305,21 @@ Where:
 ## Mathematical References
 
 ### Synergetics (Buckminster Fuller)
+
 - Unit-radius sphere packing as foundation
 - Tetrahedron as unit of volume from 4 closest-packed spheres
 - IVM (Isotropic Vector Matrix) from CCP lattice
 - Prime vector = 2 (distance between unit-radius sphere centers)
 
 ### Rational Trigonometry (Norman Wildberger)
+
 - Quadrance Q = d² (square of distance)
 - No transcendental functions (sin, cos, tan)
 - Pure algebraic relationships
 - Q_vertex = Q_edge / 4 (rational, exact)
 
 ### Universal Formula Proof
+
 ```
 For two spheres of radius r centered at adjacent vertices:
 - Centers are separated by edge length a
@@ -326,6 +354,7 @@ In quadrance terms:
    - Metadata with mathematical properties
 
 ## Implementation Priority
+
 1. ✅ Phase 1: Core formula (CRITICAL - foundation)
 2. ✅ Phase 2: UI button (HIGH - user access)
 3. ✅ Phase 3: Event handlers (HIGH - functionality)
@@ -333,6 +362,7 @@ In quadrance terms:
 5. ⬜ Phase 5: Documentation (LOW - polish)
 
 ## Estimated Effort
+
 - **Phase 1-3**: 2-3 hours (core implementation)
 - **Phase 4**: 1-2 hours (testing)
 - **Phase 5**: 1 hour (documentation)
@@ -349,17 +379,20 @@ In quadrance terms:
 ### What Was Implemented
 
 #### Phase 1: Core Functions (rt-init.js)
+
 - ✅ `getPolyhedronEdgeLength(type, scale)` - lines 645-694
 - ✅ `getClosePackedRadius(type, scale)` - lines 696-716
 - ✅ Modified `getCachedNodeGeometry()` to support 'packed' mode - lines 718-782
 - ✅ Updated `renderPolyhedron()` to pass polyType and scale - lines 869-910
 
 #### Phase 2: UI (index.html)
+
 - ✅ Added "Packed" button (5th button: Off/Sm/Md/Lg/Packed) - line 1029-1031
 - ✅ Tooltip: "Close-packed spheres: r = a/2 (kissing number)"
 - ✅ Flexbox auto-distributes 5 buttons evenly (no CSS changes needed)
 
 #### Phase 3: Integration
+
 - ✅ Works with **both** Classical Spheres and RT Geodesics
 - ✅ Dynamic cache key includes polyhedronType and scale
 - ✅ Console logging shows classical vs RT verification
@@ -369,21 +402,22 @@ In quadrance terms:
 
 All formulas at **halfSize = 1**:
 
-| Polyhedron | Edge Quadrance Q | Edge Length Formula | Status |
-|------------|------------------|---------------------|--------|
-| **Cube** | 4.0 | `2s` | ✅ Working |
-| **Tetrahedron** | 8.0 | `2s√2` | ✅ Working |
-| **Dual Tetrahedron** | 4.0 | `2s` | ✅ Working |
-| **Octahedron** | 2.0 | `s√2` | ✅ Fixed (was 2s) |
-| **Icosahedron** | 1.105573 | `s√1.105573` | ✅ Working |
-| **Dodecahedron** | 1.527864 | `s√1.527864` | ✅ Working |
-| **Dual Icosahedron** | 1.447214 | `s√1.447214` | ⚠️ Needs tuning |
-| **Cuboctahedron** | 0.5 | `s/√2` | ✅ Working |
-| **Rhombic Dodecahedron** | 0.5 | `s/√2` | ✅ Working |
+| Polyhedron               | Edge Quadrance Q | Edge Length Formula | Status            |
+| ------------------------ | ---------------- | ------------------- | ----------------- |
+| **Cube**                 | 4.0              | `2s`                | ✅ Working        |
+| **Tetrahedron**          | 8.0              | `2s√2`              | ✅ Working        |
+| **Dual Tetrahedron**     | 4.0              | `2s`                | ✅ Working        |
+| **Octahedron**           | 2.0              | `s√2`               | ✅ Fixed (was 2s) |
+| **Icosahedron**          | 1.105573         | `s√1.105573`        | ✅ Working        |
+| **Dodecahedron**         | 1.527864         | `s√1.527864`        | ✅ Working        |
+| **Dual Icosahedron**     | 1.447214         | `s√1.447214`        | ⚠️ Needs tuning   |
+| **Cuboctahedron**        | 0.5              | `s/√2`              | ✅ Working        |
+| **Rhombic Dodecahedron** | 0.5              | `s/√2`              | ✅ Working        |
 
 ### Testing Results
 
 **Working Correctly:**
+
 - ✅ Cube - Spheres kiss perfectly
 - ✅ Tetrahedron - Perfect close-packing
 - ✅ Dual Tetrahedron - Correct
@@ -394,6 +428,7 @@ All formulas at **halfSize = 1**:
 - ✅ Rhombic Dodecahedron - Correct
 
 **Needs Investigation:**
+
 - ⚠️ **Dual Icosahedron** - Spheres too small (not kissing)
   - Issue: Dual icosa scaled to dodec inradius φ·s, not dodec halfSize
   - Logged Q=1.447214 at icosa radius 1.144123 (≠ dodec halfSize 0.707)
@@ -408,6 +443,7 @@ All formulas at **halfSize = 1**:
 The current implementation **breaks Rational Trigonometry principles** by:
 
 1. **Using hardcoded decimal approximations**:
+
    ```javascript
    case 'icosahedron':
      return scale * Math.sqrt(1.105573);  // ❌ BAD: Static decimal terminated number
@@ -482,6 +518,7 @@ case 'icosahedron':
 **Benefit**: True Rational Trigonometry implementation
 
 **Steps**:
+
 1. Rename `getPolyhedronEdgeLength()` → `getPolyhedronEdgeQuadrance()`
 2. Return quadrance values (Q = a²), not distances
 3. Update `getClosePackedRadius()` to work in quadrance space
@@ -493,10 +530,12 @@ case 'icosahedron':
 ## Known Issues & TODO
 
 ### Immediate Issues
+
 1. ⚠️ **Dual Icosahedron**: Edge length formula needs correction for scaling relationship
 2. ⚠️ **Not using Rational Trigonometry properly**: Taking sqrt() too early, using decimal approximations
 
 ### Future Work
+
 1. **Refactor to stay in quadrance space** (HIGH priority)
 2. **Use symbolic ratios** instead of decimal approximations
 3. **Leverage RT.Phi library** for golden ratio calculations
@@ -518,6 +557,7 @@ rt-polyhedra.js:160 Dual Tetrahedron: Expected Q=4.000000, Max error=0.00e+0
 ```
 
 BUT the **rt-polyhedra.js code** explicitly states:
+
 - **Tetrahedron**: `expectedQ = 8 * halfSize * halfSize` (line 117)
 - **Dual Tetrahedron**: `expectedQ = 8 * halfSize * halfSize` (line 157)
 
@@ -530,26 +570,29 @@ This means they're both reporting Q=4.0, which is correct! But wait...
 Looking at the vertex definitions:
 
 **Tetrahedron** (lines 88-93):
+
 ```javascript
 const s = halfSize;
-new THREE.Vector3(s, s, s)      // (+, +, +)
-new THREE.Vector3(s, -s, -s)    // (+, -, -)
-new THREE.Vector3(-s, s, -s)    // (-, +, -)
-new THREE.Vector3(-s, -s, s)    // (-, -, +)
+new THREE.Vector3(s, s, s); // (+, +, +)
+new THREE.Vector3(s, -s, -s); // (+, -, -)
+new THREE.Vector3(-s, s, -s); // (-, +, -)
+new THREE.Vector3(-s, -s, s); // (-, -, +)
 ```
 
 **Dual Tetrahedron** (lines 134-137):
+
 ```javascript
 const s = halfSize;
-new THREE.Vector3(s, -s, -s)    // 1: (+, -, -)
-new THREE.Vector3(-s, s, -s)    // 3: (-, +, -)
-new THREE.Vector3(-s, -s, s)    // 4: (-, -, +)
-new THREE.Vector3(s, s, s)      // 6: (+, +, +)
+new THREE.Vector3(s, -s, -s); // 1: (+, -, -)
+new THREE.Vector3(-s, s, -s); // 3: (-, +, -)
+new THREE.Vector3(-s, -s, s); // 4: (-, -, +)
+new THREE.Vector3(s, s, s); // 6: (+, +, +)
 ```
 
 **THESE ARE IDENTICAL VERTICES!** Same coordinates, just different ordering!
 
 Edge [0,1] in both:
+
 - Tetrahedron: (s,s,s) to (s,-s,-s) → Q = 0² + (2s)² + (2s)² = 8s²
 - Dual Tetrahedron: (s,-s,-s) to (-s,s,-s) → Q = (2s)² + (-2s)² + 0² = 8s²
 
@@ -560,6 +603,7 @@ Edge [0,1] in both:
 The issue is NOT in rt-polyhedra.js geometry generation. The issue is in **how we're calculating the close-packed radius**:
 
 **Current code** (rt-init.js:645-655):
+
 ```javascript
 case "tetrahedron":
   return 8 * s2;  // Q = 8s²
@@ -602,6 +646,7 @@ We need to:
 ### Test Results Indicating Problems
 
 From visual testing:
+
 - ✅ **Tetrahedron**: Spheres kiss (correct)
 - ❌ **Dual Tetrahedron**: Spheres too small (Q value wrong in code)
 - ✅ **Cube**: Spheres kiss (correct)
@@ -635,28 +680,33 @@ From visual testing:
 All edge quadrance errors have been corrected and refactored to use **RT-pure algebraic expressions**:
 
 #### 1. Dual Tetrahedron ✅
+
 - **Was**: `Q = 4s²` (hardcoded wrong value)
 - **Now**: `Q = 8s²` (same as regular tetrahedron)
 - **Result**: Spheres now kiss correctly
 
 #### 2. Cuboctahedron ✅
+
 - **Was**: `Q = 0.5s²` (factor of 2 error)
 - **Now**: `Q = s²` (algebraic, exact)
 - **Result**: Spheres now kiss correctly
 
 #### 3. Dual Icosahedron ✅
+
 - **Was**: `Q = 1.447214·s²` (hardcoded decimal at specific scale)
 - **Now**: `Q = [8/(5+√5)] × φ² × s²` (RT-pure, algebraic!)
 - **Uses**: `RT.Phi.squared()` and `RT.Phi.sqrt5()`
 - **Result**: Spheres now kiss correctly
 
 #### 4. Icosahedron ✅
+
 - **Was**: `Q = 1.105573·s²` (hardcoded decimal approximation)
 - **Now**: `Q = 8/(5+√5) × s²` (RT-pure, algebraic!)
 - **Uses**: `RT.Phi.sqrt5()` to defer √5 expansion
 - **Result**: Still correct, now algebraically pure
 
 #### 5. Dodecahedron ✅
+
 - **Was**: `Q = 1.527864·s²` (hardcoded decimal approximation)
 - **Now**: `Q = 2(3-√5) × s²` (RT-pure, algebraic!)
 - **Derivation**: From vertex coordinates using φ identities
@@ -675,19 +725,20 @@ All edge quadrance errors have been corrected and refactored to use **RT-pure al
 
 ### Verification Table
 
-| Polyhedron | Edge Quadrance Formula | RT-Pure? | Status |
-|------------|------------------------|----------|--------|
-| Tetrahedron | `Q = 8s²` | ✅ Algebraic | Correct |
-| Dual Tetrahedron | `Q = 8s²` | ✅ Algebraic | **FIXED** |
-| Cube | `Q = 4s²` | ✅ Algebraic | Correct |
-| Octahedron | `Q = 2s²` | ✅ Algebraic | Correct |
-| Icosahedron | `Q = 8/(5+√5) × s²` | ✅ **RT-PURE** | **UPGRADED** |
-| Dodecahedron | `Q = 2(3-√5) × s²` | ✅ **RT-PURE** | **UPGRADED** |
-| Dual Icosahedron | `Q = [8/(5+√5)]×φ² × s²` | ✅ **RT-PURE** | **FIXED** |
-| Cuboctahedron | `Q = s²` | ✅ Algebraic | **FIXED** |
-| Rhombic Dodecahedron | `Q = 3s²/8 = 0.375s²` | ✅ Algebraic | **FIXED** |
+| Polyhedron           | Edge Quadrance Formula   | RT-Pure?       | Status       |
+| -------------------- | ------------------------ | -------------- | ------------ |
+| Tetrahedron          | `Q = 8s²`                | ✅ Algebraic   | Correct      |
+| Dual Tetrahedron     | `Q = 8s²`                | ✅ Algebraic   | **FIXED**    |
+| Cube                 | `Q = 4s²`                | ✅ Algebraic   | Correct      |
+| Octahedron           | `Q = 2s²`                | ✅ Algebraic   | Correct      |
+| Icosahedron          | `Q = 8/(5+√5) × s²`      | ✅ **RT-PURE** | **UPGRADED** |
+| Dodecahedron         | `Q = 2(3-√5) × s²`       | ✅ **RT-PURE** | **UPGRADED** |
+| Dual Icosahedron     | `Q = [8/(5+√5)]×φ² × s²` | ✅ **RT-PURE** | **FIXED**    |
+| Cuboctahedron        | `Q = s²`                 | ✅ Algebraic   | **FIXED**    |
+| Rhombic Dodecahedron | `Q = 3s²/8 = 0.375s²`    | ✅ Algebraic   | **FIXED**    |
 
 #### 6. Rhombic Dodecahedron ✅
+
 - **Issue**: Validation comment in rt-polyhedra.js was WRONG
 - **Discovery**: Code correctly uses `u = t/2` for planar rhombic faces (not `u = 2t/3`!)
 - **Actual edge Q**: With u=t/2, edge (t,0,0)→(t/2,t/2,t/2) gives Q = 3t²/4 = 3s²/8

@@ -7,6 +7,7 @@
 **Related TODO:** Section 8.1.3 - Backface Culling for Papercut Print Optimization
 
 **Progress Summary:**
+
 - ✅ All base polyhedra: 100% validated (Tetrahedron, Cube, Octahedron, Icosahedron, Dodecahedron, Cuboctahedron, Rhombic Dodecahedron)
 - ✅ All dual polyhedra: 100% validated (Dual Tetrahedron, Dual Icosahedron)
 - ✅ All geodesic variants: Automatically inherit correct winding from base polyhedra
@@ -28,11 +29,13 @@ All polyhedra currently use `THREE.DoubleSide` material rendering as a workaroun
 ### Root Cause
 
 **Primary Issue:** Geodesic subdivision creates mixed winding orders
+
 - **Location:** `rt-polyhedra.js`, line 661-678, `subdivideTriangles()` function
 - **Problem:** Upward-pointing and downward-pointing triangles in barycentric grid have inconsistent winding
 - **Evidence:** TODO comment at line 661: "Face winding order inconsistent - some faces wound clockwise, others counter-clockwise"
 
 **Secondary Issues:**
+
 - Base polyhedra may have inconsistent winding in face definitions
 - Dual polyhedra inherit winding from parent
 - Matrix polyhedra may have additional winding inconsistencies
@@ -49,6 +52,7 @@ Right-Hand Rule:
 ```
 
 **Benefits:**
+
 - Switch all materials to `THREE.FrontSide` (better performance)
 - Enable proper backface culling for print optimization
 - Cleaner section cuts in papercut mode
@@ -63,11 +67,17 @@ Right-Hand Rule:
 ### Phase 1: Understanding & Validation Tools
 
 **1.1 Create Winding Order Validator**
+
 - **Purpose:** Detect incorrect face winding
 - **Method:** For each face, compute face normal and check if it points away from polyhedron center
 - **Implementation:**
+
   ```javascript
-  function validateFaceWinding(vertices, faces, center = new THREE.Vector3(0, 0, 0)) {
+  function validateFaceWinding(
+    vertices,
+    faces,
+    center = new THREE.Vector3(0, 0, 0)
+  ) {
     const errors = [];
 
     faces.forEach((faceIndices, faceIdx) => {
@@ -79,7 +89,9 @@ Right-Hand Rule:
       // Compute face normal using cross product
       const edge1 = new THREE.Vector3().subVectors(v1, v0);
       const edge2 = new THREE.Vector3().subVectors(v2, v0);
-      const faceNormal = new THREE.Vector3().crossVectors(edge1, edge2).normalize();
+      const faceNormal = new THREE.Vector3()
+        .crossVectors(edge1, edge2)
+        .normalize();
 
       // Get face center (average of all vertices)
       const faceCenter = new THREE.Vector3();
@@ -87,7 +99,9 @@ Right-Hand Rule:
       faceCenter.divideScalar(faceIndices.length);
 
       // Outward direction from polyhedron center to face center
-      const outwardDir = new THREE.Vector3().subVectors(faceCenter, center).normalize();
+      const outwardDir = new THREE.Vector3()
+        .subVectors(faceCenter, center)
+        .normalize();
 
       // Dot product should be positive for correct winding
       const dot = faceNormal.dot(outwardDir);
@@ -97,7 +111,7 @@ Right-Hand Rule:
           faceIndex: faceIdx,
           vertices: faceIndices,
           dotProduct: dot,
-          message: `Face ${faceIdx} has inward-pointing normal (dot=${dot.toFixed(4)})`
+          message: `Face ${faceIdx} has inward-pointing normal (dot=${dot.toFixed(4)})`,
         });
       }
     });
@@ -107,6 +121,7 @@ Right-Hand Rule:
   ```
 
 **1.2 Create Visual Debug Mode**
+
 - **Purpose:** Visualize face normals with arrows
 - **Implementation:** Add `THREE.ArrowHelper` for each face showing normal direction
 - **Color coding:**
@@ -114,6 +129,7 @@ Right-Hand Rule:
   - Red arrow: Incorrect (inward-pointing)
 
 **1.3 Add Winding Direction Display**
+
 - **Purpose:** Show vertex traversal order on faces
 - **Implementation:** Number vertices on each face, draw traversal path
 
@@ -126,16 +142,18 @@ Systematic review of each polyhedron's face definitions in `rt-polyhedra.js`.
 #### 2.1 Tetrahedron (Lines 87-125)
 
 **Current Face Definitions:**
+
 ```javascript
 faces: [
-  [0, 1, 2],  // Base triangle
-  [0, 1, 3],  // Side 1
-  [0, 2, 3],  // Side 2
-  [1, 2, 3],  // Side 3
-]
+  [0, 1, 2], // Base triangle
+  [0, 1, 3], // Side 1
+  [0, 2, 3], // Side 2
+  [1, 2, 3], // Side 3
+];
 ```
 
 **Checklist:**
+
 - [x] Run validator on base tetrahedron
 - [x] Check each face normal direction
 - [x] Verify all faces use CCW winding when viewed from outside
@@ -153,18 +171,20 @@ faces: [
 #### 2.2 Cube/Hexahedron (Lines 27-79)
 
 **Current Face Definitions:**
+
 ```javascript
 faces: [
-  [0, 3, 2, 1],  // Bottom (Z-) (corrected)
-  [4, 5, 6, 7],  // Top (Z+)
-  [0, 1, 5, 4],  // Back (Y-)
-  [2, 3, 7, 6],  // Front (Y+)
-  [0, 4, 7, 3],  // Left (X-) (corrected)
-  [1, 2, 6, 5],  // Right (X+)
-]
+  [0, 3, 2, 1], // Bottom (Z-) (corrected)
+  [4, 5, 6, 7], // Top (Z+)
+  [0, 1, 5, 4], // Back (Y-)
+  [2, 3, 7, 6], // Front (Y+)
+  [0, 4, 7, 3], // Left (X-) (corrected)
+  [1, 2, 6, 5], // Right (X+)
+];
 ```
 
 **Checklist:**
+
 - [x] Run validator on cube
 - [x] Verify bottom face CCW when viewed from below
 - [x] Verify top face CCW when viewed from above
@@ -184,16 +204,24 @@ faces: [
 #### 2.3 Octahedron (Lines 174-229)
 
 **Current Face Definitions:**
+
 ```javascript
 faces: [
   // Upper hemisphere (4 faces meeting at top vertex)
-  [0, 2, 4], [0, 4, 3], [1, 4, 2], [1, 3, 4],
+  [0, 2, 4],
+  [0, 4, 3],
+  [1, 4, 2],
+  [1, 3, 4],
   // Lower hemisphere (4 faces meeting at bottom vertex)
-  [0, 5, 2], [0, 3, 5], [1, 2, 5], [1, 5, 3],
-]
+  [0, 5, 2],
+  [0, 3, 5],
+  [1, 2, 5],
+  [1, 5, 3],
+];
 ```
 
 **Checklist:**
+
 - [x] Run validator
 - [x] Check upper hemisphere faces (vertex 4 at top)
 - [x] Check lower hemisphere faces (vertex 5 at bottom)
@@ -213,6 +241,7 @@ faces: [
 #### 2.4 Icosahedron (Lines 238-366)
 
 **Current Face Definitions:**
+
 ```javascript
 // 20 triangular faces organized by regions:
 // - Top cap (5 faces around north pole)
@@ -222,6 +251,7 @@ faces: [
 ```
 
 **Checklist:**
+
 - [x] Create test-icosahedron-winding.html test file
 - [x] Run validator on base icosahedron
 - [x] Check top cap faces (should point upward/outward)
@@ -241,6 +271,7 @@ faces: [
 **Expected Issues:** Medium (20 faces, golden ratio geometry, belt symmetry)
 
 **Notes:**
+
 - Icosahedron uses three golden rectangles for construction
 - Face grouping: top cap (5), upper belt (5), lower belt (5), bottom cap (5)
 - Each belt should show consistent winding pattern
@@ -250,6 +281,7 @@ faces: [
 #### 2.5 Dodecahedron (Lines 1056-1191)
 
 **Current Face Definitions:**
+
 ```javascript
 // 12 pentagonal faces
 // Each face has 5 vertices
@@ -257,6 +289,7 @@ faces: [
 ```
 
 **Checklist:**
+
 - [x] Create test-dodecahedron-winding.html test file
 - [x] Run validator
 - [x] Check all 12 pentagonal faces
@@ -277,6 +310,7 @@ faces: [
 **Expected Issues:** Medium-High (12 faces, 5 vertices each, complex vertex mixing)
 
 **Notes:**
+
 - Dodecahedron is dual of icosahedron
 - Pentagon centers should align with icosahedron vertices
 - Golden ratio: φ = (1 + √5) / 2 ≈ 1.618
@@ -286,6 +320,7 @@ faces: [
 #### 2.6 Cuboctahedron (Vector Equilibrium) (Lines 516-549)
 
 **Current Face Definitions:**
+
 ```javascript
 // 14 faces total:
 // - 8 triangular faces (at cube corners)
@@ -293,6 +328,7 @@ faces: [
 ```
 
 **Checklist:**
+
 - [x] Create test-cuboctahedron-winding.html test file
 - [x] Run validator
 - [x] Check 8 triangular faces
@@ -319,12 +355,14 @@ faces: [
 **Dual of Cuboctahedron**
 
 **Current Face Definitions:**
+
 ```javascript
 // 12 rhombic faces
 // Each rhombus has 4 vertices
 ```
 
 **Checklist:**
+
 - [x] Create test-rhombic-dodecahedron-winding.html test file
 - [x] Run validator
 - [x] Check all 12 rhombic faces
@@ -354,6 +392,7 @@ faces: [
 **Construction Method:** Stella octangula companion (inverted tetrahedron)
 
 **Checklist:**
+
 - [x] Run validator
 - [x] Verify face winding matches base tetrahedron pattern
 - [x] Check that inversion doesn't reverse winding
@@ -372,6 +411,7 @@ faces: [
 **Construction Method:** Vertices at dodecahedron face centers
 
 **Checklist:**
+
 - [x] Run validator
 - [x] Verify relationship to dodecahedron
 - [x] Check that face centers produce correct winding
@@ -395,6 +435,7 @@ This is the **primary source** of winding inconsistencies.
 #### 4.1 Geodesic Subdivision Algorithm (Lines 551-700)
 
 **Current Implementation Problem:**
+
 ```javascript
 // subdivideTriangles() function (line 661)
 for (let row = 0; row < divisions; row++) {
@@ -403,26 +444,28 @@ for (let row = 0; row < divisions; row++) {
     const a = grid[row][col];
     const b = grid[row][col + 1];
     const c = grid[row + 1][col];
-    newFaces.push([a, b, c]);  // ← Winding order 1
+    newFaces.push([a, b, c]); // ← Winding order 1
 
     // Downward-pointing triangle
     if (col < divisions - row - 1) {
       const d = grid[row][col + 1];
       const e = grid[row + 1][col + 1];
       const f = grid[row + 1][col];
-      newFaces.push([d, e, f]);  // ← Winding order 2 (INCONSISTENT!)
+      newFaces.push([d, e, f]); // ← Winding order 2 (INCONSISTENT!)
     }
   }
 }
 ```
 
 **The Problem:**
+
 - Barycentric grid creates upward △ and downward ▽ triangles
 - Both use same vertex traversal pattern
 - But geometric orientation is opposite
 - Results in mixed winding: some CCW, some CW
 
 **Visual Representation:**
+
 ```
 Grid subdivision pattern (frequency=2):
 
@@ -442,17 +485,19 @@ but ↓ triangle needs reversed winding to maintain outward normals
 **Solution Strategy:**
 
 **Option A: Reverse Downward Triangle Winding**
+
 ```javascript
 // Downward-pointing triangle (REVERSED)
 if (col < divisions - row - 1) {
   const d = grid[row][col + 1];
   const e = grid[row + 1][col + 1];
   const f = grid[row + 1][col];
-  newFaces.push([d, f, e]);  // ← SWAP e and f to reverse winding
+  newFaces.push([d, f, e]); // ← SWAP e and f to reverse winding
 }
 ```
 
 **Option B: Detect Parent Face Winding**
+
 ```javascript
 function subdivideTriangles(vertices, faces, divisions) {
   const newFaces = [];
@@ -475,6 +520,7 @@ function subdivideTriangles(vertices, faces, divisions) {
 ```
 
 **Option C: Consistent Grid Traversal**
+
 ```javascript
 // Ensure grid itself is oriented to parent face
 // Build grid with awareness of parent winding
@@ -484,6 +530,7 @@ function subdivideTriangles(vertices, faces, divisions) {
 **Recommended Approach:** **Option A** (simplest, most direct)
 
 **Implementation Checklist:**
+
 - [ ] Add winding validator to `subdivideTriangles()`
 - [ ] Test with simple triangle subdivision (frequency=2)
 - [ ] Identify which triangles need reversal (likely downward-pointing)
@@ -497,6 +544,7 @@ function subdivideTriangles(vertices, faces, divisions) {
 #### 4.2 Geodesic Icosahedron (Lines 705-764)
 
 **Construction:**
+
 ```javascript
 geodesicIcosahedron(halfSize = 1, frequency = 1)
   → calls icosahedron()
@@ -505,6 +553,7 @@ geodesicIcosahedron(halfSize = 1, frequency = 1)
 ```
 
 **Checklist:**
+
 - [ ] Fix `subdivideTriangles()` first (see 4.1)
 - [ ] Test geodesic icosahedron with frequency=1
 - [ ] Test with frequency=2
@@ -517,6 +566,7 @@ geodesicIcosahedron(halfSize = 1, frequency = 1)
 **Expected Issues:** High (most complex, most triangles)
 
 **Notes:**
+
 - Base icosahedron: 20 faces
 - Frequency 2: 80 faces
 - Frequency 3: 180 faces
@@ -530,6 +580,7 @@ geodesicIcosahedron(halfSize = 1, frequency = 1)
 **Construction:** Same pattern as geodesic icosahedron
 
 **Checklist:**
+
 - [x] Apply fixed `subdivideTriangles()` (from 4.1)
 - [x] Test frequency=1,2,3
 - [x] Run validator
@@ -538,6 +589,7 @@ geodesicIcosahedron(halfSize = 1, frequency = 1)
 
 **Status:** ✅ COMPLETED (2026-01-10)
 **Results:**
+
 - Frequency 1: 4/4 faces correct (100%)
 - Frequency 2: 16/16 faces correct (100%)
 - Frequency 3: 36/36 faces correct (100%)
@@ -551,6 +603,7 @@ geodesicIcosahedron(halfSize = 1, frequency = 1)
 **Construction:** Same pattern as geodesic icosahedron
 
 **Checklist:**
+
 - [x] Apply fixed `subdivideTriangles()` (from 4.1)
 - [x] Test frequency=1,2,3
 - [x] Run validator
@@ -559,6 +612,7 @@ geodesicIcosahedron(halfSize = 1, frequency = 1)
 
 **Status:** ✅ COMPLETED (2026-01-10)
 **Results:**
+
 - Frequency 1: 8/8 faces correct (100%)
 - Frequency 2: 32/32 faces correct (100%)
 - Frequency 3: 72/72 faces correct (100%)
@@ -576,6 +630,7 @@ Once all winding is corrected, update materials from `DoubleSide` to `FrontSide`
 **Locations to update:**
 
 **Line ~811 (Node Materials):**
+
 ```javascript
 // BEFORE:
 side: THREE.DoubleSide, // TODO: Fix winding order
@@ -585,6 +640,7 @@ side: THREE.FrontSide, // Winding order corrected in rt-polyhedra.js
 ```
 
 **Line ~1109 (Face Materials):**
+
 ```javascript
 // BEFORE:
 side: THREE.DoubleSide, // TODO: Geodesic face winding order inconsistent
@@ -594,6 +650,7 @@ side: THREE.FrontSide, // Winding order corrected in subdivideTriangles()
 ```
 
 **Checklist:**
+
 - [ ] Search for all `THREE.DoubleSide` usage in rt-rendering.js
 - [ ] Replace with `THREE.FrontSide`
 - [ ] Remove TODO comments about winding order
@@ -608,6 +665,7 @@ side: THREE.FrontSide, // Winding order corrected in subdivideTriangles()
 **Check for DoubleSide usage in matrix polyhedra rendering**
 
 **Checklist:**
+
 - [ ] Search for `THREE.DoubleSide` in rt-matrix.js
 - [ ] Replace with `THREE.FrontSide`
 - [ ] Test matrix rendering
@@ -620,6 +678,7 @@ side: THREE.FrontSide, // Winding order corrected in subdivideTriangles()
 **No changes needed** - backface culling toggle already implemented correctly
 
 **Verification:**
+
 - [ ] Test backface culling with corrected winding
 - [ ] Verify clean face visibility (no random dropouts)
 - [ ] Test with papercut mode enabled
@@ -637,29 +696,44 @@ side: THREE.FrontSide, // Winding order corrected in subdivideTriangles()
 ```javascript
 // test-winding-order.js
 
-import { Polyhedra } from './rt-polyhedra.js';
-import { validateFaceWinding } from './winding-validator.js';
+import { Polyhedra } from "./rt-polyhedra.js";
+import { validateFaceWinding } from "./winding-validator.js";
 
 const tests = [
   // Base polyhedra
-  { name: 'Tetrahedron', fn: () => Polyhedra.tetrahedron(1) },
-  { name: 'Cube', fn: () => Polyhedra.cube(1) },
-  { name: 'Octahedron', fn: () => Polyhedra.octahedron(1) },
-  { name: 'Icosahedron', fn: () => Polyhedra.icosahedron(1) },
-  { name: 'Dodecahedron', fn: () => Polyhedra.dodecahedron(1) },
-  { name: 'Cuboctahedron', fn: () => Polyhedra.cuboctahedron(1) },
-  { name: 'Rhombic Dodecahedron', fn: () => Polyhedra.rhombicDodecahedron(1) },
+  { name: "Tetrahedron", fn: () => Polyhedra.tetrahedron(1) },
+  { name: "Cube", fn: () => Polyhedra.cube(1) },
+  { name: "Octahedron", fn: () => Polyhedra.octahedron(1) },
+  { name: "Icosahedron", fn: () => Polyhedra.icosahedron(1) },
+  { name: "Dodecahedron", fn: () => Polyhedra.dodecahedron(1) },
+  { name: "Cuboctahedron", fn: () => Polyhedra.cuboctahedron(1) },
+  { name: "Rhombic Dodecahedron", fn: () => Polyhedra.rhombicDodecahedron(1) },
 
   // Duals
-  { name: 'Dual Tetrahedron', fn: () => Polyhedra.dualTetrahedron(1) },
-  { name: 'Dual Icosahedron', fn: () => Polyhedra.dualIcosahedron(1) },
+  { name: "Dual Tetrahedron", fn: () => Polyhedra.dualTetrahedron(1) },
+  { name: "Dual Icosahedron", fn: () => Polyhedra.dualIcosahedron(1) },
 
   // Geodesics
-  { name: 'Geodesic Icosahedron f=1', fn: () => Polyhedra.geodesicIcosahedron(1, 1) },
-  { name: 'Geodesic Icosahedron f=2', fn: () => Polyhedra.geodesicIcosahedron(1, 2) },
-  { name: 'Geodesic Icosahedron f=3', fn: () => Polyhedra.geodesicIcosahedron(1, 3) },
-  { name: 'Geodesic Tetrahedron f=2', fn: () => Polyhedra.geodesicTetrahedron(1, 2) },
-  { name: 'Geodesic Octahedron f=2', fn: () => Polyhedra.geodesicOctahedron(1, 2) },
+  {
+    name: "Geodesic Icosahedron f=1",
+    fn: () => Polyhedra.geodesicIcosahedron(1, 1),
+  },
+  {
+    name: "Geodesic Icosahedron f=2",
+    fn: () => Polyhedra.geodesicIcosahedron(1, 2),
+  },
+  {
+    name: "Geodesic Icosahedron f=3",
+    fn: () => Polyhedra.geodesicIcosahedron(1, 3),
+  },
+  {
+    name: "Geodesic Tetrahedron f=2",
+    fn: () => Polyhedra.geodesicTetrahedron(1, 2),
+  },
+  {
+    name: "Geodesic Octahedron f=2",
+    fn: () => Polyhedra.geodesicOctahedron(1, 2),
+  },
 ];
 
 tests.forEach(test => {
@@ -671,12 +745,15 @@ tests.forEach(test => {
     console.log(`✅ ${test.name}: All faces correctly wound`);
   } else {
     console.error(`❌ ${test.name}: ${errors.length} faces incorrectly wound`);
-    errors.forEach(err => console.error(`  Face ${err.faceIndex}: dot=${err.dotProduct.toFixed(4)}`));
+    errors.forEach(err =>
+      console.error(`  Face ${err.faceIndex}: dot=${err.dotProduct.toFixed(4)}`)
+    );
   }
 });
 ```
 
 **Checklist:**
+
 - [ ] Create test file
 - [ ] Run tests before fixes (establish baseline)
 - [ ] Run tests after each polyhedron fix
@@ -690,6 +767,7 @@ tests.forEach(test => {
 **Create visual debug mode in geometry viewer:**
 
 **Features:**
+
 - [ ] Toggle to show face normal arrows
 - [ ] Color coding: green (correct) / red (incorrect)
 - [ ] Face index labels
@@ -697,6 +775,7 @@ tests.forEach(test => {
 - [ ] Side-by-side DoubleSide vs FrontSide comparison
 
 **Test Cases:**
+
 - [ ] View each polyhedron from multiple angles
 - [ ] Rotate camera 360° around each axis
 - [ ] Zoom in to check individual faces
@@ -721,6 +800,7 @@ tests.forEach(test => {
 ```
 
 **Benchmarks:**
+
 - [ ] FPS test: geodesic icosahedron frequency=5 (2000 faces)
 - [ ] FPS test: 10 matrix polyhedra with packed nodes
 - [ ] Draw call count comparison
@@ -734,11 +814,13 @@ tests.forEach(test => {
 #### 7.1 Code Comments
 
 **Remove TODO comments:**
+
 - [ ] Line 661 in rt-polyhedra.js (subdivideTriangles TODO)
 - [ ] Line 811 in rt-rendering.js (node material TODO)
 - [ ] Line 1109 in rt-rendering.js (face material TODO)
 
 **Add explanatory comments:**
+
 - [ ] Document winding order convention (CCW, right-hand rule)
 - [ ] Explain subdivision winding preservation
 - [ ] Note performance benefits of FrontSide
@@ -748,28 +830,34 @@ tests.forEach(test => {
 #### 7.2 ARTexplorer.md Updates
 
 **Update TODO 8.1.3:**
+
 ```markdown
 #### 8.1.3 Backface Culling for Papercut Print Optimization
+
 **Status:** ✅ Completed (2026-01-10)
 **Priority:** High (Print Quality)
 
 Backface culling feature implemented and fully functional after winding order corrections.
 
 **Implementation:**
+
 - UI checkbox wired to material.side property
 - Winding order corrected across all polyhedra (see fix-winding.md)
 - All materials now use THREE.FrontSide by default
 - Performance improvement: ~2x reduction in triangle processing
 
 **Usage:**
+
 - Enable checkbox to hide rear-facing faces in section views
 - Improves print clarity for architectural/dome applications
 - Works correctly with all polyhedra types including geodesics
 ```
 
 **Add completed workplan reference:**
+
 ```markdown
 **Related Documentation:**
+
 - [fix-winding.md](fix-winding.md) - Face winding order correction workplan
 ```
 
@@ -780,6 +868,7 @@ Backface culling feature implemented and fully functional after winding order co
 **File:** `winding-order-fix-report.md`
 
 **Contents:**
+
 - Problem description
 - Solution approach
 - Polyhedra tested
@@ -839,6 +928,7 @@ Backface culling feature implemented and fully functional after winding order co
 ## Success Criteria
 
 ### Must Have
+
 - ✅ All polyhedra pass `validateFaceWinding()` with zero errors
 - ✅ All materials use `THREE.FrontSide` (no DoubleSide)
 - ✅ No visual artifacts when rotating camera 360°
@@ -846,6 +936,7 @@ Backface culling feature implemented and fully functional after winding order co
 - ✅ Section cuts display cleanly in papercut mode
 
 ### Should Have
+
 - ✅ Automated test suite runs without errors
 - ✅ Visual debug mode shows all green arrows (no red)
 - ✅ Performance improvement measurable (~2x triangle reduction)
@@ -853,6 +944,7 @@ Backface culling feature implemented and fully functional after winding order co
 - ✅ All TODO comments removed
 
 ### Nice to Have
+
 - ✅ Before/after performance comparison charts
 - ✅ Before/after screenshots in documentation
 - ✅ Winding order visualization in geometry viewer
@@ -865,16 +957,19 @@ Backface culling feature implemented and fully functional after winding order co
 ### High Risk Areas
 
 **Geodesic Subdivision Algorithm:**
+
 - **Risk:** Complex barycentric grid logic
 - **Impact:** Affects all geodesic polyhedra (most used for high-detail spheres)
 - **Mitigation:** Test with low frequencies first, validate incrementally
 
 **Dodecahedron:**
+
 - **Risk:** 12 pentagonal faces, complex vertex relationships
 - **Impact:** Affects dual icosahedron
 - **Mitigation:** Use validator extensively, cross-check with Platonic solid properties
 
 **Matrix Polyhedra:**
+
 - **Risk:** May have separate rendering path with own material settings
 - **Impact:** Could be missed in main fixes
 - **Mitigation:** Dedicated testing of matrix rendering
@@ -882,11 +977,13 @@ Backface culling feature implemented and fully functional after winding order co
 ### Medium Risk Areas
 
 **Dual Polyhedra:**
+
 - **Risk:** Inherit winding from parent, inversion may complicate
 - **Impact:** Two polyhedra types
 - **Mitigation:** Fix base polyhedra first, validate duals against bases
 
 **Rhombic Dodecahedron:**
+
 - **Risk:** 4-vertex faces (rhombi) less common than triangles
 - **Impact:** One polyhedron type
 - **Mitigation:** Careful validation of 4-vertex winding
@@ -894,6 +991,7 @@ Backface culling feature implemented and fully functional after winding order co
 ### Low Risk Areas
 
 **Tetrahedron, Cube, Octahedron:**
+
 - **Risk:** Simple, symmetric, well-understood
 - **Impact:** Minimal
 - **Mitigation:** Good starting point for validation tools
@@ -911,6 +1009,7 @@ If issues arise during material updates:
 5. **Feature flag:** Add temporary toggle for DoubleSide vs FrontSide testing
 
 **Code Pattern:**
+
 ```javascript
 // Temporary feature flag for testing
 const USE_FRONTSIDE_ONLY = false; // Set true when winding corrected
@@ -926,18 +1025,21 @@ const material = new THREE.MeshStandardMaterial({
 ## Next Steps
 
 **Immediate Actions:**
+
 1. Review this workplan
 2. Create Phase 1 validation tools
 3. Run baseline tests on all polyhedra
 4. Begin Phase 2 base polyhedra fixes
 
 **Before Starting:**
+
 - [ ] Commit current working state
 - [ ] Create feature branch: `fix/face-winding-order`
 - [ ] Set up test environment
 - [ ] Prepare visual debug tools
 
 **Questions to Resolve:**
+
 - Do we want winding validation to run automatically in development mode?
 - Should we add winding validation to existing RT validation (quadrance checks)?
 - Do we need backward compatibility for any external code expecting DoubleSide?
@@ -947,24 +1049,28 @@ const material = new THREE.MeshStandardMaterial({
 ## References
 
 **Three.js Documentation:**
+
 - `THREE.FrontSide` vs `THREE.DoubleSide` vs `THREE.BackSide`
 - `BufferGeometry.computeVertexNormals()`
 - Material.side property
 - Backface culling and depth testing
 
 **Mathematical Concepts:**
+
 - Right-hand rule for normal orientation
 - Cross product for face normals
 - Barycentric coordinates for subdivision
 - Convex hull properties
 
 **Related Files:**
+
 - `rt-polyhedra.js` - All polyhedron definitions
 - `rt-rendering.js` - Material creation and rendering
 - `rt-papercut.js` - Backface culling implementation
 - `ARTexplorer.md` - Documentation and TODO tracking
 
 **External Resources:**
+
 - [Polyhedron winding order conventions](https://www.khronos.org/opengl/wiki/Face_Culling)
 - [Barycentric subdivision algorithms](https://en.wikipedia.org/wiki/Barycentric_subdivision)
 - [Geodesic polyhedra construction](https://en.wikipedia.org/wiki/Geodesic_polyhedron)

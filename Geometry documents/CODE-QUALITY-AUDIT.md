@@ -84,6 +84,7 @@ src/geometry/demos/
 **Goal:** Consistent code formatting across all modules.
 
 **Commands:**
+
 ```bash
 # Check formatting (no changes)
 npx prettier --check "src/geometry/modules/**/*.js"
@@ -93,6 +94,7 @@ npx prettier --write "src/geometry/modules/**/*.js"
 ```
 
 **Standard Configuration:**
+
 ```json
 {
   "semi": true,
@@ -113,6 +115,7 @@ npx prettier --write "src/geometry/modules/**/*.js"
 **Goal:** Catch common JavaScript errors and enforce code standards.
 
 **Commands:**
+
 ```bash
 # Run linting
 npx eslint "src/geometry/modules/**/*.js"
@@ -122,6 +125,7 @@ npx eslint --fix "src/geometry/modules/**/*.js"
 ```
 
 **Key Rules for Geometry Code:**
+
 - `no-unused-vars`: Flag unused variables/imports
 - `no-console`: Warn on console.log (allow in dev, remove for production)
 - `prefer-const`: Use const for immutable values
@@ -137,6 +141,7 @@ npx eslint --fix "src/geometry/modules/**/*.js"
 **Goal:** Identify performance bottlenecks before they impact user experience.
 
 **Browser Console Script:**
+
 ```javascript
 // Measure render loop performance
 let frameCount = 0;
@@ -176,11 +181,13 @@ measureLoop();
 Run through this checklist for each file in audit scope:
 
 #### Duplication Detection
+
 - [ ] **No duplicate functions:** Search for similar function names across modules
 - [ ] **No duplicate logic:** Identify repeated calculation patterns
 - [ ] **Consolidation opportunities:** Can similar functions be unified with parameters?
 
 **Example Console Script:**
+
 ```javascript
 // List all exported functions from rt-polyhedra.js
 console.log(Object.keys(window.Polyhedra || {}));
@@ -189,12 +196,14 @@ console.log(Object.keys(window.Polyhedra || {}));
 ```
 
 #### Verbosity Check
+
 - [ ] **Remove debug console.logs:** Production code should be clean
 - [ ] **Remove commented-out code:** Delete, don't comment (use git history)
 - [ ] **Remove excessive inline comments:** Code should be self-documenting
 - [ ] **Keep only non-obvious comments:** Explain "why", not "what"
 
 **Red Flags:**
+
 ```javascript
 // ❌ BAD - Obvious comment
 // Loop through vertices
@@ -206,11 +215,13 @@ const Q = dx * dx + dy * dy + dz * dz;
 ```
 
 #### Function Ordering
+
 - [ ] **Logical grouping:** Related functions near each other
 - [ ] **Public before private:** Exported API at top, helpers below
 - [ ] **Dependency order:** Called functions defined before callers (when possible)
 
 **Example Structure:**
+
 ```javascript
 // rt-math.js recommended order:
 // 1. Core RT functions (quadrance, spread)
@@ -228,16 +239,17 @@ const Q = dx * dx + dy * dy + dz * dz;
 
 **Verify each module has clear, single responsibility:**
 
-| Module | Responsibility | Should NOT contain |
-|--------|---------------|-------------------|
-| `rt-init.js` | App orchestration, module coordination | Geometry generation, THREE.js scene |
-| `rt-rendering.js` | THREE.js scene, camera, grids | Polyhedra definitions, RT math |
-| `rt-math.js` | RT calculations only | THREE.js dependencies, UI logic |
-| `rt-polyhedra.js` | Polyhedra generators | Rendering, scene management |
-| `rt-controls.js` | Gumball UI interaction | Geometry generation, file I/O |
-| `rt-state-manager.js` | State persistence | Direct DOM manipulation |
+| Module                | Responsibility                         | Should NOT contain                  |
+| --------------------- | -------------------------------------- | ----------------------------------- |
+| `rt-init.js`          | App orchestration, module coordination | Geometry generation, THREE.js scene |
+| `rt-rendering.js`     | THREE.js scene, camera, grids          | Polyhedra definitions, RT math      |
+| `rt-math.js`          | RT calculations only                   | THREE.js dependencies, UI logic     |
+| `rt-polyhedra.js`     | Polyhedra generators                   | Rendering, scene management         |
+| `rt-controls.js`      | Gumball UI interaction                 | Geometry generation, file I/O       |
+| `rt-state-manager.js` | State persistence                      | Direct DOM manipulation             |
 
 **Audit Questions:**
+
 - [ ] Does `rt-math.js` import THREE.js? (Should only return raw coordinates)
 - [ ] Does `rt-polyhedra.js` reference DOM elements? (Should be pure functions)
 - [ ] Does `rt-rendering.js` contain calculation logic? (Should delegate to rt-math)
@@ -245,28 +257,35 @@ const Q = dx * dx + dy * dy + dz * dz;
 #### Import/Export Clarity
 
 **Check for:**
+
 - [ ] **Clear export structure:** Named exports vs. default exports
 - [ ] **No circular dependencies:** A imports B, B imports A (forbidden)
 - [ ] **Minimal cross-module coupling:** Modules should be loosely coupled
 
 **Example Audit Script:**
+
 ```javascript
 // Check what rt-rendering.js exports
-console.log('Rendering exports:', Object.keys(window.Rendering || {}));
+console.log("Rendering exports:", Object.keys(window.Rendering || {}));
 
 // Verify factory pattern
-console.log('Has createScene?', typeof window.Rendering?.createScene === 'function');
+console.log(
+  "Has createScene?",
+  typeof window.Rendering?.createScene === "function"
+);
 ```
 
 #### API Surface Consistency
 
 **Naming Conventions:**
+
 - [ ] **Polyhedra generators:** `Polyhedra.shape(halfSize, ...params)`
 - [ ] **RT math functions:** `RT.functionName(args)` (e.g., `RT.quadrance()`)
 - [ ] **Rendering factory:** `Rendering.createScene(config)` returns API object
 - [ ] **Gumball controls:** Event-driven, stateful closures
 
 **Parameter Order Consistency:**
+
 - [ ] **Size parameters first:** `(halfSize, frequency)` not `(frequency, halfSize)`
 - [ ] **Optional parameters last:** `(required1, required2, optional = default)`
 
@@ -290,11 +309,13 @@ grep -rn "Math.asin\|Math.acos\|Math.atan" src/geometry/modules/
 ```
 
 **Allowed Exceptions:**
+
 1. **Comments/Documentation:** Explaining conversion from classical to RT
 2. **Demo comparisons:** Showing RT vs classical equivalence
 3. **THREE.js interface only:** Grid rotation matrices (see Math.PI deferral TODO)
 
 **Example Justification Comment:**
+
 ```javascript
 // Math.PI usage justified: THREE.js GridHelper requires rotation matrix
 // TODO: Replace with RT-pure custom grid (see CODE-QUALITY-AUDIT.md Section 4.2)
@@ -304,6 +325,7 @@ gridXY.rotation.x = Math.PI / 2;
 #### Verify Deferred √ Expansion Pattern
 
 **Correct Pattern:**
+
 ```javascript
 // ✅ GOOD - Deferred √ expansion
 function calculateEdge(p1, p2) {
@@ -319,10 +341,13 @@ function calculateEdge(p1, p2) {
 ```
 
 **Incorrect Pattern:**
+
 ```javascript
 // ❌ BAD - Premature √ expansion
 function calculateEdge(p1, p2) {
-  const distance = Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2 + (p2.z - p1.z) ** 2);
+  const distance = Math.sqrt(
+    (p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2 + (p2.z - p1.z) ** 2
+  );
   return distance; // Lost algebraic precision
 }
 ```
@@ -330,6 +355,7 @@ function calculateEdge(p1, p2) {
 #### Golden Ratio Identity Usage
 
 **Verify φ calculations use identities:**
+
 ```javascript
 // ✅ GOOD - Uses identity φ² = φ + 1
 const phiSquared = phi + 1;
@@ -348,12 +374,14 @@ const invPhi = 1 / phi; // Should use algebraic identity
 ### 3.1 When to Refactor
 
 **Refactor if:**
+
 - ✅ Function > 50 lines (consider splitting)
 - ✅ Duplicate code in 3+ places (extract to shared function)
 - ✅ Complex nested conditionals (use early returns or lookup tables)
 - ✅ Magic numbers (extract to named constants)
 
 **Do NOT refactor if:**
+
 - ❌ Code is clear and working fine (no performance/readability issue)
 - ❌ "Improving" working code without measurable benefit
 - ❌ Introducing abstraction for hypothetical future use
@@ -363,6 +391,7 @@ const invPhi = 1 / phi; // Should use algebraic identity
 #### Pattern 1: Extract Magic Numbers
 
 **Before:**
+
 ```javascript
 const vertices = [
   [0, 1.618, 1],
@@ -372,6 +401,7 @@ const vertices = [
 ```
 
 **After:**
+
 ```javascript
 const phi = (1 + Math.sqrt(5)) / 2;
 const vertices = [
@@ -384,6 +414,7 @@ const vertices = [
 #### Pattern 2: Consolidate Duplicate Logic
 
 **Before:**
+
 ```javascript
 function geodesicIcosahedron(halfSize, frequency) {
   const base = icosahedron(halfSize);
@@ -401,6 +432,7 @@ function geodesicTetrahedron(halfSize, frequency) {
 ```
 
 **After:**
+
 ```javascript
 function geodesicSubdivide(basePolyhedron, halfSize, frequency) {
   const subdivided = subdivideTriangles(basePolyhedron, frequency);
@@ -419,6 +451,7 @@ function geodesicTetrahedron(halfSize, frequency) {
 #### Pattern 3: Early Returns Over Nested Conditions
 
 **Before:**
+
 ```javascript
 function validateEdges(edges) {
   if (edges && edges.length > 0) {
@@ -435,6 +468,7 @@ function validateEdges(edges) {
 ```
 
 **After:**
+
 ```javascript
 function validateEdges(edges) {
   if (!edges || edges.length === 0) return false;
@@ -451,6 +485,7 @@ function validateEdges(edges) {
 #### Pattern 1: Geometry Caching
 
 **Before:**
+
 ```javascript
 // Regenerates geometry every frame
 function updateNodes() {
@@ -461,6 +496,7 @@ function updateNodes() {
 ```
 
 **After:**
+
 ```javascript
 // Cache geometry, reuse instances
 const geometryCache = new Map();
@@ -483,6 +519,7 @@ function updateNodes() {
 #### Pattern 2: Avoid Unnecessary Recalculations
 
 **Before:**
+
 ```javascript
 // Recalculates every render
 function render() {
@@ -493,6 +530,7 @@ function render() {
 ```
 
 **After:**
+
 ```javascript
 // Cache count, invalidate on scene change
 let cachedTriangleCount = 0;
@@ -521,18 +559,23 @@ function render() {
 **Rule:** All distance/angle calculations MUST use quadrance/spread.
 
 **Audit Checklist:**
+
 - [ ] Distance calculations use `Q = dx² + dy² + dz²` (not `d = √(...)` until final output)
 - [ ] Angle calculations use `s = 1 - (v₁·v₂)² / (Q₁·Q₂)` (not `θ = arccos(...)`)
 - [ ] Spread values verify `s + c = 1` identity
 - [ ] Edge validation uses quadrance uniformity
 
 **Verification Script:**
+
 ```javascript
 // Check if RT.quadrance is used correctly
-const testPoints = [[0, 0, 0], [1, 1, 1]];
+const testPoints = [
+  [0, 0, 0],
+  [1, 1, 1],
+];
 const Q = RT.quadrance(testPoints[0], testPoints[1]);
-console.log('Quadrance:', Q); // Should be 3
-console.log('Expected:', 1*1 + 1*1 + 1*1); // Verify = 3
+console.log("Quadrance:", Q); // Should be 3
+console.log("Expected:", 1 * 1 + 1 * 1 + 1 * 1); // Verify = 3
 ```
 
 ### 4.2 Deferred √ Expansion Patterns
@@ -544,22 +587,14 @@ console.log('Expected:', 1*1 + 1*1 + 1*1); // Verify = 3
 ```javascript
 // ✅ Pattern 1: Midpoint calculation (no √ needed)
 function midpoint(p1, p2) {
-  return [
-    (p1[0] + p2[0]) / 2,
-    (p1[1] + p2[1]) / 2,
-    (p1[2] + p2[2]) / 2
-  ]; // Pure algebra, exact
+  return [(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2, (p1[2] + p2[2]) / 2]; // Pure algebra, exact
 }
 
 // ✅ Pattern 2: Sphere projection (√ only at end)
 function projectToSphere(vertex, radius) {
-  const Q = vertex[0]**2 + vertex[1]**2 + vertex[2]**2;
+  const Q = vertex[0] ** 2 + vertex[1] ** 2 + vertex[2] ** 2;
   const scale = radius / Math.sqrt(Q); // √ deferred to here
-  return [
-    vertex[0] * scale,
-    vertex[1] * scale,
-    vertex[2] * scale
-  ];
+  return [vertex[0] * scale, vertex[1] * scale, vertex[2] * scale];
 }
 
 // ✅ Pattern 3: THREE.Vector3 creation (final boundary)
@@ -574,25 +609,27 @@ function createVertex(coords) {
 **Rule:** Use rational circle parametrization when possible.
 
 **Weierstrass Pattern:**
+
 ```javascript
 // ✅ RT-Pure circle parametrization
 function rationalCirclePoint(t) {
   // Weierstrass substitution: sin(θ) = 2t/(1+t²), cos(θ) = (1-t²)/(1+t²)
   const denom = 1 + t * t;
   const x = (1 - t * t) / denom; // cos(θ)
-  const y = (2 * t) / denom;     // sin(θ)
+  const y = (2 * t) / denom; // sin(θ)
   return [x, y];
 }
 ```
 
 **For n-sided polygons (exact vertices):**
+
 ```javascript
 // ✅ Exact algebraic coordinates for regular polygons
 function polygonVertex(n, k, radius) {
   // Use exact algebraic formulas when available
-  if (n === 3) return triangleVertex(k, radius);   // Exact
-  if (n === 4) return squareVertex(k, radius);     // Exact
-  if (n === 6) return hexagonVertex(k, radius);    // Exact
+  if (n === 3) return triangleVertex(k, radius); // Exact
+  if (n === 4) return squareVertex(k, radius); // Exact
+  if (n === 6) return hexagonVertex(k, radius); // Exact
 
   // For other n, use Weierstrass or accept sin/cos with justification
   // TODO: Research exact algebraic forms for n=5,8,12
@@ -604,6 +641,7 @@ function polygonVertex(n, k, radius) {
 **Rule:** Use φ identities to eliminate multiplication/division.
 
 **Required Identities:**
+
 ```javascript
 const phi = (1 + Math.sqrt(5)) / 2;
 
@@ -618,6 +656,7 @@ const phiCubed = 2 * phi + 1; // NOT phi * phi * phi
 ```
 
 **Audit Pattern:**
+
 ```bash
 # Search for φ multiplication/division violations
 grep -rn "phi \* phi\|phi \/ phi" src/geometry/modules/rt-polyhedra.js
@@ -657,11 +696,13 @@ grep -rn "phi \* phi\|phi \/ phi" src/geometry/modules/rt-polyhedra.js
 ### Step 1: Preparation
 
 1. **Checkout audit branch:**
+
    ```bash
    git checkout -b code-audit-YYYY-MM-DD
    ```
 
 2. **Ensure clean working tree:**
+
    ```bash
    git status
    # Should show: "nothing to commit, working tree clean"
@@ -716,6 +757,7 @@ Use the [Reporting Template](#reporting-template) below.
 ### Step 6: Create Issues/TODOs
 
 For each finding:
+
 1. **Critical issues:** Create GitHub issue immediately
 2. **Non-critical items:** Add to Section 8 TODO Master List
 3. **Quick fixes:** Apply during audit (format, remove console.logs)
@@ -758,6 +800,7 @@ git push -u origin code-audit-YYYY-MM-DD
 
 ```markdown
 # Code Quality Audit Report
+
 **Date:** YYYY-MM-DD
 **Auditor:** Claude Code (Sonnet 4.5)
 **Audit Type:** [Minor | Major | RT-Purity]
@@ -779,11 +822,13 @@ git push -u origin code-audit-YYYY-MM-DD
 ## Section 1: Automated Checks
 
 ### Prettier Formatting
+
 - **Status:** [✅ PASS | ❌ FAIL]
 - **Violations:** XX files
 - **Auto-Fixed:** [Yes | No]
 
 ### ESLint Compliance
+
 - **Status:** [✅ PASS | ⚠️ WARNINGS | ❌ FAIL]
 - **Errors:** XX
 - **Warnings:** XX
@@ -792,6 +837,7 @@ git push -u origin code-audit-YYYY-MM-DD
   2. [Issue type]: XX occurrences
 
 ### Performance
+
 - **Status:** [✅ PASS | ❌ FAIL]
 - **Average Frame Time:** X.XXms
 - **Average FPS:** XX.X fps
@@ -802,6 +848,7 @@ git push -u origin code-audit-YYYY-MM-DD
 ## Section 2: Manual Review Findings
 
 ### Code Quality
+
 - **Duplicate Functions:** XX found
   - [List duplicates with file:line references]
 - **Verbose Code:** XX functions > 50 lines
@@ -810,6 +857,7 @@ git push -u origin code-audit-YYYY-MM-DD
   - [List with file:line references]
 
 ### Architecture Review
+
 - **Module Boundary Violations:** XX found
   - [Describe violations]
 - **Import/Export Issues:** XX found
@@ -822,6 +870,7 @@ git push -u origin code-audit-YYYY-MM-DD
 ## Section 3: RT-Purity Analysis
 
 ### Classical Trigonometry Usage
+
 - **Total Occurrences:** XX
 - **Justified:** XX (with documentation)
 - **Unjustified:** XX (requires fix)
@@ -831,10 +880,12 @@ git push -u origin code-audit-YYYY-MM-DD
   - Math.asin/acos/atan: XX occurrences ([file:line, ...])
 
 ### Deferred √ Expansion
+
 - **Violations Found:** XX
 - **Files:** [List files with premature sqrt() calls]
 
 ### Golden Ratio Identity Usage
+
 - **φ multiplication found:** XX (should use φ² = φ + 1)
 - **φ division found:** XX (should use 1/φ = φ - 1)
 
@@ -843,31 +894,35 @@ git push -u origin code-audit-YYYY-MM-DD
 ## Section 4: Action Items
 
 ### Critical (Must Fix Before Release)
+
 1. [Issue description] - [File:line] - [Assigned to]
 2. [Issue description] - [File:line] - [Assigned to]
 
 ### High Priority (Fix Soon)
+
 1. [Issue description] - [File:line] - [Assigned to]
 2. [Issue description] - [File:line] - [Assigned to]
 
 ### Medium Priority (Backlog)
+
 1. [Issue description] - [File:line] - [TODO item #]
 2. [Issue description] - [File:line] - [TODO item #]
 
 ### Low Priority (Nice to Have)
+
 1. [Issue description] - [File:line] - [TODO item #]
 
 ---
 
 ## Section 5: Quality Gate Assessment
 
-| Gate | Target | Actual | Status |
-|------|--------|--------|--------|
-| ESLint Errors | 0 | XX | [✅ | ❌] |
-| Prettier Violations | 0 | XX | [✅ | ❌] |
-| Performance (60fps) | 16.67ms | XX.XXms | [✅ | ❌] |
-| Duplicate Functions | 0 | XX | [✅ | ❌] |
-| Classical Trig (%) | < 5% | XX% | [✅ | ⚠️ | ❌] |
+| Gate                | Target  | Actual  | Status |
+| ------------------- | ------- | ------- | ------ | --- | --- |
+| ESLint Errors       | 0       | XX      | [✅    | ❌] |
+| Prettier Violations | 0       | XX      | [✅    | ❌] |
+| Performance (60fps) | 16.67ms | XX.XXms | [✅    | ❌] |
+| Duplicate Functions | 0       | XX      | [✅    | ❌] |
+| Classical Trig (%)  | < 5%    | XX%     | [✅    | ⚠️  | ❌] |
 
 **Overall:** [✅ ALL GATES PASSED | ⚠️ TARGETS NOT MET | ❌ MANDATORY FAILED]
 
@@ -885,6 +940,7 @@ git push -u origin code-audit-YYYY-MM-DD
 ## Appendix: Detailed Findings
 
 [Attach or reference:]
+
 - `audit-prettier.txt`
 - `audit-eslint.txt`
 - `audit-performance.txt`
@@ -900,6 +956,7 @@ git push -u origin code-audit-YYYY-MM-DD
 ## Quick Reference Commands
 
 ### Run Full Audit Suite
+
 ```bash
 # 1. Format check
 npx prettier --check "src/geometry/modules/**/*.js"
@@ -918,6 +975,7 @@ grep -rn "function geodesic" src/geometry/modules/rt-polyhedra.js
 ```
 
 ### Auto-Fix What's Possible
+
 ```bash
 # Auto-format
 npx prettier --write "src/geometry/modules/**/*.js"
@@ -940,6 +998,7 @@ sed -i.bak '/console.log/d' src/geometry/modules/*.js
 ---
 
 **Related Documentation:**
+
 - [ARTexplorer.md](ARTexplorer.md) - Main project documentation
 - [ARTexplorer.md Section 8](ARTexplorer.md#8-todo-master-list) - TODO Master List
 - [TODO 8.1.5](ARTexplorer.md#815-periodic-code-quality-audit-qcqa) - Code Quality Audit TODO

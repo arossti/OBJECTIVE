@@ -36,13 +36,18 @@ Both implementations share the same core logic:
 #### 1. **Initialization Pattern**
 
 **Inline Version:**
+
 ```javascript
 // Runs immediately when <script> loads
 let editingBasis = null;
 let currentGumballTool = null;
 
-function createEditingBasis(position) { /* ... */ }
-function initGumballEventListeners() { /* ... */ }
+function createEditingBasis(position) {
+  /* ... */
+}
+function initGumballEventListeners() {
+  /* ... */
+}
 
 // Called after scene creation
 initScene();
@@ -50,11 +55,12 @@ initGumballEventListeners();
 ```
 
 **Module Version:**
+
 ```javascript
 export const RTControls = {
   state: {
     editingBasis: null,
-    currentTool: null
+    currentTool: null,
   },
 
   init(THREE, Quadray, scene, camera, renderer, controls) {
@@ -62,11 +68,12 @@ export const RTControls = {
     this.scene = scene;
     // ...
     this.initEventListeners();
-  }
-}
+  },
+};
 ```
 
 **Problem:**
+
 - Module requires `RTControls.init()` to be called explicitly from HTML
 - HTML must pass `scene`, `camera`, `renderer`, `controls` objects
 - **If init() is not called or called before scene is ready, module fails silently**
@@ -81,6 +88,7 @@ This suggests the module was written but **never successfully integrated** into 
 #### 2. **Event Listener Selectors**
 
 **Inline Version:**
+
 ```javascript
 // Selects buttons by data attribute AND class
 document.querySelectorAll(".toggle-btn.variant-tool").forEach(btn => {
@@ -92,11 +100,12 @@ document.querySelectorAll(".toggle-btn.variant-tool").forEach(btn => {
 ```
 
 **Module Version:**
+
 ```javascript
 // Selects buttons by class only
-const buttons = document.querySelectorAll('.gumball-tool-btn');
+const buttons = document.querySelectorAll(".gumball-tool-btn");
 buttons.forEach(btn => {
-  btn.addEventListener('click', () => {
+  btn.addEventListener("click", () => {
     const tool = btn.dataset.gumballTool;
     // ...
   });
@@ -104,6 +113,7 @@ buttons.forEach(btn => {
 ```
 
 **Problem:**
+
 - Module looks for `.gumball-tool-btn` class
 - **Current HTML likely uses `.toggle-btn.variant-tool` classes**
 - If selectors don't match, event listeners never attach
@@ -115,6 +125,7 @@ buttons.forEach(btn => {
 #### 3. **getSelectedPolyhedra() Implementation**
 
 **Inline Version:**
+
 ```javascript
 function getSelectedPolyhedra() {
   const groups = [
@@ -126,7 +137,7 @@ function getSelectedPolyhedra() {
     dodecahedronGroup,
     dualIcosahedronGroup,
     cuboctahedronGroup,
-    rhombicDodecahedronGroup
+    rhombicDodecahedronGroup,
   ];
 
   groups.forEach(group => {
@@ -140,6 +151,7 @@ function getSelectedPolyhedra() {
 ```
 
 **Module Version:**
+
 ```javascript
 getSelectedPolyhedra() {
   const selected = [];
@@ -156,15 +168,18 @@ getSelectedPolyhedra() {
 ```
 
 **Difference:**
+
 - **Inline:** Explicitly references global variables (`cubeGroup`, `dualTetrahedronGroup`, etc.)
 - **Module:** Traverses entire scene looking for `userData.polyhedronType`
 
 **Impact:**
+
 - Module approach is **more flexible** (works with any polyhedra)
 - Module approach is **slower** (traverses entire scene graph every frame during drag)
 - **Both are temporary workarounds** until proper selection system exists
 
 **Why This Matters:**
+
 - Inline version has direct closure access to global `cubeGroup`, etc.
 - Module version must rely on userData tagging (may not be set correctly)
 
@@ -173,6 +188,7 @@ getSelectedPolyhedra() {
 #### 4. **THIS Binding Context**
 
 **Inline Version:**
+
 ```javascript
 // Functions in same scope, no this binding needed
 function createEditingBasis(position) {
@@ -181,6 +197,7 @@ function createEditingBasis(position) {
 ```
 
 **Module Version:**
+
 ```javascript
 createEditingBasis(position) {
   this.scene.add(this.state.editingBasis); // Access via this
@@ -188,14 +205,16 @@ createEditingBasis(position) {
 ```
 
 **Problem:**
+
 - Module methods use `this` to access `this.scene`, `this.camera`, `this.THREE`, etc.
 - **Arrow functions in event listeners preserve `this` context**
 - **If event listeners use `function()` instead of `()=>`, `this` is lost**
 
 **Evidence:**
 Line 82-93 in rt-controls.js uses arrow functions correctly:
+
 ```javascript
-btn.addEventListener('click', () => {
+btn.addEventListener("click", () => {
   this.activateTool(tool); // ✅ this refers to RTControls
 });
 ```
@@ -211,14 +230,16 @@ Based on the comparison, here are the **most likely reasons** the module extract
 ### 1. **RTControls.init() Never Called** (MOST LIKELY)
 
 **Evidence:**
+
 - ARTexplorer.html has no visible `RTControls.init()` call
 - Module expects explicit initialization with scene objects
 - Without init(), all module state is null/undefined
 
 **Test:**
+
 ```javascript
 // Check if this exists in ARTexplorer.html
-import { RTControls } from './modules/rt-controls.js';
+import { RTControls } from "./modules/rt-controls.js";
 
 // After initScene() completes:
 RTControls.init(THREE, Quadray, scene, camera, renderer, controls);
@@ -231,14 +252,16 @@ RTControls.init(THREE, Quadray, scene, camera, renderer, controls);
 ### 2. **CSS Class Selectors Don't Match**
 
 **Evidence:**
+
 - Module looks for `.gumball-tool-btn` (line 79)
 - Module looks for `.snap-toggle-btn` (line 102)
 - **Current HTML likely uses `.toggle-btn.variant-tool` and `.toggle-btn.variant-snap`**
 
 **Test:**
+
 ```javascript
-console.log(document.querySelectorAll('.gumball-tool-btn').length); // Likely 0
-console.log(document.querySelectorAll('.toggle-btn.variant-tool').length); // Likely 3
+console.log(document.querySelectorAll(".gumball-tool-btn").length); // Likely 0
+console.log(document.querySelectorAll(".toggle-btn.variant-tool").length); // Likely 3
 ```
 
 **If mismatch:** Event listeners never attach, buttons don't respond.
@@ -248,10 +271,12 @@ console.log(document.querySelectorAll('.toggle-btn.variant-tool').length); // Li
 ### 3. **userData.polyhedronType Not Set**
 
 **Evidence:**
+
 - Module's `getSelectedPolyhedra()` filters by `obj.userData.polyhedronType` (line 644)
 - **If polyhedra groups don't have this property, selection returns empty array**
 
 **Test:**
+
 ```javascript
 console.log(cubeGroup.userData.polyhedronType); // Should be 'cube'
 ```
@@ -263,15 +288,17 @@ console.log(cubeGroup.userData.polyhedronType); // Should be 'cube'
 ### 4. **Import Statement Missing or Broken**
 
 **Evidence:**
+
 - No ES6 module import visible in ARTexplorer.html
 - Module exports `RTControls` object but may not be imported
 
 **Test:**
 Check ARTexplorer.html for:
+
 ```html
 <script type="module">
-import { RTControls } from './modules/rt-controls.js';
-// ...
+  import { RTControls } from "./modules/rt-controls.js";
+  // ...
 </script>
 ```
 
@@ -292,15 +319,17 @@ This is **curious** because both inline and module versions treat all axes ident
 3. **Or: W-axis hit sphere rendered but others culled** due to camera frustum
 
 **Hypothesis:**
+
 - If `editingBasis` is partially created (e.g., only WXYZ, not XYZ), W-axis handle exists
 - If Cartesian XYZ section fails to render (due to `showCartesianBasis` checkbox state), no X/Y/Z handles
 - **User may have had WXYZ enabled, XYZ disabled** → only W/X/Y/Z handles exist, not Cartesian X/Y/Z
 
 **Test:**
 Check checkbox state:
+
 ```javascript
-console.log(document.getElementById('showCartesianBasis').checked); // false?
-console.log(document.getElementById('showQuadray').checked); // true?
+console.log(document.getElementById("showCartesianBasis").checked); // false?
+console.log(document.getElementById("showQuadray").checked); // true?
 ```
 
 **If WXYZ-only:** Then X/Y/Z refer to Quadray X/Y/Z (indices 1/2/3), not Cartesian.
@@ -319,6 +348,7 @@ The module extraction **did NOT break the gumball logic itself**. The logic is i
 4. **Import never added** → Module not loaded in HTML
 
 **Evidence:**
+
 - Inline version works perfectly (proven on 2025-12-29)
 - Module version has identical logic (line-by-line comparison confirms)
 - Module comments admit it's "TEMPORARY" and incomplete (line 639)
@@ -333,16 +363,19 @@ The module extraction was **started but never finished**. The developer extracte
 ### Option A: Fix Module Integration (Complex)
 
 **Pros:**
+
 - Cleaner architecture long-term
 - Separates concerns
 - Easier to test
 
 **Cons:**
+
 - Requires significant HTML changes
 - Risk of introducing new bugs
 - Takes 3-4 hours to complete
 
 **Steps:**
+
 1. Add ES6 module import to ARTexplorer.html
 2. Update button classes to match module selectors
 3. Ensure `userData.polyhedronType` is set on all polyhedra
@@ -356,16 +389,19 @@ The module extraction was **started but never finished**. The developer extracte
 ### Option B: Keep Inline Version (Pragmatic)
 
 **Pros:**
+
 - Already works perfectly
 - No risk of regression
 - Zero development time
 
 **Cons:**
+
 - ARTexplorer.html remains ~3000 lines
 - Less modular architecture
 - Harder to test in isolation
 
 **Steps:**
+
 1. Delete `modules/rt-controls.js` (or keep as reference)
 2. Continue working with inline implementation
 3. Extract to module **after** selection system is complete
@@ -375,23 +411,27 @@ The module extraction was **started but never finished**. The developer extracte
 ### Option C: Hybrid Approach (Recommended)
 
 **Pros:**
+
 - Leverage working inline code now
 - Extract incrementally with testing
 - Balance pragmatism and clean architecture
 
 **Cons:**
+
 - Requires careful planning
 - Two-phase development
 
 **Steps:**
 
 **Phase 1: Today's Session (Priority 1-4)**
+
 1. **Keep inline gumball** - It works, don't touch it
 2. **Implement selection system** - This is the real blocker
 3. **Create rt-state-manager.js** - New module, no extraction needed
 4. **Integrate Forms/Instances** - Works with inline gumball
 
 **Phase 2: After Selection Works (Future Session)**
+
 1. **Extract rt-controls.js properly** - With selection system in place
 2. **Test incrementally** - One axis at a time
 3. **Keep inline as backup** - Comment out, don't delete
@@ -406,9 +446,9 @@ If/when we extract rt-controls.js properly:
 
 ```javascript
 // In initScene(), after creating each polyhedra group:
-cubeGroup.userData.polyhedronType = 'cube';
-tetrahedronGroup.userData.polyhedronType = 'tetrahedron';
-dualTetrahedronGroup.userData.polyhedronType = 'dualTetrahedron';
+cubeGroup.userData.polyhedronType = "cube";
+tetrahedronGroup.userData.polyhedronType = "tetrahedron";
+dualTetrahedronGroup.userData.polyhedronType = "dualTetrahedron";
 // ... etc for all polyhedra
 ```
 
@@ -423,16 +463,17 @@ dualTetrahedronGroup.userData.polyhedronType = 'dualTetrahedron';
 ```
 
 Or update module selectors:
+
 ```javascript
 // In rt-controls.js initToolButtons():
-const buttons = document.querySelectorAll('.toggle-btn.variant-tool'); // Match HTML
+const buttons = document.querySelectorAll(".toggle-btn.variant-tool"); // Match HTML
 ```
 
 ### Step 3: Import Module
 
 ```html
 <script type="module">
-  import { RTControls } from './modules/rt-controls.js';
+  import { RTControls } from "./modules/rt-controls.js";
 
   // After initScene():
   RTControls.init(THREE, Quadray, scene, camera, renderer, controls);
@@ -488,6 +529,7 @@ The `rt-controls.js` module is **well-written and structurally sound**. The logi
 ✅ **Defer module extraction** - Not critical path, high risk
 
 **Timeline:**
+
 - **Today:** Priorities 1-4 (Selection + StateManager)
 - **Future:** Extract rt-controls.js with proper testing
 
@@ -495,20 +537,21 @@ The `rt-controls.js` module is **well-written and structurally sound**. The logi
 
 ## Appendix: Side-by-Side Feature Comparison
 
-| Feature | Inline Version | Module Version | Status |
-|---------|----------------|----------------|--------|
-| **Editing Basis Creation** | ✅ Works | ✅ Identical Logic | Same |
-| **Hit Sphere Raycasting** | ✅ Works | ✅ Identical Logic | Same |
-| **Axis-Constrained Drag** | ✅ Works | ✅ Identical Logic | Same |
-| **Grid Snapping** | ✅ Works | ✅ Identical Logic | Same |
-| **Coordinate Display** | ✅ Works | ✅ Identical Logic | Same |
-| **Tool Toggle Buttons** | ✅ Works | ❌ Selector Mismatch | **Broken** |
-| **Snap Toggle Buttons** | ✅ Works | ❌ Selector Mismatch | **Broken** |
-| **getSelectedPolyhedra()** | ✅ Explicit Refs | ⚠️ Scene Traversal | Different |
-| **Initialization** | ✅ Inline Init | ❌ Never Called | **Broken** |
-| **Import/Export** | N/A | ❌ Not Imported | **Missing** |
+| Feature                    | Inline Version   | Module Version       | Status      |
+| -------------------------- | ---------------- | -------------------- | ----------- |
+| **Editing Basis Creation** | ✅ Works         | ✅ Identical Logic   | Same        |
+| **Hit Sphere Raycasting**  | ✅ Works         | ✅ Identical Logic   | Same        |
+| **Axis-Constrained Drag**  | ✅ Works         | ✅ Identical Logic   | Same        |
+| **Grid Snapping**          | ✅ Works         | ✅ Identical Logic   | Same        |
+| **Coordinate Display**     | ✅ Works         | ✅ Identical Logic   | Same        |
+| **Tool Toggle Buttons**    | ✅ Works         | ❌ Selector Mismatch | **Broken**  |
+| **Snap Toggle Buttons**    | ✅ Works         | ❌ Selector Mismatch | **Broken**  |
+| **getSelectedPolyhedra()** | ✅ Explicit Refs | ⚠️ Scene Traversal   | Different   |
+| **Initialization**         | ✅ Inline Init   | ❌ Never Called      | **Broken**  |
+| **Import/Export**          | N/A              | ❌ Not Imported      | **Missing** |
 
 **Overall Assessment:**
+
 - **Logic:** 100% identical ✅
 - **Integration:** 0% complete ❌
 
@@ -534,12 +577,14 @@ A second attempt was made to extract the inline gumball code to rt-controls.js m
 ### Results
 
 **Partial Success:**
+
 - ✅ Module loaded without errors
 - ✅ Tool buttons activated/deactivated correctly
 - ✅ Editing basis appeared at selected Form position
 - ✅ Hit spheres rendered visibly
 
 **Critical Failure:**
+
 - ❌ **Dragging did not work** - Forms could not be moved or scaled
 - ❌ Console showed tool activation but no drag events fired
 - ❌ Same fundamental issue as first attempt
@@ -566,12 +611,14 @@ The module extraction fails because of **scope isolation issues** between the mo
 ### Why This Keeps Failing
 
 The inline gumball code has **closure access** to:
+
 - Global variables: `cubeGroup`, `tetrahedronGroup`, `scene`, `camera`, etc.
 - Selection state: `currentSelection`, `isDragging`
 - Helper functions: `deselectAll()`, `applyHighlight()`, `clearHighlight()`
 - Event listeners execute in same scope with direct variable access
 
 The module code **loses this closure access** and must rely on:
+
 - Explicit parameter passing during init
 - Property injection (`RTControls.getSelectedPolyhedra = ...`)
 - No direct access to HTML scope variables
@@ -583,6 +630,7 @@ The module code **loses this closure access** and must rely on:
 **Recommendation:** **DO NOT extract gumball to module** until architectural prerequisites are met.
 
 **Rationale:**
+
 1. Inline code **works perfectly** - proven in production use
 2. Module extraction **has failed twice** with same core issues
 3. Time cost of debugging > value of modularization
@@ -594,6 +642,7 @@ The module code **loses this closure access** and must rely on:
 If extraction is attempted again in the future, these must be implemented FIRST:
 
 1. **Global State Object:**
+
    ```javascript
    window.ARTState = {
      isDragging: false,
@@ -604,10 +653,15 @@ If extraction is attempted again in the future, these must be implemented FIRST:
    ```
 
 2. **Event Bus Pattern:**
+
    ```javascript
    const EventBus = {
-     on(event, callback) { /* ... */ },
-     emit(event, data) { /* ... */ }
+     on(event, callback) {
+       /* ... */
+     },
+     emit(event, data) {
+       /* ... */
+     },
    };
    // Module emits: EventBus.emit('drag:start', {handle, form})
    // HTML listens: EventBus.on('drag:start', updateUI)
@@ -640,6 +694,7 @@ After the failed gumball extraction attempts, the question arose: should selecti
 ### Analysis
 
 **Selection Functions (currently in HTML):**
+
 - `selectPolyhedron()` - Apply highlight to clicked object
 - `applyHighlight()` - Add cyan glow to selected form
 - `clearHighlight()` - Remove glow
@@ -647,10 +702,12 @@ After the failed gumball extraction attempts, the question arose: should selecti
 - `onCanvasClick()` - Raycasting to detect clicks
 
 **State Variables:**
+
 - `currentSelection` - Currently selected object
 - `isDragging` - Prevents selection during drag
 
 **Used By:**
+
 - Gumball controls (needs to know what's selected to show editing basis)
 - NOW button (deposits selected forms as instances)
 - Keyboard shortcuts (ESC, Delete)
@@ -661,6 +718,7 @@ After the failed gumball extraction attempts, the question arose: should selecti
 #### Option A: Keep in HTML (RECOMMENDED for now)
 
 **Pros:**
+
 - ✅ Already working perfectly
 - ✅ Shared state accessible to all systems (gumball, NOW button, keyboard)
 - ✅ No scope isolation issues
@@ -668,11 +726,13 @@ After the failed gumball extraction attempts, the question arose: should selecti
 - ✅ Easy to debug - everything in one place
 
 **Cons:**
+
 - ❌ HTML file remains larger (~3000 lines)
 - ❌ Less modular architecture
 - ❌ Selection logic not reusable
 
 **Best For:**
+
 - Current architecture where gumball is inline
 - Rapid development and iteration
 - Proven working code
@@ -680,6 +740,7 @@ After the failed gumball extraction attempts, the question arose: should selecti
 #### Option B: Extract to `rt-selection.js` Module (Future consideration)
 
 **Pros:**
+
 - ✅ Clean separation of concerns
 - ✅ Reusable selection system
 - ✅ Could be used by other tools beyond gumball
@@ -687,12 +748,14 @@ After the failed gumball extraction attempts, the question arose: should selecti
 - ✅ Professional architecture
 
 **Cons:**
+
 - ❌ Same scope isolation issues as gumball extraction
 - ❌ Would need global state object or event bus
 - ❌ Requires architectural refactoring (8+ hours)
 - ❌ Risk of breaking working code
 
 **Required Changes:**
+
 - Move selection state to module
 - All code must reference `RTSelection.state.current` instead of `currentSelection`
 - Gumball, NOW button, keyboard handlers must import and use module
@@ -708,6 +771,7 @@ Selection is a **general UI concern**, while gumball is a **specific editing too
 **Short Term (Current):** **Keep selection functions in HTML** ✅
 
 **Rationale:**
+
 1. **It works perfectly** - zero bugs, proven in use
 2. **No architectural debt** - inline code is acceptable for UI interaction
 3. **Fast iteration** - can add features without module complexity
@@ -717,6 +781,7 @@ Selection is a **general UI concern**, while gumball is a **specific editing too
 **Long Term (Future Refactor):** **Extract to `rt-selection.js`** 🎯
 
 **Only extract when ALL of these are true:**
+
 1. ✅ Gumball functionality is **stable and complete**
 2. ✅ You have **8+ hours** for careful refactoring
 3. ✅ You implement **global state pattern** first (`window.ARTState`)
@@ -724,6 +789,7 @@ Selection is a **general UI concern**, while gumball is a **specific editing too
 5. ✅ You plan to build **other tools** that need selection (measurement tool, annotation tool, etc.)
 
 **Implementation Path (if/when needed):**
+
 ```
 Phase 1: Global State (2 hours)
 - Create window.ARTState object
@@ -753,6 +819,7 @@ Phase 4: Gumball Module (Optional, 4+ hours)
 The selection system is ~150 lines of well-organized, working code. Module extraction should come AFTER you've proven the need for it (e.g., building other tools that need selection), not before.
 
 **Sign you're ready to extract:**
+
 - Gumball features are stable (no longer adding Move/Scale/Rotate functionality)
 - Need selection for other tools (measurement, annotations, etc.)
 - Have time for careful architectural work
@@ -769,6 +836,7 @@ The selection system is ~150 lines of well-organized, working code. Module extra
 **Date:** 2026-01-08
 **Branch:** module-extraction
 **Commits:**
+
 - `29af2e8` - Fix: Add userData.type to base polyhedra (Packed nodes fix)
 - `a6d6fc0` - Fix: Add API methods for RT Geodesic node control
 - `66d2ff3` - Feat: Complete rt-rendering.js sync with production code
@@ -779,13 +847,13 @@ The selection system is ~150 lines of well-organized, working code. Module extra
 
 **Key Difference:** Rendering functions are **stateless and self-contained**, while gumball/selection are **stateful and interactive**.
 
-| Aspect | Rendering Functions | Gumball Functions |
-|--------|-------------------|------------------|
-| **State Management** | Minimal (closure-scoped only) | Heavy (isDragging, currentSelection) |
-| **Dependency Direction** | Call inward (same module) | Call outward (HTML scope) |
-| **DOM Interaction** | Read-only (checkboxes/sliders) | Read/write (events, classList) |
-| **Global Access** | THREE.js, RT library only | Scene groups, selection state |
-| **Closure Requirements** | Self-contained | Requires HTML-scope closure |
+| Aspect                   | Rendering Functions            | Gumball Functions                    |
+| ------------------------ | ------------------------------ | ------------------------------------ |
+| **State Management**     | Minimal (closure-scoped only)  | Heavy (isDragging, currentSelection) |
+| **Dependency Direction** | Call inward (same module)      | Call outward (HTML scope)            |
+| **DOM Interaction**      | Read-only (checkboxes/sliders) | Read/write (events, classList)       |
+| **Global Access**        | THREE.js, RT library only      | Scene groups, selection state        |
+| **Closure Requirements** | Self-contained                 | Requires HTML-scope closure          |
 
 ### Extraction Strategy Used
 
@@ -799,9 +867,15 @@ export function initScene(THREE, OrbitControls, RT, Quadray, Polyhedra) {
   let cartesianBasis, quadrayBasis;
   let useRTNodeGeometry = false;
 
-  function initScene() { /* ... */ }
-  function animate() { /* ... */ }
-  function updateGeometry() { /* ... */ }
+  function initScene() {
+    /* ... */
+  }
+  function animate() {
+    /* ... */
+  }
+  function updateGeometry() {
+    /* ... */
+  }
   function setNodeGeometryType(useRT) {
     useRTNodeGeometry = useRT;
     nodeGeometryCache.clear();
@@ -819,10 +893,17 @@ export function initScene(THREE, OrbitControls, RT, Quadray, Polyhedra) {
 ```
 
 **rt-init.js usage:**
+
 ```javascript
 import { initScene as createRenderingAPI } from "./rt-rendering.js";
 
-const renderingAPI = createRenderingAPI(THREE, OrbitControls, RT, Quadray, Polyhedra);
+const renderingAPI = createRenderingAPI(
+  THREE,
+  OrbitControls,
+  RT,
+  Quadray,
+  Polyhedra
+);
 renderingAPI.initScene();
 renderingAPI.animate();
 
@@ -835,18 +916,22 @@ document.getElementById("nodeGeomRT").addEventListener("click", () => {
 ### Issues Encountered and Resolved
 
 #### Issue #1: RT Geodesic Nodes Not Rendering
+
 **Problem:** Variable scope isolation - rt-init.js event handlers modified `useRTNodeGeometry` in rt-init.js scope, but rt-rendering.js read its own separate copy.
 
 **Solution:** Added API methods:
+
 - `setNodeGeometryType(useRT)` - Set node type and clear cache
 - `clearNodeCache()` - Clear geometry cache
 
 **Result:** ✅ RT Geodesic nodes work on all polyhedra
 
 #### Issue #2: Packed Nodes on Base Polyhedra
+
 **Problem:** Base polyhedra groups created without `userData.type` property, causing `getClosePackedRadius()` to fail.
 
 **Solution:** Added `userData.type` to all 12 base polyhedra groups in `initScene()`:
+
 ```javascript
 cubeGroup.userData.type = "cube";
 tetrahedronGroup.userData.type = "tetrahedron";
@@ -856,12 +941,15 @@ tetrahedronGroup.userData.type = "tetrahedron";
 **Result:** ✅ Packed nodes work on all polyhedra
 
 #### Issue #3: UI Toggles Broken After Extraction
+
 **Problem:** Event handlers in rt-init.js couldn't access closure-scoped objects:
+
 - Cartesian/Quadray basis toggles → `cartesianBasis.visible`
 - Orthographic toggle → `camera`, `controls`, `isOrthographic`
 - View presets → `camera.position`, `controls.target`
 
 **Solution:** Added API methods and moved functions:
+
 - `setCartesianBasisVisible(visible)`
 - `setQuadrayBasisVisible(visible)`
 - `switchCameraType(toOrthographic)` - moved from rt-init.js
@@ -872,11 +960,13 @@ tetrahedronGroup.userData.type = "tetrahedron";
 ### Code Metrics
 
 **rt-init.js:**
+
 - Before: 4,467 lines
 - After: ~3,632 lines
 - **Reduction: -835 lines (-18.7%)**
 
 **rt-rendering.js:**
+
 - Before: 942 lines (outdated stub)
 - After: 1,969 lines (fully synced)
 - **Addition: +1,027 lines**
@@ -886,6 +976,7 @@ tetrahedronGroup.userData.type = "tetrahedron";
 ### Functions Extracted
 
 **Core Rendering:**
+
 - `initScene()` - Scene, camera, renderer setup
 - `animate()` - Animation loop with PerformanceClock
 - `onWindowResize()` - Responsive canvas resizing
@@ -893,6 +984,7 @@ tetrahedronGroup.userData.type = "tetrahedron";
 - `updateGeometryStats()` - Statistics display
 
 **Helper Functions:**
+
 - `getPolyhedronEdgeQuadrance()` - Edge quadrance calculation
 - `getClosePackedRadius()` - Close-packed sphere radius
 - `getCachedNodeGeometry()` - Cached node generation
@@ -900,18 +992,21 @@ tetrahedronGroup.userData.type = "tetrahedron";
 - `countGroupTriangles()` - Triangle counting
 
 **Grid & Basis:**
+
 - `createCartesianGrid()` - XYZ grid planes
 - `createQuadrayBasis()` - WXYZ basis vectors
 - `createIVMGrid()` - Triangular grid tessellation
 - `createIVMPlanes()` - 6 Quadray planes
 
 **Camera Controls (moved from rt-init.js):**
+
 - `setCameraPreset(view)` - Set camera to preset views
 - `switchCameraType(toOrthographic)` - Toggle perspective/orthographic
 
 ### API Methods Exposed
 
 **Core:**
+
 - `initScene()` - Initialize scene
 - `animate()` - Start animation loop
 - `onWindowResize()` - Handle window resize
@@ -919,18 +1014,22 @@ tetrahedronGroup.userData.type = "tetrahedron";
 - `updateGeometryStats()` - Update statistics display
 
 **Node Configuration:**
+
 - `setNodeGeometryType(useRT)` - Switch between RT Geodesic/Classical Sphere
 - `clearNodeCache()` - Clear node geometry cache
 
 **Basis Visibility:**
+
 - `setCartesianBasisVisible(visible)` - Show/hide Cartesian basis
 - `setQuadrayBasisVisible(visible)` - Show/hide Quadray basis
 
 **Camera Controls:**
+
 - `switchCameraType(toOrthographic)` - Toggle camera projection mode
 - `setCameraPreset(view)` - Set camera to preset view (top/bottom/left/right/front/back/axo/perspective)
 
 **Getters:**
+
 - `getScene()` - Get scene object
 - `getCamera()` - Get camera object
 - `getRenderer()` - Get renderer object
@@ -950,6 +1049,7 @@ tetrahedronGroup.userData.type = "tetrahedron";
 **Key Pattern: Scope Isolation via API**
 
 When module variables need external control:
+
 ```javascript
 // ❌ DON'T: Let external code access closure variables directly
 let useRTNodeGeometry = false;
@@ -966,6 +1066,7 @@ return { setNodeGeometryType }; // Export method in API
 **Why Gumball Can't Use This Pattern:**
 
 Gumball requires **bidirectional state synchronization**:
+
 - HTML sets `isDragging = true`
 - Module needs to read it
 - Module sets `isDragging = false`
@@ -973,6 +1074,7 @@ Gumball requires **bidirectional state synchronization**:
 - Can't use API methods for every frame of drag operation (performance)
 
 Rendering only requires **unidirectional control**:
+
 - User clicks button → API method called → Module updates internal state
 - No need for HTML to read module state during rendering
 
@@ -981,6 +1083,7 @@ Rendering only requires **unidirectional control**:
 **Orphaned Code to Clean Up:**
 
 The following functions in rt-init.js are orphaned (defined but never called):
+
 1. `getCachedNodeGeometry()` - Line 662
 2. `renderPolyhedron()` - Line 734
 3. `addMatrixNodes()` - Line 870
@@ -993,6 +1096,7 @@ The following functions in rt-init.js are orphaned (defined but never called):
 **Selection System Issue:**
 
 Selection functions are still in rt-init.js (lines ~1658-1850):
+
 - `selectPolyhedron()`
 - `deselectAll()`
 - `onCanvasClick()`
@@ -1018,6 +1122,7 @@ Selection functions are still in rt-init.js (lines ~1658-1850):
 ### Conclusion
 
 **rt-rendering.js extraction is a complete success.** This demonstrates that:
+
 1. **Stateless, self-contained functions CAN be extracted successfully**
 2. **Factory pattern with API methods solves scope isolation**
 3. **Careful incremental approach prevents breakage**
@@ -1030,6 +1135,7 @@ Selection functions are still in rt-init.js (lines ~1658-1850):
 ### Final Status: ✅ **COMPLETE & WORKING**
 
 **All functionality restored and verified working:**
+
 - ✅ Selection system working (click Forms to select)
 - ✅ Gumball editing tools working (Move/Scale/Rotate)
 - ✅ Instance creation working ("Now" button creates instances)
@@ -1042,17 +1148,20 @@ Selection functions are still in rt-init.js (lines ~1658-1850):
 ### Additional Fixes Applied (2026-01-09):
 
 **Issue #4: Const Assignment Error**
+
 - **Error:** `TypeError: Assignment to constant variable` at rt-init.js:3322
 - **Cause:** Declared scene/camera/renderer/controls as const, then tried to reassign
 - **Fix:** Removed duplicate assignments (commit a19d651)
 
 **Issue #5: Undefined domElement Error**
+
 - **Error:** `Cannot read properties of undefined (reading 'domElement')` at rt-init.js:2761
 - **Cause:** Getting API references BEFORE initScene() created the objects
 - **Fix:** Changed timing - declare variables early, assign AFTER initScene() (commit 1be271c)
 
 **Critical Lesson Learned:**
 API getters must be called AFTER the objects exist. Pattern:
+
 ```javascript
 // EARLY: Declare variables
 let scene, camera, renderer, controls;
@@ -1101,11 +1210,13 @@ camera = renderingAPI.getCamera();
 ### Success Metrics:
 
 **Code Reduction:**
+
 - rt-init.js: 4,467 lines → 3,632 lines = **-835 lines (-18.7%)**
 - Potential additional cleanup: **-743 lines (-20.5% more)**
 - Final target: ~2,889 lines (**-35.3% total reduction**)
 
 **Functionality:**
+
 - ✅ 100% feature parity with pre-extraction state
 - ✅ All user workflows working (create, select, edit, delete, transform)
 - ✅ No regressions or breaking changes
@@ -1113,6 +1224,7 @@ camera = renderingAPI.getCamera();
 - ✅ Gumball tools fully functional
 
 **Architecture:**
+
 - ✅ Clean module boundary (rt-rendering.js)
 - ✅ Factory pattern with closure-scoped state
 - ✅ API-based control for external access
@@ -1121,6 +1233,7 @@ camera = renderingAPI.getCamera();
 ### Recommended Next Steps:
 
 **For Future Session:**
+
 1. Remove orphaned functions from rt-init.js (comment out with extraction markers)
 2. Fix duplicate grid generation (comment out createCartesianGrid/createQuadrayBasis)
 3. Test tessellation slider after grid functions removed

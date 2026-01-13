@@ -27,10 +27,12 @@ Where:
 ### Cross Definition (RT)
 
 **In classical trigonometry:**
+
 - cos²(θ) = adjacent² / hypotenuse²
 - Range: 0 ≤ cos²(θ) ≤ 1
 
 **In Rational Trigonometry:**
+
 - **Cross (c)** replaces cos²(θ)
 - For a point (x, y) on the unit circle: `c = x²`
 - Cross is the quadrance of the horizontal projection
@@ -52,17 +54,20 @@ Therefore:
 **Beyond the unit circle**, cross generalizes to measure oriented separation between vectors:
 
 **For two vectors u and v:**
+
 ```
 cross(u, v) = (u·u)(v·v) - (u·v)²
             = Q(u) × Q(v) - (dot product)²
 ```
 
 **Interpretation:**
+
 - Square of the usual vector cross product magnitude
 - Equals **4 × (area of parallelogram)²** formed by the vectors
 - Replaces sin²(θ) expressions without square roots or transcendental functions
 
 **For a triangle with quadrances Q₁, Q₂, Q₃ opposite spreads s₁, s₂, s₃:**
+
 ```
 C = Q₁ × Q₂ × (1 - s₃)
 ```
@@ -121,13 +126,14 @@ Rectangle Decomposition:
 │  Spread Rectangle (vertical)    │  Height: y, Base: 1
 │  Area ≈ y (spread component)    │  Quadrance: y²
 ├─────────────────────────────────┤
-│  Cross Rectangle (horizontal)   │  Height: x, Base: 1  
+│  Cross Rectangle (horizontal)   │  Height: x, Base: 1
 │  Area ≈ x (cross component)     │  Quadrance: x²
 └─────────────────────────────────┘
         Total: x² + y² = 1
 ```
 
 **Interactive Elements:**
+
 1. Draggable point on unit circle
 2. Two stacked rectangles showing s and c
 3. Real-time display: `s = [value], c = [value], s+c = 1.000 ✓`
@@ -136,11 +142,13 @@ Rectangle Decomposition:
 ### Visual Design
 
 **Color Coding:**
+
 - **Spread (s):** Red/Orange (vertical component, "perpendicular energy")
 - **Cross (c):** Blue/Cyan (horizontal component, "parallel energy")
 - **Identity Bar:** Split-color bar showing s + c = 1
 
 **Layout:**
+
 ```
 ┌─────────────────────────────────────────────────┐
 │  Title: "Cross (c) - The Complement of Spread" │
@@ -172,6 +180,7 @@ Rectangle Decomposition:
 **Goal:** Show that spread and cross always sum to 1 on the unit circle
 
 **Steps:**
+
 1. Start at (1, 0): c = 1, s = 0 → "Pure horizontal (0°)"
 2. Drag to (√2/2, √2/2): c = 0.5, s = 0.5 → "45° - Equal split"
 3. Drag to (0, 1): c = 0, s = 1 → "Pure vertical (90°)"
@@ -184,6 +193,7 @@ Rectangle Decomposition:
 **Goal:** Highlight useful rotations with exact rational cross values
 
 **Snappoints:**
+
 - **0°:** (1, 0) → c = 1, s = 0 → "No rotation needed"
 - **45°:** (√2/2, √2/2) → c = 0.5, s = 0.5 → "Grid alignment rotation (exact 1/2!)"
 - **90°:** (0, 1) → c = 0, s = 1 → "Perpendicular"
@@ -196,20 +206,22 @@ Rectangle Decomposition:
 **Goal:** Show how cross enables RT-pure rotation matrices
 
 **Example: 45° Rotation**
+
 ```javascript
 // Traditional Trigonometry (transcendental!):
-const angle = 45 * Math.PI / 180;
-const cos = Math.cos(angle);  // ≈ 0.7071...
-const sin = Math.sin(angle);  // ≈ 0.7071...
+const angle = (45 * Math.PI) / 180;
+const cos = Math.cos(angle); // ≈ 0.7071...
+const sin = Math.sin(angle); // ≈ 0.7071...
 
 // Rational Trigonometry (algebraic!):
-const c = 0.5;  // Cross = cos²(45°) = 1/2 (exact rational!)
-const s = 0.5;  // Spread = sin²(45°) = 1/2 (exact rational!)
-const cos = Math.sqrt(c);  // √(1/2) - deferred sqrt extraction
-const sin = Math.sqrt(s);  // √(1/2) - deferred sqrt extraction
+const c = 0.5; // Cross = cos²(45°) = 1/2 (exact rational!)
+const s = 0.5; // Spread = sin²(45°) = 1/2 (exact rational!)
+const cos = Math.sqrt(c); // √(1/2) - deferred sqrt extraction
+const sin = Math.sqrt(s); // √(1/2) - deferred sqrt extraction
 ```
 
 **Visual:**
+
 - Show the two code paths side-by-side
 - Highlight "exact rational 1/2" vs "transcendental approximation"
 - Emphasize: "Work in c/s space, extract sqrt only when building matrix"
@@ -219,6 +231,7 @@ const sin = Math.sqrt(s);  // √(1/2) - deferred sqrt extraction
 **Goal:** Demonstrate how cross replaces sine in area calculations
 
 **Interactive Triangle:**
+
 ```
 For vectors u = (u_x, u_y) and v = (v_x, v_y):
 
@@ -233,6 +246,7 @@ Rational Trigonometry:
 ```
 
 **Demonstration:**
+
 1. Display two draggable vectors from origin
 2. Show live calculation:
    - Q(u) = u_x² + u_y²
@@ -250,6 +264,7 @@ Rational Trigonometry:
 **Goal:** Show how cross enables the Spread Law (RT's Law of Sines)
 
 **Interactive Triangle with Spreads:**
+
 ```
 For triangle with sides of quadrances Q₁, Q₂, Q₃
 and opposite spreads s₁, s₂, s₃:
@@ -261,6 +276,7 @@ Cross relationship:
 ```
 
 **Demonstration:**
+
 1. Display draggable triangle vertices
 2. Calculate quadrances for all three sides
 3. Calculate spreads at all three angles
@@ -292,6 +308,7 @@ Cross relationship:
 ### Educational Callouts
 
 **Callout 1: "Why Cross, Not Cosine?"**
+
 ```
 Classical:  cos(θ) = adjacent / hypotenuse  (requires division, ranges -1 to 1)
 RT Cross:   c = (adjacent)² / (hypotenuse)²  (ranges 0 to 1, always positive)
@@ -304,6 +321,7 @@ Benefits:
 ```
 
 **Callout 2: "The RT Identity (s + c = 1)"**
+
 ```
 Classical: sin²(θ) + cos²(θ) = 1  (requires trig functions)
 RT Identity: s + c = 1             (pure algebra!)
@@ -315,6 +333,7 @@ On unit circle:
 ```
 
 **Callout 3: "Cross in Rotation Matrices"**
+
 ```
 From our rt-math.js RT.applyRotation45():
 
@@ -338,18 +357,21 @@ const cos_val = Math.sqrt(c);  // √(1/2) = √2/2
 ## 6. Implementation Plan
 
 ### Phase 1: Core Visualization (Week 1)
+
 - [ ] Unit circle with draggable point
 - [ ] Real-time c and s calculation
 - [ ] Stacked rectangle visualization
 - [ ] Identity verification display (s + c = 1.000 ✓)
 
 ### Phase 2: Educational Enhancements (Week 2)
+
 - [ ] Snappoints for exact rational values
 - [ ] Color-coded cross/spread bars
 - [ ] Side-by-side code comparison (trig vs RT)
 - [ ] Interactive callouts (click to expand)
 
 ### Phase 3: Integration & Polish (Week 3)
+
 - [ ] Match visual style of Quadrance Demo
 - [ ] Add to demos menu in ARTexplorer
 - [ ] Rename spread-demo.js → cross-demo.js
@@ -360,6 +382,7 @@ const cos_val = Math.sqrt(c);  // √(1/2) = √2/2
 ## 7. Technical Specifications
 
 ### File Structure
+
 ```
 src/geometry/demos/
   ├── rt-cross-demo.js       (renamed from spread-demo.js)
@@ -428,18 +451,21 @@ function renderComplementaryRectangles(c, s) {
 ## 9. Success Criteria
 
 ### Educational Goals
+
 - [ ] User understands cross as "parallelism measure" (dual to spread)
 - [ ] User sees the RT identity (s + c = 1) visually verified
 - [ ] User appreciates exact rational cross values vs transcendental trig
 - [ ] User understands how cross enables RT-pure rotation matrices
 
 ### Technical Goals
+
 - [ ] Smooth draggable circle interaction
 - [ ] Real-time c, s, and identity calculation
 - [ ] Accurate snappoints for exact rational values
 - [ ] Clean visual design matching other demos
 
 ### Integration Goals
+
 - [ ] Accessible from demos menu
 - [ ] Referenced in ARTexplorer.md documentation
 - [ ] Complements Quadrance and Weierstrass demos
@@ -481,6 +507,7 @@ This function:
 ```
 
 **What's Happening:**
+
 - **Near 0° (horizontal):** Small changes in spread → large changes in arc position
 - **Near 45°:** Spread changes map nearly linearly to arc position (optimal)
 - **Near 90° (vertical):** Small changes in spread → large changes in arc position
@@ -496,16 +523,19 @@ This function:
 When using **uniform spread intervals** for telemetry tracking:
 
 #### 1. Angular Resolution Issues
+
 - **Near cardinal axes (0°, 90°):** Spread changes slowly → **poor angular discrimination**
 - **Example:** spread = 0.01 ≈ 5.7°, but spread = 0.50 = exactly 45°
 - If tracker locks to spread = 0.01 intervals, you get **coarse tracking near axes**
 
 #### 2. Tracking Window Distribution
+
 - 7-frequency geodesic windows are **NOT uniformly distributed** in spread space
 - Windows **cluster toward 45° region** when viewed as spread intervals
 - Could cause **missed acquisition opportunities** near cardinal directions (horizon/zenith)
 
 #### 3. Real-World Impact
+
 - **Satellite tracking:** Missing acquisition windows near zenith/horizon
 - **Antenna pointing:** Reduced precision at cardinal directions
 - **Geodesic frequency scheduling:** Uneven time slots
@@ -515,6 +545,7 @@ When using **uniform spread intervals** for telemetry tracking:
 ### Solution: Uniform Angular vs. Uniform Spread Intervals
 
 **Current Implementation (Uniform Spread) - POOR for Tracking:**
+
 ```javascript
 // Non-uniform angular distribution
 for (let s = 0.01; s < 1.0; s += 0.01) {
@@ -524,6 +555,7 @@ for (let s = 0.01; s < 1.0; s += 0.01) {
 ```
 
 **Better Alternative (Uniform Angle) - GOOD for Tracking:**
+
 ```javascript
 // Uniform angular coverage
 for (let degrees = 1; degrees < 90; degrees += 1) {
@@ -539,15 +571,15 @@ for (let degrees = 1; degrees < 90; degrees += 1) {
 
 ### Arc Length vs. Spread Relationship
 
-| Angle (θ) | Spread (s) | ds/dθ   | Interpretation                        |
-|-----------|------------|---------|---------------------------------------|
-| 0°        | 0.000      | 0.000   | Spread changes **very slowly**        |
-| 15°       | 0.067      | 0.500   | Spread changes moderately             |
-| 30°       | 0.250      | 0.866   | Spread changes rapidly                |
-| 45°       | 0.500      | 1.000   | **Maximum spread change rate**        |
-| 60°       | 0.750      | 0.866   | Spread changes rapidly                |
-| 75°       | 0.933      | 0.500   | Spread changes moderately             |
-| 90°       | 1.000      | 0.000   | Spread changes **very slowly**        |
+| Angle (θ) | Spread (s) | ds/dθ | Interpretation                 |
+| --------- | ---------- | ----- | ------------------------------ |
+| 0°        | 0.000      | 0.000 | Spread changes **very slowly** |
+| 15°       | 0.067      | 0.500 | Spread changes moderately      |
+| 30°       | 0.250      | 0.866 | Spread changes rapidly         |
+| 45°       | 0.500      | 1.000 | **Maximum spread change rate** |
+| 60°       | 0.750      | 0.866 | Spread changes rapidly         |
+| 75°       | 0.933      | 0.500 | Spread changes moderately      |
+| 90°       | 1.000      | 0.000 | Spread changes **very slowly** |
 
 **Key Insight:** The derivative ds/dθ = sin(2θ) explains why uniform spread intervals produce non-uniform arc spacing.
 
@@ -561,10 +593,12 @@ for (let degrees = 1; degrees < 90; degrees += 1) {
 ### Why Sexagesimal?
 
 **Decimal (Base-10) Limitations:**
+
 - Factors: 2, 5 only
 - Common fractions inexact: 1/3 = 0.333..., 1/6 = 0.1666...
 
 **Sexagesimal (Base-60) Advantages:**
+
 - Factors: 2, 3, 4, 5, 6, 10, 12, 15, 20, 30
 - **Many more exact fractions:**
   - 1/2 = 30/60 (exact)
@@ -609,11 +643,13 @@ for (let degrees = 1; degrees < 90; degrees += 1) {
 #### 1. Topological Constraint (Euler's Formula)
 
 For any triangulated sphere:
+
 ```
 V - E + F = 2  (Euler's formula)
 ```
 
 This forces vertex degree variation:
+
 - Most vertices have degree 6 (hexagonal tiling)
 - **Exactly 12 vertices must have degree 5** (pentagonal defects)
 - These 12 "special" vertices create local curvature concentration
@@ -626,6 +662,7 @@ This forces vertex degree variation:
 #### 2. The Twelve Pentagons Theorem
 
 From topology:
+
 - To tile a sphere with triangles, you need 12 vertices of degree 5
 - These correspond to the 12 "pentagonal defects" required by Gaussian curvature
 - Near these vertices, edge lengths deviate from the average
@@ -639,11 +676,11 @@ From topology:
 
 All geodesic spheres have **2-3 distinct edge length classes**:
 
-| Edge Class | Description | Relative Length |
-|------------|-------------|-----------------|
-| **Class I** | Edges parallel to base polyhedron edges | Longest |
-| **Class II** | Edges parallel to base polyhedron face diagonals | Medium |
-| **Class III** | Edges connecting vertices from different classes | Shortest |
+| Edge Class    | Description                                      | Relative Length |
+| ------------- | ------------------------------------------------ | --------------- |
+| **Class I**   | Edges parallel to base polyhedron edges          | Longest         |
+| **Class II**  | Edges parallel to base polyhedron face diagonals | Medium          |
+| **Class III** | Edges connecting vertices from different classes | Shortest        |
 
 **Higher frequency → smaller variation, but NEVER zero variation.**
 
@@ -651,12 +688,12 @@ All geodesic spheres have **2-3 distinct edge length classes**:
 
 ### Comparing Regular Polyhedra as Geodesic Bases
 
-| Base Polyhedron | Faces | Vertices | Edge Uniformity | Notes |
-|-----------------|-------|----------|-----------------|-------|
-| **Tetrahedron** | 4 | 4 | ~8-12% variation | **Worst** - large triangular faces create severe distortion |
-| **Octahedron** | 8 | 6 | ~3-4% variation | Better than tetrahedron, but vertices concentrated at 6 poles |
-| **Icosahedron** | 20 | 12 | **~1.8% variation** | **BEST** - most faces, most uniform vertex distribution |
-| **Dodecahedron** | 12 | 20 | ~2.5-3% variation | Pentagonal faces must be triangulated first, creating MORE edge classes |
+| Base Polyhedron  | Faces | Vertices | Edge Uniformity     | Notes                                                                   |
+| ---------------- | ----- | -------- | ------------------- | ----------------------------------------------------------------------- |
+| **Tetrahedron**  | 4     | 4        | ~8-12% variation    | **Worst** - large triangular faces create severe distortion             |
+| **Octahedron**   | 8     | 6        | ~3-4% variation     | Better than tetrahedron, but vertices concentrated at 6 poles           |
+| **Icosahedron**  | 20    | 12       | **~1.8% variation** | **BEST** - most faces, most uniform vertex distribution                 |
+| **Dodecahedron** | 12    | 20       | ~2.5-3% variation   | Pentagonal faces must be triangulated first, creating MORE edge classes |
 
 **Conclusion:** **Icosahedron is optimal** among regular polyhedra.
 
@@ -685,14 +722,14 @@ Edge Variation: ~1.8%
 
 **Comparison to Other Frequencies:**
 
-| Frequency | Faces | Vertices | Edge Variation |
-|-----------|-------|----------|----------------|
-| 1f | 20 | 12 | 0% (base icosahedron) |
-| 4f | 320 | 162 | ~2.5% |
-| **7f** | 980 | 492 | **~1.8%** (current) |
-| 10f | 2000 | 1002 | ~1.2% |
-| 15f | 4500 | 2252 | ~0.8% |
-| 20f | 8000 | 4002 | ~0.6% |
+| Frequency | Faces | Vertices | Edge Variation        |
+| --------- | ----- | -------- | --------------------- |
+| 1f        | 20    | 12       | 0% (base icosahedron) |
+| 4f        | 320   | 162      | ~2.5%                 |
+| **7f**    | 980   | 492      | **~1.8%** (current)   |
+| 10f       | 2000  | 1002     | ~1.2%                 |
+| 15f       | 4500  | 2252     | ~0.8%                 |
+| 20f       | 8000  | 4002     | ~0.6%                 |
 
 **Asymptotic behavior:** As frequency → ∞, variation → 0 (but never reaches true zero).
 
@@ -701,6 +738,7 @@ Edge Variation: ~1.8%
 ### Natural Examples
 
 **Viral capsids** (nature's geodesic domes) use icosahedral symmetry:
+
 - HIV, adenovirus, herpesvirus all use icosa-based geodesics
 - Evolution selected icosahedron for **maximum uniformity** with minimal genes
 - Nature confirms: icosahedron is optimal for sphere approximation
@@ -712,16 +750,19 @@ Edge Variation: ~1.8%
 **Separate Problem:** This is distinct from edge uniformity and unavoidable for any geodesic.
 
 **Cause:** Projection artifact when mapping sphere → flat angle measurements
+
 - Triangles near poles (apex/nadir) appear "compressed" in angular space
 - Triangles near equator span larger angular ranges
 - This is **geometric**, not topological
 
 **Your Cross/Spread nonlinearity compounds this:**
+
 - Spread changes slowly near 0° and 90° (cardinal axes)
 - Spread changes rapidly near 45° (diagonal)
 - Combined with geodesic convergence → uneven tracking windows
 
 **Solutions:**
+
 1. **Accept it** - natural property of spherical geometry
 2. **Area-weighted sampling** - weight by triangle solid angle
 3. **Switch to equal-area projection** (HEALPix, Mollweide, Lambert)
@@ -735,46 +776,52 @@ If **true uniformity** is required, abandon geodesic structure:
 #### 1. Fibonacci Sphere (Spiral Distribution)
 
 **RT-Pure JavaScript Implementation:**
+
 ```javascript
 // Uses golden ratio (φ) from RT.Phi library
 // No external dependencies or licenses - pure mathematical derivation
-const phi = RT.Phi.value();           // φ = (1 + √5)/2
-const goldenAngle = 2 * Math.PI / (phi * phi);  // 2π/φ²
+const phi = RT.Phi.value(); // φ = (1 + √5)/2
+const goldenAngle = (2 * Math.PI) / (phi * phi); // 2π/φ²
 
 for (let i = 0; i < samples; i++) {
-    const y = 1 - 2 * i / (samples - 1);  // uniform: +1 → -1
-    const radiusQ = 1 - y * y;             // quadrance at height y
-    const r = Math.sqrt(radiusQ);          // deferred sqrt
-    const theta = goldenAngle * i;         // spiral angle
+  const y = 1 - (2 * i) / (samples - 1); // uniform: +1 → -1
+  const radiusQ = 1 - y * y; // quadrance at height y
+  const r = Math.sqrt(radiusQ); // deferred sqrt
+  const theta = goldenAngle * i; // spiral angle
 
-    const x = Math.cos(theta) * r;
-    const z = Math.sin(theta) * r;
-    // Point (x, y, z) on unit sphere
+  const x = Math.cos(theta) * r;
+  const z = Math.sin(theta) * r;
+  // Point (x, y, z) on unit sphere
 }
 ```
 
 **RT-Pure Features:**
+
 - Golden ratio from `RT.Phi` (φ² = φ + 1, algebraic identity)
 - Quadrance-based radius calculation (defer sqrt)
 - Golden angle = 2π/φ² (exact ratio, no approximation)
 
 **Advantages:**
+
 - Points evenly spaced (no clustering)
 - Near-perfect uniformity as samples → ∞
 - No edge structure (pure point cloud)
 
 **Disadvantages:**
+
 - No triangulation (must generate Delaunay mesh)
 - No symmetry groups (harder to analyze)
 - Not a geodesic dome (can't build physically)
 
 #### 2. HEALPix (Hierarchical Equal Area isoLatitude Pixelization)
+
 - Used in cosmic microwave background analysis
 - **Equal-area pixels** (no area distortion)
 - Hierarchical subdivision
 - Optimized for spherical harmonic analysis
 
 #### 3. Quadrilateralized Spherical Cube (QSC)
+
 - Start with cube, project to sphere
 - Subdivide faces into quadrilaterals
 - More uniform than geodesic for some applications
@@ -800,6 +847,7 @@ for (let i = 0; i < samples; i++) {
 - **Use Fibonacci sphere** for point sampling (not dome structure)
 
 **For telemetry tracking windows:**
+
 - The **~2% variation** is much smaller than:
   - Atmospheric effects (~10% path variation)
   - Doppler shifts (frequency-dependent)
@@ -811,6 +859,7 @@ for (let i = 0; i < samples; i++) {
 ### Mathematical Summary
 
 **Fundamental Tradeoff:**
+
 ```
 Geodesic Structure (symmetry, buildability)
     ↕
@@ -818,6 +867,7 @@ True Uniformity (point clouds, loss of structure)
 ```
 
 **For geodesic domes, the hierarchy is:**
+
 ```
 Icosahedron > Dodecahedron > Octahedron > Tetrahedron
    (best)                                    (worst)
@@ -840,6 +890,7 @@ Icosahedron > Dodecahedron > Octahedron > Tetrahedron
 **1. Non-Triangular Base Faces**
 
 The rhombic dodecahedron has **12 rhombic (quadrilateral) faces**:
+
 - Geodesic subdivision requires triangulation
 - Each rhombus must be split into 2 triangles first
 - This creates **asymmetry** and **non-uniform edge classes** from the start
@@ -851,6 +902,7 @@ The rhombic dodecahedron has **12 rhombic (quadrilateral) faces**:
 **2. Non-Regular Polyhedron**
 
 Unlike Platonic solids, the rhombic dodecahedron is **semi-regular**:
+
 - 14 vertices (not all equivalent)
   - 6 vertices of degree 4 (at square face centers of parent cuboctahedron)
   - 8 vertices of degree 3 (at triangular face centers)
@@ -865,10 +917,10 @@ Unlike Platonic solids, the rhombic dodecahedron is **semi-regular**:
 
 Comparing base polyhedra (before subdivision):
 
-| Polyhedron | Vertex Type | Face Shape | Uniformity |
-|------------|-------------|------------|------------|
-| **Icosahedron** | All degree 5 (uniform) | 20 equilateral triangles | Excellent |
-| **Rhombic Dodec** | Mixed 3/4 (non-uniform) | 12 rhombi (need splitting) | Poor |
+| Polyhedron        | Vertex Type             | Face Shape                 | Uniformity |
+| ----------------- | ----------------------- | -------------------------- | ---------- |
+| **Icosahedron**   | All degree 5 (uniform)  | 20 equilateral triangles   | Excellent  |
+| **Rhombic Dodec** | Mixed 3/4 (non-uniform) | 12 rhombi (need splitting) | Poor       |
 
 **Result:** Icosahedron starts with better symmetry, maintains it through subdivision.
 
@@ -877,6 +929,7 @@ Comparing base polyhedra (before subdivision):
 **4. Dual Relationship Problem**
 
 The rhombic dodecahedron is the **dual of the cuboctahedron**:
+
 - Optimized for **face centers**, not vertices
 - Its geometry reflects cuboctahedron vertices (12 rhombi → 12 cuboctahedron vertices)
 - Not optimized for sphere approximation
@@ -889,15 +942,16 @@ The rhombic dodecahedron is the **dual of the cuboctahedron**:
 
 If we subdivided both to the same vertex count:
 
-| Property | 7f Icosahedron | 7f Rhombic Dodec (hypothetical) |
-|----------|----------------|----------------------------------|
-| **Base faces** | 20 triangles (uniform) | 24 triangles (split rhombi, non-uniform) |
-| **Vertex uniformity** | All degree 5 (12 defects) | Mixed degree 3/4/5/6 (chaotic) |
-| **Edge classes** | 2-3 classes (~1.8% variation) | 4-6 classes (est. ~5-8% variation) |
-| **Symmetry preservation** | Icosahedral (60 symmetries) | Octahedral (24 symmetries, degraded) |
-| **Sphere approximation** | Excellent | Poor (reflects cube/octahedron, not sphere) |
+| Property                  | 7f Icosahedron                | 7f Rhombic Dodec (hypothetical)             |
+| ------------------------- | ----------------------------- | ------------------------------------------- |
+| **Base faces**            | 20 triangles (uniform)        | 24 triangles (split rhombi, non-uniform)    |
+| **Vertex uniformity**     | All degree 5 (12 defects)     | Mixed degree 3/4/5/6 (chaotic)              |
+| **Edge classes**          | 2-3 classes (~1.8% variation) | 4-6 classes (est. ~5-8% variation)          |
+| **Symmetry preservation** | Icosahedral (60 symmetries)   | Octahedral (24 symmetries, degraded)        |
+| **Sphere approximation**  | Excellent                     | Poor (reflects cube/octahedron, not sphere) |
 
 **Estimated edge uniformity after subdivision:**
+
 - **Icosahedron 7f:** ~1.8% variation (measured in your code)
 - **Rhombic Dodec 7f:** ~5-8% variation (estimated, likely worse)
 
@@ -908,16 +962,19 @@ If we subdivided both to the same vertex count:
 The rhombic dodecahedron is NOT designed for geodesic applications. Its purpose:
 
 **1. Space-Filling (Tessellation)**
+
 - Tiles 3D space without gaps (like a cube)
 - Used in crystallography (Voronoi cells of FCC lattice)
 - Optimal for packing problems
 
 **2. Dual of Cuboctahedron (Vector Equilibrium)**
+
 - Geometric dual relationship
 - Face centers ↔ vertices
 - Important in Fuller's synergetic geometry for **space-filling**, not sphere coverage
 
 **3. Cubic/Octahedral Symmetry**
+
 - Reflects cube + octahedron symmetry (48 symmetries combined)
 - Not icosahedral symmetry (which is optimal for spheres)
 
@@ -928,12 +985,14 @@ The rhombic dodecahedron is NOT designed for geodesic applications. Its purpose:
 **For telemetry tracking on a sphere:**
 
 ❌ **Do NOT use rhombic dodecahedron**
+
 - Worse uniformity than icosahedron
 - Non-triangular faces require asymmetric splitting
 - Mixed vertex degrees create more edge classes
 - Not optimized for sphere approximation
 
 ✅ **Keep icosahedron-based geodesic**
+
 - Already optimal among regular polyhedra
 - Best vertex distribution for sphere
 - Minimal edge variation (~1.8% at 7f)
@@ -946,12 +1005,14 @@ The rhombic dodecahedron is NOT designed for geodesic applications. Its purpose:
 #### Mathematical Summary
 
 **Geodesic sphere uniformity hierarchy:**
+
 ```
 Icosahedron > Dodecahedron > Octahedron > Tetrahedron > Rhombic Dodecahedron
    (best)                                                       (poor)
 ```
 
 **Why rhombic dodec ranks below regular polyhedra:**
+
 1. Non-triangular faces (must split asymmetrically)
 2. Non-uniform vertices (mixed degree 3/4)
 3. Optimized for space-filling, not sphere approximation
@@ -971,6 +1032,7 @@ Icosahedron > Dodecahedron > Octahedron > Tetrahedron > Rhombic Dodecahedron
 The Fibonacci sphere generates near-uniform point distributions using the **golden angle** spiral method. This is a well-known mathematical technique based on phyllotaxis (optimal leaf/seed arrangement in nature).
 
 **Mathematical Foundation:**
+
 - **Golden angle** = 2π/φ² ≈ 137.508° (where φ = golden ratio)
 - **Uniform vertical distribution** (y-coordinate linear from +1 to -1)
 - **Golden angle spiral** (horizontal position increments by golden angle)
@@ -993,8 +1055,8 @@ The Fibonacci sphere generates near-uniform point distributions using the **gold
  * @returns {Object} {vertices, edges: [], faces: []} - Point cloud format
  */
 fibonacciSphere: (samples = 1000, radius = 1.0) => {
-  const phi = RT.Phi.value();  // φ = (1 + √5)/2
-  const phi_sq = RT.Phi.squared();  // φ² = φ + 1 (no computation!)
+  const phi = RT.Phi.value(); // φ = (1 + √5)/2
+  const phi_sq = RT.Phi.squared(); // φ² = φ + 1 (no computation!)
 
   // Golden angle in radians: 2π/φ²
   // Using φ² = φ + 1 to defer sqrt expansion
@@ -1014,7 +1076,7 @@ fibonacciSphere: (samples = 1000, radius = 1.0) => {
     // Radius at height y (from Pythagorean theorem on unit sphere)
     // Working in quadrance space: radius_q = 1 - y²
     const radiusQ = 1 - y * y;
-    const radiusAtY = Math.sqrt(radiusQ) * radius;  // Deferred sqrt
+    const radiusAtY = Math.sqrt(radiusQ) * radius; // Deferred sqrt
 
     // Angle using golden angle spiral
     const theta = goldenAngle * i;
@@ -1040,20 +1102,22 @@ fibonacciSphere: (samples = 1000, radius = 1.0) => {
     vertices,
     edges: [],
     faces: [],
-    type: 'point_cloud',
-    distribution: 'fibonacci_spiral'
+    type: "point_cloud",
+    distribution: "fibonacci_spiral",
   };
-}
+};
 ```
 
 **RT-Purity Assessment:**
 
 ✅ **Pure in golden ratio math:**
+
 - Uses `RT.Phi` for symbolic φ operations
 - φ² = φ + 1 (exact algebraic identity)
 - Golden angle = 2π/φ² (defer sqrt in φ)
 
 ⚠️ **Not pure in angular distribution:**
+
 - Fibonacci spiral inherently uses angles (theta = golden_angle × i)
 - Requires sin/cos for x, z coordinates
 - **This is acceptable** - Fibonacci sphere is fundamentally angular
@@ -1075,6 +1139,7 @@ fibonacciSphere: (samples = 1000, radius = 1.0) => {
 - Reference in [rt-math.js](src/geometry/modules/rt-math.js) `RT.Phi` documentation
 
 ---
+
 for improved canonical distribution wrt Fibonnaci sphere implementation see article: https://extremelearning.com.au/how-to-evenly-distribute-points-on-a-sphere-more-effectively-than-the-canonical-fibonacci-lattice/
 
 ---
@@ -1087,6 +1152,7 @@ for improved canonical distribution wrt Fibonnaci sphere implementation see arti
 ### The Traditional Approach (Spherical Projection)
 
 **Standard telemetry tracking workflow:**
+
 ```
 Object position (3D)
   → Spherical projection (θ, φ)
@@ -1097,6 +1163,7 @@ Object position (3D)
 ```
 
 **Problems with this approach:**
+
 1. **Continuous spherical projection** required at every timestep
 2. **Transcendental functions** (sin, cos, atan2) dominate CPU time
 3. **Spread/cross nonlinearity** creates uneven angular resolution (Section 11)
@@ -1108,12 +1175,14 @@ Object position (3D)
 ### The Compound Eye Revolution: Facet-Native Tracking
 
 **Biological Inspiration:**
+
 - Insect compound eyes **don't project to continuous space**
 - Each ommatidium (facet) detects light **in its own reference frame**
 - Brain processes **discrete facet activations**, not continuous angles
 - Result: Fast, robust vision with minimal computation
 
 **Telemetry Analog:**
+
 - **7-frequency icosahedron = 980 facets = 980 discrete tracking windows**
 - Each facet is a **native coordinate system** (RT-pure, flat)
 - Track objects **by facet ID**, not angular coordinates
@@ -1143,6 +1212,7 @@ Actual edge length (from rt-cross-demo.js analysis):
 ```
 
 **Flatness error (ratio of spherical vs planar distance):**
+
 ```
 For small angle α, spherical vs flat distance:
   d_sphere = R × α           (arc length)
@@ -1171,21 +1241,21 @@ For entire facet (corner to corner):
 ```javascript
 class GeodesicFacet {
   constructor(vertices, id) {
-    this.id = id;  // Facet number (0 to 979 for 7f icosa)
-    this.vertices = vertices;  // 3 vertices [v0, v1, v2]
+    this.id = id; // Facet number (0 to 979 for 7f icosa)
+    this.vertices = vertices; // 3 vertices [v0, v1, v2]
 
     // RT-pure quantities (computed once, cached)
     this.edges = [
       { quadrance: RT.quadrance(v0, v1), vector: sub(v1, v0) },
       { quadrance: RT.quadrance(v1, v2), vector: sub(v2, v1) },
-      { quadrance: RT.quadrance(v2, v0), vector: sub(v0, v2) }
+      { quadrance: RT.quadrance(v2, v0), vector: sub(v0, v2) },
     ];
 
     // Barycentric coordinate system (flat triangle)
     this.barycentricBasis = this.computeBarycentricBasis();
 
     // Neighboring facets (pre-computed adjacency)
-    this.neighbors = [];  // [facet_id_a, facet_id_b, facet_id_c]
+    this.neighbors = []; // [facet_id_a, facet_id_b, facet_id_c]
   }
 
   // Convert 3D position to barycentric coords within this facet
@@ -1193,7 +1263,7 @@ class GeodesicFacet {
     // Uses RT.quadrance for distance comparisons
     // NO spherical projection, NO trig functions
     const [u, v, w] = computeBarycentric(point, this.vertices);
-    return { u, v, w };  // Barycentric coordinates
+    return { u, v, w }; // Barycentric coordinates
   }
 
   // Predict which edge object will cross (if any)
@@ -1205,7 +1275,7 @@ class GeodesicFacet {
     // This tells us which edge we'll cross
     // Pure linear algebra, no trig
     const exitEdge = this.findExitEdge(bary, baryVel);
-    return exitEdge;  // Edge index (0, 1, or 2)
+    return exitEdge; // Edge index (0, 1, or 2)
   }
 }
 ```
@@ -1219,7 +1289,9 @@ class GeodesicFacet {
 ```javascript
 class CompoundEyeTracker {
   constructor(frequency = 7) {
-    console.log(`[Compound Eye] Initializing ${frequency}f icosahedron tracker`);
+    console.log(
+      `[Compound Eye] Initializing ${frequency}f icosahedron tracker`
+    );
 
     // Generate geodesic (one-time setup)
     this.geodesic = Polyhedra.geodesicIcosahedron(1.0, frequency);
@@ -1249,7 +1321,7 @@ class CompoundEyeTracker {
     // Use icosahedron's 20 base faces as top-level buckets
     // Then search subdivisions within that base face
 
-    return null;  // Point not on sphere (error condition)
+    return null; // Point not on sphere (error condition)
   }
 
   // Predict next facet given current position and velocity
@@ -1261,7 +1333,7 @@ class CompoundEyeTracker {
     const exitEdge = currentFacet.predictExit(position, velocity);
 
     if (exitEdge === null) {
-      return currentFacet;  // Staying in same facet
+      return currentFacet; // Staying in same facet
     }
 
     // Look up adjacent facet across this edge
@@ -1306,26 +1378,29 @@ class CompoundEyeTracker {
 #### 1. **RT-Pure Throughout Pipeline**
 
 **Traditional approach:**
+
 ```javascript
 // Tracking loop (every frame)
-const spherical = cartesianToSpherical(position);  // atan2, acos
+const spherical = cartesianToSpherical(position); // atan2, acos
 const theta = spherical.theta;
 const phi = spherical.phi;
-const spread = Math.sin(theta) * Math.sin(theta);  // sin (transcendental)
-const cross = Math.cos(theta) * Math.cos(theta);   // cos (transcendental)
+const spread = Math.sin(theta) * Math.sin(theta); // sin (transcendental)
+const cross = Math.cos(theta) * Math.cos(theta); // cos (transcendental)
 // [More trig functions for predictions, arc distances, etc.]
 ```
 
 **Compound Eye approach:**
+
 ```javascript
 // Tracking loop (every frame)
-const facet = tracker.findFacet(position);  // Dot products only
-const bary = facet.toBarycentric(position);  // Linear algebra
-const pathQ = tracker.computePathQuadrance(facet, nextFacet);  // Quadrance!
+const facet = tracker.findFacet(position); // Dot products only
+const bary = facet.toBarycentric(position); // Linear algebra
+const pathQ = tracker.computePathQuadrance(facet, nextFacet); // Quadrance!
 // [Zero transcendental functions in tracking loop]
 ```
 
 **Performance impact:**
+
 - Transcendental functions: ~10-50 CPU cycles each
 - Dot products: ~3-5 CPU cycles
 - Quadrance calculation: ~5-8 CPU cycles (3 multiplies, 2 adds)
@@ -1336,18 +1411,20 @@ const pathQ = tracker.computePathQuadrance(facet, nextFacet);  // Quadrance!
 #### 2. **Natural Discrete Windows**
 
 **No need to artificially bin continuous angles:**
+
 ```javascript
 // Traditional: artificial binning
-const angleResolution = 5.0;  // degrees
+const angleResolution = 5.0; // degrees
 const bin = Math.floor(theta / angleResolution);
 // [Bins have uneven solid angles near poles]
 
 // Compound Eye: facets ARE the windows
-const window = facet.id;  // That's it. Facet IS the window.
+const window = facet.id; // That's it. Facet IS the window.
 // [All facets have similar solid angles by design]
 ```
 
 **Benefits:**
+
 - No binning artifacts
 - Facets already ~uniformly distributed (1.8% variation)
 - Natural hierarchical structure (base icosahedron → subdivisions)
@@ -1361,9 +1438,9 @@ const window = facet.id;  // That's it. Facet IS the window.
 ```javascript
 // Pre-computed table (980 facets × 3 edges each)
 const edgeLengthTable = [
-  { facet: 0, edge: 0, arcLength: 0.0847 },  // rad
+  { facet: 0, edge: 0, arcLength: 0.0847 }, // rad
   { facet: 0, edge: 1, arcLength: 0.0852 },
-  { facet: 0, edge: 2, arcLength: 0.0840 },
+  { facet: 0, edge: 2, arcLength: 0.084 },
   // ... (2940 entries total)
 ];
 
@@ -1373,7 +1450,7 @@ function predictArcDistance(facetPath) {
   for (let transition of facetPath) {
     totalArc += edgeLengthTable[transition.facet][transition.edge];
   }
-  return totalArc;  // Pure table lookup, no trig
+  return totalArc; // Pure table lookup, no trig
 }
 ```
 
@@ -1386,6 +1463,7 @@ function predictArcDistance(facetPath) {
 **From Section 11:** Spread has nonlinear distribution (sparse near 0°/90°, dense near 45°).
 
 **In Compound Eye paradigm:** This doesn't matter.
+
 - Facets are distributed by **solid angle**, not by spread values
 - Tracking uses **facet IDs**, not spread intervals
 - Display can still show spread/cross (for human interpretation), but tracking logic ignores it
@@ -1396,18 +1474,18 @@ function predictArcDistance(facetPath) {
 
 ### Comparison Table: Spherical vs. Facet-Native
 
-| Aspect | Traditional (Spherical) | Compound Eye (Facet-Native) |
-|--------|-------------------------|------------------------------|
-| **Primary coordinates** | (θ, φ) continuous angles | Facet ID + barycentric (u, v, w) |
-| **Tracking windows** | Artificial angular bins | Natural geodesic facets |
-| **Distance measure** | Great circle arc (transcendental) | Pre-computed edge table + quadrance |
-| **Functions used** | sin, cos, atan2, acos | Dot products, quadrance, linear algebra |
-| **CPU cost per frame** | ~10-20 transcendental calls | ~0 transcendental calls |
-| **Uniformity** | Depends on binning strategy | Inherent (geodesic uniformity) |
-| **Spread nonlinearity** | Directly affects tracking resolution | Display-only artifact |
-| **Prediction method** | Great circle + Vincenty formula | Edge transition + table lookup |
-| **Memory footprint** | Minimal (just current θ, φ) | ~10 KB (facet table + adjacency) |
-| **Best use case** | Continuous smooth tracking | Discrete window telemetry |
+| Aspect                  | Traditional (Spherical)              | Compound Eye (Facet-Native)             |
+| ----------------------- | ------------------------------------ | --------------------------------------- |
+| **Primary coordinates** | (θ, φ) continuous angles             | Facet ID + barycentric (u, v, w)        |
+| **Tracking windows**    | Artificial angular bins              | Natural geodesic facets                 |
+| **Distance measure**    | Great circle arc (transcendental)    | Pre-computed edge table + quadrance     |
+| **Functions used**      | sin, cos, atan2, acos                | Dot products, quadrance, linear algebra |
+| **CPU cost per frame**  | ~10-20 transcendental calls          | ~0 transcendental calls                 |
+| **Uniformity**          | Depends on binning strategy          | Inherent (geodesic uniformity)          |
+| **Spread nonlinearity** | Directly affects tracking resolution | Display-only artifact                   |
+| **Prediction method**   | Great circle + Vincenty formula      | Edge transition + table lookup          |
+| **Memory footprint**    | Minimal (just current θ, φ)          | ~10 KB (facet table + adjacency)        |
+| **Best use case**       | Continuous smooth tracking           | Discrete window telemetry               |
 
 ---
 
@@ -1452,7 +1530,7 @@ function trackingUpdate(objectPosition, objectVelocity) {
     timestamp: Date.now(),
     facet: facet.id,
     next: nextFacet.id,
-    pathQuadrance: pathQ
+    pathQuadrance: pathQ,
   });
 
   // 5. Display conversion (ONLY if human needs to see angles)
@@ -1496,9 +1574,9 @@ class HybridTracker {
     // Store facet IDs, not angles
     // Reduces log file size (uint16 vs float64)
     telemetryDB.insert({
-      facet: data.facet,      // 2 bytes (0-979)
-      nextFacet: data.next,   // 2 bytes
-      pathQ: data.pathQ       // 4 bytes (float32)
+      facet: data.facet, // 2 bytes (0-979)
+      nextFacet: data.next, // 2 bytes
+      pathQ: data.pathQ, // 4 bytes (float32)
       // vs. traditional: 2× float64 = 16 bytes for θ, φ
     });
   }
@@ -1506,6 +1584,7 @@ class HybridTracker {
 ```
 
 **Advantages:**
+
 - **Internal pipeline:** RT-pure, fast, algebraic
 - **External compatibility:** Can export to (θ, φ) if needed
 - **Data efficiency:** Facet IDs compress better than floating-point angles
@@ -1516,6 +1595,7 @@ class HybridTracker {
 ### When to Use Each Approach
 
 **Use Compound Eye (Facet-Native) when:**
+
 - ✅ Tracking discrete objects through windows (satellites, aircraft)
 - ✅ Real-time performance critical (embedded systems, edge compute)
 - ✅ RT-purity valuable (exact rational calculations, no rounding errors)
@@ -1523,12 +1603,14 @@ class HybridTracker {
 - ✅ Logging bandwidth constrained (facet IDs compress well)
 
 **Use Traditional Spherical when:**
+
 - ✅ Continuous smooth tracking (missile trajectories, smooth pans)
 - ✅ High angular precision required (< 0.1° resolution)
 - ✅ Legacy system integration (existing spherical APIs)
 - ✅ Simple codebase (fewer abstractions, standard math)
 
 **Hybrid approach (recommended):**
+
 - Use **Compound Eye internally** for tracking logic
 - Convert to **spherical externally** for display/compatibility
 - Get benefits of both: speed + RT-purity + standard interface
@@ -1569,12 +1651,15 @@ class HybridTracker {
 ### Conclusion: A Paradigm Shift
 
 **The traditional view:**
+
 > "Spherical coordinates are fundamental. Geodesics are approximations to the true sphere. We tolerate their imperfections (edge variation, vertex irregularity) because they're convenient for physical construction."
 
 **The Compound Eye view:**
+
 > "Geodesic facets are fundamental. Spherical coordinates are a human interface layer. We work natively in facet space (RT-pure, discrete, fast) and project to spherical only for display."
 
 **Impact:**
+
 - **Faster tracking** (no transcendental functions in inner loop)
 - **RT-pure pipeline** (exact rational calculations where possible)
 - **Natural discretization** (facets ARE the tracking windows)
@@ -1583,6 +1668,7 @@ class HybridTracker {
 
 **Recommendation:**
 For the telemetry tracking application, implement a **hybrid system**:
+
 - **Core tracking:** Compound Eye (facet-native, 7f icosahedron)
 - **Display layer:** Spherical projection (on-demand, for UI)
 - **Logging:** Facet IDs (compact, efficient)
