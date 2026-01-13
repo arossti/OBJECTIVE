@@ -1836,7 +1836,7 @@ export function initScene(THREE, OrbitControls, RT) {
       const gridInterval = RT.PureRadicals.QUADRAY_GRID_INTERVAL; // √6/4 ≈ 0.612
       // tetEdge represents number of grid intervals, so basis = (tetEdge + 1) × gridInterval
       const targetLength = (tetEdge + 1) * gridInterval;
-      const headSize = 0.15;
+      const headSize = 0.10; // Reduced from 0.15 for better visual balance
       const headTipExtension = headSize * Math.sqrt(3);
       const shaftLength = targetLength - headTipExtension;
 
