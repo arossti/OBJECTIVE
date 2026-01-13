@@ -1,0 +1,15 @@
+# Mark config files as linguist-generated to hide from GitHub language stats
+.clinerules linguist-generated
+.prettierrc.json linguist-generated
+.prettierignore linguist-generated
+
+# Mark documentation as documentation
+*.md linguist-documentation
+LICENSE linguist-documentation
+
+# Ensure proper line endings
+*.js text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.json text eol=lf
+*.md text eol=lf
