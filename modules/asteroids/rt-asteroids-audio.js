@@ -8,7 +8,7 @@
  * Uses Web Audio API for spatial audio and procedural sound generation.
  *
  * @sound_effects
- * - Laser fire (4 variants for W/X/Y/Z axes) - High-pitched pew with axis-specific pitch
+ * - Laser fire (4 variants for W/X/Y/Z Quadray basis vectors) - High-pitched pew with basis-specific pitch
  * - Enemy explosion - XYZ planar fragmentation crunch
  * - Player damage - Polyhedral shattering sound
  * - Hyperspace deploy - Wobbly warp sound
@@ -122,19 +122,19 @@
 
     /**
      * Play laser fire sound
-     * @param {string} axis - 'W', 'X', 'Y', or 'Z' (affects pitch)
+     * @param {string} basisVector - 'W', 'X', 'Y', or 'Z' (Quadray basis vector - affects pitch)
      */
-    function playLaserFire(axis) {
+    function playLaserFire(basisVector) {
       if (!audioContext) return;
 
       // Create oscillator for laser sound
       const osc = audioContext.createOscillator();
       const gain = audioContext.createGain();
 
-      // Pitch varies by axis
+      // Pitch varies by Quadray basis vector
       const basePitch = 440; // A4
       const pitchMap = { W: 1.0, X: 1.125, Y: 1.25, Z: 1.5 }; // Harmonic intervals
-      osc.frequency.value = basePitch * (pitchMap[axis] || 1.0);
+      osc.frequency.value = basePitch * (pitchMap[basisVector] || 1.0);
 
       // Envelope (quick attack, short decay)
       gain.gain.setValueAtTime(0.3 * sfxVolume, audioContext.currentTime);
@@ -146,7 +146,7 @@
       osc.start(audioContext.currentTime);
       osc.stop(audioContext.currentTime + 0.15);
 
-      console.log(`[Audio] Laser fire (${axis}-axis)`);
+      console.log(`[Audio] Laser fire (${basisVector} Quadray basis vector)`);
     }
 
     /**

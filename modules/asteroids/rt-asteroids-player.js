@@ -12,11 +12,15 @@
  * quantitative easing return animation.
  *
  * @mechanics
- * - Hold A/S/D/F: Displacement along W/X/Y/Z axes (exponential/quadratic curve)
+ * - Hold A/S/D/F: Displacement along W/X/Y/Z Quadray basis vectors (exponential/quadratic curve)
  * - Release key: Quantitative easing return to origin (0.5-1.0s animation)
  * - Max displacement: Q_max = 50 quadrance units
  * - Fuel cost: 1 fuel per second of displacement
  * - World-frame reference: Player always at canvas center, world moves relative
+ *
+ * @coordinate_system
+ * WXYZ Quadray is a separate tetrahedral coordinate system (NOT an extension of XYZ).
+ * Four equiangular basis vectors from tetrahedron center to vertices.
  *
  * @documentation
  * - Design doc: /Geometry documents/A.r.t.steroids.md
@@ -54,18 +58,19 @@
       IVM_SWARM: 'IVM_SWARM'            // Tier 7 (ultimate form)
     };
 
-    // ASDF key states (W/X/Y/Z axes)
+    // ASDF key states (W/X/Y/Z Quadray basis vectors)
+    // Note: WXYZ is a separate 4-axis tetrahedral coordinate system (NOT Cartesian XYZ + W)
     const keyStates = {
-      W: false, // A key
-      X: false, // S key
-      Y: false, // D key
-      Z: false  // F key
+      W: false, // A key - displacement along W basis vector (red)
+      X: false, // S key - displacement along X basis vector (green)
+      Y: false, // D key - displacement along Y basis vector (blue)
+      Z: false  // F key - displacement along Z basis vector (yellow)
     };
 
     // Player state
     let shipTier = ShipTier.TETRAHEDRON;
-    let quadrayPosition = [1, 1, 1, 1]; // Origin in Quadray space
-    let displacement = { W: 0, X: 0, Y: 0, Z: 0 }; // Current displacement along axes
+    let quadrayPosition = [1, 1, 1, 1]; // Origin in WXYZ Quadray tetrahedral coordinate system
+    let displacement = { W: 0, X: 0, Y: 0, Z: 0 }; // Current displacement along Quadray basis vectors
     let returnAnimation = { W: null, X: null, Y: null, Z: null }; // Return-to-origin animations
     let health = 100;
     let invulnerable = false;
@@ -106,45 +111,45 @@
 
     /**
      * Handle ASDF keydown event
-     * @param {string} axis - 'W', 'X', 'Y', or 'Z'
+     * @param {string} basisVector - 'W', 'X', 'Y', or 'Z' (Quadray basis vector)
      */
-    function onAxisKeyDown(axis) {
-      if (!keyStates.hasOwnProperty(axis)) return;
+    function onAxisKeyDown(basisVector) {
+      if (!keyStates.hasOwnProperty(basisVector)) return;
 
-      keyStates[axis] = true;
+      keyStates[basisVector] = true;
 
-      // Cancel return animation if reactivating axis
-      if (returnAnimation[axis]) {
-        returnAnimation[axis] = null;
+      // Cancel return animation if reactivating basis vector
+      if (returnAnimation[basisVector]) {
+        returnAnimation[basisVector] = null;
       }
 
-      console.log(`[Player] ${axis}-axis displacement activated`);
+      console.log(`[Player] ${basisVector} Quadray basis vector displacement activated`);
     }
 
     /**
      * Handle ASDF keyup event
-     * @param {string} axis - 'W', 'X', 'Y', or 'Z'
+     * @param {string} basisVector - 'W', 'X', 'Y', or 'Z' (Quadray basis vector)
      */
-    function onAxisKeyUp(axis) {
-      if (!keyStates.hasOwnProperty(axis)) return;
+    function onAxisKeyUp(basisVector) {
+      if (!keyStates.hasOwnProperty(basisVector)) return;
 
-      keyStates[axis] = false;
+      keyStates[basisVector] = false;
 
       // Start quantitative easing return animation
-      startReturnAnimation(axis);
+      startReturnAnimation(basisVector);
 
-      console.log(`[Player] ${axis}-axis return animation started`);
+      console.log(`[Player] ${basisVector} Quadray basis vector return animation started`);
     }
 
     /**
-     * Start quantitative easing return animation for axis
-     * @param {string} axis - 'W', 'X', 'Y', or 'Z'
+     * Start quantitative easing return animation for Quadray basis vector
+     * @param {string} basisVector - 'W', 'X', 'Y', or 'Z'
      */
-    function startReturnAnimation(axis) {
-      const currentDisplacement = displacement[axis];
+    function startReturnAnimation(basisVector) {
+      const currentDisplacement = displacement[basisVector];
       if (Math.abs(currentDisplacement) < 0.01) return; // Already at origin
 
-      returnAnimation[axis] = {
+      returnAnimation[basisVector] = {
         startDisplacement: currentDisplacement,
         elapsed: 0,
         duration: RETURN_DURATION
