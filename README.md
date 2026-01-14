@@ -474,7 +474,7 @@ We welcome contributions! Areas of interest:
 
 **Primary Development:**
 
-- **Andy Thomson** - Project creator, RT implementation, geometric research
+- **Andy Thomson, M.Arch. OAA** - Architect, Creator, RT implementation, geometric research
 
 **Conceptual Foundations:**
 
