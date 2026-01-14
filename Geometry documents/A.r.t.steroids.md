@@ -297,15 +297,15 @@ Ship/player begins as single Tetrahedron at origin [1,1,1,1] in WXYZ tetrahedral
   - **F key**: Move along Z basis vector (yellow) direction
 
 **Rubber-Band Physics:**
-- **Hold key**: Ship displaces farther along corresponding axis
+- **Hold key**: Ship displaces farther along corresponding basis vector
   - Displacement distance = f(hold_duration) — exponential or quadratic curve
-  - Visual: Corresponding axis grid line glows brighter during displacement
+  - Visual: Basis vector arrowhead and related plane grids glow brighter during displacement
   - Max displacement: Q_max = 50 (quadrance units from origin)
   - Fuel cost: 1 fuel per second of displacement (incentivizes tactical use)
 - **Release key**: Ship returns to origin with "quantitative easing" animation
   - Smooth deceleration curve (ease-out cubic or similar)
   - Animation duration: ~0.5-1.0 seconds depending on displacement distance
-  - Visual: Fading glow trail along axis during return motion
+  - Visual: Fading glow trail along basis vector during return motion
 
 **Stellarian Dodge Mechanic:**
 - This rubber-band motion is how Stellarians evade Cartesian fire
@@ -625,18 +625,20 @@ When player ship is destroyed, it exhibits **RT-pure polyhedral fragmentation** 
 
 **Visual Design:**
 - **Tetrahedral lattice grid** extending from player origin
-- Four tetrahedral axes (W, X, Y, Z) rendered as glowing webbed lines
+- Six planar webs formed between pairs of Quadray basis vectors
 - Grid extends to Q = 120 units (well past combat range)
 - Lines are semi-transparent (opacity = 0.3) to avoid obstructing view
-- **Color coding** (Quadray WXYZ tetrahedral basis vectors):
-  - W basis vector grid: Red webbing
-  - X basis vector grid: Green webbing
-  - Y basis vector grid: Blue webbing
-  - Z basis vector grid: Yellow webbing
+- **Color coding** (blended colors from basis vector pairs defining each plane):
+  - WX plane: Red + Green = Yellow/Orange webbing
+  - WY plane: Red + Blue = Magenta webbing
+  - WZ plane: Red + Yellow = Orange webbing
+  - XY plane: Green + Blue = Cyan webbing
+  - XZ plane: Green + Yellow = Yellow-Green webbing
+  - YZ plane: Blue + Yellow = Green-Cyan webbing
 - Grid intensity increases during strategic maneuvers:
-  - Tetrahedral dodge: Corresponding axis grid glows brighter (opacity → 0.7)
-  - Quadray firing: Relevant axis grid pulses with shot
-  - Hyperspace deployment: All grids glow simultaneously
+  - Tetrahedral dodge: Corresponding plane grid glows brighter (opacity → 0.7)
+  - Quadray firing: Relevant plane grid pulses with shot
+  - Hyperspace deployment: All plane grids glow simultaneously
 
 **Strategic Use:**
 - **Long-range theater awareness**: See approaching enemy waves before they enter combat range
@@ -1054,12 +1056,15 @@ Z-Axis: Z (negative) / C (positive)
 - Vertex highlighting on player ship
 - Glowing edges for active weapons
 
-**Color Coding (Quadray WXYZ Tetrahedral Basis):**
+**Color Coding:**
 - **Player Ship**: Cyan wireframe, bright vertices
-- **W basis vector**: Red (laser darts, movement indicator)
-- **X basis vector**: Green
-- **Y basis vector**: Blue
-- **Z basis vector**: Yellow
+- **Quadray Basis Vectors** (tetrahedral arrowheads from center):
+  - W basis vector: Red
+  - X basis vector: Green
+  - Y basis vector: Blue
+  - Z basis vector: Yellow
+- **Quadray Plane Grids** (blended colors from basis vector pairs):
+  - WX, WY, WZ, XY, XZ, YZ planes show color blends (see Grid Visualization section)
 - **Enemies**: Orange/magenta (classical geometry)
 - **Matrix Army**: White/cyan (allied forces)
 
