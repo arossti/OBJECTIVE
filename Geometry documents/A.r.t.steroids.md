@@ -285,6 +285,46 @@ The first player to reach The Infinite receives 10% of proceeds—but they must 
 - Death resets ship to starting Tetrahedron but retains all unlocked ships and fuel/materials
 - Final death (7th) shows full game over sequence with score summary
 
+**Motion Dynamics (Rubber-Band Navigation):**
+
+Ship/player begins as single Tetrahedron at origin [1,1,1,1] in WXYZ tetrahedral space.
+
+**ASDF Tetrahedral Movement:**
+- **ASDF keys** control displacement along WXYZ tetrahedral axes:
+  - **A key**: Move along W-axis (red) direction
+  - **S key**: Move along X-axis (green) direction
+  - **D key**: Move along Y-axis (blue) direction
+  - **F key**: Move along Z-axis (yellow) direction
+
+**Rubber-Band Physics:**
+- **Hold key**: Ship displaces farther along corresponding axis
+  - Displacement distance = f(hold_duration) — exponential or quadratic curve
+  - Visual: Corresponding axis grid line glows brighter during displacement
+  - Max displacement: Q_max = 50 (quadrance units from origin)
+  - Fuel cost: 1 fuel per second of displacement (incentivizes tactical use)
+- **Release key**: Ship returns to origin with "quantitative easing" animation
+  - Smooth deceleration curve (ease-out cubic or similar)
+  - Animation duration: ~0.5-1.0 seconds depending on displacement distance
+  - Visual: Fading glow trail along axis during return motion
+
+**Stellarian Dodge Mechanic:**
+- This rubber-band motion is how Stellarians evade Cartesian fire
+- Cartesian enemies targeting in XYZ coordinates cannot track tetrahedral WXYZ displacement
+- Appears as instantaneous lateral shift from enemy perspective
+- Strategic timing: hold-release pattern creates unpredictable motion signature
+
+**World-Frame Reference:**
+- Consistent with original Asteroids game design philosophy
+- World moves relative to player (player ship always appears at origin visually)
+- Enemies positioned in WXYZ space around player
+- Camera maintains fixed position on player ship at canvas center
+- Player displacement in WXYZ manifests as world displacement in opposite direction
+
+**Separate Control Systems:**
+- **Rotation**: Arrow keys or mouse control (independent of ASDF motion)
+- **Targeting**: Spacebar for auto-target lock or manual override (independent of ASDF motion)
+- **ASDF is purely for positional dodge/evasion** — fundamental Stellarian survival mechanic
+
 **Ship Attributes:**
 - **Position**: WXYZ coordinates (origin = [1,1,1,1] normalized)
 - **Velocity**: Base speed + fuel-boost (capture enemy fuel for speed upgrades)
@@ -1120,10 +1160,22 @@ Players naturally discover that:
 
 ---
 
-**Document Version:** 3.1 (Stellaria Octangula Update)
+**Document Version:** 3.2 (Motion Dynamics)
 **Author:** Andy Thomson, M.Arch. OAA
 **Date:** 2026-01-14
 **Status:** Design Complete - Ready for Phase 1 Implementation
+
+**Version 3.2 Updates (Motion Dynamics):**
+- **Rubber-Band Navigation System**: Core movement mechanic using ASDF keys for WXYZ tetrahedral displacement
+  - Hold key = displacement along axis (exponential/quadratic distance curve)
+  - Release key = quantitative easing return to origin (0.5-1.0s animation)
+  - Max displacement: Q_max = 50 quadrance units
+  - Fuel cost: 1 fuel per second of displacement
+- **Stellarian Dodge Mechanic**: Tetrahedral WXYZ motion appears as unpredictable lateral shift to Cartesian XYZ enemies
+- **World-Frame Reference**: Player always at canvas center (origin), world moves relative to player
+  - Consistent with original Asteroids game philosophy
+- **Separate Control Systems**: Rotation (arrows/mouse) and targeting (spacebar) independent of ASDF motion
+- **Visual Feedback**: Axis glow during displacement, fading trail during return animation
 
 **Version 3.1 Updates (Stellaria Octangula):**
 - **Stellaria Octangula ship** (Tier 5): Black hole navigator with compound dual tetrahedra geometry
