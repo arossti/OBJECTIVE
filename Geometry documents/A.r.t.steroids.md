@@ -251,11 +251,39 @@ The first player to reach The Infinite receives 10% of proceeds—but they must 
    - **Warning**: Careful timing required - friendly fire can destroy swarm
    - Requires: 20 mixed debris + 200 fuel
 
-5. **Stellated Ships** (Advanced Tier - Captured Enemy Hybrid)
+5. **Stellaria Octangula** (Tier 5 - Black Hole Navigator)
+   - **Stella Octangula geometry**: Compound of two interpenetrating tetrahedra
+   - **Special ability**: Can survive black hole transitions (all other ships are destroyed)
+   - **8-point stellated form**: 8 firing vectors at maximum range
+   - **Death Glitch Reveal**: When destroyed, canvas flashes with infinite IVM grid of amber rhombic dodecahedra filling all space
+     - Brief glimpse (0.5 seconds) of the universal geometric substrate
+     - Foreshadows ultimate IVM Swarm Ship (Tier 7)
+     - Ship outline visible within lattice structure at moment of death
+     - Educational moment: "You have seen the fundament—space is tetrahedral packing"
+   - **Unlock Requirement**: Navigate through 3 black hole transitions in any ship (most will die, but knowledge persists)
+   - **Build Requirement**: 30 mixed materials + 300 fuel + 1 Boss Core Fragment
+   - **Philosophy**: "To traverse the void, one must become the void"
+
+6. **Stellated Ships** (Tier 6 - Captured Enemy Hybrid)
    - Stellated Icosahedron: Extended range (thicker rays, brighter glow)
    - Stellated Octahedron: Rapid-fire vertex darts
    - Dual Polyhedra: Combined Tetra+Octa for multi-axis simultaneous fire
    - Requires: Capturing intact enemy ships (special maneuver)
+
+7. **IVM Swarm Ship** (Tier 7 - Ultimate Form)
+   - **Rhombic Dodecahedron Hull**: Space-filling geometry, maximum armor
+   - **Infinite IVM Lattice Projection**: Ship exists at center of infinite lattice (amber glow)
+   - **Swarm Integration**: Player IS the swarm—all lattice nodes are firing positions
+   - **Invulnerability Window**: Brief immunity after each black hole transition
+   - **Unlock Requirement**: Die as Stellaria Octangula 3 times (see the glitch, understand the fundament)
+   - **Build Requirement**: 50 mixed materials + 500 fuel + 3 Boss Core Fragments
+   - **Philosophy**: "You are no longer a ship in space—you ARE space"
+
+**Lives System:**
+- **7 Lives per game** (one for each Platonic solid transformation)
+- Lives displayed as glowing geometric icons in HUD (diminishing sequence)
+- Death resets ship to starting Tetrahedron but retains all unlocked ships and fuel/materials
+- Final death (7th) shows full game over sequence with score summary
 
 **Ship Attributes:**
 - **Position**: WXYZ coordinates (origin = [1,1,1,1] normalized)
@@ -406,8 +434,22 @@ When player ship is destroyed, it exhibits **RT-pure polyhedral fragmentation** 
 - **Octahedron**: 8 faces fly apart along face normals (octahedral symmetry)
 - **Icosahedron**: 20 faces fly apart along face normals (icosahedral symmetry)
 - **Cuboctahedron**: 14 faces (8 triangular + 6 square) fly apart along face normals
+- **Stellaria Octangula**:
+  - Dual interpenetrating tetrahedra separate and spin in opposite directions
+  - **GLITCH REVEAL**: 0.5-second flash fills entire canvas with infinite IVM rhombic dodecahedra lattice
+  - Amber wireframe grid extends infinitely in all directions from origin
+  - Ship outline remains visible as ghost within lattice structure
+  - No face opacity—pure edge rendering reveals space-filling geometry
+  - Sound effect: Deep harmonic resonance (fundamental frequency + perfect fifth)
+  - **HUD text overlay**: *"You have glimpsed the fundament. All space is IVM packing. Death is transformation."*
+  - After glitch: Normal death sequence resumes with fragment dispersal
+- **IVM Swarm Ship**:
+  - Entire lattice pulses amber then collapses to single rhombic dodecahedron
+  - Dodecahedron spins rapidly while contracting to origin point
+  - Final implosion with white flash
 - Fragments glow with ship's color scheme, fade to black over 1 second
-- "Game Over" message appears as fragments disperse
+- **Lives counter decrements** - if lives remain, respawn as Tetrahedron at origin
+- **Game Over** (7th death): Full glitch sequence repeats for 3 seconds, then score summary
 
 **Resource Capture System:**
 
@@ -1078,10 +1120,26 @@ Players naturally discover that:
 
 ---
 
-**Document Version:** 3.0 (Stellarian Mythos Edition)
+**Document Version:** 3.1 (Stellaria Octangula Update)
 **Author:** Andy Thomson, M.Arch. OAA
-**Date:** 2026-01-13
+**Date:** 2026-01-14
 **Status:** Design Complete - Ready for Phase 1 Implementation
+
+**Version 3.1 Updates (Stellaria Octangula):**
+- **Stellaria Octangula ship** (Tier 5): Black hole navigator with compound dual tetrahedra geometry
+  - Can survive black hole transitions (all other ships destroyed)
+  - Death triggers "glitch reveal": 0.5s flash of infinite amber IVM rhombic dodecahedra lattice
+  - Ship outline visible within universal geometric substrate
+  - Foreshadows ultimate IVM Swarm Ship
+- **IVM Swarm Ship** (Tier 7): Ultimate form with rhombic dodecahedron hull at center of infinite lattice
+  - Player becomes the lattice—all nodes are firing positions
+  - Unlocked by dying as Stellaria Octangula 3 times (understanding through death)
+- **7 Lives system**: One life per Platonic solid transformation
+  - Death resets to Tetrahedron but retains progress
+  - Lives displayed as diminishing geometric icons
+  - Final death shows extended glitch sequence
+- **Death as education**: Stellaria Octangula glitch reveals that "space is tetrahedral packing"
+- **Philosophical progression**: From ship in space → becoming space itself
 
 **Version 3.0 Updates (Stellarian Mythos):**
 - **Added profound storyline**: Stellarians (seekers of Truth/The Infinite) vs Cartesians (trapped in Time/hubris)
