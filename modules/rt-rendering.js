@@ -483,7 +483,8 @@ export function initScene(THREE, OrbitControls, RT) {
     const defaultTetEdge = 2.0;
     const scaleDenominator = 2 * Math.sqrt(2); // 2√2 ≈ 2.828
 
-    const totalBasisLength = (defaultTetEdge + gridInterval) * (scaleDenominator / defaultTetEdge);
+    const totalBasisLength =
+      (defaultTetEdge + gridInterval) * (scaleDenominator / defaultTetEdge);
     // = 2.612 × 1.414 ≈ 3.69
 
     const headSize = 0.15; // Scale of tetrahedral arrowhead
@@ -1836,14 +1837,19 @@ export function initScene(THREE, OrbitControls, RT) {
       const gridInterval = RT.PureRadicals.QUADRAY_GRID_INTERVAL; // √6/4 ≈ 0.612
       // tetEdge represents number of grid intervals, so basis = (tetEdge + 1) × gridInterval
       const targetLength = (tetEdge + 1) * gridInterval;
-      const headSize = 0.10; // Reduced from 0.15 for better visual balance
+      const headSize = 0.1; // Reduced from 0.15 for better visual balance
       const headTipExtension = headSize * Math.sqrt(3);
       const shaftLength = targetLength - headTipExtension;
 
       const colors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00];
 
       Quadray.basisVectors.forEach((vec, i) => {
-        const arrow = createTetrahedralArrow(vec, shaftLength, headSize, colors[i]);
+        const arrow = createTetrahedralArrow(
+          vec,
+          shaftLength,
+          headSize,
+          colors[i]
+        );
         quadrayBasis.add(arrow);
       });
     }

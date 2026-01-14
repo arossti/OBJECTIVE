@@ -10,6 +10,7 @@
 ## Current Status
 
 ### ✅ What Works
+
 - JSON state export with complete instance data
 - File import/export UI (Import/Export/Save buttons)
 - State validation and parsing
@@ -20,11 +21,14 @@
 - Keyboard shortcuts
 
 ### ❌ What Needs Fixing
+
 - Instance geometry recreation on import
 - Instances are logged but not visually restored in 3D scene
 
 ### 🐛 Issue Details
+
 **Log Output:**
+
 ```
 rt-state-manager.js:551 🗑️  All instances cleared
 rt-filehandler.js:232 📦 Would restore 2 instances
@@ -40,9 +44,11 @@ rt-filehandler.js:239 ✅ State imported successfully
 ### Key Files & Touchpoints
 
 #### 1. **rt-filehandler.js** (Primary Work Area)
+
 **Location:** `src/geometry/modules/rt-filehandler.js`
 
 **Current Import Method:**
+
 ```javascript
 // Line ~220-240
 importState(stateData) {
@@ -60,6 +66,7 @@ importState(stateData) {
 ```
 
 **What We Need:**
+
 - Access to polyhedron creation functions
 - Ability to create geometry by type name (string → function)
 - Apply saved transforms after creation
@@ -67,46 +74,51 @@ importState(stateData) {
 ---
 
 #### 2. **rt-init.js** (Polyhedron Creation Pipeline)
+
 **Location:** `src/geometry/modules/rt-init.js`
 
 **Polyhedron Creation Functions to Identify:**
+
 - `renderPolyhedron(group, geometry, color, opacity)` - Core rendering function
 - Individual polyhedron builders (need to find these)
 - Scale/transform application logic
 - Where `Polyhedra.cube()`, `Polyhedra.tetrahedron()`, etc. are called
 
 **Search Patterns:**
+
 ```javascript
 // Find where polyhedra are created:
-- "Polyhedra.cube"
-- "Polyhedra.tetrahedron"
-- "Polyhedra.octahedron"
-- "Polyhedra.icosahedron"
-- "Polyhedra.dodecahedron"
-- "Polyhedra.dualTetrahedron"
-- "Polyhedra.dualIcosahedron"
-- "Polyhedra.cuboctahedron"
-- "Polyhedra.rhombicDodecahedron"
-- "Polyhedra.geodesic"
-
-// Find where groups are created:
-- "cubeGroup"
-- "tetrahedronGroup"
-- "octahedronGroup"
+-"Polyhedra.cube" -
+  "Polyhedra.tetrahedron" -
+  "Polyhedra.octahedron" -
+  "Polyhedra.icosahedron" -
+  "Polyhedra.dodecahedron" -
+  "Polyhedra.dualTetrahedron" -
+  "Polyhedra.dualIcosahedron" -
+  "Polyhedra.cuboctahedron" -
+  "Polyhedra.rhombicDodecahedron" -
+  "Polyhedra.geodesic" -
+  // Find where groups are created:
+  "cubeGroup" -
+  "tetrahedronGroup" -
+  "octahedronGroup";
 // etc.
 ```
 
 ---
 
 #### 3. **rt-polyhedra.js** (Geometry Generation)
+
 **Location:** `src/geometry/modules/rt-polyhedra.js`
 
 **What It Provides:**
+
 - `Polyhedra.cube(scale)` - Returns `{ vertices, edges, faces }`
 - `Polyhedra.tetrahedron(scale)` - Returns geometry data
 - Similar methods for all polyhedron types
 
 **What We Need to Know:**
+
 - Input parameters (scale, frequency for geodesics)
 - Output format
 - How to convert output to THREE.js geometry
@@ -114,9 +126,11 @@ importState(stateData) {
 ---
 
 #### 4. **rt-state-manager.js** (Instance Management)
+
 **Location:** `src/geometry/modules/rt-state-manager.js`
 
 **Relevant Methods:**
+
 ```javascript
 // Line 94-194
 createInstance(polyhedronGroup, scene) {
@@ -139,6 +153,7 @@ clearAll(scene) {
 ```
 
 **What's Important:**
+
 - `createInstance()` expects an existing THREE.Group with geometry
 - We need to build the group FIRST, then pass it to createInstance()
 - Instance metadata structure is already correct in JSON export
@@ -148,13 +163,14 @@ clearAll(scene) {
 ## JSON State Structure
 
 ### Instance Data Format
+
 ```json
 {
   "instances": [
     {
       "id": "instance_1736093847123_abc123",
       "timestamp": 1736093847123,
-      "type": "cube",  // ← Key for recreation
+      "type": "cube", // ← Key for recreation
       "transform": {
         "position": { "x": 2.5, "y": 0, "z": 0 },
         "rotation": { "x": 0, "y": 0, "z": 0, "order": "XYZ" },
@@ -174,6 +190,7 @@ clearAll(scene) {
 ```
 
 **Critical Fields:**
+
 - `type` - Determines which Polyhedra method to call
 - `transform` - Applied after geometry creation
 - `appearance.visible` - Controls visibility
@@ -183,15 +200,18 @@ clearAll(scene) {
 ## Implementation Strategy
 
 ### Phase 1: Research & Map Functions
+
 **Goal:** Understand the existing polyhedron creation pipeline
 
 **Tasks:**
+
 1. ✅ Identify where polyhedra are initially created in rt-init.js
 2. ✅ Map `type` string → creation function
 3. ✅ Understand rendering pipeline (geometry → THREE.js → scene)
 4. ✅ Document scale/transform application process
 
 **Search Locations:**
+
 - `rt-init.js` lines containing "Polyhedra."
 - `rt-init.js` functions that create "Group" objects
 - `renderPolyhedron()` function implementation
@@ -199,20 +219,22 @@ clearAll(scene) {
 ---
 
 ### Phase 2: Extract Creation Logic
+
 **Goal:** Make polyhedron creation callable from file handler
 
 **Option A: Create Factory Function in rt-init.js**
+
 ```javascript
 // Add to rt-init.js after polyhedron creation
 function createPolyhedronByType(type, scale = 1.0) {
   const group = new THREE.Group();
   let geometry;
 
-  switch(type) {
-    case 'cube':
+  switch (type) {
+    case "cube":
       geometry = Polyhedra.cube(scale);
       break;
-    case 'tetrahedron':
+    case "tetrahedron":
       geometry = Polyhedra.tetrahedron(scale);
       break;
     // ... all types
@@ -228,23 +250,25 @@ window.createPolyhedronByType = createPolyhedronByType;
 ```
 
 **Option B: Pass Creation Functions to File Handler**
+
 ```javascript
 // In rt-init.js after RTFileHandler.init()
 RTFileHandler.setPolyhedronFactory({
-  cube: (scale) => createCube(scale),
-  tetrahedron: (scale) => createTetrahedron(scale),
+  cube: scale => createCube(scale),
+  tetrahedron: scale => createTetrahedron(scale),
   // ... etc
 });
 ```
 
 **Option C: Minimal Coupling - Factory Registry**
+
 ```javascript
 // Create a new lightweight module: rt-polyhedron-factory.js
 export const PolyhedronFactory = {
   create(type, scale, THREE, Polyhedra) {
     // Self-contained creation logic
     // No dependencies on rt-init.js internals
-  }
+  },
 };
 ```
 
@@ -253,9 +277,11 @@ export const PolyhedronFactory = {
 ---
 
 ### Phase 3: Implement Instance Restoration
+
 **Goal:** Complete the TODO in rt-filehandler.js
 
 **Implementation:**
+
 ```javascript
 // rt-filehandler.js - importState() method
 // Replace lines 229-236
@@ -267,7 +293,7 @@ if (stateData.instances && Array.isArray(stateData.instances)) {
     // 1. Create polyhedron group from type
     const polyhedronGroup = window.createPolyhedronByType(
       instanceData.type,
-      1.0  // Base scale
+      1.0 // Base scale
     );
 
     // 2. Apply saved transform
@@ -298,7 +324,9 @@ if (stateData.instances && Array.isArray(stateData.instances)) {
       this.scene
     );
 
-    console.log(`✅ Restored instance: ${instanceData.type} at (${instanceData.transform.position.x}, ${instanceData.transform.position.y}, ${instanceData.transform.position.z})`);
+    console.log(
+      `✅ Restored instance: ${instanceData.type} at (${instanceData.transform.position.x}, ${instanceData.transform.position.y}, ${instanceData.transform.position.z})`
+    );
   });
 
   console.log(`✅ All instances restored successfully`);
@@ -335,6 +363,7 @@ if (stateData.instances && Array.isArray(stateData.instances)) {
    - Migration strategies
 
 **Proposed JSON Extensions:**
+
 ```json
 {
   "instances": [
@@ -342,7 +371,7 @@ if (stateData.instances && Array.isArray(stateData.instances)) {
       "type": "geodesicIcosahedron",
       "parameters": {
         "frequency": 2,
-        "projection": "out"  // "off", "in", "mid", "out"
+        "projection": "out" // "off", "in", "mid", "out"
       },
       "appearance": {
         "visible": true,
@@ -395,15 +424,18 @@ if (stateData.instances && Array.isArray(stateData.instances)) {
 ## Code Locations Reference
 
 ### Files to Modify
+
 1. **rt-init.js** - Add polyhedron factory function
 2. **rt-filehandler.js** - Implement instance restoration
 3. **(Optional) rt-polyhedron-factory.js** - If we go with Option C
 
 ### Files to Read (No Changes)
+
 1. **rt-polyhedra.js** - Understand geometry API
 2. **rt-state-manager.js** - Understand instance API
 
 ### Search Commands
+
 ```bash
 # Find polyhedron creation
 grep -n "Polyhedra\." src/geometry/modules/rt-init.js
@@ -423,6 +455,7 @@ grep -n "scale" src/geometry/modules/rt-init.js | grep -i "slider\|value"
 ## Dependencies & Requirements
 
 ### Modules Required
+
 - THREE.js (already loaded)
 - Polyhedra (from rt-polyhedra.js)
 - RTStateManager (already available)
@@ -430,10 +463,12 @@ grep -n "scale" src/geometry/modules/rt-init.js | grep -i "slider\|value"
 - Camera reference (passed to init)
 
 ### Global Variables Needed
+
 - Access to polyhedron creation functions
 - Access to rendering configuration (colors, opacity, node size)
 
 ### Potential Issues
+
 1. **Scoping** - Creation functions may be in closure
 2. **State** - UI state (opacity, node size) may not be accessible
 3. **Async** - Geometry creation might be async
@@ -444,6 +479,7 @@ grep -n "scale" src/geometry/modules/rt-init.js | grep -i "slider\|value"
 ## Next Steps
 
 ### Immediate Actions
+
 1. ✅ Create this workplan document
 2. ⏳ Search rt-init.js for polyhedron creation patterns
 3. ⏳ Document the creation pipeline
@@ -456,6 +492,7 @@ grep -n "scale" src/geometry/modules/rt-init.js | grep -i "slider\|value"
 10. ⏳ Update documentation
 
 ### Success Criteria
+
 - ✅ Import JSON with 2 hexahedra
 - ✅ Both instances appear in scene
 - ✅ Transforms match original (position/rotation/scale)
@@ -468,6 +505,7 @@ grep -n "scale" src/geometry/modules/rt-init.js | grep -i "slider\|value"
 ## Notes & Observations
 
 ### From Logs.md Testing
+
 ```
 rt-state-manager.js:551 🗑️  All instances cleared
 rt-filehandler.js:232 📦 Would restore 2 instances
@@ -475,6 +513,7 @@ rt-filehandler.js:239 ✅ State imported successfully
 ```
 
 **Observations:**
+
 - Clear is working correctly
 - State validation passes
 - Instance count detected (2)
@@ -482,7 +521,9 @@ rt-filehandler.js:239 ✅ State imported successfully
 - Just missing visual restoration
 
 ### Key Insight
+
 The hardest part is **accessing the polyhedron creation pipeline** which lives in rt-init.js's closure. We need to either:
+
 1. Expose it globally (simple, less elegant)
 2. Pass it as dependency (cleaner, more refactoring)
 3. Recreate minimal version (most work, most isolated)

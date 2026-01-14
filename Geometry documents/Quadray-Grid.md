@@ -31,6 +31,7 @@ This document captures three distinct grid topology options, our implementation 
 **Bug Resolution:** The horizontal edge bug was inadvertently fixed when we switched from barycentric point-connection approach to the three parallel line families approach (attempting to implement IVM). The new approach correctly generates clean triangular grids without extraneous lines.
 
 #### Geometry
+
 - **Cell Type:** Equilateral triangular cells
 - **Internal Angles:** 60° (RT: spread = 3/4)
 - **Boundary Shape:** Triangular perimeter (extends to outer tetrahedral face) - correct "web" plane boundary definitions
@@ -38,7 +39,9 @@ This document captures three distinct grid topology options, our implementation 
 - **Grid Type:** Point-connection within the angular "web space" between axes
 
 #### Line Generation Method
+
 **Barycentric point-connection approach:**
+
 1. Generate grid points using barycentric coordinates: `(u, v, w)` where `u+v+w=1`
 2. Position = `u·origin + v·(basis1·maxExtent) + w·(basis2·maxExtent)`
 3. Connect adjacent points with three edge types:
@@ -50,11 +53,13 @@ This document captures three distinct grid topology options, our implementation 
 // Barycentric point generation
 for (let i = 0; i <= divisions; i++) {
   for (let j = 0; j <= divisions - i; j++) {
-    const v = i / divisions;  // Barycentric weight for basis1
-    const w = j / divisions;  // Barycentric weight for basis2
-    const point = basis1.clone().multiplyScalar(v * maxExtent)
-                         .add(basis2.clone().multiplyScalar(w * maxExtent));
-    gridPoints.push({i, j, point});
+    const v = i / divisions; // Barycentric weight for basis1
+    const w = j / divisions; // Barycentric weight for basis2
+    const point = basis1
+      .clone()
+      .multiplyScalar(v * maxExtent)
+      .add(basis2.clone().multiplyScalar(w * maxExtent));
+    gridPoints.push({ i, j, point });
   }
 }
 
@@ -65,9 +70,11 @@ for (let i = 0; i <= divisions; i++) {
 ```
 
 #### RT-Purity
+
 ✅ **YES** - Pure barycentric subdivision, no angles or trigonometry
 
 #### Strengths
+
 - ✅ Triangular boundary matches tetrahedral coordinate system
 - ✅ Directly corresponds to tetrahedron face subdivision
 - ✅ Perfect for Phase 2.8 geodesic projections onto planes
@@ -75,11 +82,13 @@ for (let i = 0; i <= divisions; i++) {
 - ✅ Geodesic vertices align exactly with grid intersections when Project='Flat'
 
 #### Weaknesses
+
 - ~~❌ **FORMER BUG:** Horizontal edges `(i,j) → (i+1,j)` generated extraneous lines~~ ✅ **FIXED**
 - ~~❌ These mystery lines were neither parallel to camera nor parallel to axes~~ ✅ **RESOLVED**
 - **Solution:** Switched to three parallel line families approach (see ARTexplorer.md lines 1295-1393)
 
 #### Recommendation
+
 **✅ COMPLETE FOR PHASE 2.6** - Grid topology is now clean and working correctly.
 
 ---
@@ -94,6 +103,7 @@ for (let i = 0; i <= divisions; i++) {
 **Key Insight:** If we were to join all 4 faces in a similar tessellated fashion across the planes of the origin tetrahedron, we would essentially construct the complete IVM.
 
 #### Geometry
+
 - **Cell Type:** Equilateral triangular faces from vertex-to-vertex tetrahedra
 - **Internal Angles:** 60° (RT: spread = 3/4)
 - **Boundary Shape:** Extends infinitely along the plane
@@ -101,7 +111,9 @@ for (let i = 0; i <= divisions; i++) {
 - **Grid Type:** Planar cross-section through vertex-to-vertex tetrahedral tessellation
 
 #### Line Generation Method
+
 **Vertex-to-vertex tetrahedral tessellation approach:**
+
 1. Start with origin tetrahedron
 2. Identify the two triangular faces that define each Quadray plane (WX, WY, WZ, XY, XZ, YZ)
 3. For each plane, tessellate tetrahedra by placing them vertex-to-vertex along the plane
@@ -123,17 +135,21 @@ for (let i = 0; i <= divisions; i++) {
 ```
 
 #### RT-Purity
+
 ✅ **YES** - Can be expressed as barycentric, pure vector arithmetic
 
 #### Key Mathematical Property
+
 The **109.47° tetrahedral angle** between Quadray basis vectors is critical here. When you add the third diagonal line family, you get perfect octahedra AND tetrahedra fitting together. This is the fundamental property that makes Quadray coordinates the natural coordinate system for 3D space.
 
 **RT Relationship:**
+
 - Dot product between basis vectors: `W · X = -1/3`
 - Spread (RT equivalent of sin²θ): `8/9`
 - Quadrance between normalized vectors: `8/3`
 
 #### Strengths
+
 - 🌟 **ULTIMATE EDUCATIONAL VALUE** - This IS the true Fuller's Isotropic Vector Matrix!
 - 🌟 Shows how tetrahedra tessellate vertex-to-vertex to create IVM structure
 - 🌟 Demonstrates proper planar cross-sections through space-filling geometry
@@ -142,20 +158,25 @@ The **109.47° tetrahedral angle** between Quadray basis vectors is critical her
 - ✅ True space-filling geometry - the foundation of IVM
 
 #### Weaknesses
+
 - ❌ **NOT YET IMPLEMENTED** - Requires vertex-to-vertex tessellation algorithm
 - ❌ More complex than Option 1 (Tetrahedral Central Angle Exploration Grid)
 - ⚠️ May require different grid spacing/bounds than Option 1
 - ⚠️ Need to carefully select which faces to render (coplanarity test)
 
 #### Space-Frame Applications
+
 **IF** this grid topology helps generate space frames:
+
 - ✅ Octet truss is THE fundamental space-frame geometry
 - ✅ Natural scaffolding for tetrahedral/octahedral structures
 - ✅ Used extensively in architecture and engineering
 - ✅ Optimal strength-to-weight ratio
 
 #### Recommendation
+
 **IMPLEMENT AS SEPARATE PHASE** (Phase 2.9 or later):
+
 - This is the TRUE IVM grid that should be implemented after Option 1 is complete
 - Add UI checkbox: "Show IVM Grid" (separate from "Show Central Angle Grid")
 - Focus on vertex-to-vertex tessellation algorithm
@@ -169,13 +190,16 @@ The **109.47° tetrahedral angle** between Quadray basis vectors is critical her
 **Current Implementation Status:** ❌ NOT IMPLEMENTED
 
 #### Geometry
+
 - **Cell Type:** Skewed squares (parallelograms)
 - **Internal Angles:** 60° and 120° (NOT 90°)
 - **Boundary Shape:** Rhombic/parallelogram perimeter
 - **Space-Filling:** Rhombic dodecahedral packing (?)
 
 #### Line Generation Method
+
 **Two parallel line families only:**
+
 1. **Family 1:** Lines parallel to basis1, displaced along basis2 direction
 2. **Family 2:** Lines parallel to basis2, displaced along basis1 direction
 3. ❌ **NO third family** - this is the key difference
@@ -186,8 +210,12 @@ for (let i = 0; i <= divisions; i++) {
   const offset = minExtent + i * step;
   const displacement = basis2.clone().multiplyScalar(offset);
 
-  const start = displacement.clone().add(basis1.clone().multiplyScalar(minExtent));
-  const end = displacement.clone().add(basis1.clone().multiplyScalar(maxExtent));
+  const start = displacement
+    .clone()
+    .add(basis1.clone().multiplyScalar(minExtent));
+  const end = displacement
+    .clone()
+    .add(basis1.clone().multiplyScalar(maxExtent));
 
   vertices.push(start.x, start.y, start.z);
   vertices.push(end.x, end.y, end.z);
@@ -198,8 +226,12 @@ for (let i = 0; i <= divisions; i++) {
   const offset = minExtent + i * step;
   const displacement = basis1.clone().multiplyScalar(offset);
 
-  const start = displacement.clone().add(basis2.clone().multiplyScalar(minExtent));
-  const end = displacement.clone().add(basis2.clone().multiplyScalar(maxExtent));
+  const start = displacement
+    .clone()
+    .add(basis2.clone().multiplyScalar(minExtent));
+  const end = displacement
+    .clone()
+    .add(basis2.clone().multiplyScalar(maxExtent));
 
   vertices.push(start.x, start.y, start.z);
   vertices.push(end.x, end.y, end.z);
@@ -207,14 +239,17 @@ for (let i = 0; i <= divisions; i++) {
 ```
 
 #### RT-Purity
+
 ✅ **YES** - Simpler than triangular lattice, pure vector arithmetic
 
 #### Strengths
+
 - ✅ Simplest implementation (only two line families)
 - ✅ RT-pure mathematics
 - ✅ Clear parallelogram structure
 
 #### Weaknesses
+
 - ❌ **Loses tetrahedral symmetry** - rhombic boundary doesn't match tetrahedral structure
 - ❌ **Geodesic vertices won't align** properly for Phase 2.8
 - ❌ Less elegant than triangular lattice
@@ -222,7 +257,9 @@ for (let i = 0; i <= divisions; i++) {
 - ❌ Not space-filling in the same way as octet truss
 
 #### Recommendation
+
 **DO NOT IMPLEMENT** - This option loses too many desirable properties:
+
 - Doesn't match tetrahedral coordinate system
 - Won't integrate well with Phase 2.8 geodesic projections
 - Less mathematically interesting than other options
@@ -237,6 +274,7 @@ for (let i = 0; i <= divisions; i++) {
 We were attempting to build the IVM grid by "filling the web space between axes" using the 109.47° tetrahedral central angle. This is NOT how IVM grids work!
 
 **The Problem:**
+
 - Option 1 implementation (barycentric point-connection) creates an interesting "Tetrahedral Central Angle Exploration Grid"
 - This shows the "web space" created by extending the tetrahedral angle outward from center
 - It correctly defines web plane boundaries, but it's NOT the true IVM grid
@@ -244,12 +282,14 @@ We were attempting to build the IVM grid by "filling the web space between axes"
 
 **The TRUE IVM Approach:**
 The IVM is built by **vertex-to-vertex tetrahedral tessellation**:
+
 1. Place tetrahedra vertex-to-vertex along the plane
 2. Each triangular face preserves the same face normal (coplanar)
 3. Extract ONLY the coplanar triangular faces that lie along each Quadray plane
 4. This creates ONE plane through the IVM space-filling structure
 
 **Resolution:**
+
 - Renamed Option 1 to "Tetrahedral Central Angle Exploration Grid" - preserve this despite bugs
 - Redefined Option 2 as "True IVM Grid via Vertex-to-Vertex Tessellation"
 - Add two separate UI checkboxes:
@@ -260,11 +300,13 @@ The IVM is built by **vertex-to-vertex tetrahedral tessellation**:
 ### Struggle 2: Identifying Extraneous Lines
 
 **The Problem:**
+
 - Option 1 implementation generates mysterious extraneous lines
 - These lines are neither parallel to camera nor parallel to axes
 - Debug testing identified horizontal edges `(i,j) → (i+1,j)` as the culprit
 
 **Debug Test Results:**
+
 - **Test 1** (horizontal only): ❌ Shows extraneous lines
 - **Test 2** (vertical only): ✅ Clean, shows lines parallel to axes
 - **Test 3** (diagonal only): ✅ Clean, shows horizontal lines to camera
@@ -300,6 +342,7 @@ What are we trying to visualize with Quadray planes?
    - Not space-filling in interesting way
 
 **Current Decision:**
+
 - Implement **Option 1 for Phase 2.6** (fix horizontal edge bug first)
 - Implement **Option 2 for Phase 2.9 or later** (true IVM via vertex-to-vertex tessellation)
 - Provide separate UI toggles for both grids
@@ -316,6 +359,7 @@ What are we trying to visualize with Quadray planes?
 **Purpose:** Visualize the "web space" created by working within the 109.47° tetrahedral central angle
 
 **Tasks:**
+
 1. ✅ Implement barycentric point generation
 2. ✅ Add debug mode with edge type toggles
 3. ✅ **FIX HORIZONTAL EDGE BUG** - Fixed by switching to three parallel line families approach
@@ -326,6 +370,7 @@ What are we trying to visualize with Quadray planes?
 8. ✅ Phase 2.6 complete - ready for Phase 2.9 (True IVM Grid)
 
 **Resolution Notes:**
+
 - Grid now uses three parallel line families instead of barycentric point-connection
 - All extraneous lines eliminated
 - Clean equilateral triangular lattice achieved
@@ -343,6 +388,7 @@ What are we trying to visualize with Quadray planes?
 **Purpose:** Visualize the TRUE IVM by tessellating tetrahedra vertex-to-vertex along each Quadray plane
 
 **Implementation Notes:**
+
 - Use vertex-to-vertex tetrahedral tessellation approach (NOT parallel line families)
 - Extract coplanar triangular faces from tessellated tetrahedra
 - Each face must preserve same face normal (coplanarity test)
@@ -350,6 +396,7 @@ What are we trying to visualize with Quadray planes?
 - Both grids can be shown simultaneously or independently
 
 **Algorithm Sketch:**
+
 1. Define tetrahedron edge length (correlate with dual tet dimensions)
 2. For each Quadray plane, generate lattice positions for tetrahedra
 3. Place tetrahedra vertex-to-vertex along the plane
@@ -357,6 +404,7 @@ What are we trying to visualize with Quadray planes?
 5. Extract and render only the coplanar triangular edges
 
 **Benefits:**
+
 - 🌟 TRUE Fuller's Isotropic Vector Matrix visualization
 - 🌟 Shows proper planar cross-sections through IVM structure
 - 🌟 Foundation for space-frame and octet truss applications
@@ -370,24 +418,28 @@ What are we trying to visualize with Quadray planes?
 ### Quadray Basis Vector Properties
 
 **The Four Basis Vectors:**
+
 ```javascript
-W = normalize((-1, -1, -1))  // Points to vertex 0
-X = normalize(( 1,  1, -1))  // Points to vertex 1
-Y = normalize(( 1, -1,  1))  // Points to vertex 2
-Z = normalize((-1,  1,  1))  // Points to vertex 3
+W = normalize((-1, -1, -1)); // Points to vertex 0
+X = normalize((1, 1, -1)); // Points to vertex 1
+Y = normalize((1, -1, 1)); // Points to vertex 2
+Z = normalize((-1, 1, 1)); // Points to vertex 3
 ```
 
 **Zero-Sum Property:**
+
 ```
 W + X + Y + Z = (0, 0, 0)
 ```
 
 **Tetrahedral Angle (109.47°):**
+
 ```
 W · X = -1/3  (RT-pure relationship, no angles needed!)
 ```
 
 **RT Properties:**
+
 - Spread between any two vectors: `8/9`
 - Quadrance between normalized vectors: `8/3`
 - No angle calculations, no trigonometry - pure vector arithmetic
@@ -395,6 +447,7 @@ W · X = -1/3  (RT-pure relationship, no angles needed!)
 ### Why 109.47° Matters for Octet Truss
 
 The tetrahedral angle ensures that when you create three parallel line families (Option 2):
+
 1. Lines parallel to basis1
 2. Lines parallel to basis2
 3. Lines parallel to (basis1 + basis2)
@@ -423,6 +476,7 @@ The key insight from our exploration: **We were confusing two fundamentally diff
    - DO NOT implement - loses tetrahedral properties
 
 **Current Path Forward:**
+
 - Complete Option 1 for Phase 2.6 (fix horizontal edge bug, add "Show Central Angle Grid" checkbox)
 - Implement Option 2 for Phase 2.9 or later (add "Show IVM Grid" checkbox)
 - Both grids have value and should coexist with separate UI toggles
@@ -442,17 +496,19 @@ This document serves as a record of our exploration and the critical insight tha
 The current implementation includes a comprehensive debug mode that allows toggling individual edge types to identify problematic lines.
 
 **Debug Flags Available:**
+
 ```javascript
 window.quadrayDebug = {
-  showHorizontal: true,  // (i,j) → (i+1,j) - parallel to basis1
-  showVertical: true,    // (i,j) → (i,j+1) - parallel to basis2
-  showDiagonal: true     // (i+1,j) → (i,j+1) - completes triangles
-}
+  showHorizontal: true, // (i,j) → (i+1,j) - parallel to basis1
+  showVertical: true, // (i,j) → (i,j+1) - parallel to basis2
+  showDiagonal: true, // (i+1,j) → (i,j+1) - completes triangles
+};
 ```
 
 **Rebuild Function:**
+
 ```javascript
-rebuildQuadrayPlanes()  // Reconstructs all planes with current debug flags
+rebuildQuadrayPlanes(); // Reconstructs all planes with current debug flags
 ```
 
 ### Quick Debug Tests
@@ -460,43 +516,69 @@ rebuildQuadrayPlanes()  // Reconstructs all planes with current debug flags
 Open browser console and run:
 
 #### Test 1: Only Horizontal Edges (weird rays)
+
 ```javascript
-window.quadrayDebug = { showHorizontal: true, showVertical: false, showDiagonal: false }
-rebuildQuadrayPlanes()
+window.quadrayDebug = {
+  showHorizontal: true,
+  showVertical: false,
+  showDiagonal: false,
+};
+rebuildQuadrayPlanes();
 // Result: ❌ Shows extraneous lines (PROBLEMATIC)
 ```
 
 #### Test 2: Only Vertical Edges
+
 ```javascript
-window.quadrayDebug = { showHorizontal: false, showVertical: true, showDiagonal: false }
-rebuildQuadrayPlanes()
+window.quadrayDebug = {
+  showHorizontal: false,
+  showVertical: true,
+  showDiagonal: false,
+};
+rebuildQuadrayPlanes();
 // Result: ✅ Clean, shows lines parallel to axes
 ```
 
 #### Test 3: Only Diagonal Edges
+
 ```javascript
-window.quadrayDebug = { showHorizontal: false, showVertical: false, showDiagonal: true }
-rebuildQuadrayPlanes()
+window.quadrayDebug = {
+  showHorizontal: false,
+  showVertical: false,
+  showDiagonal: true,
+};
+rebuildQuadrayPlanes();
 // Result: ✅ Clean, shows horizontal lines to camera
 ```
 
 #### Test 4: Horizontal + Vertical (Parallelogram Grid)
+
 ```javascript
-window.quadrayDebug = { showHorizontal: true, showVertical: true, showDiagonal: false }
-rebuildQuadrayPlanes()
+window.quadrayDebug = {
+  showHorizontal: true,
+  showVertical: true,
+  showDiagonal: false,
+};
+rebuildQuadrayPlanes();
 // Result: ❌ Shows extraneous lines (PROBLEMATIC)
 ```
 
 #### Test 5: All Edges (Default)
+
 ```javascript
-window.quadrayDebug = { showHorizontal: true, showVertical: true, showDiagonal: true }
-rebuildQuadrayPlanes()
+window.quadrayDebug = {
+  showHorizontal: true,
+  showVertical: true,
+  showDiagonal: true,
+};
+rebuildQuadrayPlanes();
 // Result: Shows all grid lines including extraneous ones
 ```
 
 ### Console Output
 
 After each rebuild, the console logs:
+
 ```
 ═══════════════════════════════════════════════════════
 🔄 Rebuilding Quadray Planes
@@ -559,12 +641,14 @@ These counts help verify the grid is generating the expected number of lines.
 **Should we provide TWO sliders that preference rational units based on which one the user adjusts?**
 
 **Current Implementation:**
+
 - Single slider: "Cube Edge Length"
 - All polyhedra scale uniformly with cube halfSize
 - Tetrahedron edge = 2s√2 (irrational relative to cube)
 - Cube edge = 2s (rational)
 
 **Proposed Alternative:**
+
 - **TWO linked sliders** (one unified metric, different presentations):
   1. "Cube Edge Length" - snap to 0.10 intervals, show 2 decimal places
   2. "Tetrahedron Edge Length" - snap to 0.10 intervals, show 2 decimal places
@@ -576,6 +660,7 @@ These counts help verify the grid is generating the expected number of lines.
 ### Mathematical Relationship
 
 **If tetrahedron edge = 1 (rational base unit):**
+
 ```
 Tet edge = 1
 Tet halfSize = 1/(2√2) = √2/4 ≈ 0.3536
@@ -585,6 +670,7 @@ Cube halfSize = 1/(2√2) = √2/4 ≈ 0.3536
 ```
 
 **Relationship:**
+
 ```
 When Tet edge = 1:
   Cube edge = 1/√2 (irrational!)
@@ -596,13 +682,14 @@ When Cube edge = 1:
 **Key Insight:** You CANNOT have both cube and tetrahedron with rational edge lengths simultaneously in the same coordinate system. One must be irrational relative to the other.
 
 **UI Solution - Linked Sliders with Smart Snapping:**
+
 - **Both sliders snap to 0.10 intervals** (NOT just integers - finer granularity)
 - **Both show 2 decimal places** (e.g., "1.41" or "2.00")
 - **Which slider you adjust determines which shows rational:**
   - Drag cube slider → cube shows rational (1.00, 1.10, 1.20...), tet updates to irrational (1.41, 1.56, 1.70...)
   - Drag tet slider → tet shows rational (1.00, 1.10, 1.20...), cube updates to irrational (0.71, 0.78, 0.85...)
 - **Single metric underneath** - no actual independence, just UI presentation
-- **Benefit:** User can work in whichever system feels more natural, see real values in both 
+- **Benefit:** User can work in whichever system feels more natural, see real values in both
 
 ### User Benefits
 
@@ -643,6 +730,7 @@ When Cube edge = 1:
 ### Implementation Sketch
 
 **UI Changes:**
+
 ```
 Scale
   Cube Edge Length       [slider] 2.0
@@ -650,10 +738,11 @@ Scale
 ```
 
 **Code Structure:**
+
 ```javascript
 // Global scale parameters
-let cubeHalfSize = 1.0;      // Cube system base unit
-let tetEdgeLength = 1.0;     // Tet system base unit
+let cubeHalfSize = 1.0; // Cube system base unit
+let tetEdgeLength = 1.0; // Tet system base unit
 
 // Cube system (Cartesian)
 function updateCubeScale(cubeEdge) {
@@ -670,11 +759,12 @@ function updateTetScale(tetEdge) {
 ```
 
 **Slider Event Handlers with Linked Updates:**
+
 ```javascript
 // ONE unified metric, TWO presentation modes
-let currentCubeEdge = 2.0;  // Single source of truth (stored as cube edge)
+let currentCubeEdge = 2.0; // Single source of truth (stored as cube edge)
 
-cubeSlider.addEventListener('input', (e) => {
+cubeSlider.addEventListener("input", e => {
   const rawValue = parseFloat(e.target.value);
 
   // Snap to 0.10 intervals
@@ -683,12 +773,12 @@ cubeSlider.addEventListener('input', (e) => {
 
   // Update cube slider and display (rational)
   cubeSlider.value = cubeEdge;
-  cubeValueDisplay.textContent = cubeEdge.toFixed(2);  // 2 decimal places
+  cubeValueDisplay.textContent = cubeEdge.toFixed(2); // 2 decimal places
 
   // Calculate and display corresponding tet edge (irrational)
   const tetEdge = cubeEdge * Math.sqrt(2);
   tetSlider.value = tetEdge;
-  tetValueDisplay.textContent = tetEdge.toFixed(2);  // 2 decimal places, shows irrational
+  tetValueDisplay.textContent = tetEdge.toFixed(2); // 2 decimal places, shows irrational
 
   // Update geometry
   updateCubeScale(cubeEdge);
@@ -696,7 +786,7 @@ cubeSlider.addEventListener('input', (e) => {
   updateGeometry();
 });
 
-tetSlider.addEventListener('input', (e) => {
+tetSlider.addEventListener("input", e => {
   const rawValue = parseFloat(e.target.value);
 
   // Snap to 0.10 intervals
@@ -704,14 +794,14 @@ tetSlider.addEventListener('input', (e) => {
 
   // Update tet slider and display (rational)
   tetSlider.value = tetEdge;
-  tetValueDisplay.textContent = tetEdge.toFixed(2);  // 2 decimal places
+  tetValueDisplay.textContent = tetEdge.toFixed(2); // 2 decimal places
 
   // Calculate and display corresponding cube edge (irrational)
   const cubeEdge = tetEdge / Math.sqrt(2);
   currentCubeEdge = cubeEdge;
 
   cubeSlider.value = cubeEdge;
-  cubeValueDisplay.textContent = cubeEdge.toFixed(2);  // 2 decimal places, shows irrational
+  cubeValueDisplay.textContent = cubeEdge.toFixed(2); // 2 decimal places, shows irrational
 
   // Update geometry
   updateCubeScale(cubeEdge);
@@ -721,6 +811,7 @@ tetSlider.addEventListener('input', (e) => {
 ```
 
 **Key Implementation Details:**
+
 - **Both sliders snap to 0.10 intervals** (fine granularity, not just integers)
 - **Both show 2 decimal places** to reveal rational vs irrational nature
 - **Which slider you drag determines which shows rational:**
@@ -757,6 +848,7 @@ tetSlider.addEventListener('input', (e) => {
 5. **Decide:** Keep unified system, switch to dual, or make it a toggle
 
 **Why not now?**
+
 - Current Phase 2.6 focus: Fix horizontal edge bug in Quadray grids
 - Dual system adds significant complexity
 - Need to stabilize current implementation first

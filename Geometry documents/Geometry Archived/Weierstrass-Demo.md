@@ -27,11 +27,13 @@ Where t is the parameter (any real number)
 ### Weierstrass Substitution Definition
 
 **Classical Interpretation:**
+
 - In traditional trigonometry: t = tan(θ/2)
 - Maps half-angles to full circle parametrization
 - Used in calculus for integrating trigonometric functions
 
 **Rational Trigonometry Interpretation:**
+
 - t is a **pure algebraic parameter** (not an angle!)
 - Generates rational points on circle
 - No reference to trigonometric functions needed
@@ -53,6 +55,7 @@ x² + y² = [(1-t²)/(1+t²)]² + [2t/(1+t²)]²
 ```
 
 **RT-Pure Properties:**
+
 1. Only uses **+, -, ×, ÷** (no sin, cos, sqrt, atan)
 2. Every rational t → rational (x, y) (when circle is rational)
 3. All points except (-1, 0) are reachable
@@ -64,16 +67,17 @@ x² + y² = [(1-t²)/(1+t²)]² + [2t/(1+t²)]²
 
 ### How t Maps to Circle Position
 
-| Parameter t | x = (1-t²)/(1+t²) | y = 2t/(1+t²) | Angle θ (reference) | Position |
-|-------------|-------------------|---------------|---------------------|----------|
-| **t = 0** | x = 1 | y = 0 | 0° | Right (positive x-axis) |
-| **t = 0.5** | x = 0.6 | y = 0.8 | ~53° | First quadrant |
-| **t = 1** | x = 0 | y = 1 | 90° | Top (positive y-axis) |
-| **t = 2** | x = -0.6 | y = 0.8 | ~127° | Second quadrant |
-| **t → ∞** | x → -1 | y → 0 | 180° | Left (negative x-axis) |
-| **t = -1** | x = 0 | y = -1 | 270° | Bottom (negative y-axis) |
+| Parameter t | x = (1-t²)/(1+t²) | y = 2t/(1+t²) | Angle θ (reference) | Position                 |
+| ----------- | ----------------- | ------------- | ------------------- | ------------------------ |
+| **t = 0**   | x = 1             | y = 0         | 0°                  | Right (positive x-axis)  |
+| **t = 0.5** | x = 0.6           | y = 0.8       | ~53°                | First quadrant           |
+| **t = 1**   | x = 0             | y = 1         | 90°                 | Top (positive y-axis)    |
+| **t = 2**   | x = -0.6          | y = 0.8       | ~127°               | Second quadrant          |
+| **t → ∞**   | x → -1            | y → 0         | 180°                | Left (negative x-axis)   |
+| **t = -1**  | x = 0             | y = -1        | 270°                | Bottom (negative y-axis) |
 
 **Key Observations:**
+
 - t = 0 gives (1, 0) - starting point
 - Positive t → upper semicircle (0° to 180°)
 - Negative t → lower semicircle (180° to 360°)
@@ -86,11 +90,13 @@ x² + y² = [(1-t²)/(1+t²)]² + [2t/(1+t²)]²
 ### Why (-1, 0) Is Unreachable
 
 The point (-1, 0) corresponds to θ = 180° in traditional notation, where:
+
 ```
 tan(θ/2) = tan(90°) = undefined (±∞)
 ```
 
 **RT-Pure Explanation:**
+
 ```javascript
 // To get x = -1, we need:
 (1 - t²) / (1 + t²) = -1
@@ -103,6 +109,7 @@ tan(θ/2) = tan(90°) = undefined (±∞)
 ```
 
 **Practical Implication:**
+
 - For complete circle coverage, add (-1, 0) manually
 - Or use two overlapping parameterizations
 - Or accept 99.99% coverage (sufficient for most applications)
@@ -126,14 +133,15 @@ tan(θ/2) = tan(90°) = undefined (±∞)
 #### 1. Angle θ (Classical Trigonometry)
 
 ```javascript
-x = cos(θ)
-y = sin(θ)
+x = cos(θ);
+y = sin(θ);
 
 // Angular velocity: dθ/dθ = 1 (constant)
 // Distribution: UNIFORM along arc length
 ```
 
 **Properties:**
+
 - ✅ Uniform arc-length distribution
 - ❌ Requires transcendental functions (sin/cos)
 - ❌ Not algebraic
@@ -151,6 +159,7 @@ c = cos²(θ) = x²
 ```
 
 **Nonlinearity Pattern:**
+
 ```
 For uniform spread intervals Δs = 0.01:
 
@@ -160,6 +169,7 @@ Near θ=90°: ds/dθ ≈ 0  → angles change SLOWLY
 ```
 
 **Visual Distribution:**
+
 ```
 s: 0.00 → 0.01 → 0.02 → ... → 0.49 → 0.50 → 0.51 → ... → 0.99 → 1.00
 θ: 0°     5.7°    8.1°          44.4°   45°    45.6°         84.3°   90°
@@ -169,6 +179,7 @@ s: 0.00 → 0.01 → 0.02 → ... → 0.49 → 0.50 → 0.51 → ... → 0.99 �
 ```
 
 **Properties:**
+
 - ❌ Non-uniform arc-length distribution
 - ✅ Algebraic (no transcendental functions)
 - ✅ Direct geometric meaning (perpendicularity measure)
@@ -186,6 +197,7 @@ y = 2t / (1 + t²)
 ```
 
 **Nonlinearity Pattern:**
+
 ```
 For uniform t intervals Δt = 0.01:
 
@@ -195,6 +207,7 @@ Near t→∞ (θ=90°):  dθ/dt → 0    → angles change SLOWLY
 ```
 
 **Visual Distribution:**
+
 ```
 t: 0.00 → 0.10 → 0.20 → ... → 0.90 → 1.00 → 1.10 → ... → 5.00 → 10.0 → ∞
 θ: 0°     11.3°   22.6°         48.0°   45.0°   47.7°         78.7°   84.3°   90°
@@ -204,6 +217,7 @@ t: 0.00 → 0.10 → 0.20 → ... → 0.90 → 1.00 → 1.10 → ... → 5.00 �
 ```
 
 **Properties:**
+
 - ❌ Non-uniform arc-length distribution
 - ✅ Algebraic (only arithmetic operations)
 - ✅ Generates rational points from rational inputs
@@ -212,13 +226,14 @@ t: 0.00 → 0.10 → 0.20 → ... → 0.90 → 1.00 → 1.10 → ... → 5.00 �
 
 ### Mathematical Comparison
 
-| Region | Spread (s) intervals | Weierstrass (t) intervals | Angle (θ) intervals |
-|--------|---------------------|---------------------------|---------------------|
-| **Near 0°** | Dense (slow ds/dθ) | Sparse (fast dθ/dt) | Uniform |
-| **Near 45°** | Sparse (fast ds/dθ) | Moderate | Uniform |
-| **Near 90°** | Dense (slow ds/dθ) | Very dense (slow dθ/dt) | Uniform |
+| Region       | Spread (s) intervals | Weierstrass (t) intervals | Angle (θ) intervals |
+| ------------ | -------------------- | ------------------------- | ------------------- |
+| **Near 0°**  | Dense (slow ds/dθ)   | Sparse (fast dθ/dt)       | Uniform             |
+| **Near 45°** | Sparse (fast ds/dθ)  | Moderate                  | Uniform             |
+| **Near 90°** | Dense (slow ds/dθ)   | Very dense (slow dθ/dt)   | Uniform             |
 
 **Key Insight:** Spread and Weierstrass have **opposite** nonlinearity patterns!
+
 - **Spread**: clusters near 0°/90° (cardinal directions)
 - **Weierstrass**: clusters near 90°, spreads near 0°
 - **Angle**: perfectly uniform (but requires trig)
@@ -238,6 +253,7 @@ ds/dθ = 2sin(θ)cos(θ) = sin(2θ)
 ```
 
 **Graph:**
+
 ```
 ds/dθ
   1 |     ___
@@ -262,6 +278,7 @@ dθ/dt = 2 / (1 + t²)
 ```
 
 **Graph:**
+
 ```
 dθ/dt
   2 |█
@@ -304,11 +321,13 @@ Classical chooses:
 ### Use Angle θ (Classical) When:
 
 ✅ **Arc-length uniformity is critical**
+
 - Telemetry tracking windows (equal time slices)
 - Animation (constant angular velocity)
 - Equal angular sampling
 
 ❌ **Not suitable for:**
+
 - Exact algebraic calculations
 - Avoiding floating-point errors
 - Working in rational number systems
@@ -318,17 +337,20 @@ Classical chooses:
 ### Use Spread s (RT) When:
 
 ✅ **Measuring perpendicularity/parallelism**
+
 - Angle relationships in geometry
 - Triangle spread calculations
 - Cross/spread identities (s + c = 1)
 - Rotation matrix construction
 
 ✅ **Algebraic exactness at special angles**
+
 - 0°, 45°, 90°, 180° have exact rational spreads
 - Tetrahedral/cubic geometry
 - Grid rotations
 
 ❌ **Not suitable for:**
+
 - Uniform angular sampling
 - Equal arc-length divisions
 - When 45° region needs precision
@@ -338,22 +360,26 @@ Classical chooses:
 ### Use Weierstrass t When:
 
 ✅ **Rational point generation**
+
 - Generating lattice points on circle
 - Pythagorean triple construction
 - Number theory applications
 - Exact rational coordinates
 
 ✅ **RT-pure circle construction**
+
 - Avoiding all transcendental functions
 - Algebraic geometry proofs
 - Symbolic computation
 
 ✅ **Educational demonstrations**
+
 - Showing circle = algebraic curve
 - Rational parameterization theory
 - Connection to projective geometry
 
 ❌ **Not suitable for:**
+
 - Uniform angular sampling
 - Near 90° precision (t→∞ issues)
 - Complete circle coverage (missing point)
@@ -383,6 +409,7 @@ s = sin²(θ)
 ```
 
 **Analogy:**
+
 ```
 y = x²  is a parabola
 
@@ -403,6 +430,7 @@ Only the axis labels change.
 Sexagesimal provides **exact fractional representation** for certain values:
 
 **Decimal (Base-10) Limitations:**
+
 ```
 1/2 = 0.5 (exact)
 1/3 = 0.333... (repeating)
@@ -412,6 +440,7 @@ Sexagesimal provides **exact fractional representation** for certain values:
 ```
 
 **Sexagesimal (Base-60) Advantages:**
+
 ```
 1/2 = 0;30 (exact: 30/60)
 1/3 = 0;20 (exact: 20/60) ✓
@@ -422,6 +451,7 @@ Sexagesimal provides **exact fractional representation** for certain values:
 ```
 
 **For angles:**
+
 ```
 Decimal: 30° = 30.0° (exact)
 Sexagesimal: 30° = 30°0'0" (exact)
@@ -435,6 +465,7 @@ Sexagesimal: 33°20'0" (exact: 1/3 of 100°)
 ### Sexagesimal and RT Spreads
 
 **Exact spread values** (rational fractions):
+
 ```
 s = 0.25 = 1/4 (exact in both bases)
 s = 0.50 = 1/2 (exact in both bases)
@@ -442,6 +473,7 @@ s = 0.75 = 3/4 (exact in both bases)
 ```
 
 **Sexagesimal conversion** (when spread → angle):
+
 ```javascript
 // Spread s = 0.25 → θ = 30°
 // In sexagesimal: 30°0'0" (exact!)
@@ -454,6 +486,7 @@ s = 0.75 = 3/4 (exact in both bases)
 ```
 
 **But the nonlinearity remains:**
+
 ```
 Uniform spread intervals in EITHER base:
 s = 0.00, 0.01, 0.02, ..., 0.99, 1.00 (decimal)
@@ -468,17 +501,20 @@ The geometry doesn't change with notation.
 ### The Deep Truth
 
 **Nonlinearity is GEOMETRIC:**
+
 - Caused by the shape of sin²(θ) or tan(θ/2)
 - Inherent to the mathematical relationship
 - Independent of how we write numbers
 
 **Sexagesimal is NOTATIONAL:**
+
 - Changes how we represent numbers
 - Provides exact fractions for more values
 - Historical/practical convenience
 - Doesn't change underlying geometry
 
 **Conclusion:**
+
 ```
 Sexagesimal ≠ Fix for nonlinearity
 Sexagesimal = Better fractional representation
@@ -495,6 +531,7 @@ For RT purity: Use spread/Weierstrass (any base)
 ### Primary Visual: Interactive Weierstrass Circle
 
 **Layout:**
+
 ```
 ┌─────────────────────────────────────────────────┐
 │  Weierstrass Parameterization - RT-Pure Circle  │
@@ -547,6 +584,7 @@ For RT purity: Use spread/Weierstrass (any base)
    - t → ∞ → (-1, 0) - "Limiting point"
 
 3. **Live Calculations Display**
+
    ```
    Input:  t = 1.000
 
@@ -660,17 +698,20 @@ This is fundamental geometry, not a limitation.
 ## 10. Comparison with Other Demos
 
 ### Quadrance Demo
+
 - **Focus**: Distance (quadrance) vs. traditional distance
 - **Key Concept**: Q = distance² (avoid sqrt)
 - **Visualization**: Right triangle with Q calculations
 
 ### Cross Demo
+
 - **Focus**: Cross/spread complementarity (s + c = 1)
 - **Key Concept**: Partition of radius quadrance
 - **Visualization**: Q1 arc with complementary rectangles
 - **Nonlinearity**: Spread density near cardinals
 
 ### Weierstrass Demo (This)
+
 - **Focus**: RT-pure circle parameterization
 - **Key Concept**: Algebraic circle generation (no trig)
 - **Visualization**: Full circle with parameter slider
@@ -687,6 +728,7 @@ This is fundamental geometry, not a limitation.
 **File:** `src/geometry/demos/rt-weierstrass-demo.js`
 
 **Core Functions:**
+
 ```javascript
 // Weierstrass parameterization
 function weierstrass(t) {
@@ -694,7 +736,7 @@ function weierstrass(t) {
   const denominator = 1 + t_squared;
   return {
     x: (1 - t_squared) / denominator,
-    y: (2 * t) / denominator
+    y: (2 * t) / denominator,
   };
 }
 
@@ -707,7 +749,7 @@ function inverseWeierstrass(x, y) {
   // t² = (1-x)/(1+x)
   // t = ±√[(1-x)/(1+x)]
 
-  if (Math.abs(x - (-1)) < 0.001) {
+  if (Math.abs(x - -1) < 0.001) {
     return Infinity; // Approaching (-1, 0)
   }
 
@@ -720,7 +762,7 @@ function inverseWeierstrass(x, y) {
 
 // Verify point is on circle
 function verifyCircle(x, y) {
-  const sum = x*x + y*y;
+  const sum = x * x + y * y;
   const error = Math.abs(sum - 1.0);
   return { sum, error, valid: error < 1e-10 };
 }
@@ -732,12 +774,12 @@ function verifyCircle(x, y) {
 
 ```javascript
 const SPECIAL_T_VALUES = [
-  { t: 0,     x: 1,    y: 0,    label: "0° - Right",    exact: true },
-  { t: 0.5,   x: 0.6,  y: 0.8,  label: "~53°",          exact: false },
-  { t: 1,     x: 0,    y: 1,    label: "90° - Top",     exact: true },
-  { t: 2,     x: -0.6, y: 0.8,  label: "~127°",         exact: false },
-  { t: -1,    x: 0,    y: -1,   label: "270° - Bottom", exact: true },
-  { t: 1000,  x: -0.999998, y: 0.002, label: "~180° (limit)", exact: false }
+  { t: 0, x: 1, y: 0, label: "0° - Right", exact: true },
+  { t: 0.5, x: 0.6, y: 0.8, label: "~53°", exact: false },
+  { t: 1, x: 0, y: 1, label: "90° - Top", exact: true },
+  { t: 2, x: -0.6, y: 0.8, label: "~127°", exact: false },
+  { t: -1, x: 0, y: -1, label: "270° - Bottom", exact: true },
+  { t: 1000, x: -0.999998, y: 0.002, label: "~180° (limit)", exact: false },
 ];
 ```
 
@@ -760,7 +802,7 @@ const SPECIAL_T_VALUES = [
 // Generate points with exact rational coordinates
 for (let p = -10; p <= 10; p++) {
   for (let q = 1; q <= 10; q++) {
-    const t = p / q;  // Rational parameter
+    const t = p / q; // Rational parameter
     const point = weierstrass(t);
     // point.x and point.y are rational!
   }
@@ -775,10 +817,11 @@ function findPythagoreanTriples(limit) {
   const triples = [];
   for (let q = 2; q < limit; q++) {
     for (let p = 1; p < q; p++) {
-      if (gcd(p, q) === 1) {  // Primitive
-        const a = q*q - p*p;
-        const b = 2*p*q;
-        const c = q*q + p*p;
+      if (gcd(p, q) === 1) {
+        // Primitive
+        const a = q * q - p * p;
+        const b = 2 * p * q;
+        const c = q * q + p * p;
         if (c <= limit) {
           triples.push([a, b, c]);
         }
@@ -800,8 +843,8 @@ function rotationFromParameter(t) {
 
   return [
     [x, -y, 0],
-    [y,  x, 0],
-    [0,  0, 1]
+    [y, x, 0],
+    [0, 0, 1],
   ];
 }
 ```
@@ -819,7 +862,7 @@ function rationalIntegrate(f, t_start, t_end, steps) {
     const { x, y } = weierstrass(t);
 
     // Jacobian: dθ/dt = 2/(1+t²)
-    const jacobian = 2 / (1 + t*t);
+    const jacobian = 2 / (1 + t * t);
 
     // Convert from θ to t parameterization
     sum += f(Math.atan2(y, x)) * jacobian * dt;
@@ -886,11 +929,13 @@ function rationalIntegrate(f, t_start, t_end, steps) {
 ### Origins
 
 **Weierstrass Substitution** (1860s):
+
 - Developed by Karl Weierstrass
 - Originally for integrating trigonometric functions
 - Forms the basis for rational trigonometry
 
 **Earlier Work:**
+
 - Pythagorean triples (ancient)
 - Rational points on conics (Diophantus, ~250 CE)
 - Stereographic projection (Ptolemy, ~150 CE)
@@ -924,24 +969,28 @@ function rationalIntegrate(f, t_start, t_end, steps) {
 ## 15. Future Enhancements
 
 ### Phase 1: Core Demo (Implemented)
+
 - ✅ Interactive parameter slider
 - ✅ Real-time (x, y) calculation
 - ✅ Circle verification display
 - ✅ Special value snappoints
 
 ### Phase 2: Educational Features (Planned)
+
 - [ ] Animated parameter sweep
 - [ ] Pythagorean triple visualizer
 - [ ] Comparison with sin/cos overlay
 - [ ] Step-by-step calculation display
 
 ### Phase 3: Advanced Features (Future)
+
 - [ ] Multi-parameter mode (multiple points)
 - [ ] Rotation matrix builder
 - [ ] Nonlinearity visualization (density map)
 - [ ] Export generated points as JSON
 
 ### Phase 4: Integration (Future)
+
 - [ ] Link to Cross/Spread demos
 - [ ] Unified RT demo suite
 - [ ] Interactive tutorial mode
@@ -952,18 +1001,21 @@ function rationalIntegrate(f, t_start, t_end, steps) {
 ## 16. Success Criteria
 
 ### Educational Goals
+
 - [ ] User understands Weierstrass as RT-pure parameterization
 - [ ] User sees algebraic nature (no trig functions)
 - [ ] User grasps rational point generation
 - [ ] User appreciates trade-off: purity vs. uniformity
 
 ### Technical Goals
+
 - [ ] Smooth parameter slider interaction
 - [ ] Real-time calculation display
 - [ ] Accurate circle verification
 - [ ] Special value highlighting
 
 ### Integration Goals
+
 - [ ] Complements Cross and Quadrance demos
 - [ ] Consistent visual design across demo suite
 - [ ] Referenced in main documentation

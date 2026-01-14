@@ -12,10 +12,12 @@ The hydrogen atom wavefunction has an exact analytical solution:
 **ψ(r,θ,φ) = R(r) · Y_l^m(θ,φ)**
 
 where:
+
 - **R(r)** is the radial function (expressed using Laguerre polynomials)
 - **Y_l^m(θ,φ)** are spherical harmonics (Legendre polynomials × e^(imφ))
 
 The spherical harmonics involve:
+
 - **θ (polar angle)**: Associated Legendre polynomials P_l^m(cos θ)
 - **φ (azimuthal angle)**: e^(imφ) = cos(mφ) + i·sin(mφ)
 
@@ -26,6 +28,7 @@ The spherical harmonics involve:
 ### Challenge: Replace trigonometric functions with RT equivalents
 
 Converting to rational trigonometry would require:
+
 - Replace cos θ with quadrance/spread relationships
 - Replace sin θ with spread
 - Handle the complex exponentials e^(imφ)
@@ -48,7 +51,7 @@ Converting to rational trigonometry would require:
    - RT conversion would need to handle the imaginary unit separately
 
 4. **The recursion relations would become unwieldy in RT form**
-   - Legendre recursion: (n+1)P_{n+1} = (2n+1)xP_n - nP_{n-1}
+   - Legendre recursion: (n+1)P*{n+1} = (2n+1)xP_n - nP*{n-1}
    - Converting x = cos θ to RT form propagates through all terms
 
 **Conclusion**: While theoretically possible, this approach sacrifices mathematical elegance for ideological purity.
@@ -64,17 +67,20 @@ Instead of converting continuous spherical harmonics, **sample the wavefunction 
 ### Why This is More Elegant
 
 #### 1. **Inherent Discretization Matches Quantum Reality**
+
 - Electron orbitals are probabilistic - we only ever measure discrete points anyway
 - A sufficiently subdivided geodesic icosahedron naturally provides uniform sampling
 - No need for continuous angular functions - discrete sampling is physically meaningful
 
 #### 2. **RT-Pure Geometric Foundation**
+
 - Geodesic vertices are constructed using **only quadrance relationships**
 - No trigonometric conversions needed - it's natively rational from construction
 - Edge subdivisions use midpoint calculations (pure vector algebra)
 - The geometric structure is RT-pure, even if the evaluation isn't
 
 #### 3. **Symmetry Preservation**
+
 - Icosahedral symmetry has 120-fold rotational symmetry group
 - Many electron orbitals have high symmetry:
   - s orbitals: spherically symmetric
@@ -84,6 +90,7 @@ Instead of converting continuous spherical harmonics, **sample the wavefunction 
 - Geodesic tessellation respects spherical symmetry better than rectangular grids
 
 #### 4. **Computational Elegance**
+
 - At each geodesic vertex (r, θ, φ), evaluate:
   - Radial function: R(r) - only needs r = √Q at vertex positions
   - Angular function: Y_l^m(θ,φ) - evaluated at **discrete points only**
@@ -96,16 +103,17 @@ Instead of converting continuous spherical harmonics, **sample the wavefunction 
 
 For accurate orbital representation, the geodesic frequency depends on orbital complexity:
 
-| Orbital Type | Symmetry | Lobes | Recommended Frequency | Vertices |
-|--------------|----------|-------|----------------------|----------|
-| **1s, 2s, 3s** | Spherical | 1 | Frequency 1-2 | 42-162 |
-| **2p, 3p** | 3-fold | 3 | Frequency 3-4 | 362-642 |
-| **3d, 4d** | 5-fold | 5 | Frequency 5-6 | 1,002-1,442 |
-| **4f** | 7-fold | 7 | Frequency 7-8 | 1,962-2,562 |
+| Orbital Type   | Symmetry  | Lobes | Recommended Frequency | Vertices    |
+| -------------- | --------- | ----- | --------------------- | ----------- |
+| **1s, 2s, 3s** | Spherical | 1     | Frequency 1-2         | 42-162      |
+| **2p, 3p**     | 3-fold    | 3     | Frequency 3-4         | 362-642     |
+| **3d, 4d**     | 5-fold    | 5     | Frequency 5-6         | 1,002-1,442 |
+| **4f**         | 7-fold    | 7     | Frequency 7-8         | 1,962-2,562 |
 
 **Formula**: For frequency f, vertices = 10f² + 2
 
 A **frequency 8 geodesic icosahedron** provides:
+
 - **2,562 vertices** (more than sufficient for f-orbitals)
 - **5,120 triangular faces**
 - Uniform angular sampling with RT-pure structure
@@ -132,7 +140,7 @@ function renderOrbital(n, l, m, geodesicFrequency) {
     const phi = Math.atan2(vertex.y, vertex.x);
 
     // Step 4: Evaluate wavefunction at this discrete point
-    const R = radialFunction(n, l, r);          // Laguerre polynomials
+    const R = radialFunction(n, l, r); // Laguerre polynomials
     const Y = sphericalHarmonic(l, m, theta, phi); // Legendre polynomials
     const psi = R * Y;
 
@@ -173,15 +181,15 @@ function renderOrbital(n, l, m, geodesicFrequency) {
 
 ## Comparison Table
 
-| Aspect | Full RT Conversion | Geodesic Sampling |
-|--------|-------------------|-------------------|
-| **Mathematical Elegance** | ❌ Extremely messy recursions | ✅ Clean separation of concerns |
-| **RT-Pure Compliance** | ✅ Fully RT (but complex) | ⚠️ Hybrid (structure RT, eval classical) |
-| **Computational Accuracy** | ✅ Analytical (if completed) | ✅ High with frequency 6-8 |
-| **Implementation Difficulty** | ❌ Very difficult | ✅ Straightforward |
-| **Performance** | ⚠️ Complex recursions | ✅ Simple vertex evaluation |
-| **Physical Meaning** | ⚠️ Continuous (abstract) | ✅ Discrete sampling (matches measurement) |
-| **Scalability** | ❌ More complex for higher orbitals | ✅ Just increase frequency |
+| Aspect                        | Full RT Conversion                  | Geodesic Sampling                          |
+| ----------------------------- | ----------------------------------- | ------------------------------------------ |
+| **Mathematical Elegance**     | ❌ Extremely messy recursions       | ✅ Clean separation of concerns            |
+| **RT-Pure Compliance**        | ✅ Fully RT (but complex)           | ⚠️ Hybrid (structure RT, eval classical)   |
+| **Computational Accuracy**    | ✅ Analytical (if completed)        | ✅ High with frequency 6-8                 |
+| **Implementation Difficulty** | ❌ Very difficult                   | ✅ Straightforward                         |
+| **Performance**               | ⚠️ Complex recursions               | ✅ Simple vertex evaluation                |
+| **Physical Meaning**          | ⚠️ Continuous (abstract)            | ✅ Discrete sampling (matches measurement) |
+| **Scalability**               | ❌ More complex for higher orbitals | ✅ Just increase frequency                 |
 
 ---
 
@@ -198,6 +206,7 @@ This is a beautiful example of **pragmatic rationalism** rather than ideological
 ### Why the Geodesic Approach is More Elegant
 
 Rather than forcing all mathematics into one framework (RT), we:
+
 - **Leverage RT's geometric strengths** for the visualization structure
 - **Preserve the analytical beauty** of spherical harmonics
 - **Match physical reality** (discrete measurements in quantum mechanics)
@@ -208,6 +217,7 @@ Rather than forcing all mathematics into one framework (RT), we:
 **For visualizing electron orbitals, the geodesic icosahedron approach is significantly more elegant than attempting a full RT conversion of spherical harmonics.**
 
 The geodesic method provides:
+
 - ✅ RT-pure geometric foundation
 - ✅ Clean implementation
 - ✅ Physical meaningfulness (discrete sampling)
@@ -240,10 +250,12 @@ The geodesic method provides:
 ---
 
 **References**:
-- Norman J. Wildberger, *Divine Proportions: Rational Trigonometry to Universal Geometry* (2005)
-- Griffiths, *Introduction to Quantum Mechanics* (Spherical harmonics, Chapter 4)
+
+- Norman J. Wildberger, _Divine Proportions: Rational Trigonometry to Universal Geometry_ (2005)
+- Griffiths, _Introduction to Quantum Mechanics_ (Spherical harmonics, Chapter 4)
 - Quantum Chemistry textbooks for hydrogen atom solutions
 
 **Related Documents**:
+
 - `close-pack.md` - RT-pure implementation for polyhedral vertex spheres
 - `../rt-polyhedra-implementation.md` - Geodesic icosahedron construction

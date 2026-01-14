@@ -11,29 +11,34 @@ The ART Explorer has **4 distinct basis vector systems** serving different purpo
 
 ## System Comparison
 
-| System | File | Purpose | Interactive | Visibility | Visual Style |
-|--------|------|---------|-------------|------------|--------------|
-| Symbolic WXYZ | rt-rendering.js | Coordinate reference | No | Toggle via UI checkbox | Tetrahedral arrowheads |
-| Symbolic XYZ | rt-rendering.js | Coordinate reference | No | Toggle via UI checkbox | Conical arrowheads (THREE.ArrowHelper) |
-| Editing WXYZ | rt-init.js | Transform handles | Yes | Appears when Form selected | Conical arrowheads + hexagonal rotation handles |
-| Editing XYZ | rt-init.js | Transform handles | Yes | Appears when Form selected | Conical arrowheads + circular rotation handles |
+| System        | File            | Purpose              | Interactive | Visibility                 | Visual Style                                    |
+| ------------- | --------------- | -------------------- | ----------- | -------------------------- | ----------------------------------------------- |
+| Symbolic WXYZ | rt-rendering.js | Coordinate reference | No          | Toggle via UI checkbox     | Tetrahedral arrowheads                          |
+| Symbolic XYZ  | rt-rendering.js | Coordinate reference | No          | Toggle via UI checkbox     | Conical arrowheads (THREE.ArrowHelper)          |
+| Editing WXYZ  | rt-init.js      | Transform handles    | Yes         | Appears when Form selected | Conical arrowheads + hexagonal rotation handles |
+| Editing XYZ   | rt-init.js      | Transform handles    | Yes         | Appears when Form selected | Conical arrowheads + circular rotation handles  |
 
 ## ✅ FINAL SOLUTION - Dynamic Regeneration
 
 ### The Problem
+
 Initially tried to pre-calculate a base length that would reach the correct grid intervals after scaling. This approach failed because:
+
 1. The tetEdge value changes with slider input
 2. Pre-calculated base lengths couldn't adapt to runtime changes
 3. Complex scaling math was error-prone and hard to reason about
 
 ### The Solution ✓
+
 **Regenerate the basis vectors in `updateGeometry()` with the exact target length**
 
 Instead of:
+
 - Create arrows once with base length
 - Scale the entire group in updateGeometry()
 
 We now:
+
 - Clear and recreate arrows in updateGeometry()
 - Calculate exact length: `(tetEdge + 1) × QUADRAY_GRID_INTERVAL`
 - No scaling applied - arrows are exact length needed
@@ -81,6 +86,7 @@ targetLength = (tetEdge + 1) × QUADRAY_GRID_INTERVAL
 ```
 
 **Examples:**
+
 - tetEdge = 2.0: `(2 + 1) × 0.612 = 1.836` (exactly 3 grid intervals) ✓
 - tetEdge = 3.0: `(3 + 1) × 0.612 = 2.448` (exactly 4 grid intervals) ✓
 - tetEdge = 2.828: `(2.828 + 1) × 0.612 = 2.343` (exactly 3.828 grid intervals) ✓
@@ -92,6 +98,7 @@ The basis vectors now **always extend exactly one grid interval beyond the tetra
 ### Success: Tip Extension Math ✓
 
 Dual tetrahedron vertices at `(±s, ±s, ±s)` where s = headSize:
+
 - Distance from center to tip: `s × √3`
 - Shaft must be shortened by this amount
 
@@ -107,17 +114,20 @@ This calculation is **geometrically correct** and preserved throughout.
 ## Grid Interval Mathematics
 
 ### Quadray Grid Interval (WXYZ)
+
 ```javascript
 RT.PureRadicals.QUADRAY_GRID_INTERVAL = Math.sqrt(6) / 4; // ≈ 0.612
 ```
 
 For a unit tetrahedron (halfSize = 1):
+
 - Edge length: `2√2`
 - Centroid-to-vertex distance: `√6/4` ✓
 
 This is the **fundamental unit** for tetrahedral grid spacing.
 
 ### Cartesian Grid Interval (XYZ)
+
 ```javascript
 // Cube edge length defines grid spacing
 // Default: cubeEdge = 2.0
@@ -129,21 +139,25 @@ Cartesian basis uses unit length (1.0) which scales by cubeEdge in updateGeometr
 ## Code Locations
 
 ### Symbolic Basis Creation
+
 **File:** `src/geometry/modules/rt-rendering.js`
 
 **Quadray (WXYZ):**
+
 - Initial creation: `createQuadrayBasis()` (lines ~462-507)
 - Dynamic regeneration: `updateGeometry()` (lines ~1824-1845)
 - Arrowheads: Custom tetrahedral via `createTetrahedralArrow()` (lines ~353-427)
 - Length: `(tetEdge + 1) × QUADRAY_GRID_INTERVAL` (regenerated each update)
 
 **Cartesian (XYZ):**
+
 - Creation: Inline in `initScene()` (lines ~295-340)
 - Length: Unit length (1.0) scaled by cubeEdge
 - Arrowheads: THREE.ArrowHelper (conical)
 - Scaling: `cartesianBasis.scale.set(cubeEdge, ...)` in updateGeometry()
 
 ### Editing Basis Creation
+
 **File:** `src/geometry/modules/rt-init.js`
 
 **Function:** `createEditingBasis(position, selectedObject)` (lines ~1507-1860)
@@ -153,11 +167,13 @@ Creates interactive gumball handles that scale with tetEdge for optimal interact
 ## Lessons Learned
 
 ### ❌ What Didn't Work
+
 1. **Pre-calculated base length with scaling**: Too complex, error-prone
 2. **Fixed 3x grid intervals**: Didn't scale with geometry
 3. **Complex scaling formulas**: Hard to debug when wrong
 
 ### ✅ What Worked
+
 1. **Dynamic regeneration**: Simple, direct, always correct
 2. **Clear formula**: `(tetEdge + 1) × gridInterval`
 3. **Separation of concerns**: Creation vs. scaling handled separately
@@ -187,4 +203,4 @@ The performance cost of recreating 4 arrows per update is negligible compared to
 
 ---
 
-*Solution finalized 2026-01-13: Dynamic regeneration with direct length calculation.*
+_Solution finalized 2026-01-13: Dynamic regeneration with direct length calculation._

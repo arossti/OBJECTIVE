@@ -11,18 +11,21 @@ Refactor ARTexplorer into modular components separating UI, Controls, Rendering,
 ## Current Architecture Issues
 
 ### Monolithic Structure
+
 - Single 3000+ line HTML file contains everything
 - UI markup mixed with JavaScript logic
 - Hard to maintain and extend
 - Difficult to test components independently
 
 ### UI Clutter
+
 - All control sections expanded by default
 - No clear visual hierarchy
 - Too much information visible at once
 - Inconsistent toggle/collapse patterns
 
 ### Missing Features
+
 - No gumball transform controls
 - No file management (import/export/save)
 - No view presets (Top/Bottom/Ortho/Perspective)
@@ -35,6 +38,7 @@ Refactor ARTexplorer into modular components separating UI, Controls, Rendering,
 **Philosophy:** Only modularize when it improves maintainability. Avoid over-engineering.
 
 **Analysis of Current ARTexplorer.html (~2820 lines):**
+
 - RT Library: ~130 lines (small, self-contained)
 - Polyhedra Generators: ~1870 lines (large but cohesive)
 - THREE.js Scene/Rendering: ~500-800 lines (integrated functionality)
@@ -57,6 +61,7 @@ ARTexplorer/
 ```
 
 **Why This Structure:**
+
 - **rt-math.js**: Small, reusable, pure functions - easy to test independently
 - **rt-polyhedra.js**: Large but cohesive - all shape definitions in one place
 - **rt-rendering.js**: All THREE.js code together - scene/viewer/grids are tightly coupled
@@ -66,6 +71,7 @@ ARTexplorer/
 - **rt- prefix**: Avoids confusion with core TEUI/OBJECTIVE app modules
 
 **Technical Approach:**
+
 - Use native ES6 modules (`<script type="module">`)
 - No build step, no bundler - runs directly in browser
 - Import/export syntax for clean dependencies
@@ -74,6 +80,7 @@ ARTexplorer/
 ## Phase 1: UI Decluttering (Immediate - Tonight)
 
 ### Goal
+
 Make existing ARTexplorer UI cleaner with collapsible sections
 
 ### Tasks
@@ -81,6 +88,7 @@ Make existing ARTexplorer UI cleaner with collapsible sections
 #### 1.1 Convert Main Sections to Collapsible
 
 **Current Sections:**
+
 - Coordinate System
 - Polyhedra
 - Scale
@@ -91,6 +99,7 @@ Make existing ARTexplorer UI cleaner with collapsible sections
 All sections should use the same toggle pattern as "Cartesian Planes" and "Central Angle Grids"
 
 **Pattern:**
+
 ```html
 <div class="control-group">
   <h3>
@@ -104,9 +113,11 @@ All sections should use the same toggle pattern as "Cartesian Planes" and "Centr
 ```
 
 **Rename:**
+
 - "Polyhedra" → "Forms"
 
 **Default States:**
+
 - Coordinate System: Collapsed
 - Forms: Expanded
 - Scale: Collapsed
@@ -118,10 +129,14 @@ All sections should use the same toggle pattern as "Cartesian Planes" and "Centr
 Add empty/minimal sections for future implementation:
 
 **Controls** (Future ART Gumball)
+
 ```html
 <div class="control-group">
   <h3>
-    <span class="section-toggle collapsed" data-target="controls-section"></span>
+    <span
+      class="section-toggle collapsed"
+      data-target="controls-section"
+    ></span>
     Controls
   </h3>
   <div id="controls-section" class="section-content collapsed">
@@ -134,6 +149,7 @@ Add empty/minimal sections for future implementation:
 ```
 
 **File** (Import/Export/Save)
+
 ```html
 <div class="control-group">
   <h3>
@@ -158,6 +174,7 @@ Add empty/minimal sections for future implementation:
 ```
 
 **View** (Camera Presets)
+
 ```html
 <div class="control-group">
   <h3>
@@ -167,7 +184,9 @@ Add empty/minimal sections for future implementation:
   <div id="view-section" class="section-content collapsed">
     <div class="control-item">
       <label style="font-size: 12px; color: #b0b0b0;">Camera Presets</label>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 5px;">
+      <div
+        style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 5px;"
+      >
         <button id="viewTop" disabled>Top</button>
         <button id="viewBottom" disabled>Bottom</button>
         <button id="viewLeft" disabled>Left</button>
@@ -178,7 +197,7 @@ Add empty/minimal sections for future implementation:
     </div>
     <div class="control-item" style="margin-top: 10px;">
       <label class="checkbox-label">
-        <input type="checkbox" id="orthoPerspective" disabled>
+        <input type="checkbox" id="orthoPerspective" disabled />
         Orthographic (Plan/Elevation)
       </label>
     </div>
@@ -190,35 +209,48 @@ Add empty/minimal sections for future implementation:
 ```
 
 **Papercut** (Print Preparation)
+
 ```html
 <div class="control-group">
   <h3>
-    <span class="section-toggle collapsed" data-target="papercut-section"></span>
+    <span
+      class="section-toggle collapsed"
+      data-target="papercut-section"
+    ></span>
     Papercut
   </h3>
   <div id="papercut-section" class="section-content collapsed">
     <div class="control-item">
       <label style="font-size: 12px; color: #b0b0b0;">Line Weight</label>
       <div class="slider-container">
-        <input type="range" id="lineWeight" min="1" max="5" value="1" disabled>
+        <input
+          type="range"
+          id="lineWeight"
+          min="1"
+          max="5"
+          value="1"
+          disabled
+        />
         <span class="slider-value" id="lineWeightValue">1</span>
       </div>
     </div>
     <div class="control-item">
       <label class="checkbox-label">
-        <input type="checkbox" id="backfaceCulling" disabled>
+        <input type="checkbox" id="backfaceCulling" disabled />
         Backface Culling
       </label>
     </div>
     <div class="control-item">
       <label class="checkbox-label">
-        <input type="checkbox" id="enableCutPlane" disabled>
+        <input type="checkbox" id="enableCutPlane" disabled />
         Enable Cut Plane
       </label>
     </div>
     <div class="control-item">
       <label style="font-size: 12px; color: #b0b0b0;">Print Extents</label>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 5px;">
+      <div
+        style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 5px;"
+      >
         <button id="fitA4" disabled>A4</button>
         <button id="fitLetter" disabled>Letter</button>
         <button id="fitA3" disabled>A3</button>
@@ -258,7 +290,9 @@ Add styles for new section-toggle and section-content classes:
 .section-content {
   max-height: 2000px;
   overflow: hidden;
-  transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+  transition:
+    max-height 0.3s ease-out,
+    opacity 0.3s ease-out;
   opacity: 1;
 }
 
@@ -284,22 +318,22 @@ Add event listeners for section toggles (similar to existing geodesic-toggle):
 
 ```javascript
 // Section toggle functionality (for main h3 sections)
-document.querySelectorAll('.section-toggle').forEach(toggle => {
-  toggle.addEventListener('click', (e) => {
+document.querySelectorAll(".section-toggle").forEach(toggle => {
+  toggle.addEventListener("click", e => {
     e.stopPropagation();
     const targetId = toggle.dataset.target;
     const content = document.getElementById(targetId);
 
-    toggle.classList.toggle('collapsed');
-    content.classList.toggle('collapsed');
+    toggle.classList.toggle("collapsed");
+    content.classList.toggle("collapsed");
   });
 });
 
 // Make h3 headers clickable (entire row)
-document.querySelectorAll('h3').forEach(header => {
-  if (header.querySelector('.section-toggle')) {
-    header.addEventListener('click', () => {
-      const toggle = header.querySelector('.section-toggle');
+document.querySelectorAll("h3").forEach(header => {
+  if (header.querySelector(".section-toggle")) {
+    header.addEventListener("click", () => {
+      const toggle = header.querySelector(".section-toggle");
       toggle.click();
     });
   }
@@ -315,12 +349,14 @@ document.querySelectorAll('h3').forEach(header => {
 **File to Create:** `modules/rt-math.js`
 
 **Contents:**
+
 - `quadrance(p1, p2)` - Distance squared
 - `spread(v1, v2)` - Perpendicularity measure (0-1)
 - `crossSpread(v1, v2, v3)` - Triple spread formula
 - Helper functions for RT calculations
 
 **Approach:**
+
 - Pure functions, no dependencies on THREE.js
 - Export object: `export const RT = { quadrance, spread, ... }`
 - Fully documented with JSDoc comments
@@ -337,6 +373,7 @@ document.querySelectorAll('h3').forEach(header => {
 **File to Create:** `modules/polyhedra.js`
 
 **Contents:**
+
 - `createTetrahedron()` - Tetrahedron generator
 - `createCube()` - Cube generator
 - `createOctahedron()` - Octahedron generator
@@ -346,6 +383,7 @@ document.querySelectorAll('h3').forEach(header => {
 - All polyhedra factory functions
 
 **Approach:**
+
 - Import RT from `rt-math.js`
 - Export factory functions for each shape
 - Return vertex/edge/face data structures
@@ -362,6 +400,7 @@ document.querySelectorAll('h3').forEach(header => {
 **File to Create:** `modules/rendering.js`
 
 **Contents:**
+
 - Scene initialization (THREE.Scene, Camera, Renderer)
 - Viewer/canvas management (resize handling)
 - Grid rendering (Cartesian XYZ, Quadray WXYZ)
@@ -370,6 +409,7 @@ document.querySelectorAll('h3').forEach(header => {
 - OrbitControls initialization
 
 **Approach:**
+
 - Import THREE.js from CDN
 - Export `SceneManager` class or init function
 - Keep scene/viewer/grids together (tightly coupled)
@@ -386,6 +426,7 @@ document.querySelectorAll('h3').forEach(header => {
 **File to Create:** `modules/state-manager.js`
 
 **Contents:**
+
 - Application state object
 - State getters/setters
 - Observable state changes
@@ -393,6 +434,7 @@ document.querySelectorAll('h3').forEach(header => {
 - Environment metadata
 
 **Approach:**
+
 - Follow TEUI/OBJECTIVE StateManager pattern
 - Single source of truth for app state
 - Event-based state updates
@@ -409,12 +451,14 @@ document.querySelectorAll('h3').forEach(header => {
 **File to Create:** `modules/file-handler.js`
 
 **Contents:**
+
 - JSON import/export
 - CSV export for "Now" snapshots
 - LocalStorage persistence
 - File validation
 
 **Approach:**
+
 - Follow TEUI/OBJECTIVE FileHandler pattern
 - Separate I/O from state management
 - Handle file read/write operations
@@ -431,6 +475,7 @@ document.querySelectorAll('h3').forEach(header => {
 **File to Create:** `modules/gumball.js`
 
 **Contents:**
+
 - Gumball handle rendering (arrows, cubes, rings)
 - Interaction handlers (move, scale, rotate)
 - Spread-based rotation logic
@@ -438,6 +483,7 @@ document.querySelectorAll('h3').forEach(header => {
 - NOW button functionality
 
 **Approach:**
+
 - Import THREE.js and RT
 - Separate object with own rendering
 - Event-based communication with main app
@@ -450,6 +496,7 @@ document.querySelectorAll('h3').forEach(header => {
 ### 3.1 Gumball Rendering
 
 Implement 3D interactive handles as per [ART-Gumball.md](./ART-Gumball.md):
+
 - Arrow handles for MOVE
 - Cube handles for SCALE
 - Ring handles for ROTATE (spread-based)
@@ -458,6 +505,7 @@ Implement 3D interactive handles as per [ART-Gumball.md](./ART-Gumball.md):
 ### 3.2 Status Bar
 
 Implement streaming console for numeric input:
+
 - Appears on handle click
 - Real-time value display
 - TAB/ENTER to accept, ESC to cancel
@@ -466,6 +514,7 @@ Implement streaming console for numeric input:
 ### 3.3 NOW System
 
 Implement snapshot deposition:
+
 - NOW button creates immutable configuration
 - Deposits instance in scene
 - Stores in NowCollection
@@ -476,6 +525,7 @@ Implement snapshot deposition:
 ### 4.1 View Presets
 
 Implement camera positioning:
+
 - Top/Bottom/Left/Right/Front/Back buttons
 - Orthographic/Perspective toggle
 - Smooth transitions
@@ -483,6 +533,7 @@ Implement camera positioning:
 ### 4.2 Papercut Tools
 
 Implement print preparation:
+
 - Adjustable line weights
 - Backface culling toggle
 - Cut plane controls
@@ -491,6 +542,7 @@ Implement print preparation:
 ### 4.3 File Management
 
 Implement state persistence:
+
 - Export session to JSON
 - Export Nows to CSV
 - Import from file
@@ -499,6 +551,7 @@ Implement state persistence:
 ## Implementation Priority
 
 ### ✅ Phase 1 Complete (Dec 29, 2025)
+
 1. Made all sections collapsible with toggle functionality
 2. Renamed Polyhedra → Forms
 3. Added placeholder sections (Controls, File, View, Papercut, Geometry Info)
@@ -537,6 +590,7 @@ Implement state persistence:
    - **Contents:** Scene initialization, camera, renderer, grid rendering, basis vectors, lighting, OrbitControls
 
 **Current Status:**
+
 - ✅ rt-math.js extracted and functional
 - ✅ rt-polyhedra.js extracted and functional
 - ✅ rt-rendering.js extracted and functional
@@ -544,6 +598,7 @@ Implement state persistence:
 - ARTexplorer.html still ~3000+ lines (gumball logic not yet extracted to rt-controls.js)
 
 **Success Criteria:**
+
 - ARTexplorer.html reduced from 2820 → ~500 lines
 - All existing functionality preserved
 - No build step required (native ES6 modules)
@@ -613,12 +668,14 @@ Implement state persistence:
 #### Resolved Issues (2025-12-30)
 
 **FIXED: Selection System** - ✅ RESOLVED
+
 - ✅ Individual selection working (no more global movement)
 - ✅ Forms vs Instances separation complete
 - ✅ Visual highlight makes selection obvious
 - ✅ Deselection works reliably (ESC or click empty space)
 
 **FIXED: NOW Button Behavior** - ✅ RESOLVED
+
 - ✅ Instances deposit correctly
 - ✅ Forms reset to origin after deposition
 - ✅ Highlight clears after NOW button press
@@ -626,6 +683,7 @@ Implement state persistence:
 #### Remaining Refinements (Low Priority)
 
 **Minor Issues (Non-Blocking):**
+
 - Selection sensitivity during camera orbit (acceptable - may need drag threshold)
 - Snap mode UI/UX needs better visual feedback and documentation
 - Module extraction deferred (rt-controls.js) - keep inline until all features stable
@@ -635,6 +693,7 @@ Implement state persistence:
 #### Recommended Next Steps
 
 **Immediate (Next Session):**
+
 1. **Refine Snap Mode UI** - Improve user feedback
    - Visual indicators for active snap mode
    - Better documentation in UI
@@ -650,11 +709,7 @@ Implement state persistence:
    - Spread presets (s=1/4, 1/2, 3/4, 1)
    - Visual feedback for rotation plane
 
-**Future (Phase 3):**
-4. Extract to rt-controls.js module (once all modes are stable)
-5. Add additional keyboard shortcuts (G=Move, S=Scale, R=Rotate, N=NOW)
-6. Implement View presets (Top, Bottom, Left, Right, Front, Back)
-7. Implement Papercut tools (line weight, backface culling, print extents)
+**Future (Phase 3):** 4. Extract to rt-controls.js module (once all modes are stable) 5. Add additional keyboard shortcuts (G=Move, S=Scale, R=Rotate, N=NOW) 6. Implement View presets (Top, Bottom, Left, Right, Front, Back) 7. Implement Papercut tools (line weight, backface culling, print extents)
 
 ---
 
@@ -693,24 +748,31 @@ Implement state persistence:
 ## Technical Considerations
 
 ### ES6 Modules
+
 Use native ES6 modules:
+
 ```html
 <script type="module" src="modules/ui/controls-panel.js"></script>
 ```
 
 ### Build Tool (Optional)
+
 Consider bundler if needed:
+
 - Vite (fast, simple)
 - Rollup (tree-shaking)
 - Webpack (full-featured)
 
 ### Testing
+
 Unit tests for:
+
 - RT math functions
 - Geometry calculations
 - State management
 
 ### Documentation
+
 - JSDoc comments for all modules
 - README for each module directory
 - API documentation
@@ -718,6 +780,7 @@ Unit tests for:
 ## Success Criteria
 
 ### Phase 1 Complete
+
 - [ ] All main sections collapsible
 - [ ] Polyhedra renamed to Forms
 - [ ] 4 new placeholder sections added
@@ -726,6 +789,7 @@ Unit tests for:
 - [ ] UI feels cleaner and more organized
 
 ### Full Refactor Complete
+
 - [ ] All modules extracted and independent
 - [ ] ART Gumball fully functional
 - [ ] View presets working
@@ -736,17 +800,21 @@ Unit tests for:
 ## Migration Strategy
 
 ### Backward Compatibility
+
 During refactoring:
+
 - Keep existing functionality working
 - Add new features incrementally
 - Test after each module extraction
 
 ### Testing Approach
+
 - Manual testing after each phase
 - Regression testing on existing features
 - Visual inspection of UI changes
 
 ### Rollback Plan
+
 - Git branches for each phase
 - Tag stable versions
 - Document breaking changes
@@ -758,18 +826,20 @@ During refactoring:
 ### The Problem with Direct Extraction
 
 **History:** We've attempted 4+ times to extract the gumball/initialization code from ARTexplorer.html into separate JS modules. Each attempt has broken code in various ways:
+
 - Lost scope/context when moving code between files
 - Timing issues with initialization order
 - Module import/export complications
 - HTML structure dependencies breaking
 
-**Root Cause:** We're trying to extract JS *from* HTML, which requires untangling deeply intertwined initialization logic, DOM dependencies, and event handlers.
+**Root Cause:** We're trying to extract JS _from_ HTML, which requires untangling deeply intertwined initialization logic, DOM dependencies, and event handlers.
 
 ### The "Folding Space" Solution
 
 **Invert the thinking:** Instead of extracting JS from HTML, **peel away the HTML** and leave pure JS.
 
 **Strategy:**
+
 1. **Create minimal `index.html`** - Lightweight wrapper containing only:
    - Basic HTML structure (`<body>`, `<div id="container">`, etc.)
    - CDN imports (THREE.js, OrbitControls)
@@ -789,63 +859,65 @@ During refactoring:
 ### Implementation Plan
 
 #### Step 1: Create `index.html` (NEW)
+
 ```html
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>A.R.T Explorer - Algebraic Rational Trigonometry</title>
-  <link rel="stylesheet" href="art.css">
-</head>
-<body>
-  <!-- Password Protection Overlay -->
-  <div id="password-overlay">
-    <!-- Password modal HTML -->
-  </div>
-
-  <!-- Main Application -->
-  <div id="container">
-    <div id="canvas-container">
-      <div id="info-overlay"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>A.R.T Explorer - Algebraic Rational Trigonometry</title>
+    <link rel="stylesheet" href="art.css" />
+  </head>
+  <body>
+    <!-- Password Protection Overlay -->
+    <div id="password-overlay">
+      <!-- Password modal HTML -->
     </div>
 
-    <div id="controls-panel">
-      <!-- All the controls markup from ARTexplorer.html -->
-      <h2>A.R.T Explorer</h2>
-      <h5>by Andy Ross Thomson</h5>
-      <!-- Section 1-9 HTML goes here -->
-    </div>
-  </div>
+    <!-- Main Application -->
+    <div id="container">
+      <div id="canvas-container">
+        <div id="info-overlay"></div>
+      </div>
 
-  <!-- Three.js ES Modules via importmap -->
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      <div id="controls-panel">
+        <!-- All the controls markup from ARTexplorer.html -->
+        <h2>A.R.T Explorer</h2>
+        <h5>by Andy Ross Thomson</h5>
+        <!-- Section 1-9 HTML goes here -->
+      </div>
+    </div>
+
+    <!-- Three.js ES Modules via importmap -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
       }
-    }
-  </script>
+    </script>
 
-  <!-- Application Initialization -->
-  <script type="module" src="rt-init.js"></script>
-</body>
+    <!-- Application Initialization -->
+    <script type="module" src="rt-init.js"></script>
+  </body>
 </html>
 ```
 
 #### Step 2: Create `rt-init.js` (FROM ARTexplorer.html `<script>` tag)
+
 ```javascript
 // rt-init.js - Application Initialization
 // This file contains all the initialization logic previously in ARTexplorer.html <script> tag
 
 // Module imports
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { RT } from './modules/rt-math.js';
-import { RTPolyhedra } from './modules/rt-polyhedra.js';
-import { RTRendering } from './modules/rt-rendering.js';
-import { RTStateManager } from './modules/rt-state-manager.js';
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { RT } from "./modules/rt-math.js";
+import { RTPolyhedra } from "./modules/rt-polyhedra.js";
+import { RTRendering } from "./modules/rt-rendering.js";
+import { RTStateManager } from "./modules/rt-state-manager.js";
 
 // Password protection
 const PASSWORD = "enzyme2026";
@@ -861,6 +933,7 @@ function initApp() {
 ```
 
 #### Step 3: Archive `ARTexplorer.html`
+
 - Rename to `ARTexplorer.html.archive`
 - Keep for reference during migration
 - Delete once `index.html` + `rt-init.js` are verified working
@@ -888,6 +961,7 @@ function initApp() {
 ### Next Refactoring Steps (After Inversion)
 
 Once `rt-init.js` exists, **then** we can extract modules more easily:
+
 1. Extract gumball logic → `modules/rt-controls.js`
 2. Extract event handlers → `modules/rt-events.js`
 3. Extract UI builders → `modules/rt-ui.js`
@@ -903,11 +977,13 @@ But now we're extracting **JS from JS**, not JS from HTML, which is much cleaner
 ### The Problem with THREE.SphereGeometry
 
 **Current Implementation:**
+
 ```javascript
 const nodeGeometry = new THREE.SphereGeometry(nodeSize, 8, 6);
 ```
 
 **Issues:**
+
 1. **Performance Degradation** - High-frequency geodesics (e.g., freq-6 icosahedron) have hundreds/thousands of vertices
    - Each vertex = 1 THREE.SphereGeometry (8 segments × 6 rings = 48 triangles per node)
    - Freq-6 icosahedron = ~1500 vertices × 48 triangles = **72,000 triangles** just for nodes!
@@ -923,12 +999,14 @@ const nodeGeometry = new THREE.SphereGeometry(nodeSize, 8, 6);
 **Use our own geodesic polyhedra as nodes:**
 
 #### Option 1: Frequency-2 Octahedron (Recommended)
+
 ```javascript
 // Instead of THREE.SphereGeometry:
 const nodeGeometry = RTPolyhedra.createOctahedron(nodeSize, 2); // freq-2 geodesic
 ```
 
 **Benefits:**
+
 - **Lightweight:** ~18 vertices (vs sphere's 42+)
 - **Smooth enough:** Freq-2 provides good visual roundness
 - **RT-computed:** Uses spread/quadrance calculations
@@ -936,17 +1014,20 @@ const nodeGeometry = RTPolyhedra.createOctahedron(nodeSize, 2); // freq-2 geodes
 - **Scalable:** Maintains performance at high vertex counts
 
 #### Option 2: Frequency-1 Icosahedron
+
 ```javascript
 const nodeGeometry = RTPolyhedra.createIcosahedron(nodeSize, 1); // freq-1 geodesic
 ```
 
 **Benefits:**
+
 - **More spherical:** 12 vertices in icosahedral symmetry
 - **Still lightweight:** ~12 vertices (vs sphere's 42+)
 - **Golden ratio φ:** Built-in RT Phi calculations
 - **Elegant:** Natural connection to Platonic solids
 
 #### Option 3: Dynamic LOD (Level of Detail)
+
 ```javascript
 // Adaptive node complexity based on vertex count
 function getNodeGeometry(totalVertices, nodeSize) {
@@ -961,6 +1042,7 @@ function getNodeGeometry(totalVertices, nodeSize) {
 ```
 
 **Benefits:**
+
 - **Adaptive performance:** Automatically adjusts to complexity
 - **Best of both worlds:** Beauty when possible, performance when needed
 - **User-aware:** UI remains responsive at all scales
@@ -968,7 +1050,9 @@ function getNodeGeometry(totalVertices, nodeSize) {
 ### Implementation Plan
 
 #### Phase 1: Simple Replacement (Quick Win)
+
 1. Find node creation code in ARTexplorer.html/rt-init.js:
+
    ```javascript
    // OLD
    const nodeGeometry = new THREE.SphereGeometry(nodeSize, 8, 6);
@@ -985,7 +1069,9 @@ function getNodeGeometry(totalVertices, nodeSize) {
 3. Document performance gains in UI (e.g., "Using RT-computed geodesic nodes for performance")
 
 #### Phase 2: Add UI Control (Optional)
+
 Add to **Visual Options** section:
+
 ```html
 <div class="control-item">
   <label style="font-size: 12px; color: #b0b0b0;">Node Geometry</label>
@@ -993,7 +1079,9 @@ Add to **Visual Options** section:
     <option value="sphere">THREE.js Sphere (Slow)</option>
     <option value="tetrahedron">RT Tetrahedron (Fastest)</option>
     <option value="octahedron-1">RT Octahedron Freq-1</option>
-    <option value="octahedron-2" selected>RT Octahedron Freq-2 (Recommended)</option>
+    <option value="octahedron-2" selected>
+      RT Octahedron Freq-2 (Recommended)
+    </option>
     <option value="icosahedron-1">RT Icosahedron Freq-1</option>
     <option value="icosahedron-2">RT Icosahedron Freq-2</option>
     <option value="auto-lod">Auto LOD (Adaptive)</option>
@@ -1002,6 +1090,7 @@ Add to **Visual Options** section:
 ```
 
 **Benefits:**
+
 - User can see performance difference in real-time
 - Educational: Shows RT efficiency vs traditional methods
 - Flexible: Power users can optimize for their hardware
@@ -1010,12 +1099,12 @@ Add to **Visual Options** section:
 
 **Test Case: Frequency-6 Icosahedron (~1500 vertices)**
 
-| Node Type | Triangles/Node | Total Triangles | Est. FPS | Memory |
-|-----------|----------------|-----------------|----------|--------|
-| THREE.SphereGeometry (8×6) | 48 | 72,000 | 10-15 FPS | ~50 MB |
-| RT Octahedron Freq-2 | 18 | 27,000 | 30-40 FPS | ~20 MB |
-| RT Octahedron Freq-1 | 8 | 12,000 | 50-60 FPS | ~10 MB |
-| RT Tetrahedron | 4 | 6,000 | 60+ FPS | ~5 MB |
+| Node Type                  | Triangles/Node | Total Triangles | Est. FPS  | Memory |
+| -------------------------- | -------------- | --------------- | --------- | ------ |
+| THREE.SphereGeometry (8×6) | 48             | 72,000          | 10-15 FPS | ~50 MB |
+| RT Octahedron Freq-2       | 18             | 27,000          | 30-40 FPS | ~20 MB |
+| RT Octahedron Freq-1       | 8              | 12,000          | 50-60 FPS | ~10 MB |
+| RT Tetrahedron             | 4              | 6,000           | 60+ FPS   | ~5 MB  |
 
 **Estimated Improvement:** **3-6x FPS increase** with Freq-2 Octahedron
 
@@ -1044,16 +1133,19 @@ Add to **Visual Options** section:
 ### Issues Fixed
 
 **Issue 1: Module Import Error**
+
 - **Error**: `The requested module './modules/rt-polyhedra.js' does not provide an export named 'RTPolyhedra'`
 - **Root Cause**: Module exports `Polyhedra`, not `RTPolyhedra`
 - **Fix**: Changed import from `import { RTPolyhedra }` to `import { Polyhedra }`, then exposed as `window.RTPolyhedra = Polyhedra;`
 
 **Issue 2: Method Not Found**
+
 - **Error**: `window.RTPolyhedra.createOctahedron is not a function`
 - **Root Cause**: Method is called `geodesicOctahedron(halfSize, frequency, projection)`, not `createOctahedron()`
 - **Fix**: Updated to use `window.RTPolyhedra.geodesicOctahedron(radius, 2, "out")`
 
 **Issue 3: Return Type Mismatch**
+
 - **Error**: `geodesicOctahedron()` returns `{vertices, edges, faces}` data, not THREE.js geometry
 - **Fix**: Manually convert polyhedra data to `THREE.BufferGeometry`:
 
@@ -1076,7 +1168,10 @@ polyData.faces.forEach(faceIndices => {
   }
 });
 
-nodeGeometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+nodeGeometry.setAttribute(
+  "position",
+  new THREE.Float32BufferAttribute(positions, 3)
+);
 nodeGeometry.setIndex(indices);
 nodeGeometry.computeVertexNormals();
 ```
@@ -1088,6 +1183,7 @@ nodeGeometry.computeVertexNormals();
 ### Bug Fixes Applied (2026-01-01)
 
 **Issue 4: Stack Overflow in Geodesic Validation (FIXED)**
+
 - **Error**: `RangeError: Maximum call stack size exceeded` at line 798-799
 - **Root Cause**: `Math.max(...largeArray)` exceeds JavaScript call stack argument limit (~65k-100k)
 - **Fix**: Replaced all 11 occurrences of `Math.max(...validation.map())` with `validation.reduce((max, v) => Math.max(max, v.error), 0)`
@@ -1095,6 +1191,7 @@ nodeGeometry.computeVertexNormals();
 - **Note**: If error persists, hard refresh browser (Cmd+Shift+R) to clear cached JavaScript
 
 **Issue 5: Snap Mode Button Classification (FIXED)**
+
 - **Error**: `Cannot read properties of undefined (reading 'toUpperCase')`
 - **Root Cause**: Node Geometry toggle buttons incorrectly using `variant-snap` class
 - **Fix**: Changed Node Geometry buttons to use `variant-toggle` class
@@ -1139,11 +1236,13 @@ nodeGeometry.computeVertexNormals();
 ### What Was Implemented
 
 **1. Performance Clock Module** (lines 2332-2494)
+
 - Modeled after `src/core/Clock.js` from TEUI
 - Tracks calculation timing, node generation, FPS, and triangle counts
 - Automatic display updates in Geometry Info section
 
 **2. Updated Geometry Info Section** (lines 1195-1216)
+
 ```html
 <div class="stats" id="geometryStats">
   <div><strong>Scene Totals:</strong></div>
@@ -1164,26 +1263,28 @@ nodeGeometry.computeVertexNormals();
 ```
 
 **3. Timing Integration**
+
 - `updateGeometry()` wrapped with `startCalculation()` / `endCalculation()`
 - `renderPolyhedron()` node generation wrapped with `startNodeGeneration()` / `endNodeGeneration()`
 - `animate()` loop tracks FPS with 60-frame rolling average
 - Display updates every 10 frames to reduce overhead
 
 **4. Triangle Counting**
+
 - RT Geodesic Octahedron (Freq-2): ~32 triangles per node
 - Classical THREE.js Sphere (16×16): 512 triangles per node
 - **16x reduction in triangles with RT nodes**
 
 ### Key Performance Metrics Tracked
 
-| Metric | Description | Purpose |
-|--------|-------------|---------|
+| Metric               | Description                        | Purpose                              |
+| -------------------- | ---------------------------------- | ------------------------------------ |
 | **Calculation Time** | Total `updateGeometry()` execution | Measures full geometry rebuild speed |
-| **Node Gen Time** | Node geometry creation only | Isolates RT vs Classical generation |
-| **FPS** | 60-frame rolling average | Real-time rendering performance |
-| **Node Type** | Classical vs RT Geodesic | Current method being used |
-| **Node Δ** | Triangles per vertex | Direct comparison metric |
-| **Total Triangles** | Scene-wide triangle count | GPU rendering load |
+| **Node Gen Time**    | Node geometry creation only        | Isolates RT vs Classical generation  |
+| **FPS**              | 60-frame rolling average           | Real-time rendering performance      |
+| **Node Type**        | Classical vs RT Geodesic           | Current method being used            |
+| **Node Δ**           | Triangles per vertex               | Direct comparison metric             |
+| **Total Triangles**  | Scene-wide triangle count          | GPU rendering load                   |
 
 ### The "Fair Fight" Question
 
@@ -1202,12 +1303,14 @@ nodeGeometry.computeVertexNormals();
 ### Honest Performance Comparison
 
 **To make it truly fair:**
+
 1. Match triangle counts (e.g., both 36 triangles)
 2. Measure **generation time only** (where RT algebra shines)
 3. Acknowledge GPU rendering is identical
 4. Compare visual quality at equal triangle budgets
 
 **Current Results (Unequal Triangle Counts):**
+
 - RT Geodesic: 32 Δ/node, faster generation, better distribution
 - Classical Sphere: 512 Δ/node, slower generation, uniform grid
 - **Performance benefit is triangle reduction, not runtime algebra**
@@ -1235,6 +1338,7 @@ nodeGeometry.computeVertexNormals();
 **Key Insight:** RT's advantage is in generation efficiency and geometric distribution, not GPU runtime computation
 
 **Next Steps:**
+
 1. Test with high-frequency geodesics (Freq-6 icosahedron) to see dramatic differences
 2. Add triangle count matching for truly fair generation speed comparisons
 3. Consider "folding space" HTML inversion (future)
