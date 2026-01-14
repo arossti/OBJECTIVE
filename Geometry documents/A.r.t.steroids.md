@@ -412,6 +412,51 @@ Ship/player begins as single Tetrahedron at origin [1,1,1,1] in WXYZ tetrahedral
 - **Fuel cost vs points**: Costs fuel but enables higher-scoring evasive maneuvers
 - **Limitation**: Only shows XYZ paths (not WXYZ) - player has 4D knowledge advantage
 
+**Cartesian Targeting Telegraph System:**
+
+This is the **core visual mechanic** that enables Stellarian dodge strategy.
+
+- **Targeting Hairline** (Pre-Fire Warning):
+  - When Cartesian enemy begins computing firing solution, **thin hairline** appears in space
+  - Line extends from enemy ship to current predicted player position
+  - **Visual**: Faint wireframe line (lineWidth = 0.5, opacity = 0.3)
+  - **Color**: Enemy-type specific (orange for Cubes, magenta for Spheres, red for Cruisers)
+  - **Duration**: Visible during entire targeting calculation phase
+  - **Computation lag**:
+    - Cube Drones: 1.0-1.5s targeting delay (45° angular resolution, slow trig)
+    - Sphere Pods: 0.7-1.0s targeting delay (15°-5° resolution)
+    - Cartesian Cruisers: 0.3-0.5s targeting delay (5°-1° resolution)
+  - **Stellarian advantage**: Player sees targeting line BEFORE fire, allowing dodge window
+
+- **Laser Dart Blast** (Actual Projectile):
+  - After targeting completes, **glowing blast of light** fires along targeting hairline
+  - Line becomes **heavy glowing projectile** (lineWidth = 3-5, full opacity)
+  - Traces the exact path of initial targeting hairline
+  - **Speed**: Slower than Stellarian darts (Cartesian weapons travel at 0.7× player speed)
+  - **Visual**: Bright neon glow with trailing particle effects
+  - **Sound effect**: Deep bass hum (transcendental calculation = slow, heavy energy)
+
+- **Tactical Implications**:
+  - **Telegraphed attacks**: Stellarian can see WHERE enemy will fire before it happens
+  - **Dodge window**: Use ASDF rubber-band motion during targeting phase (before dart fires)
+  - **WXYZ displacement**: Moving along tetrahedral axes breaks targeting line prediction
+    - Enemy recalculates from scratch if player Q-displacement > 10 during targeting
+    - Appears as "instant lateral shift" from enemy perspective (XYZ sensors confused)
+  - **Educational value**: Demonstrates computational cost of transcendental trig
+    - Stellarian RT targeting = instant (no hairline needed)
+    - Cartesian degree-based targeting = slow (visible computation lag)
+
+- **Advanced Enemy Behavior**:
+  - **Lead targeting** (Wave 5+): Hairline predicts player velocity, aims ahead
+  - **Volley coordination** (Wave 7+): Multiple enemies synchronize targeting hairlines
+  - **Persistent tracking** (Boss): Targeting hairline follows player continuously, recalculating
+
+- **HUD Integration**:
+  - Targeting hairlines are **always visible** (cannot be disabled)
+  - Hairline brightness increases as firing moment approaches
+  - **Audio cue**: High-pitched tone when hairline locks onto player (0.2s before fire)
+  - **Tactical overlay**: Number of active targeting hairlines displayed in HUD corner
+
 **Tetrahedral Photon Torpedoes (Ultimate Weapon):**
 - **Unlock Requirement**: Accumulate 500 fuel units from captured Cartesian debris
 - **Activation**: Press **CTRL + Spacebar** (costs 100 fuel per torpedo)
@@ -1140,12 +1185,14 @@ The game leverages ARTexplorer's existing RT-pure architecture while adding new 
 - **Risk/reward debris capture**: Navigate explosion fragments for materials
 
 **Visual & Educational Highlights:**
+- **Targeting telegraph**: Faint hairlines show enemy firing solutions BEFORE they fire (enables dodge mechanic)
 - **Explosion contrast**: Enemy XYZ planar fragmentation vs Player polyhedral face-normal fragmentation
 - **Quadray grid**: Tetrahedral lattice webbing (nostalgic 80's neon-vector aesthetic)
 - **X-RAY telemetry**: Visual demonstration of Cartesian coordinate mapping
 - **Geodesic HUD**: 180 triangle geodesic icosa vs enemy's 512 triangle UV sphere
 - **Angular precision handicap**: Player's smooth RT spread vs enemy's stepped degrees
 - **Progressive ship evolution**: Stellations and duals demonstrate geometric hybridization
+- **Computational lag visualization**: Targeting delay = transcendental trig cost (1.5s Cubes → 0.3s Cruisers)
 
 **Educational Payoff:**
 Players naturally discover that:
@@ -1160,10 +1207,22 @@ Players naturally discover that:
 
 ---
 
-**Document Version:** 3.2 (Motion Dynamics)
+**Document Version:** 3.3 (Targeting Telegraph System)
 **Author:** Andy Thomson, M.Arch. OAA
 **Date:** 2026-01-14
 **Status:** Design Complete - Ready for Phase 1 Implementation
+
+**Version 3.3 Updates (Targeting Telegraph System):**
+- **Cartesian Targeting Telegraph**: Visual mechanic that enables Stellarian dodge strategy
+  - **Targeting Hairline**: Faint wireframe (lineWidth 0.5, opacity 0.3) appears during enemy firing calculation
+  - Shows WHERE enemy will fire BEFORE projectile launches (1.5s Cubes → 0.3s Cruisers)
+  - Color-coded by enemy type (orange/magenta/red)
+  - **Laser Dart Blast**: Heavy glowing projectile (lineWidth 3-5) traces hairline path after targeting completes
+  - **Dodge Window**: Player uses ASDF rubber-band motion during targeting phase to evade
+  - **WXYZ displacement breaks targeting**: Enemy recalculates if player Q-displacement > 10
+  - Demonstrates computational cost of transcendental trig (Cartesian slow) vs RT instant targeting (Stellarian fast)
+- **HUD Integration**: Active targeting hairline count, brightness ramp, audio lock-on cue (0.2s before fire)
+- **Advanced Enemy Behavior**: Lead targeting (Wave 5+), volley coordination (Wave 7+), persistent tracking (Boss)
 
 **Version 3.2 Updates (Motion Dynamics):**
 - **Rubber-Band Navigation System**: Core movement mechanic using ASDF keys for WXYZ tetrahedral displacement
