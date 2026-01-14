@@ -1888,6 +1888,277 @@ This appendix contains proprietary implementation details and must not be distri
 
 ---
 
+## Appendix D: Implementation Strategy - Unified Repository Approach
+
+### D.1 Architecture Decision: Option 1 (Keep Game in ARTexplorer Repo)
+
+**Decision:** Keep A.r.t.steroids development within the existing ARTexplorer repository. This unified approach maximizes speed to MVP while maintaining the option to split into separate repositories later if the codebase becomes too heavy.
+
+**Rationale:**
+
+**Advantages:**
+- **Reuse existing infrastructure**: All core modules already exist (rt-rendering.js, rt-math.js, rt-polyhedra.js, rt-matrix.js)
+- **OrbitControls camera system**: Click-drag battlefield rotation inherited from ARTexplorer
+- **Quadray/Cartesian conversion**: Foundation for WXYZ player motion and XYZ enemy tracking
+- **WebGL rendering pipeline**: Three.js scene management, lighting, materials already configured
+- **State persistence**: rt-state-manager.js provides save/load framework for game progress
+- **Development velocity**: No code duplication, single repository to maintain during prototyping
+- **Educational coherence**: ARTexplorer demonstrates RT geometry, A.r.t.steroids gamifies it (natural progression)
+- **Deployment flexibility**: GitHub Pages auto-deploys both apps from same repo
+- **Shared documentation**: Geometry documents/ folder serves both educational tool and game design
+
+**Future Split Strategy:**
+- If repo exceeds ~50MB or becomes organizationally complex, split into:
+  - `ARTexplorer` (free math demo, CC-NC-ND license)
+  - `ARTsteroids` (paid game, commercial license)
+- Both repos share common modules via git submodules or npm packages
+- Splitting later is straightforward (no technical debt from unified start)
+
+---
+
+### D.2 Repository Structure (Unified Approach)
+
+```
+ARTExplorer/
+├── index.html                  ← Free ARTexplorer entry point (existing)
+├── artsteroids.html            ← Paid game entry point (NEW)
+├── art.css                     ← Shared styles (extend with game-specific classes)
+│
+├── modules/                    ← All JavaScript modules
+│   ├── core/                   ← Shared core modules (EXISTING)
+│   │   ├── rt-rendering.js     ← WebGL renderer, camera, scene (REUSED)
+│   │   ├── rt-math.js          ← Quadray/Cartesian math, RT calculations (REUSED)
+│   │   ├── rt-polyhedra.js     ← Geometry generation (REUSED + EXTENDED)
+│   │   ├── rt-matrix.js        ← Transformation matrices (REUSED)
+│   │   └── rt-state-manager.js ← State persistence (REUSED + EXTENDED)
+│   │
+│   ├── explorer/               ← ARTexplorer-specific modules (EXISTING)
+│   │   ├── rt-init.js          ← Explorer app initialization
+│   │   ├── rt-controls.js      ← Polyhedra selection UI
+│   │   ├── rt-papercut.js      ← Cutplane slicing
+│   │   └── color-theory-modal.js
+│   │
+│   └── asteroids/              ← A.r.t.steroids game modules (NEW)
+│       ├── rt-asteroids-core.js       ← Game loop, state machine, wave spawning
+│       ├── rt-asteroids-player.js     ← Player ship, ASDF rubber-band motion
+│       ├── rt-asteroids-enemies.js    ← Cartesian enemy AI, targeting telegraph
+│       ├── rt-asteroids-weapons.js    ← Laser darts, collision detection, explosions
+│       ├── rt-asteroids-hud.js        ← Geodesic HUD, telemetry overlays
+│       ├── rt-asteroids-blackhole.js  ← Wave transitions, space warping
+│       ├── rt-asteroids-license.js    ← License key validation (client-side)
+│       └── rt-asteroids-audio.js      ← Sound effects, music management
+│
+├── demos/                      ← Test files (EXISTING + NEW GAME TESTS)
+│   ├── quadray-test.html       ← Existing RT demos
+│   ├── asdf-motion-test.html   ← ASDF rubber-band motion prototype (THIS WEEK)
+│   └── targeting-test.html     ← Targeting telegraph visualization test
+│
+├── Geometry documents/         ← Documentation (SHARED)
+│   ├── README.md               ← ARTexplorer overview
+│   ├── A.r.t.steroids.md       ← Game design document (THIS FILE)
+│   ├── Basis-Vector-Symbols.md
+│   └── puri-phi.md
+│
+├── .github/workflows/          ← CI/CD (EXISTING)
+│   └── deploy.yml              ← Auto-deploys to GitHub Pages (WORKS FOR BOTH APPS)
+│
+├── .clinerules                 ← Development workflow
+├── .gitignore
+└── LICENSE                     ← Dual licensing: CC-NC-ND (explorer) + Commercial (game)
+```
+
+---
+
+### D.3 Dual Entry Point Strategy
+
+**Free ARTexplorer (index.html):**
+- Existing educational tool (no changes to current functionality)
+- Loads `modules/core/` and `modules/explorer/` only
+- License: Creative Commons Attribution-NonCommercial-NoDerivatives (CC-NC-ND)
+- Deployment: https://arossti.github.io/ARTexplorer/ (current URL)
+
+**Paid A.r.t.steroids (artsteroids.html):**
+- Game entry point (NEW file, similar structure to index.html)
+- Loads `modules/core/` (shared) and `modules/asteroids/` (game-specific)
+- Requires license key validation on load (checks with server)
+- License: Commercial/Proprietary ($50 CAD purchase)
+- Deployment: https://arossti.github.io/ARTexplorer/artsteroids.html (separate URL)
+- **Not publicly accessible**: License key gate prevents unauthorized play
+
+**Shared Infrastructure:**
+- Both apps use same WebGL rendering pipeline (rt-rendering.js)
+- Both apps use same RT math library (rt-math.js)
+- Both apps use same coordinate conversion (Quadray ↔ Cartesian)
+- Both apps use same OrbitControls camera system (click-drag rotation)
+- Both apps use same polyhedra generation (tetrahedron, icosahedron, etc.)
+
+---
+
+### D.4 Licensing Split (Same Repository)
+
+**ARTexplorer License (CC-NC-ND):**
+```
+modules/core/*          ← Shared (dual-licensed: CC-NC-ND OR Commercial)
+modules/explorer/*      ← Free only (CC-NC-ND)
+index.html              ← Free only (CC-NC-ND)
+art.css (base styles)   ← Shared (CC-NC-ND)
+```
+
+**A.r.t.steroids License (Commercial/Proprietary):**
+```
+modules/asteroids/*     ← Commercial only (proprietary)
+artsteroids.html        ← Commercial only (proprietary)
+art.css (game styles)   ← Commercial only (proprietary)
+```
+
+**LICENSE File Strategy:**
+```
+ARTexplorer - Dual License
+
+1. FREE EDUCATIONAL USE (ARTexplorer app, index.html):
+   Licensed under Creative Commons Attribution-NonCommercial-NoDerivatives 4.0
+   International (CC-NC-ND 4.0)
+
+2. COMMERCIAL GAME (A.r.t.steroids, artsteroids.html):
+   Proprietary commercial software. $50 CAD per license.
+   All rights reserved. No redistribution or reverse-engineering permitted.
+
+3. SHARED CORE MODULES (modules/core/*):
+   Dual-licensed under BOTH CC-NC-ND (for educational use) AND Commercial
+   (for game integration). Use in A.r.t.steroids game requires paid license.
+```
+
+---
+
+### D.5 Immediate Next Steps (Phase 1 Prototyping)
+
+**This Week: ASDF Rubber-Band Motion Test**
+
+1. **Create test file**: `demos/asdf-motion-test.html`
+   - Minimal HTML page with canvas
+   - Load core modules: rt-rendering.js, rt-math.js, rt-matrix.js
+   - Initialize single tetrahedron at origin [1,1,1,1]
+
+2. **Implement ASDF motion prototype**:
+   - Create `modules/asteroids/rt-asteroids-player.js` (new file)
+   - ASDF keypress handlers (A=W-axis, S=X-axis, D=Y-axis, F=Z-axis)
+   - Rubber-band displacement logic:
+     - Hold key: Exponential/quadratic distance curve along axis
+     - Release key: Quantitative easing return to origin (0.5-1.0s animation)
+   - Max displacement: Q_max = 50 quadrance units
+   - Visual feedback: Axis glow during displacement, fading trail during return
+
+3. **Test with existing OrbitControls**:
+   - Verify click-drag camera rotation works alongside ASDF motion
+   - Ensure player ship stays at canvas center (world-frame reference)
+   - Confirm Quadray displacement calculations are accurate
+
+4. **Visual validation**:
+   - Display current Quadray coordinates [W,X,Y,Z] in HUD corner
+   - Show Cartesian equivalent [x,y,z] for comparison
+   - Render thin lines along W/X/Y/Z axes (different colors)
+   - Tetrahedron should smoothly move along axis, then smoothly return
+
+**Success Criteria:**
+- ASDF keys control displacement along tetrahedral axes
+- Release returns to origin with smooth deceleration
+- Camera rotation (click-drag) independent of ship motion
+- No interference with existing ARTexplorer modules
+
+**Timeline:** Implement and test by end of this week (2026-01-17)
+
+---
+
+**Next Week: Targeting Telegraph Visualization Test**
+
+5. **Create test file**: `demos/targeting-test.html`
+   - Single player tetrahedron at origin
+   - Single enemy cube at fixed position
+   - Simulate Cartesian targeting calculation
+
+6. **Implement targeting hairline**:
+   - Create `modules/asteroids/rt-asteroids-enemies.js` (new file)
+   - Enemy begins targeting: Thin hairline appears (lineWidth 0.5, opacity 0.3)
+   - Hairline updates to track player position during 1.5s calculation delay
+   - After 1.5s: Hairline becomes heavy glowing laser dart (lineWidth 3-5)
+   - Laser dart travels toward player (can be dodged with ASDF motion)
+
+7. **Test dodge mechanic**:
+   - Use ASDF motion to move away from predicted impact point
+   - If player Q-displacement > 10 during targeting phase, enemy recalculates from scratch
+   - Verify hairline visibility enables tactical dodging
+
+**Success Criteria:**
+- Targeting hairline visible before laser fires
+- Dodge window allows evasion via ASDF motion
+- WXYZ displacement breaks Cartesian targeting (forces recalculation)
+
+---
+
+### D.6 Module Dependencies (Reuse vs New Code)
+
+**REUSED from ARTexplorer (no changes needed):**
+- ✅ rt-rendering.js (WebGL renderer, camera, scene management)
+- ✅ rt-math.js (Quadray ↔ Cartesian, quadrance, spread calculations)
+- ✅ rt-polyhedra.js (tetrahedron, cube, icosahedron generation)
+- ✅ rt-matrix.js (rotation/scaling matrices)
+- ✅ OrbitControls (Three.js camera controls via rt-rendering.js)
+
+**EXTENDED from ARTexplorer (add new functions):**
+- 🔧 rt-polyhedra.js → Add stellated variants (small cones on vertices)
+- 🔧 rt-state-manager.js → Add game state persistence (wave, score, ship tier, fuel)
+
+**NEW for A.r.t.steroids:**
+- ✨ rt-asteroids-core.js (game loop, state machine, wave spawning)
+- ✨ rt-asteroids-player.js (ASDF rubber-band motion, ship rotation, firing)
+- ✨ rt-asteroids-enemies.js (Cartesian AI, targeting telegraph, movement patterns)
+- ✨ rt-asteroids-weapons.js (laser darts, collision detection, explosions, torpedoes)
+- ✨ rt-asteroids-hud.js (geodesic HUD, telemetry overlays, fuel/score display)
+- ✨ rt-asteroids-blackhole.js (wave transitions, geodesic collapse/expansion animations)
+- ✨ rt-asteroids-license.js (client-side license key validation)
+- ✨ rt-asteroids-audio.js (sound effects, music management)
+
+**Estimated Code Reuse:**
+- ~60% of core functionality already exists in ARTexplorer
+- ~40% new game-specific code required
+- Zero duplication between explorer and game modules
+
+---
+
+### D.7 Benefits of Unified Approach (Summary)
+
+1. **Speed to MVP**: Prototyping starts this week (ASDF motion test)
+2. **No code duplication**: Single source of truth for RT math and rendering
+3. **Incremental development**: Test game mechanics without disrupting explorer app
+4. **Educational coherence**: ARTexplorer teaches geometry, A.r.t.steroids applies it
+5. **Deployment simplicity**: GitHub Actions auto-deploys both apps
+6. **Future flexibility**: Can split repos later if needed (no technical debt)
+7. **Shared documentation**: Geometry concepts documented once, used twice
+
+---
+
+### D.8 When to Consider Splitting Repositories
+
+**Triggers for future split:**
+- Repository size exceeds 50MB (GitHub Pages limit concerns)
+- Game requires server-side infrastructure (license validation, telemetry, prize tracking)
+- Licensing becomes too complex for single repo (legal concerns)
+- Development team grows (separate teams for explorer vs game)
+- Separate release cycles needed (explorer updates shouldn't affect game stability)
+
+**How to split cleanly later:**
+- Extract `modules/core/` into standalone npm package or git submodule
+- Both ARTexplorer and ARTsteroids repos import shared core modules
+- Explorer repo: `modules/explorer/` + shared core dependency
+- Game repo: `modules/asteroids/` + shared core dependency + server code
+- Minimal disruption (shared code already organized in `core/` subdirectory)
+
+---
+
+**Decision:** Proceed with unified repository (Option 1). Begin ASDF motion prototype this week.
+
+---
+
 **End of Design Document**
 
 _"In Quadray space, no one can hear you take the square root."_
