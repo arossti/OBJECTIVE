@@ -321,7 +321,11 @@ Ship/player begins as single Tetrahedron at origin [1,1,1,1] in WXYZ tetrahedral
 - Player displacement in WXYZ manifests as world displacement in opposite direction
 
 **Separate Control Systems:**
-- **Rotation**: Arrow keys or mouse control (independent of ASDF motion)
+- **Camera Rotation**: Click-drag (inherited from ARTexplorer OrbitControls) rotates camera view
+  - Player ship stays at canvas center, camera orbits to view battlefield from any angle
+  - Essential for observing targeting hairlines and enemy positions in 3D space
+  - Uses existing Three.js OrbitControls implementation from base application
+- **Ship Rotation**: Arrow keys or mouse control for ship orientation (independent of ASDF motion)
 - **Targeting**: Spacebar for auto-target lock or manual override (independent of ASDF motion)
 - **ASDF is purely for positional dodge/evasion** — fundamental Stellarian survival mechanic
 
