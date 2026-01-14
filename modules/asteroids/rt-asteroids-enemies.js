@@ -18,7 +18,11 @@
  * - Targeting Hairline: Faint wireframe (lineWidth 0.5, opacity 0.3) during calculation
  * - Laser Dart Blast: Heavy glowing projectile (lineWidth 3-5) after targeting completes
  * - WXYZ Displacement Breaking: Player Q-displacement > 10 forces enemy recalculation
- * - XYZ-Only Movement: Enemies cannot perceive tetrahedral W-axis motion
+ * - Coordinate System Blindness: Enemies use Cartesian XYZ only, cannot perceive Quadray WXYZ tetrahedral coordinate system
+ *
+ * @coordinate_system
+ * Enemies track player position by converting Quadray WXYZ → Cartesian XYZ.
+ * They perceive tetrahedral displacement as unpredictable "lateral shifts" in XYZ space.
  *
  * @documentation
  * - Design doc: /Geometry documents/A.r.t.steroids.md

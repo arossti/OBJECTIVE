@@ -66,7 +66,7 @@ And for the first soul to reach this understanding? A gift from the Stellarian E
 
 **Antagonists (Cartesian Empire):**
 - **Cartesian** cubes, classical UV spheres, primitive composite geometry (stellated cubes)
-- Limited to **XYZ-only navigation**: UP/DOWN (Z), LEFT/RIGHT (X), FORWARD/BACK (Y)
+- Limited to **Cartesian XYZ navigation**: UP/DOWN (Z), LEFT/RIGHT (X), FORWARD/BACK (Y)
 - Rely on angle-based targeting with **coarse degree intervals** (45° early game, improving to 1° in later waves)
 - Rotation on any axis allowed, but slow lock-on due to transcendental trig calculations
 - Cannot perceive or counter WXYZ tetrahedral movement patterns
@@ -291,10 +291,10 @@ Ship/player begins as single Tetrahedron at origin [1,1,1,1] in WXYZ tetrahedral
 
 **ASDF Tetrahedral Movement:**
 - **ASDF keys** control displacement along WXYZ tetrahedral axes:
-  - **A key**: Move along W-axis (red) direction
-  - **S key**: Move along X-axis (green) direction
-  - **D key**: Move along Y-axis (blue) direction
-  - **F key**: Move along Z-axis (yellow) direction
+  - **A key**: Move along W basis vector (red) direction
+  - **S key**: Move along X basis vector (green) direction
+  - **D key**: Move along Y basis vector (blue) direction
+  - **F key**: Move along Z basis vector (yellow) direction
 
 **Rubber-Band Physics:**
 - **Hold key**: Ship displaces farther along corresponding axis
@@ -342,7 +342,7 @@ Ship/player begins as single Tetrahedron at origin [1,1,1,1] in WXYZ tetrahedral
 ### 2.2 Enemy Types
 
 **Cube Drones (Level 1-3):**
-- **XYZ-only translation**: UP/DOWN (Z), LEFT/RIGHT (X), FORWARD/BACK (Y) - **cannot rotate**
+- **Cartesian XYZ translation**: UP/DOWN (Z), LEFT/RIGHT (X), FORWARD/BACK (Y) - **cannot rotate**
 - **Angular tracking**: 45° intervals (Wave 1), improving to 15° (Wave 3)
 - Movement pattern visible via X-RAY telemetry: "X +10 → Z +5 → X -3"
 - **Special**: Can split into 8 octant mini-cubes when critically damaged (reduced firepower)
@@ -351,7 +351,7 @@ Ship/player begins as single Tetrahedron at origin [1,1,1,1] in WXYZ tetrahedral
 - **Hits to destroy**: 1
 
 **Sphere Pods (Level 4-6):**
-- **XYZ-only translation** with limited rotation on any axis
+- **Cartesian XYZ translation** with limited rotation on any axis
 - Can perform diagonal movement (e.g., +X+Y+Z simultaneously)
 - **Angular tracking**: 15° intervals (Wave 4), improving to 5° (Wave 6)
 - Classical UV-mapped spheres (512 triangles vs player's geodesic ~180 triangles)
@@ -628,11 +628,11 @@ When player ship is destroyed, it exhibits **RT-pure polyhedral fragmentation** 
 - Four tetrahedral axes (W, X, Y, Z) rendered as glowing webbed lines
 - Grid extends to Q = 120 units (well past combat range)
 - Lines are semi-transparent (opacity = 0.3) to avoid obstructing view
-- **Color coding** (Quadray WXYZ tetrahedral axes):
-  - W-axis grid: Red webbing
-  - X-axis grid: Green webbing
-  - Y-axis grid: Blue webbing
-  - Z-axis grid: Yellow webbing
+- **Color coding** (Quadray WXYZ tetrahedral basis vectors):
+  - W basis vector grid: Red webbing
+  - X basis vector grid: Green webbing
+  - Y basis vector grid: Blue webbing
+  - Z basis vector grid: Yellow webbing
 - Grid intensity increases during strategic maneuvers:
   - Tetrahedral dodge: Corresponding axis grid glows brighter (opacity → 0.7)
   - Quadray firing: Relevant axis grid pulses with shot
@@ -683,7 +683,7 @@ game-modules/
 - Camera orbits player ship (or locks in HUD mode)
 
 **Enemy Tracking Limitations:**
-- Enemies store positions in **XYZ-only** (3-axis Cartesian):
+- Enemies store positions in **Cartesian XYZ** (3-axis Cartesian):
   - **Translation only**: UP/DOWN (Z), LEFT/RIGHT (X), FORWARD/BACK (Y)
   - Cubes: No rotation capability
   - Spheres & Cruisers: Can rotate, but at computational cost
@@ -1056,10 +1056,10 @@ Z-Axis: Z (negative) / C (positive)
 
 **Color Coding (Quadray WXYZ Tetrahedral Basis):**
 - **Player Ship**: Cyan wireframe, bright vertices
-- **W-axis**: Red (laser darts, movement indicator)
-- **X-axis**: Green
-- **Y-axis**: Blue
-- **Z-axis**: Yellow
+- **W basis vector**: Red (laser darts, movement indicator)
+- **X basis vector**: Green
+- **Y basis vector**: Blue
+- **Z basis vector**: Yellow
 - **Enemies**: Orange/magenta (classical geometry)
 - **Matrix Army**: White/cyan (allied forces)
 
@@ -1200,7 +1200,7 @@ The game leverages ARTexplorer's existing RT-pure architecture while adding new 
 
 **Educational Payoff:**
 Players naturally discover that:
-- **Tetrahedral WXYZ + Cartesian XYZ navigation** > XYZ-only navigation
+- **Tetrahedral WXYZ + Cartesian XYZ navigation** > Cartesian XYZ navigation
 - **Quadrance (Q) > Distance (d)** for computation (no √ needed)
 - **RT Spread (0.01 precision) > Angles (1° precision)** for targeting granularity
 - **Geodesic subdivision (180 tri) > UV sphere (512 tri)** for polygon efficiency
@@ -1281,7 +1281,7 @@ Players naturally discover that:
 - Resource economy: Fuel + Materials for ship upgrades, fuel costs for X-RAY/Tractor/Hyperspace
 - Stellated ships: Thicker rays (lineWidth 1→4), vertex firing mode, tractor beam, extended range
 - Quadray grid visualization: Tetrahedral webbed lattice (G key), 80's neon-vector aesthetic
-- Enemy movement constraints: XYZ-only UP/DOWN/LEFT/RIGHT/FORWARD/BACK, rotation capability varies
+- Enemy movement constraints: Cartesian XYZ UP/DOWN/LEFT/RIGHT/FORWARD/BACK, rotation capability varies
 - Quadray dodge maneuver: Tetrahedral movement breaks enemy Cartesian XYZ tracking (appears as instant shift)
 
 ---
@@ -1346,12 +1346,12 @@ function checkLaserEnemyCollision(laser, enemy) {
 }
 ```
 
-### A.3 W-Axis Enemy Blindness
+### A.3 Quadray Coordinate System Blindness
 
 ```javascript
 // rt-asteroids-enemies.js
 function updateCubeEnemy(enemy, playerPos, deltaTime) {
-  // Cube enemy only tracks XYZ (cannot perceive Quadray tetrahedral motion)
+  // Cube enemy only tracks XYZ Cartesian (cannot perceive WXYZ Quadray tetrahedral motion)
   const playerXYZ = RT.quadrayToCartesian(playerPos);
   const enemyXYZ = RT.quadrayToCartesian(enemy.pos);
 
@@ -1362,16 +1362,15 @@ function updateCubeEnemy(enemy, playerPos, deltaTime) {
 
   const angle = Math.atan2(dy, dx); // Transcendental = delay!
 
-  // Enemy moves in XYZ only
+  // Enemy moves in XYZ Cartesian only (3 orthogonal axes)
   enemy.velocity = {
     x: Math.cos(angle) * enemy.speed,
     y: Math.sin(angle) * enemy.speed,
-    z: dz > 0 ? enemy.speed : -enemy.speed,
-    w: 0 // CANNOT TRACK W-AXIS!
+    z: dz > 0 ? enemy.speed : -enemy.speed
   };
 
-  // Update position
-  enemy.pos = RT.addQuadrays(enemy.pos, enemy.velocity, deltaTime);
+  // Update position (enemy stores XYZ, not WXYZ)
+  enemy.pos = RT.addCartesianVectors(enemy.pos, enemy.velocity, deltaTime);
 }
 ```
 
@@ -2041,12 +2040,12 @@ ARTexplorer - Dual License
 
 2. **Implement ASDF motion prototype**:
    - Create `modules/asteroids/rt-asteroids-player.js` (new file)
-   - ASDF keypress handlers (A=W-axis, S=X-axis, D=Y-axis, F=Z-axis)
+   - ASDF keypress handlers (A=W, S=X, D=Y, F=Z basis vectors in Quadray system)
    - Rubber-band displacement logic:
-     - Hold key: Exponential/quadratic distance curve along axis
+     - Hold key: Exponential/quadratic distance curve along corresponding basis vector
      - Release key: Quantitative easing return to origin (0.5-1.0s animation)
    - Max displacement: Q_max = 50 quadrance units
-   - Visual feedback: Axis glow during displacement, fading trail during return
+   - Visual feedback: Basis vector glow during displacement, fading trail during return
 
 3. **Test with existing OrbitControls**:
    - Verify click-drag camera rotation works alongside ASDF motion
