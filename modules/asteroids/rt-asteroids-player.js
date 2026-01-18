@@ -4,7 +4,7 @@
  * @requires THREE (via CDN)
  * @requires rt-math.js (shared core module)
  * @requires rt-polyhedra.js (shared core module)
- * @requires rt-matrix.js (shared core module)
+ * @requires rt-matrix-planar.js (shared core module)
  *
  * @description
  * Player ship controller with ASDF rubber-band navigation system.

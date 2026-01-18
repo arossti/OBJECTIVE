@@ -673,7 +673,7 @@ game-modules/
 - `rt-rendering.js`: Scene, camera, lighting
 - `rt-polyhedra.js`: Ship and enemy geometry generation
 - `rt-math.js`: Quadray conversion, quadrance, spread
-- `rt-matrix.js`: IVM matrix army generation
+- `rt-matrix-planar.js`: IVM matrix army generation
 - `rt-papercut.js`: Tactical cutplane views - all camera options
 
 ### 3.2 Coordinate System Strategy
@@ -999,7 +999,7 @@ Z-Axis: Z (negative) / C (positive)
 **Required ARTexplorer Features:**
 - ✅ Polyhedra generation (`rt-polyhedra.js`)
 - ✅ Quadray math library (`rt-math.js`)
-- ✅ IVM matrix generation (`rt-matrix.js`)
+- ✅ IVM matrix generation (`rt-matrix-planar.js`)
 - ✅ Three.js rendering (`rt-rendering.js`)
 - ✅ Papercut cutplane (`rt-papercut.js`)
 
@@ -1901,7 +1901,7 @@ This appendix contains proprietary implementation details and must not be distri
 **Rationale:**
 
 **Advantages:**
-- **Reuse existing infrastructure**: All core modules already exist (rt-rendering.js, rt-math.js, rt-polyhedra.js, rt-matrix.js)
+- **Reuse existing infrastructure**: All core modules already exist (rt-rendering.js, rt-math.js, rt-polyhedra.js, rt-matrix-planar.js)
 - **OrbitControls camera system**: Click-drag battlefield rotation inherited from ARTexplorer
 - **Quadray/Cartesian conversion**: Foundation for WXYZ player motion and XYZ enemy tracking
 - **WebGL rendering pipeline**: Three.js scene management, lighting, materials already configured
@@ -1933,7 +1933,7 @@ ARTExplorer/
 │   │   ├── rt-rendering.js     ← WebGL renderer, camera, scene (REUSED)
 │   │   ├── rt-math.js          ← Quadray/Cartesian math, RT calculations (REUSED)
 │   │   ├── rt-polyhedra.js     ← Geometry generation (REUSED + EXTENDED)
-│   │   ├── rt-matrix.js        ← Transformation matrices (REUSED)
+│   │   ├── rt-matrix-planar.js ← Transformation matrices (REUSED)
 │   │   └── rt-state-manager.js ← State persistence (REUSED + EXTENDED)
 │   │
 │   ├── explorer/               ← ARTexplorer-specific modules (EXISTING)
@@ -2040,7 +2040,7 @@ ARTexplorer - Dual License
 
 1. **Create test file**: `demos/asdf-motion-test.html`
    - Minimal HTML page with canvas
-   - Load core modules: rt-rendering.js, rt-math.js, rt-matrix.js
+   - Load core modules: rt-rendering.js, rt-math.js, rt-matrix-planar.js
    - Initialize single tetrahedron at origin [1,1,1,1]
 
 2. **Implement ASDF motion prototype**:
@@ -2105,7 +2105,7 @@ ARTexplorer - Dual License
 - ✅ rt-rendering.js (WebGL renderer, camera, scene management)
 - ✅ rt-math.js (Quadray ↔ Cartesian, quadrance, spread calculations)
 - ✅ rt-polyhedra.js (tetrahedron, cube, icosahedron generation)
-- ✅ rt-matrix.js (rotation/scaling matrices)
+- ✅ rt-matrix-planar.js (rotation/scaling matrices)
 - ✅ OrbitControls (Three.js camera controls via rt-rendering.js)
 
 **EXTENDED from ARTexplorer (add new functions):**
