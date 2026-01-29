@@ -30,8 +30,8 @@
  * @license Commercial/Proprietary - Part of A.r.t.steroids ($50 CAD)
  */
 
-(function() {
-  'use strict';
+(function () {
+  "use strict";
 
   window.RT = window.RT || {};
 
@@ -39,7 +39,7 @@
    * Geodesic HUD system
    * @namespace RT.HUD
    */
-  RT.HUD = (function() {
+  RT.HUD = (function () {
     // HUD configuration
     const HUD_RADIUS = 100; // Quadrance units
     const GEODESIC_FREQUENCY = 3; // 180 triangles
@@ -57,7 +57,7 @@
      * Initialize HUD system
      */
     function init() {
-      console.log('[HUD] Initializing geodesic HUD...');
+      console.log("[HUD] Initializing geodesic HUD...");
 
       // TODO: Generate freq-3 geodesic icosahedron using RT.Polyhedra
       // TODO: Create wireframe mesh at HUD_RADIUS
@@ -77,7 +77,7 @@
       // TODO: Set material to semi-transparent cyan (#00ffff, opacity 0.2)
       // TODO: Add to scene
 
-      console.log('[HUD] Geodesic icosahedron created (180 triangles, freq-3)');
+      console.log("[HUD] Geodesic icosahedron created (180 triangles, freq-3)");
     }
 
     /**
@@ -89,7 +89,7 @@
       // TODO: Add targeting hairline count indicator
       // TODO: Style with retro green terminal aesthetic
 
-      console.log('[HUD] Stats overlay created');
+      console.log("[HUD] Stats overlay created");
     }
 
     /**
@@ -159,9 +159,9 @@
       xrayActive = active;
 
       if (active) {
-        console.log('[HUD] X-RAY telemetry activated (5 fuel/s)');
+        console.log("[HUD] X-RAY telemetry activated (5 fuel/s)");
       } else {
-        console.log('[HUD] X-RAY telemetry deactivated');
+        console.log("[HUD] X-RAY telemetry deactivated");
         clearXRayPaths();
       }
     }
@@ -188,7 +188,7 @@
       });
 
       xrayPaths.clear();
-      console.log('[HUD] X-RAY paths cleared');
+      console.log("[HUD] X-RAY paths cleared");
     }
 
     /**
@@ -212,9 +212,9 @@
 
       // Getters
       isXRayActive: () => xrayActive,
-      getGeodesicMesh: () => geodesicMesh
+      getGeodesicMesh: () => geodesicMesh,
     };
   })();
 
-  console.log('[rt-asteroids-hud.js] Module loaded - RT.HUD available');
+  console.log("[rt-asteroids-hud.js] Module loaded - RT.HUD available");
 })();

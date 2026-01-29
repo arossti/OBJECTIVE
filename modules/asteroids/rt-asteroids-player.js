@@ -37,8 +37,8 @@
  * @license Commercial/Proprietary - Part of A.r.t.steroids ($50 CAD)
  */
 
-(function() {
-  'use strict';
+(function () {
+  "use strict";
 
   window.RT = window.RT || {};
 
@@ -46,16 +46,16 @@
    * Player ship controller with ASDF rubber-band navigation
    * @namespace RT.Player
    */
-  RT.Player = (function() {
+  RT.Player = (function () {
     // Ship tier enumeration
     const ShipTier = {
-      TETRAHEDRON: 'TETRAHEDRON',       // Tier 1 (starting ship)
-      OCTAHEDRON: 'OCTAHEDRON',         // Tier 2
-      ICOSAHEDRON: 'ICOSAHEDRON',       // Tier 3
-      CUBOCTAHEDRON: 'CUBOCTAHEDRON',   // Tier 4 (Vector Equilibrium)
-      STELLARIA_OCTANGULA: 'STELLARIA_OCTANGULA', // Tier 5 (black hole navigator)
-      RHOMBIC_DODECA: 'RHOMBIC_DODECA', // Tier 6
-      IVM_SWARM: 'IVM_SWARM'            // Tier 7 (ultimate form)
+      TETRAHEDRON: "TETRAHEDRON", // Tier 1 (starting ship)
+      OCTAHEDRON: "OCTAHEDRON", // Tier 2
+      ICOSAHEDRON: "ICOSAHEDRON", // Tier 3
+      CUBOCTAHEDRON: "CUBOCTAHEDRON", // Tier 4 (Vector Equilibrium)
+      STELLARIA_OCTANGULA: "STELLARIA_OCTANGULA", // Tier 5 (black hole navigator)
+      RHOMBIC_DODECA: "RHOMBIC_DODECA", // Tier 6
+      IVM_SWARM: "IVM_SWARM", // Tier 7 (ultimate form)
     };
 
     // ASDF key states (W/X/Y/Z Quadray basis vectors)
@@ -64,7 +64,7 @@
       W: false, // A key - displacement along W basis vector (red)
       X: false, // S key - displacement along X basis vector (green)
       Y: false, // D key - displacement along Y basis vector (blue)
-      Z: false  // F key - displacement along Z basis vector (yellow)
+      Z: false, // F key - displacement along Z basis vector (yellow)
     };
 
     // Player state
@@ -86,7 +86,7 @@
      * Initialize player ship
      */
     function init() {
-      console.log('[Player] Initializing Stellarian ship...');
+      console.log("[Player] Initializing Stellarian ship...");
 
       // TODO: Create tetrahedron mesh at origin
       // TODO: Bind ASDF keyboard listeners
@@ -123,7 +123,9 @@
         returnAnimation[basisVector] = null;
       }
 
-      console.log(`[Player] ${basisVector} Quadray basis vector displacement activated`);
+      console.log(
+        `[Player] ${basisVector} Quadray basis vector displacement activated`
+      );
     }
 
     /**
@@ -138,7 +140,9 @@
       // Start quantitative easing return animation
       startReturnAnimation(basisVector);
 
-      console.log(`[Player] ${basisVector} Quadray basis vector return animation started`);
+      console.log(
+        `[Player] ${basisVector} Quadray basis vector return animation started`
+      );
     }
 
     /**
@@ -152,7 +156,7 @@
       returnAnimation[basisVector] = {
         startDisplacement: currentDisplacement,
         elapsed: 0,
-        duration: RETURN_DURATION
+        duration: RETURN_DURATION,
       };
     }
 
@@ -165,9 +169,11 @@
       returnAnimation = { W: null, X: null, Y: null, Z: null };
 
       // Reset key states
-      Object.keys(keyStates).forEach(key => { keyStates[key] = false; });
+      Object.keys(keyStates).forEach(key => {
+        keyStates[key] = false;
+      });
 
-      console.log('[Player] Reset to origin [1,1,1,1]');
+      console.log("[Player] Reset to origin [1,1,1,1]");
     }
 
     /**
@@ -226,9 +232,9 @@
       setInvulnerable: (value, duration = 3.0) => {
         invulnerable = value;
         invulnerabilityTimer = duration;
-      }
+      },
     };
   })();
 
-  console.log('[rt-asteroids-player.js] Module loaded - RT.Player available');
+  console.log("[rt-asteroids-player.js] Module loaded - RT.Player available");
 })();

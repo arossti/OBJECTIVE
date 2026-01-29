@@ -39,8 +39,8 @@
  * @license Commercial/Proprietary - Part of A.r.t.steroids ($50 CAD)
  */
 
-(function() {
-  'use strict';
+(function () {
+  "use strict";
 
   window.RT = window.RT || {};
 
@@ -48,7 +48,7 @@
    * Audio system for game sounds and music
    * @namespace RT.Audio
    */
-  RT.Audio = (function() {
+  RT.Audio = (function () {
     // Audio context
     let audioContext = null;
     let masterGain = null;
@@ -70,7 +70,7 @@
      * Initialize audio system
      */
     function init() {
-      console.log('[Audio] Initializing audio system...');
+      console.log("[Audio] Initializing audio system...");
 
       // Create Web Audio context
       try {
@@ -79,9 +79,9 @@
         masterGain.gain.value = masterVolume;
         masterGain.connect(audioContext.destination);
 
-        console.log('[Audio] Audio context created');
+        console.log("[Audio] Audio context created");
       } catch (error) {
-        console.error('[Audio] Failed to create audio context:', error);
+        console.error("[Audio] Failed to create audio context:", error);
         return;
       }
 
@@ -96,7 +96,7 @@
      * Load all sound effects and music
      */
     async function loadSounds() {
-      console.log('[Audio] Loading sound effects and music...');
+      console.log("[Audio] Loading sound effects and music...");
 
       // TODO: Fetch audio files from /assets/sounds/ directory
       // TODO: Decode audio data into buffers
@@ -110,7 +110,7 @@
      * Generate procedural sound effects using Web Audio
      */
     function generateProceduralSounds() {
-      console.log('[Audio] Generating procedural sound effects...');
+      console.log("[Audio] Generating procedural sound effects...");
 
       // TODO: Generate laser fire sounds (W/X/Y/Z variants)
       // TODO: Generate explosion sounds
@@ -138,7 +138,10 @@
 
       // Envelope (quick attack, short decay)
       gain.gain.setValueAtTime(0.3 * sfxVolume, audioContext.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.15);
+      gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        audioContext.currentTime + 0.15
+      );
 
       osc.connect(gain);
       gain.connect(masterGain);
@@ -158,11 +161,14 @@
       const osc = audioContext.createOscillator();
       const gain = audioContext.createGain();
 
-      osc.type = 'sawtooth';
+      osc.type = "sawtooth";
       osc.frequency.value = 110; // Low A (bass hum)
 
       gain.gain.setValueAtTime(0.2 * sfxVolume, audioContext.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.3);
+      gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        audioContext.currentTime + 0.3
+      );
 
       osc.connect(gain);
       gain.connect(masterGain);
@@ -170,7 +176,7 @@
       osc.start(audioContext.currentTime);
       osc.stop(audioContext.currentTime + 0.3);
 
-      console.log('[Audio] Enemy laser fire');
+      console.log("[Audio] Enemy laser fire");
     }
 
     /**
@@ -182,7 +188,11 @@
 
       // White noise burst for explosion
       const bufferSize = audioContext.sampleRate * 0.5; // 0.5 second
-      const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+      const buffer = audioContext.createBuffer(
+        1,
+        bufferSize,
+        audioContext.sampleRate
+      );
       const data = buffer.getChannelData(0);
 
       for (let i = 0; i < bufferSize; i++) {
@@ -193,7 +203,7 @@
       source.buffer = buffer;
 
       const gain = audioContext.createGain();
-      gain.gain.value = (type === 'player' ? 0.4 : 0.3) * sfxVolume;
+      gain.gain.value = (type === "player" ? 0.4 : 0.3) * sfxVolume;
 
       source.connect(gain);
       gain.connect(masterGain);
@@ -215,7 +225,10 @@
       osc.frequency.value = 1200; // High-pitched warning
 
       gain.gain.setValueAtTime(0.2 * sfxVolume, audioContext.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.2);
+      gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        audioContext.currentTime + 0.2
+      );
 
       osc.connect(gain);
       gain.connect(masterGain);
@@ -223,7 +236,7 @@
       osc.start(audioContext.currentTime);
       osc.stop(audioContext.currentTime + 0.2);
 
-      console.log('[Audio] Targeting lock warning');
+      console.log("[Audio] Targeting lock warning");
     }
 
     /**
@@ -236,7 +249,10 @@
       const gain = audioContext.createGain();
 
       osc.frequency.setValueAtTime(880, audioContext.currentTime); // Start high
-      osc.frequency.exponentialRampToValueAtTime(55, audioContext.currentTime + 2.5); // End low
+      osc.frequency.exponentialRampToValueAtTime(
+        55,
+        audioContext.currentTime + 2.5
+      ); // End low
 
       gain.gain.setValueAtTime(0.3 * sfxVolume, audioContext.currentTime);
       gain.gain.linearRampToValueAtTime(0, audioContext.currentTime + 2.5);
@@ -247,7 +263,7 @@
       osc.start(audioContext.currentTime);
       osc.stop(audioContext.currentTime + 2.5);
 
-      console.log('[Audio] Black hole collapse');
+      console.log("[Audio] Black hole collapse");
     }
 
     /**
@@ -260,7 +276,10 @@
       const gain = audioContext.createGain();
 
       osc.frequency.setValueAtTime(55, audioContext.currentTime); // Start low
-      osc.frequency.exponentialRampToValueAtTime(880, audioContext.currentTime + 2.5); // End high
+      osc.frequency.exponentialRampToValueAtTime(
+        880,
+        audioContext.currentTime + 2.5
+      ); // End high
 
       gain.gain.setValueAtTime(0.3 * sfxVolume, audioContext.currentTime);
       gain.gain.linearRampToValueAtTime(0, audioContext.currentTime + 2.5);
@@ -271,7 +290,7 @@
       osc.start(audioContext.currentTime);
       osc.stop(audioContext.currentTime + 2.5);
 
-      console.log('[Audio] Black hole expansion');
+      console.log("[Audio] Black hole expansion");
     }
 
     /**
@@ -302,7 +321,7 @@
         currentMusicSource = null;
         currentTrack = null;
 
-        console.log('[Audio] Music stopped');
+        console.log("[Audio] Music stopped");
       }
     }
 
@@ -356,9 +375,9 @@
       getMasterVolume: () => masterVolume,
       getSFXVolume: () => sfxVolume,
       getMusicVolume: () => musicVolume,
-      getCurrentTrack: () => currentTrack
+      getCurrentTrack: () => currentTrack,
     };
   })();
 
-  console.log('[rt-asteroids-audio.js] Module loaded - RT.Audio available');
+  console.log("[rt-asteroids-audio.js] Module loaded - RT.Audio available");
 })();
