@@ -29,8 +29,8 @@
  * @license Commercial/Proprietary - Part of A.r.t.steroids ($50 CAD)
  */
 
-(function() {
-  'use strict';
+(function () {
+  "use strict";
 
   window.RT = window.RT || {};
 
@@ -38,21 +38,21 @@
    * License key validation system
    * @namespace RT.License
    */
-  RT.License = (function() {
+  RT.License = (function () {
     // License validation state
     let isValid = false;
     let licenseKey = null;
     let userData = null; // Email hash, purchase ID, etc.
 
     // Server API configuration
-    const API_BASE_URL = 'https://api.artsteroids.com'; // TODO: Update with actual domain
-    const VERIFY_ENDPOINT = '/verify-license';
+    const API_BASE_URL = "https://api.artsteroids.com"; // TODO: Update with actual domain
+    const VERIFY_ENDPOINT = "/verify-license";
 
     /**
      * Initialize license system
      */
     function init() {
-      console.log('[License] Initializing license validation...');
+      console.log("[License] Initializing license validation...");
 
       // TODO: Check localStorage for cached license key
       // TODO: If cached, attempt validation
@@ -70,20 +70,22 @@
      * @returns {Promise<boolean>} True if valid
      */
     async function verify(key) {
-      console.log('[License] Verifying license key...');
+      console.log("[License] Verifying license key...");
 
       try {
         const response = await fetch(`${API_BASE_URL}${VERIFY_ENDPOINT}`, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json'
+            "Content-Type": "application/json",
           },
-          body: JSON.stringify({ key })
+          body: JSON.stringify({ key }),
         });
 
         if (!response.ok) {
-          console.error('[License] Verification failed - invalid key');
-          showLicenseError('Invalid license key. Please check your purchase email.');
+          console.error("[License] Verification failed - invalid key");
+          showLicenseError(
+            "Invalid license key. Please check your purchase email."
+          );
           return false;
         }
 
@@ -97,14 +99,15 @@
         // Cache license key in localStorage
         cacheLicense(key);
 
-        console.log('[License] License verified successfully');
-        console.log('[License] User:', userData);
+        console.log("[License] License verified successfully");
+        console.log("[License] User:", userData);
 
         return true;
-
       } catch (error) {
-        console.error('[License] Verification error:', error);
-        showLicenseError('Unable to verify license. Check internet connection.');
+        console.error("[License] Verification error:", error);
+        showLicenseError(
+          "Unable to verify license. Check internet connection."
+        );
         return false;
       }
     }
@@ -117,7 +120,7 @@
       // TODO: Provide link to purchase page
       // TODO: On submit, call verify()
 
-      console.log('[License] Prompting user for license key');
+      console.log("[License] Prompting user for license key");
     }
 
     /**
@@ -137,10 +140,10 @@
      */
     function cacheLicense(key) {
       try {
-        localStorage.setItem('artsteroids_license', key);
-        console.log('[License] License key cached');
+        localStorage.setItem("artsteroids_license", key);
+        console.log("[License] License key cached");
       } catch (error) {
-        console.error('[License] Failed to cache license:', error);
+        console.error("[License] Failed to cache license:", error);
       }
     }
 
@@ -150,13 +153,13 @@
      */
     function getCachedLicense() {
       try {
-        const cached = localStorage.getItem('artsteroids_license');
+        const cached = localStorage.getItem("artsteroids_license");
         if (cached) {
-          console.log('[License] Found cached license key');
+          console.log("[License] Found cached license key");
           return cached;
         }
       } catch (error) {
-        console.error('[License] Failed to read cached license:', error);
+        console.error("[License] Failed to read cached license:", error);
       }
 
       return null;
@@ -167,14 +170,14 @@
      */
     function clearLicense() {
       try {
-        localStorage.removeItem('artsteroids_license');
+        localStorage.removeItem("artsteroids_license");
         isValid = false;
         licenseKey = null;
         userData = null;
 
-        console.log('[License] License cleared');
+        console.log("[License] License cleared");
       } catch (error) {
-        console.error('[License] Failed to clear license:', error);
+        console.error("[License] Failed to clear license:", error);
       }
     }
 
@@ -204,9 +207,9 @@
       // Getters
       isValid: () => isValid,
       getLicenseKey: () => licenseKey,
-      getUserData: () => userData
+      getUserData: () => userData,
     };
   })();
 
-  console.log('[rt-asteroids-license.js] Module loaded - RT.License available');
+  console.log("[rt-asteroids-license.js] Module loaded - RT.License available");
 })();

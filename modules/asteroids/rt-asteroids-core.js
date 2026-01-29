@@ -34,8 +34,8 @@
  * @license Commercial/Proprietary - Part of A.r.t.steroids ($50 CAD)
  */
 
-(function() {
-  'use strict';
+(function () {
+  "use strict";
 
   // Ensure RT namespace exists (shared with ARTexplorer)
   window.RT = window.RT || {};
@@ -44,15 +44,15 @@
    * AsteroidsGame - Main game controller
    * @namespace RT.AsteroidsGame
    */
-  RT.AsteroidsGame = (function() {
+  RT.AsteroidsGame = (function () {
     // Game state enumeration
     const GameState = {
-      MENU: 'MENU',
-      PLAYING: 'PLAYING',
-      PAUSED: 'PAUSED',
-      TRANSITION: 'TRANSITION', // Black hole wave transition
-      GAME_OVER: 'GAME_OVER',
-      THE_INFINITE: 'THE_INFINITE' // Victory state
+      MENU: "MENU",
+      PLAYING: "PLAYING",
+      PAUSED: "PAUSED",
+      TRANSITION: "TRANSITION", // Black hole wave transition
+      GAME_OVER: "GAME_OVER",
+      THE_INFINITE: "THE_INFINITE", // Victory state
     };
 
     // Internal state
@@ -70,7 +70,7 @@
      * Initialize game systems
      */
     function init() {
-      console.log('[AsteroidsGame] Initializing A.r.t.steroids...');
+      console.log("[AsteroidsGame] Initializing A.r.t.steroids...");
 
       // TODO: Initialize player ship as Tetrahedron at origin
       // TODO: Setup HUD overlay
@@ -103,7 +103,9 @@
      * Trigger black hole transition to next wave
      */
     function triggerBlackHoleTransition() {
-      console.log(`[AsteroidsGame] Wave ${currentWave} complete - triggering black hole transition`);
+      console.log(
+        `[AsteroidsGame] Wave ${currentWave} complete - triggering black hole transition`
+      );
       currentState = GameState.TRANSITION;
 
       // TODO: Call RT.BlackHole.collapse() animation
@@ -147,7 +149,7 @@
      * Game over sequence
      */
     function gameOver() {
-      console.log('[AsteroidsGame] Game Over');
+      console.log("[AsteroidsGame] Game Over");
       currentState = GameState.GAME_OVER;
 
       // TODO: Display final score
@@ -172,11 +174,19 @@
       getMaterials: () => materials,
 
       // Setters (for UI/debugging)
-      setScore: (value) => { score = value; },
-      setFuel: (value) => { fuel = Math.max(0, Math.min(1000, value)); },
-      setMaterials: (value) => { materials = Math.max(0, value); }
+      setScore: value => {
+        score = value;
+      },
+      setFuel: value => {
+        fuel = Math.max(0, Math.min(1000, value));
+      },
+      setMaterials: value => {
+        materials = Math.max(0, value);
+      },
     };
   })();
 
-  console.log('[rt-asteroids-core.js] Module loaded - RT.AsteroidsGame available');
+  console.log(
+    "[rt-asteroids-core.js] Module loaded - RT.AsteroidsGame available"
+  );
 })();

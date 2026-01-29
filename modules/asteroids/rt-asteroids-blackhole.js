@@ -32,8 +32,8 @@
  * @license Commercial/Proprietary - Part of A.r.t.steroids ($50 CAD)
  */
 
-(function() {
-  'use strict';
+(function () {
+  "use strict";
 
   window.RT = window.RT || {};
 
@@ -41,14 +41,14 @@
    * Black hole wave transition system
    * @namespace RT.BlackHole
    */
-  RT.BlackHole = (function() {
+  RT.BlackHole = (function () {
     // Animation state enumeration
     const AnimationState = {
-      IDLE: 'IDLE',
-      COLLAPSING: 'COLLAPSING',   // Geodesic sphere shrinking
-      SINGULARITY: 'SINGULARITY', // Brief pause at Q = 0
-      EXPANDING: 'EXPANDING',     // Geodesic sphere growing
-      COMPLETE: 'COMPLETE'
+      IDLE: "IDLE",
+      COLLAPSING: "COLLAPSING", // Geodesic sphere shrinking
+      SINGULARITY: "SINGULARITY", // Brief pause at Q = 0
+      EXPANDING: "EXPANDING", // Geodesic sphere growing
+      COMPLETE: "COMPLETE",
     };
 
     // Animation configuration
@@ -69,7 +69,7 @@
      * Initialize black hole system
      */
     function init() {
-      console.log('[BlackHole] Initializing black hole transition system...');
+      console.log("[BlackHole] Initializing black hole transition system...");
 
       // TODO: Pre-generate geodesic icosahedron geometry (freq-6)
       // TODO: Create mesh material (wireframe, glowing edges)
@@ -81,7 +81,7 @@
      * @param {Function} onComplete - Callback when animation completes
      */
     function collapse(onComplete) {
-      console.log('[BlackHole] Triggering collapse animation');
+      console.log("[BlackHole] Triggering collapse animation");
 
       currentState = AnimationState.COLLAPSING;
       animationTimer = 0;
@@ -101,7 +101,7 @@
      * @param {Function} onComplete - Callback when animation completes
      */
     function expand(onComplete) {
-      console.log('[BlackHole] Triggering expansion animation');
+      console.log("[BlackHole] Triggering expansion animation");
 
       currentState = AnimationState.EXPANDING;
       animationTimer = 0;
@@ -125,7 +125,7 @@
       // TODO: Set material to glowing white/cyan gradient
       // TODO: Add to scene at origin [1,1,1,1]
 
-      console.log('[BlackHole] Geodesic mesh created (freq-6)');
+      console.log("[BlackHole] Geodesic mesh created (freq-6)");
     }
 
     /**
@@ -137,7 +137,7 @@
 
       animationTimer += deltaTime;
 
-      switch(currentState) {
+      switch (currentState) {
         case AnimationState.COLLAPSING:
           updateCollapse();
           break;
@@ -170,7 +170,7 @@
         animationTimer = 0;
         currentRadius = 0;
 
-        console.log('[BlackHole] Singularity reached');
+        console.log("[BlackHole] Singularity reached");
 
         // TODO: Trigger screen flash effect
         // TODO: Play singularity sound (deep bass rumble)
@@ -195,7 +195,7 @@
         currentState = AnimationState.EXPANDING;
         animationTimer = 0;
 
-        console.log('[BlackHole] Beginning expansion');
+        console.log("[BlackHole] Beginning expansion");
 
         // TODO: Spawn next wave enemies during expansion
         // TODO: Play expansion sound (ascending pitch)
@@ -217,7 +217,7 @@
         currentState = AnimationState.COMPLETE;
         currentRadius = MAX_RADIUS;
 
-        console.log('[BlackHole] Expansion complete');
+        console.log("[BlackHole] Expansion complete");
 
         // Cleanup
         cleanup();
@@ -260,17 +260,21 @@
      */
     function checkPlayerSurvival(shipTier) {
       const survivingTiers = [
-        'STELLARIA_OCTANGULA',
-        'RHOMBIC_DODECA',
-        'IVM_SWARM'
+        "STELLARIA_OCTANGULA",
+        "RHOMBIC_DODECA",
+        "IVM_SWARM",
       ];
 
       const survives = survivingTiers.includes(shipTier);
 
       if (survives) {
-        console.log(`[BlackHole] Player ship ${shipTier} survives black hole transition`);
+        console.log(
+          `[BlackHole] Player ship ${shipTier} survives black hole transition`
+        );
       } else {
-        console.log(`[BlackHole] Player ship ${shipTier} destroyed by black hole`);
+        console.log(
+          `[BlackHole] Player ship ${shipTier} destroyed by black hole`
+        );
         // TODO: Trigger Stellaria Octangula "glitch reveal" if applicable
       }
 
@@ -281,7 +285,7 @@
      * Trigger Stellaria Octangula death glitch (IVM lattice flash)
      */
     function triggerIVMGlitch() {
-      console.log('[BlackHole] Triggering IVM lattice glitch reveal');
+      console.log("[BlackHole] Triggering IVM lattice glitch reveal");
 
       // TODO: Flash entire canvas with amber IVM rhombic dodecahedra lattice
       // TODO: Show ship outline within universal geometric substrate
@@ -303,9 +307,11 @@
 
       // Getters
       getCurrentState: () => currentState,
-      isActive: () => currentState !== AnimationState.IDLE
+      isActive: () => currentState !== AnimationState.IDLE,
     };
   })();
 
-  console.log('[rt-asteroids-blackhole.js] Module loaded - RT.BlackHole available');
+  console.log(
+    "[rt-asteroids-blackhole.js] Module loaded - RT.BlackHole available"
+  );
 })();

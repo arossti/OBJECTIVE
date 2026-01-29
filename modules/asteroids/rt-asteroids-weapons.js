@@ -32,8 +32,8 @@
  * @license Commercial/Proprietary - Part of A.r.t.steroids ($50 CAD)
  */
 
-(function() {
-  'use strict';
+(function () {
+  "use strict";
 
   window.RT = window.RT || {};
 
@@ -41,12 +41,12 @@
    * Weapons and collision detection system
    * @namespace RT.Weapons
    */
-  RT.Weapons = (function() {
+  RT.Weapons = (function () {
     // Weapon type enumeration
     const WeaponType = {
-      STELLARIAN_DART: 'STELLARIAN_DART',     // Player instant RT targeting
-      TETRAHEDRAL_TORPEDO: 'TETRAHEDRAL_TORPEDO', // Player ultimate weapon
-      CARTESIAN_DART: 'CARTESIAN_DART'        // Enemy post-telegraph projectile
+      STELLARIAN_DART: "STELLARIAN_DART", // Player instant RT targeting
+      TETRAHEDRAL_TORPEDO: "TETRAHEDRAL_TORPEDO", // Player ultimate weapon
+      CARTESIAN_DART: "CARTESIAN_DART", // Enemy post-telegraph projectile
     };
 
     // Active projectiles array
@@ -74,11 +74,15 @@
        * @returns {number} Damage amount
        */
       getDamageForType(type) {
-        switch(type) {
-          case WeaponType.STELLARIAN_DART: return 5;
-          case WeaponType.TETRAHEDRAL_TORPEDO: return 25; // Base, multiplied by enemy type
-          case WeaponType.CARTESIAN_DART: return 10;
-          default: return 1;
+        switch (type) {
+          case WeaponType.STELLARIAN_DART:
+            return 5;
+          case WeaponType.TETRAHEDRAL_TORPEDO:
+            return 25; // Base, multiplied by enemy type
+          case WeaponType.CARTESIAN_DART:
+            return 10;
+          default:
+            return 1;
         }
       }
 
@@ -117,23 +121,23 @@
      * @param {object} direction - Normalized velocity vector
      * @param {number} speed - Projectile speed (units per second)
      */
-    function fireStellarian Dart(position, direction, speed = 50) {
+    function fireStellarianDart(position, direction, speed = 50) {
       const velocity = {
         x: direction.x * speed,
         y: direction.y * speed,
-        z: direction.z * speed
+        z: direction.z * speed,
       };
 
       const dart = new Projectile(
         WeaponType.STELLARIAN_DART,
         position,
         velocity,
-        'player'
+        "player"
       );
 
       projectiles.push(dart);
 
-      console.log('[Weapons] Stellarian dart fired');
+      console.log("[Weapons] Stellarian dart fired");
 
       // TODO: Create THREE.Line mesh with glowing material
       // TODO: Play firing sound effect
@@ -156,13 +160,13 @@
         WeaponType.TETRAHEDRAL_TORPEDO,
         position,
         { x: 0, y: 0, z: 0 }, // Auto-tracking (velocity computed in update)
-        'player'
+        "player"
       );
 
       torpedo.target = target;
       projectiles.push(torpedo);
 
-      console.log('[Weapons] Tetrahedral Photon Torpedo launched');
+      console.log("[Weapons] Tetrahedral Photon Torpedo launched");
 
       // TODO: Create tetrahedron mesh projectile
       // TODO: Implement auto-targeting using RT spread calculations
@@ -183,25 +187,25 @@
       const dx = targetPosition.x - position.x;
       const dy = targetPosition.y - position.y;
       const dz = targetPosition.z - position.z;
-      const distance = Math.sqrt(dx*dx + dy*dy + dz*dz);
+      const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
       const speed = 35; // 0.7× Stellarian speed
       const velocity = {
         x: (dx / distance) * speed,
         y: (dy / distance) * speed,
-        z: (dz / distance) * speed
+        z: (dz / distance) * speed,
       };
 
       const dart = new Projectile(
         WeaponType.CARTESIAN_DART,
         position,
         velocity,
-        'enemy' // Owner will be set to specific enemy ID
+        "enemy" // Owner will be set to specific enemy ID
       );
 
       projectiles.push(dart);
 
-      console.log('[Weapons] Cartesian laser dart fired');
+      console.log("[Weapons] Cartesian laser dart fired");
 
       // TODO: Create heavy glowing line mesh (lineWidth 3-5)
       // TODO: Play bass hum sound effect
@@ -222,7 +226,7 @@
       const dz = projectile.position.z - target.position.z;
 
       // Quadrance (distance squared)
-      const Q = dx*dx + dy*dy + dz*dz;
+      const Q = dx * dx + dy * dy + dz * dz;
 
       // Collision threshold (combined radii squared)
       const threshold = (projectile.radius + target.radius) ** 2;
@@ -260,13 +264,13 @@
       });
 
       projectiles = [];
-      console.log('[Weapons] All projectiles cleared');
+      console.log("[Weapons] All projectiles cleared");
     }
 
     // Public API
     return {
       WeaponType,
-      fireStellarian Dart,
+      fireStellarianDart,
       fireTorpedo,
       fireCartesianDart,
       checkCollision,
@@ -275,9 +279,9 @@
 
       // Getters
       getAll: () => projectiles,
-      getCount: () => projectiles.length
+      getCount: () => projectiles.length,
     };
   })();
 
-  console.log('[rt-asteroids-weapons.js] Module loaded - RT.Weapons available');
+  console.log("[rt-asteroids-weapons.js] Module loaded - RT.Weapons available");
 })();

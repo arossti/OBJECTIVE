@@ -40,8 +40,8 @@
  * @license Commercial/Proprietary - Part of A.r.t.steroids ($50 CAD)
  */
 
-(function() {
-  'use strict';
+(function () {
+  "use strict";
 
   window.RT = window.RT || {};
 
@@ -49,46 +49,46 @@
    * Enemy AI controller with targeting telegraph system
    * @namespace RT.Enemies
    */
-  RT.Enemies = (function() {
+  RT.Enemies = (function () {
     // Enemy type enumeration
     const EnemyType = {
-      CUBE_DRONE: 'CUBE_DRONE',           // Wave 1-3 (45° angular resolution)
-      SPHERE_POD: 'SPHERE_POD',           // Wave 4-6 (15°-5° angular resolution)
-      CARTESIAN_CRUISER: 'CARTESIAN_CRUISER', // Wave 7+ (5°-1° angular resolution)
-      BOSS: 'BOSS'                        // Every 10 waves
+      CUBE_DRONE: "CUBE_DRONE", // Wave 1-3 (45° angular resolution)
+      SPHERE_POD: "SPHERE_POD", // Wave 4-6 (15°-5° angular resolution)
+      CARTESIAN_CRUISER: "CARTESIAN_CRUISER", // Wave 7+ (5°-1° angular resolution)
+      BOSS: "BOSS", // Every 10 waves
     };
 
     // Targeting state enumeration
     const TargetingState = {
-      IDLE: 'IDLE',
-      CALCULATING: 'CALCULATING', // Hairline visible
-      LOCKED: 'LOCKED',           // Ready to fire
-      FIRING: 'FIRING'            // Laser dart launched
+      IDLE: "IDLE",
+      CALCULATING: "CALCULATING", // Hairline visible
+      LOCKED: "LOCKED", // Ready to fire
+      FIRING: "FIRING", // Laser dart launched
     };
 
     // Enemy configuration by type
     const EnemyConfig = {
       CUBE_DRONE: {
         angularResolution: 45, // degrees
-        targetingDelay: 1.25,  // seconds (avg 1.0-1.5s)
+        targetingDelay: 1.25, // seconds (avg 1.0-1.5s)
         hairlineColor: 0xff6600, // Orange
         health: 10,
-        speed: 5
+        speed: 5,
       },
       SPHERE_POD: {
         angularResolution: 10, // degrees (avg 15°-5°)
-        targetingDelay: 0.85,  // seconds (avg 0.7-1.0s)
+        targetingDelay: 0.85, // seconds (avg 0.7-1.0s)
         hairlineColor: 0xff00ff, // Magenta
         health: 20,
-        speed: 8
+        speed: 8,
       },
       CARTESIAN_CRUISER: {
-        angularResolution: 3,  // degrees (avg 5°-1°)
-        targetingDelay: 0.4,   // seconds (avg 0.3-0.5s)
+        angularResolution: 3, // degrees (avg 5°-1°)
+        targetingDelay: 0.4, // seconds (avg 0.3-0.5s)
         hairlineColor: 0xff0000, // Red
         health: 40,
-        speed: 12
-      }
+        speed: 12,
+      },
     };
 
     // Active enemies array
@@ -108,8 +108,8 @@
         this.targetingState = TargetingState.IDLE;
         this.targetingTimer = 0;
         this.targetPosition = null; // Predicted player position
-        this.hairlineMesh = null;   // THREE.Line for targeting visualization
-        this.mesh = null;           // THREE.Mesh for enemy body
+        this.hairlineMesh = null; // THREE.Line for targeting visualization
+        this.mesh = null; // THREE.Mesh for enemy body
       }
 
       /**
@@ -134,7 +134,9 @@
         this.targetingTimer = 0;
         this.targetPosition = { ...playerPos }; // Predicted position
 
-        console.log(`[Enemy ${this.id}] Targeting calculation started (${this.config.targetingDelay}s)`);
+        console.log(
+          `[Enemy ${this.id}] Targeting calculation started (${this.config.targetingDelay}s)`
+        );
 
         // TODO: Create targeting hairline mesh
         // TODO: Play targeting audio cue
@@ -160,7 +162,9 @@
        */
       takeDamage(damage) {
         this.health -= damage;
-        console.log(`[Enemy ${this.id}] Took ${damage} damage - ${this.health} HP remaining`);
+        console.log(
+          `[Enemy ${this.id}] Took ${damage} damage - ${this.health} HP remaining`
+        );
 
         if (this.health <= 0) {
           this.destroy();
@@ -195,7 +199,9 @@
       const enemy = new Enemy(type, position);
       enemies.push(enemy);
 
-      console.log(`[Enemies] Spawned ${type} at XYZ [${position.x}, ${position.y}, ${position.z}]`);
+      console.log(
+        `[Enemies] Spawned ${type} at XYZ [${position.x}, ${position.y}, ${position.z}]`
+      );
 
       // TODO: Create THREE.Mesh for enemy body
       // TODO: Add to scene
@@ -224,7 +230,7 @@
       });
 
       enemies = [];
-      console.log('[Enemies] All enemies cleared');
+      console.log("[Enemies] All enemies cleared");
     }
 
     // Public API
@@ -238,9 +244,9 @@
       // Getters
       getAll: () => enemies,
       getCount: () => enemies.length,
-      getById: (id) => enemies.find(e => e.id === id)
+      getById: id => enemies.find(e => e.id === id),
     };
   })();
 
-  console.log('[rt-asteroids-enemies.js] Module loaded - RT.Enemies available');
+  console.log("[rt-asteroids-enemies.js] Module loaded - RT.Enemies available");
 })();
